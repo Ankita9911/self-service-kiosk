@@ -1,11 +1,13 @@
 import express from "express";
 import authRoutes from "./core/auth/auth.routes.js";
+import { authenticate } from "./core/auth/auth.middleware.js";
+
 const router = express.Router();
 
-router.get("/", (req, res) => {
+router.get("/secure-test", authenticate, (req, res) => {
   res.json({
-    message: "Hyper Kitchen Hub API",
-    version: "v1",
+    message: "You are authenticated",
+    user: req.user,
   });
 });
 router.use("/auth", authRoutes);
