@@ -3,16 +3,16 @@ import authRoutes from "./core/auth/auth.routes.js";
 import { authenticate } from "./core/auth/auth.middleware.js";
 import { PERMISSIONS } from "./core/rbac/permissions.js";
 import { authorize } from "./core/rbac/rbac.middleware.js";
-
+import { attachTenant } from "./core/tenancy/tenancy.middleware.js";
 const router = express.Router();
 
 router.get(
-  "/admin-only",
+  "/tenant-test",
   authenticate,
-  authorize(PERMISSIONS.FRANCHISE_MANAGE),
+  attachTenant,
   (req, res) => {
     res.json({
-      message: "You have franchise management permission",
+      tenant: req.tenant,
     });
   }
 );
