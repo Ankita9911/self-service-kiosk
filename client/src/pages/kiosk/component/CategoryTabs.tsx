@@ -17,11 +17,10 @@ export default function CategoryTabs({ categories, selectedCategory, onCategoryC
               key={category._id}
               onClick={() => onCategoryChange(category._id)}
               className={`
-                px-6 py-3 rounded-xl font-black text-base uppercase tracking-tight italic
-                transition-all duration-300 whitespace-nowrap
-                min-w-[140px] active:scale-95
+                px-6 py-3 rounded-xl font-black text-base uppercase tracking-tight
+                transition-all duration-300 whitespace-nowrap min-w-[140px]
                 ${isActive 
-                  ? 'bg-gradient-to-br from-orange-500 to-orange-600 text-white shadow-lg shadow-orange-200 scale-105' 
+                  ? 'bg-orange-500 text-white shadow-lg shadow-orange-200' 
                   : 'bg-slate-50 text-slate-400 hover:bg-slate-100 hover:text-slate-600'
                 }
               `}

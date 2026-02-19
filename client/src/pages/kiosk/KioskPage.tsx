@@ -32,7 +32,6 @@ import {
 } from "../../components/ui/dialog";
 import { Input } from "../../components/ui/input";
 import { Label } from "../../components/ui/label";
-// import { cn } from "../../components/ui/utils";
 
 type PaymentStep = "SELECTION" | "DETAILS";
 
@@ -42,7 +41,7 @@ export default function KioskPage() {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [isCartOpen, setIsCartOpen] = useState(true); // Cart visible by default
+  const [isCartOpen, setIsCartOpen] = useState(true); 
   
   const [showPaymentDialog, setShowPaymentDialog] = useState(false);
   const [paymentStep, setPaymentStep] = useState<PaymentStep>("SELECTION");
@@ -99,7 +98,6 @@ export default function KioskPage() {
 
   const handleOpenCheckout = () => {
     if (cart.length === 0) return toast.error("Cart is empty");
-    setIsCartOpen(false);
     setPaymentStep("SELECTION");
     setShowPaymentDialog(true);
   };
@@ -135,109 +133,98 @@ export default function KioskPage() {
   const totalPrice = cart.reduce((acc, i) => acc + (i.price * i.quantity), 0);
 
   return (
-    <div className="h-screen flex flex-col bg-gradient-to-br from-orange-50 via-white to-orange-50 overflow-hidden">
+    <div className="h-screen flex flex-row bg-gradient-to-br from-orange-50 via-white to-orange-50 overflow-hidden">
       
-      {/* COMPACT TOP BANNER */}
-      <header className="relative h-20 w-full flex items-center justify-between px-8 overflow-hidden shrink-0 border-b-2 border-orange-100">
-        <div 
-          className="absolute inset-0 w-full h-full bg-gradient-to-r from-orange-600 via-orange-500 to-orange-600"
-          style={{ 
-            backgroundImage: 'url("https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=1200")',
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            opacity: 0.15
-          }}
-        />
-        <div className="absolute inset-0 bg-gradient-to-r from-orange-500 to-orange-600 opacity-90" />
-        
-        <div className="relative z-10">
-          <h1 className="text-3xl font-black text-white tracking-tighter uppercase italic leading-none drop-shadow-lg">
-            Hyper <span className="text-yellow-300">Kitchen</span>
-          </h1>
-        </div>
-
-        {/* Cart Summary Display */}
-        <div className="relative z-10 bg-white/10 backdrop-blur-sm h-14 px-6 rounded-2xl flex gap-4 items-center border-2 border-white/30">
-          <ShoppingBag className="w-6 h-6 text-white" strokeWidth={2.5} />
-          <div className="text-left">
-            <p className="text-xs font-bold text-orange-100 uppercase tracking-wider leading-none">Cart Total</p>
-            <p className="text-xl font-black text-white leading-none italic">₹{totalPrice}</p>
+      {/* LEFT COLUMN: HEADER, CATEGORIES, MENU */}
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+        <header className="relative h-20 w-full flex items-center justify-between px-8 overflow-hidden shrink-0 border-b-2 border-orange-100">
+          <div 
+            className="absolute inset-0 w-full h-full bg-gradient-to-r from-orange-600 via-orange-500 to-orange-600"
+            style={{ 
+              backgroundImage: 'url("https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=1200")',
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              opacity: 0.15
+            }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-orange-500 to-orange-600 opacity-90" />
+          
+          <div className="relative z-10">
+            <h1 className="text-3xl font-black text-white tracking-tighter uppercase leading-none drop-shadow-lg">
+              Hyper <span className="text-yellow-300">Kitchen</span>
+            </h1>
           </div>
-          {totalItems > 0 && (
-            <span className="bg-orange-600 text-white text-xs font-black w-6 h-6 rounded-full flex items-center justify-center">
-              {totalItems}
-            </span>
-          )}
-          <button
-            onClick={() => setIsCartOpen(!isCartOpen)}
-            className="ml-2 p-2 hover:bg-white/20 rounded-lg transition-all active:scale-90"
-          >
-            {isCartOpen ? (
-              <X className="w-5 h-5 text-white" strokeWidth={2.5} />
-            ) : (
-              <ShoppingBag className="w-5 h-5 text-white" strokeWidth={2.5} />
+
+          <div className="relative z-10 bg-white/10 backdrop-blur-sm h-14 px-6 rounded-2xl flex gap-4 items-center border-2 border-white/30" onClick={() => setIsCartOpen(!isCartOpen)}>
+            <ShoppingBag className="w-6 h-6 text-white" strokeWidth={2.5} />
+            <div className="text-left">
+              <p className="text-xs font-bold text-orange-100 uppercase tracking-wider leading-none">Cart Total</p>
+              <p className="text-xl font-black text-white leading-none">₹{totalPrice}</p>
+            </div>
+            {totalItems > 0 && (
+              <span className="bg-orange-600 text-white text-xs font-black w-6 h-6 rounded-full flex items-center justify-center">
+                {totalItems}
+              </span>
             )}
-          </button>
+          </div>
+        </header>
+
+        <div className="bg-white shadow-sm z-10">
+          <CategoryTabs categories={menu} selectedCategory={selectedCategory} onCategoryChange={setSelectedCategory} />
         </div>
-      </header>
 
-      {/* CATEGORY BAR */}
-      <div className="bg-white shadow-sm z-10">
-        <CategoryTabs categories={menu} selectedCategory={selectedCategory} onCategoryChange={setSelectedCategory} />
-      </div>
-
-      {/* MAIN CONTENT - TWO COLUMN LAYOUT */}
-      <div className="flex-1 flex overflow-hidden">
-        {/* LEFT: MENU GRID */}
         <main className="flex-1 overflow-y-auto p-6 scrollbar-hide">
           {isLoading ? (
             <div className="flex flex-col items-center justify-center h-full gap-4">
               <Loader2 className="w-16 h-16 animate-spin text-orange-500" />
-              <p className="text-xl font-black text-slate-400 uppercase italic">Loading Menu...</p>
+              <p className="text-xl font-black text-slate-400 uppercase">Loading Menu...</p>
             </div>
           ) : (
             <MenuGrid items={selectedItems} cart={cart} onAddToCart={handleAddToCart} onUpdateQuantity={handleUpdateQuantity} />
           )}
         </main>
-
-        {/* RIGHT: CART PANEL - TOGGLEABLE */}
-        {isCartOpen && (
-          <aside className="w-[400px] bg-white flex flex-col border-l-2 border-orange-100 shadow-lg transition-all duration-300">
-            <div className="p-4 border-b-2 border-orange-100 bg-gradient-to-r from-orange-500 to-orange-600">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-white/20 backdrop-blur-sm rounded-xl">
-                  <ShoppingBag className="text-white w-5 h-5" strokeWidth={2.5} />
-                </div>
-                <div>
-                  <h2 className="text-xl font-black text-white uppercase italic tracking-tight">Your Order</h2>
-                  <p className="text-orange-100 text-xs font-bold">{totalItems} item{totalItems !== 1 ? 's' : ''}</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex-1 overflow-hidden">
-              <CartPanel
-                cart={cart}
-                onUpdateQuantity={handleUpdateQuantity}
-                onRemoveItem={(id) => handleUpdateQuantity(id, -cart.find(i => i.itemId === id)!.quantity)}
-                onPlaceOrder={handleOpenCheckout} 
-                isProcessing={isProcessing}
-              />
-            </div>
-          </aside>
-        )}
       </div>
 
-      {/* PAYMENT FLOW DIALOG - COMPACT */}
+      {/* RIGHT COLUMN: FULL HEIGHT CART */}
+      {isCartOpen && (
+        <aside className="w-[400px] h-full bg-white flex flex-col border-l-2 border-orange-100 shadow-lg transition-all duration-300 z-20">
+          <div className="p-4 border-b-2 border-orange-100 bg-gradient-to-r from-orange-500 to-orange-600">
+            <div className="flex items-center gap-3 justify-between">
+              {/* <div className="p-2 bg-white/20 backdrop-blur-sm rounded-xl">
+                <ShoppingBag className="text-white w-5 h-5" strokeWidth={2.5} />
+              </div> */}
+              <div>
+                <h2 className="text-xl font-black text-white uppercase tracking-tight">Your Order</h2>
+                <p className="text-orange-100 text-xs font-bold">{totalItems} item{totalItems !== 1 ? 's' : ''}</p>
+              </div>
+               <button
+              onClick={() => setIsCartOpen(!isCartOpen)}
+              className="ml-2 p-2 hover:bg-white/20 rounded-lg transition-all active:scale-90"
+            >
+              {isCartOpen ? <X className="w-5 h-5 text-white" strokeWidth={2.5} /> : <ShoppingBag className="w-5 h-5 text-white" strokeWidth={2.5} />}
+            </button>
+            </div>
+          </div>
+
+          <div className="flex-1 overflow-hidden">
+            <CartPanel
+              cart={cart}
+              onUpdateQuantity={handleUpdateQuantity}
+              onRemoveItem={(id) => handleUpdateQuantity(id, -cart.find(i => i.itemId === id)!.quantity)}
+              onPlaceOrder={handleOpenCheckout} 
+              isProcessing={isProcessing}
+            />
+          </div>
+        </aside>
+      )}
+
+      {/* Payment Dialog */}
       <Dialog open={showPaymentDialog} onOpenChange={setShowPaymentDialog}>
         <DialogContent className="sm:max-w-[480px] p-0 overflow-hidden rounded-2xl border-2 border-orange-200 shadow-xl">
           <div className="bg-gradient-to-br from-orange-500 to-orange-600 p-6 text-white relative overflow-hidden">
-            <div className="absolute -right-10 -bottom-10 opacity-10">
-              <CreditCard className="w-32 h-32" />
-            </div>
-            <DialogTitle className="text-2xl font-black italic tracking-tight uppercase">Checkout</DialogTitle>
+            <DialogTitle className="text-2xl font-black tracking-tight uppercase">Checkout</DialogTitle>
             <DialogDescription className="text-orange-100 font-bold text-sm mt-2">
-              Total: <span className="text-white text-xl ml-2 font-black italic">₹{(totalPrice * 1.05).toFixed(2)}</span>
+              Total: <span className="text-white text-xl ml-2 font-black">₹{(totalPrice * 1.05).toFixed(2)}</span>
             </DialogDescription>
           </div>
 
@@ -267,64 +254,27 @@ export default function KioskPage() {
                 </div>
               </div>
             ) : (
-              <div className="space-y-4 animate-in slide-in-from-bottom-4 duration-300">
+              <div className="space-y-4">
                 <button 
                   onClick={() => setPaymentStep("SELECTION")} 
-                  className="flex items-center gap-1 text-xs font-black uppercase tracking-wider text-orange-500 hover:text-orange-600 transition-colors"
+                  className="flex items-center gap-1 text-xs font-black uppercase tracking-wider text-orange-500 hover:text-orange-600"
                 >
                   <ChevronLeft className="w-4 h-4" strokeWidth={3} /> Go Back
                 </button>
-
-                {selectedMethod === "CARD" && (
-                   <div className="space-y-3">
-                      <div className="space-y-2">
-                        <Label className="text-xs font-black text-slate-600 uppercase tracking-wider">Card Holder Name</Label>
-                        <Input placeholder="FULL NAME" className="h-12 text-base rounded-xl border-2" />
+                {/* Simplified Payment Details based on selection */}
+                {selectedMethod === "UPI" && (
+                   <div className="p-6 bg-orange-50 rounded-2xl border-2 border-dashed border-orange-300 text-center">
+                      <div className="w-40 h-40 bg-white mx-auto rounded-xl flex items-center justify-center p-3 border-2 border-orange-100">
+                         <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=hyperkitchen@upi" alt="QR" className="w-full h-full" />
                       </div>
-                      <div className="grid grid-cols-2 gap-3">
-                        <div className="space-y-2">
-                          <Label className="text-xs font-black text-slate-600 uppercase tracking-wider">Expiry</Label>
-                          <Input placeholder="MM/YY" className="h-12 text-base rounded-xl border-2" />
-                        </div>
-                        <div className="space-y-2">
-                          <Label className="text-xs font-black text-slate-600 uppercase tracking-wider">CVV</Label>
-                          <Input placeholder="***" type="password" className="h-12 text-base rounded-xl border-2" />
-                        </div>
-                      </div>
+                      <p className="text-sm font-black text-orange-600 uppercase tracking-wider mt-4">Scan to Pay</p>
                    </div>
                 )}
-
-                {selectedMethod === "UPI" && (
-                  <div className="space-y-4 text-center">
-                    <div className="p-6 bg-orange-50 rounded-2xl border-2 border-dashed border-orange-300">
-                       <div className="w-40 h-40 bg-white shadow-lg mx-auto rounded-xl flex items-center justify-center p-3 border-2 border-orange-100">
-                          <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=hyperkitchen@upi" alt="QR" className="w-full h-full" />
-                       </div>
-                       <p className="text-sm font-black text-orange-600 uppercase tracking-wider mt-4">Scan to Pay</p>
-                       <p className="text-xs text-slate-400 font-bold mt-1">Any UPI App</p>
-                    </div>
-                  </div>
-                )}
-
-                {selectedMethod === "CASH" && (
-                  <div className="py-8 text-center space-y-3 bg-gradient-to-br from-slate-50 to-orange-50 rounded-2xl border-2 border-orange-100">
-                    <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto shadow-md border-2 border-orange-100">
-                      <Banknote className="w-8 h-8 text-orange-500" strokeWidth={2} />
-                    </div>
-                    <div>
-                      <p className="font-black text-slate-800 text-xl uppercase italic">Ready to Order!</p>
-                      <p className="text-slate-500 text-sm font-bold px-6 mt-2 leading-relaxed">
-                        Pay at counter when collecting
-                      </p>
-                    </div> 
-                  </div>
-                )}
-
                 <Button 
-                  className="w-full h-14 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-black text-lg rounded-xl shadow-lg shadow-orange-200 transition-all active:scale-95 uppercase italic" 
+                  className="w-full h-14 bg-orange-500 hover:bg-orange-600 text-white font-black text-lg rounded-xl uppercase" 
                   onClick={handleConfirmOrder}
                 >
-                  Confirm Order <ArrowRight className="ml-2 w-6 h-6" strokeWidth={3} />
+                  Confirm Order <ArrowRight className="ml-2 w-6 h-6" />
                 </Button>
               </div>
             )}
@@ -332,25 +282,16 @@ export default function KioskPage() {
         </DialogContent>
       </Dialog>
 
-      {/* SUCCESS DIALOG - COMPACT */}
+      {/* Success Dialog */}
       <Dialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
-        <DialogContent className="sm:max-w-md rounded-2xl p-8 text-center border-2 border-green-200 shadow-xl bg-gradient-to-br from-white to-green-50">
-            <div className="bg-gradient-to-br from-green-100 to-emerald-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 animate-in zoom-in duration-500 shadow-lg border-2 border-white">
-              <CheckCircle2 className="w-12 h-12 text-green-600" strokeWidth={2.5} />
+        <DialogContent className="sm:max-w-md rounded-2xl p-8 text-center bg-white">
+            <CheckCircle2 className="w-16 h-16 text-green-600 mx-auto mb-4" />
+            <DialogTitle className="text-3xl font-black text-slate-900 tracking-tighter uppercase mb-2">Success!</DialogTitle>
+            <div className="my-6 p-6 bg-orange-50 rounded-2xl">
+               <p className="text-xs font-black text-orange-500 uppercase mb-2">Order Number</p>
+               <div className="text-5xl font-black text-orange-600 tracking-tighter">#{orderNumber}</div>
             </div>
-            <DialogTitle className="text-3xl font-black text-slate-900 tracking-tighter italic uppercase mb-2">Success!</DialogTitle>
-            <DialogDescription className="text-slate-500 text-base font-bold">
-              Your order is confirmed
-            </DialogDescription>
-            <div className="my-6 p-6 bg-gradient-to-br from-orange-50 to-orange-100 rounded-2xl border-2 border-white shadow-inner">
-               <p className="text-xs font-black text-orange-500 uppercase tracking-wider mb-2">Order Number</p>
-               <div className="text-5xl font-black text-orange-600 italic tracking-tighter drop-shadow-sm">#{orderNumber}</div>
-            </div>
-            <p className="text-slate-400 font-bold mb-4 text-sm">Show this at the counter</p>
-            <Button 
-              onClick={() => setShowSuccessDialog(false)} 
-              className="w-full h-14 bg-gradient-to-r from-slate-800 to-slate-900 hover:from-black hover:to-slate-800 rounded-xl text-lg font-black italic uppercase shadow-lg transition-all active:scale-95"
-            >
+            <Button onClick={() => setShowSuccessDialog(false)} className="w-full h-14 bg-slate-900 text-white font-black uppercase rounded-xl">
               Start New Order
             </Button>
         </DialogContent>
@@ -359,28 +300,17 @@ export default function KioskPage() {
   );
 }
 
-// Payment Option Component - Compact
-function PaymentOption({ icon, label, sub, onClick }: { 
-  icon: React.ReactNode; 
-  label: string; 
-  sub: string; 
-  onClick: () => void; 
-}) {
+function PaymentOption({ icon, label, sub, onClick }: { icon: React.ReactNode; label: string; sub: string; onClick: () => void; }) {
   return (
-    <button 
-      onClick={onClick}
-      className="flex items-center justify-between p-4 rounded-xl border-2 border-slate-100 hover:border-orange-500 hover:bg-orange-50/50 transition-all group active:scale-[0.97] w-full shadow-md hover:shadow-lg"
-    >
+    <button onClick={onClick} className="flex items-center justify-between p-4 rounded-xl border-2 border-slate-100 hover:border-orange-500 hover:bg-orange-50/50 transition-all w-full">
       <div className="flex items-center gap-3 text-left">
-        <div className="p-3 bg-slate-50 rounded-lg group-hover:bg-orange-500 group-hover:text-white text-slate-400 transition-all shadow-sm">
-          {icon}
-        </div>
+        <div className="p-3 bg-slate-50 rounded-lg text-slate-400">{icon}</div>
         <div>
-          <p className="font-black text-sm text-slate-800 uppercase tracking-tight italic leading-tight">{label}</p>
-          <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mt-0.5">{sub}</p>
+          <p className="font-black text-sm text-slate-800 uppercase leading-tight">{label}</p>
+          <p className="text-xs font-bold text-slate-400 uppercase mt-0.5">{sub}</p>
         </div>
       </div>
-      <ArrowRight className="w-5 h-5 text-slate-300 group-hover:text-orange-500 group-hover:translate-x-1 transition-all" strokeWidth={2.5} />
+      <ArrowRight className="w-5 h-5 text-slate-300" strokeWidth={2.5} />
     </button>
   );
 }
