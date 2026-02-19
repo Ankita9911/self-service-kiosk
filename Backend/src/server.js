@@ -3,7 +3,7 @@ import dotenv from "dotenv";
 import app from "./app.js";
 import connectMongo from "./config/mongo.js";
 import { initRealtime } from "./realtime/realtime.manager.js";
-import { seedSuperAdmin } from "./core/auth/seedSuperAdmin.js";
+//import { seedTestUsers } from "./core/auth/seedSuperAdmin.js";
 
 dotenv.config();
 const PORT = process.env.PORT || 3000;
@@ -14,8 +14,8 @@ async function bootstrap() {
     console.log("tarting Hyper Kitchen Hub Backend...");
     await connectMongo();
     console.log("MongoDB Connected");
-   await seedSuperAdmin();
-   console.log("seed super admin");
+   //await seedTestUsers();
+   //console.log("seed super admin");
     server = http.createServer(app);
     initRealtime(server);
     server.listen(PORT, () => {
