@@ -43,6 +43,7 @@ const userSchema = new Schema(
         "OUTLET_MANAGER",
         "KITCHEN_STAFF",
         "PICKUP_STAFF",
+        "KIOSK_DEVICE"
       ],
       index: true,
     },

@@ -6,6 +6,8 @@ import { authorize } from "./core/rbac/rbac.middleware.js";
 import { attachTenant } from "./core/tenancy/tenancy.middleware.js";
 import franchiseRoutes from "./modules/franchises/franchise.routes.js"
 import outletRoutes from "./modules/outlets/outlet.routes.js"
+import menuRoutes from "./modules/menu/menu.routes.js"
+import kioskRoutes from "./modules/kiosk/kiosk.routes.js"
 const router = express.Router();
 
 router.get(
@@ -22,5 +24,6 @@ router.get(
 router.use("/auth", authRoutes);
 router.use("/franchises", franchiseRoutes);
 router.use("/outlets", outletRoutes);
-
+router.use("/menu", menuRoutes);
+router.use("/kiosk", kioskRoutes);
 export default router;

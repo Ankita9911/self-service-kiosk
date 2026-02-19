@@ -1,0 +1,18 @@
+import express from "express";
+import { authenticate } from "../../core/auth/auth.middleware.js";
+import { attachTenant } from "../../core/tenancy/tenancy.middleware.js";
+import { authorize } from "../../core/rbac/rbac.middleware.js";
+import { PERMISSIONS } from "../../core/rbac/permissions.js";
+import * as controller from "./kiosk.controller.js";
+
+const router = express.Router();
+
+// Only KIOSK_DEVICE can access
+router.use(
+  authenticate,
+  attachTenant,
+  authorize(PERMISSIONS.ORDERS_CREATE)
+);
+
+router.get("/menu", controller.getMenu);
+export default router;

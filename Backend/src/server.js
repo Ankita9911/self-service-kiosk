@@ -3,7 +3,7 @@ import dotenv from "dotenv";
 import app from "./app.js";
 import connectMongo from "./config/mongo.js";
 import { initRealtime } from "./realtime/realtime.manager.js";
-//import { seedTestUsers } from "./core/auth/seedSuperAdmin.js";
+//import { seedKioskDevice } from "./core/auth/seedKioskDevice.js";
 
 dotenv.config();
 const PORT = process.env.PORT || 3000;
@@ -16,6 +16,8 @@ async function bootstrap() {
     console.log("MongoDB Connected");
    //await seedTestUsers();
    //console.log("seed super admin");
+   //await seedKioskDevice();
+  // console.log("device seeded ");
     server = http.createServer(app);
     initRealtime(server);
     server.listen(PORT, () => {

@@ -3,10 +3,7 @@ import Login from "@/pages/auth/Login";
 import ProtectedRoute from "./ProtectedRoute";
 import FranchisePage from "@/pages/super-admin/FranchisePage";
 import OutletPage from "@/pages/outlets/OutletPage";
-function Dashboard() {
-  return <h1 className="p-10">Dashboard</h1>;
-}
-
+import DashboardPage from "@/pages/dashboard/DashboardPage";
 export default function AppRoutes() {
   return (
     <Routes>
@@ -15,7 +12,7 @@ export default function AppRoutes() {
         path="/"
         element={
           <ProtectedRoute>
-            <Dashboard />
+            <DashboardPage />
           </ProtectedRoute>
         }
       />
