@@ -2,54 +2,40 @@ import mongoose from "mongoose";
 
 const { Schema } = mongoose;
 
-const userSchema = new Schema(
+const deviceSchema = new Schema(
   {
     franchiseId: {
       type: Schema.Types.ObjectId,
       ref: "Franchise",
-      required: false,
+      required: true,
       index: true,
     },
 
     outletId: {
       type: Schema.Types.ObjectId,
       ref: "Outlet",
-      required: false,
+      required: true,
       index: true,
     },
 
-    name: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-
-    email: {
+    deviceId: {
       type: String,
       required: true,
       unique: true,
-      lowercase: true,
+      uppercase: true,
       trim: true,
       index: true,
     },
 
-    passwordHash: {
+    deviceSecretHash: {
       type: String,
       required: true,
       select: false,
     },
 
-    role: {
+    name: {
       type: String,
-      required: true,
-      enum: [
-        "SUPER_ADMIN",
-        "FRANCHISE_ADMIN",
-        "OUTLET_MANAGER",
-        "KITCHEN_STAFF",
-        "PICKUP_STAFF",
-      ],
-      index: true,
+      trim: true,
     },
 
     status: {
@@ -59,23 +45,26 @@ const userSchema = new Schema(
       index: true,
     },
 
+    lastSeenAt: Date,
+    appVersion: String,
+    osVersion: String,
+    ipAddress: String,
+
     isDeleted: {
       type: Boolean,
       default: false,
       index: true,
     },
-    mustChangePassword: {
-  type: Boolean,
-  default: false,
-},
 
+    createdBy: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
   },
   { timestamps: true }
 );
 
-// Multi-tenant compound index
-userSchema.index({ franchiseId: 1, outletId: 1 });
+deviceSchema.index({ franchiseId: 1, outletId: 1 });
 
-const User = mongoose.model("User", userSchema);
-
-export default User;
+export default mongoose.model("Device", deviceSchema);

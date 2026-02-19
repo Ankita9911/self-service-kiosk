@@ -1,48 +1,58 @@
 import { useNavigate } from "react-router-dom";
 import useAuth from "@/hooks/useAuth";
+import { usePermission } from "@/hooks/usePermissions";
+import { PERMISSIONS } from "@/lib/permissions";
+
 import { Card, CardContent } from "@/components/ui/card";
-import { 
-  LayoutDashboard, 
-  Store, 
-  Users, 
-  ShieldCheck, 
-  Activity, 
-  ChevronRight 
+import {
+  LayoutDashboard,
+  Store,
+  Users,
+  ShieldCheck,
+  Activity,
+  ChevronRight,
 } from "lucide-react";
 
 export default function DashboardPage() {
   const { user } = useAuth();
+  const { hasPermission } = usePermission();
   const navigate = useNavigate();
 
   const cards = [
     {
       title: "Franchises",
       description: "Manage and monitor all registered franchise partners.",
-      roles: ["SUPER_ADMIN"],
+      permission: PERMISSIONS.FRANCHISE_VIEW,
       route: "/super-admin/franchises",
       icon: <Users className="w-6 h-6 text-orange-500" />,
     },
     {
       title: "Outlets",
       description: "Oversee operational kiosk outlets and performance.",
-      roles: ["SUPER_ADMIN", "FRANCHISE_ADMIN"],
+      permission: PERMISSIONS.OUTLET_VIEW,
       route: "/outlets",
       icon: <Store className="w-6 h-6 text-orange-500" />,
+    },
+    {
+      title: "Devices",
+      description: "Monitor and manage kiosk devices across outlets.",
+      permission: PERMISSIONS.DEVICE_VIEW,
+      route: "/devices",
+      icon: <Activity className="w-6 h-6 text-orange-500" />,
     },
   ];
 
   const visibleCards = cards.filter((card) =>
-    card.roles.includes(user?.role || "")
+    hasPermission(card.permission)
   );
 
   return (
     <div className="w-full min-h-screen bg-[#fafafa] text-slate-900">
-      {/* Top Decorative Bar */}
       <div className="h-1.5 w-full bg-linear-to-r from-orange-400 to-orange-600" />
 
       <div className="max-w-7xl mx-auto px-6 py-10 space-y-10">
-        
-        {/* ===== Header Section ===== */}
+
+        {/* ===== Header ===== */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200 pb-8">
           <div>
             <div className="flex items-center gap-2 mb-1">
@@ -55,47 +65,60 @@ export default function DashboardPage() {
               Dashboard
             </h1>
             <p className="text-slate-500 mt-1">
-              Welcome back, <span className="font-semibold text-slate-700">{user?.name}</span>. Here is your system overview.
+              Welcome back,{" "}
+              <span className="font-semibold text-slate-700">
+                {user?.name}
+              </span>
+              . Here is your system overview.
             </p>
           </div>
-          
+
           <div className="flex items-center gap-3 bg-white p-2 rounded-xl border border-slate-200 shadow-sm">
-             <div className="h-10 w-10 rounded-full bg-orange-100 flex items-center justify-center text-orange-700 font-bold">
-                {user?.name?.charAt(0) || 'A'}
-             </div>
-             <div className="pr-4">
-                <p className="text-xs text-slate-500 leading-none">Logged in as</p>
-                <p className="text-sm font-medium">{user?.role?.replace('_', ' ')}</p>
-             </div>
+            <div className="h-10 w-10 rounded-full bg-orange-100 flex items-center justify-center text-orange-700 font-bold">
+              {user?.name?.charAt(0) || "A"}
+            </div>
+            <div className="pr-4">
+              <p className="text-xs text-slate-500 leading-none">
+                Logged in as
+              </p>
+              <p className="text-sm font-medium">
+                {user?.role?.replace("_", " ")}
+              </p>
+            </div>
           </div>
         </div>
 
         {/* ===== Stats Section ===== */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <StatCard 
-            label="Your Role" 
-            value={user?.role?.replace('_', ' ') || "N/A"} 
-            icon={<ShieldCheck className="w-5 h-5 text-orange-500" />} 
+          <StatCard
+            label="Your Role"
+            value={user?.role?.replace("_", " ") || "N/A"}
+            icon={<ShieldCheck className="w-5 h-5 text-orange-500" />}
           />
-          <StatCard 
-            label="System Status" 
-            value="Operational" 
+          <StatCard
+            label="System Status"
+            value="Operational"
             subValue="All services online"
             statusColor="text-emerald-600"
-            icon={<Activity className="w-5 h-5 text-emerald-500" />} 
+            icon={<Activity className="w-5 h-5 text-emerald-500" />}
           />
-          <StatCard 
-            label="Access Level" 
-            value="Full Access" 
-            subValue="Verified Session"
-            icon={<ShieldCheck className="w-5 h-5 text-orange-500" />} 
+          <StatCard
+            label="Access Scope"
+            value={
+              hasPermission(PERMISSIONS.FRANCHISE_VIEW)
+                ? "Platform / Franchise"
+                : "Outlet Level"
+            }
+            icon={<ShieldCheck className="w-5 h-5 text-orange-500" />}
           />
         </div>
 
-        {/* ===== Action Cards ===== */}
+        {/* ===== Quick Access Cards ===== */}
         <div className="space-y-6">
           <div className="flex items-center gap-2">
-            <h2 className="text-xl font-bold text-slate-800">Quick Access</h2>
+            <h2 className="text-xl font-bold text-slate-800">
+              Quick Access
+            </h2>
             <div className="h-px flex-1 bg-slate-200 ml-4"></div>
           </div>
 
@@ -114,7 +137,7 @@ export default function DashboardPage() {
                       </div>
                       <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-orange-500 transform group-hover:translate-x-1 transition-all" />
                     </div>
-                    
+
                     <div className="mt-6 space-y-2">
                       <h3 className="text-xl font-bold text-slate-800 group-hover:text-orange-700 transition-colors">
                         {card.title}
@@ -124,14 +147,15 @@ export default function DashboardPage() {
                       </p>
                     </div>
 
-                    {/* Subtle decorative background element */}
                     <div className="absolute -bottom-4 -right-4 w-24 h-24 bg-orange-50 rounded-full opacity-50 group-hover:scale-150 transition-transform duration-700" />
                   </CardContent>
                 </Card>
               ))
             ) : (
               <div className="col-span-full py-12 text-center bg-slate-50 rounded-xl border-2 border-dashed border-slate-200">
-                <p className="text-slate-500">No management options available for your role.</p>
+                <p className="text-slate-500">
+                  No management options available for your access level.
+                </p>
               </div>
             )}
           </div>
@@ -141,20 +165,30 @@ export default function DashboardPage() {
   );
 }
 
-// Helper Component for Stats to keep code clean
-function StatCard({ label, value, subValue, icon, statusColor = "text-orange-600" }: any) {
+/* =========================
+   Stat Card Component
+========================= */
+function StatCard({
+  label,
+  value,
+  subValue,
+  icon,
+  statusColor = "text-orange-600",
+}: any) {
   return (
     <Card className="border-slate-200 bg-white shadow-sm overflow-hidden">
       <CardContent className="p-6">
         <div className="flex items-center justify-between mb-4">
-          <p className="text-sm font-medium text-slate-500 uppercase tracking-tight">{label}</p>
+          <p className="text-sm font-medium text-slate-500 uppercase tracking-tight">
+            {label}
+          </p>
           {icon}
         </div>
         <div>
-          <p className={`text-2xl font-bold ${statusColor}`}>
-            {value}
-          </p>
-          {subValue && <p className="text-xs text-slate-400 mt-1">{subValue}</p>}
+          <p className={`text-2xl font-bold ${statusColor}`}>{value}</p>
+          {subValue && (
+            <p className="text-xs text-slate-400 mt-1">{subValue}</p>
+          )}
         </div>
       </CardContent>
     </Card>

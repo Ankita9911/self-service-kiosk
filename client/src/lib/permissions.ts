@@ -1,25 +1,14 @@
-// core/rbac/permissions.js
-
 export const PERMISSIONS = {
-  // =============================
-  // Franchise (Platform Scope)
-  // =============================
   FRANCHISE_CREATE: "franchise:create",
   FRANCHISE_VIEW: "franchise:view",
   FRANCHISE_UPDATE: "franchise:update",
   FRANCHISE_DELETE: "franchise:delete",
 
-  // =============================
-  // Outlet (Tenant Scope)
-  // =============================
   OUTLET_CREATE: "outlet:create",
   OUTLET_VIEW: "outlet:view",
   OUTLET_UPDATE: "outlet:update",
   OUTLET_DELETE: "outlet:delete",
 
-  // =============================
-  // Users
-  // =============================
   USERS_CREATE: "users:create",
   USERS_VIEW: "users:view",
   USERS_UPDATE: "users:update",
@@ -28,19 +17,12 @@ export const PERMISSIONS = {
   USERS_CHANGE_STATUS: "users:changeStatus",
   USERS_RESET_PASSWORD: "users:resetPassword",
 
-  // =============================
-  // Devices (Kiosks)
-  // =============================
   DEVICE_CREATE: "device:create",
   DEVICE_VIEW: "device:view",
   DEVICE_UPDATE: "device:update",
   DEVICE_DELETE: "device:delete",
   DEVICE_MONITOR: "device:monitor",
-  DEVICE_HEARTBEAT: "device:heartbeat",
 
-  // =============================
-  // Business Modules
-  // =============================
   MENU_MANAGE: "menu:manage",
   INVENTORY_MANAGE: "inventory:manage",
 

@@ -1,38 +1,24 @@
-// core/rbac/roles.js
+import { PERMISSIONS } from "./permissions";
 
-import { PERMISSIONS } from "./permissions.js";
-
-export const ROLE_PERMISSIONS = {
-  // ==========================================
-  // SUPER_ADMIN (Platform Level Only)
-  // ==========================================
+export const ROLE_PERMISSIONS: Record<string, string[]> = {
   SUPER_ADMIN: [
     PERMISSIONS.FRANCHISE_CREATE,
     PERMISSIONS.FRANCHISE_VIEW,
     PERMISSIONS.FRANCHISE_UPDATE,
     PERMISSIONS.FRANCHISE_DELETE,
-
     PERMISSIONS.OUTLET_VIEW,
-
     PERMISSIONS.DEVICE_VIEW,
     PERMISSIONS.DEVICE_MONITOR,
-
     PERMISSIONS.USERS_VIEW,
-
     PERMISSIONS.ORDERS_VIEW,
   ],
 
-  // ==========================================
-  // FRANCHISE_ADMIN (Tenant Owner)
-  // ==========================================
   FRANCHISE_ADMIN: [
     PERMISSIONS.FRANCHISE_VIEW,
-
     PERMISSIONS.OUTLET_CREATE,
     PERMISSIONS.OUTLET_VIEW,
     PERMISSIONS.OUTLET_UPDATE,
     PERMISSIONS.OUTLET_DELETE,
-
     PERMISSIONS.USERS_CREATE,
     PERMISSIONS.USERS_VIEW,
     PERMISSIONS.USERS_UPDATE,
@@ -40,48 +26,32 @@ export const ROLE_PERMISSIONS = {
     PERMISSIONS.USERS_CHANGE_ROLE,
     PERMISSIONS.USERS_CHANGE_STATUS,
     PERMISSIONS.USERS_RESET_PASSWORD,
-
     PERMISSIONS.DEVICE_CREATE,
     PERMISSIONS.DEVICE_VIEW,
     PERMISSIONS.DEVICE_UPDATE,
     PERMISSIONS.DEVICE_DELETE,
     PERMISSIONS.DEVICE_MONITOR,
-
     PERMISSIONS.MENU_MANAGE,
     PERMISSIONS.INVENTORY_MANAGE,
-
     PERMISSIONS.ORDERS_VIEW,
   ],
 
-  // ==========================================
-  // OUTLET_MANAGER
-  // ==========================================
   OUTLET_MANAGER: [
     PERMISSIONS.OUTLET_VIEW,
-
     PERMISSIONS.USERS_VIEW,
-
     PERMISSIONS.DEVICE_VIEW,
     PERMISSIONS.DEVICE_UPDATE,
-
     PERMISSIONS.MENU_MANAGE,
     PERMISSIONS.INVENTORY_MANAGE,
-
     PERMISSIONS.ORDERS_VIEW,
     PERMISSIONS.ORDERS_UPDATE_STATUS,
   ],
 
-  // ==========================================
-  // KITCHEN_STAFF
-  // ==========================================
   KITCHEN_STAFF: [
     PERMISSIONS.ORDERS_VIEW,
     PERMISSIONS.ORDERS_UPDATE_STATUS,
   ],
 
-  // ==========================================
-  // PICKUP_STAFF
-  // ==========================================
   PICKUP_STAFF: [
     PERMISSIONS.ORDERS_VIEW,
   ],

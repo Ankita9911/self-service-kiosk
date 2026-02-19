@@ -1,4 +1,4 @@
-import { login } from "./auth.service.js";
+import { login,forceResetPassword } from "./auth.service.js";
 
 export async function loginController(req, res, next) {
   try {
@@ -12,5 +12,13 @@ export async function loginController(req, res, next) {
     });
   } catch (error) {
     next(error);
+  }
+}
+export async function forceResetPasswordController(req, res, next) {
+  try {
+    await forceResetPassword(req.user.userId, req.body.password);
+    res.json({ success: true });
+  } catch (err) {
+    next(err);
   }
 }

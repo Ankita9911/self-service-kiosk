@@ -7,22 +7,62 @@ import * as controller from "./menu.controller.js";
 
 const router = express.Router();
 
-router.use(
-  authenticate,
-  attachTenant,
-  authorize(PERMISSIONS.MENU_MANAGE)
+router.use(authenticate, attachTenant);
+
+// =========================
+// CATEGORY
+// =========================
+
+router.post(
+  "/categories",
+  authorize(PERMISSIONS.MENU_MANAGE),
+  controller.createCategory
 );
 
-// CATEGORY
-router.post("/categories", controller.createCategory);
-router.get("/categories", controller.getCategories);
-router.put("/categories/:id", controller.updateCategory);
-router.delete("/categories/:id", controller.deleteCategory);
+router.get(
+  "/categories",
+  authorize(PERMISSIONS.MENU_MANAGE), // later change to MENU_VIEW
+  controller.getCategories
+);
 
+router.put(
+  "/categories/:id",
+  authorize(PERMISSIONS.MENU_MANAGE),
+  controller.updateCategory
+);
+
+router.delete(
+  "/categories/:id",
+  authorize(PERMISSIONS.MENU_MANAGE),
+  controller.deleteCategory
+);
+
+// =========================
 // MENU ITEMS
-router.post("/items", controller.createMenuItem);
-router.get("/items", controller.getMenuItems);
-router.put("/items/:id", controller.updateMenuItem);
-router.delete("/items/:id", controller.deleteMenuItem);
+// =========================
+
+router.post(
+  "/items",
+  authorize(PERMISSIONS.MENU_MANAGE),
+  controller.createMenuItem
+);
+
+router.get(
+  "/items",
+  authorize(PERMISSIONS.MENU_MANAGE), // later change to MENU_VIEW
+  controller.getMenuItems
+);
+
+router.put(
+  "/items/:id",
+  authorize(PERMISSIONS.MENU_MANAGE),
+  controller.updateMenuItem
+);
+
+router.delete(
+  "/items/:id",
+  authorize(PERMISSIONS.MENU_MANAGE),
+  controller.deleteMenuItem
+);
 
 export default router;

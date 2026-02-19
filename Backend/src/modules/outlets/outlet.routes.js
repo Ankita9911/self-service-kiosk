@@ -14,12 +14,40 @@ import {
 const router = express.Router();
 
 router.use(authenticate);
-router.use(authorize(PERMISSIONS.OUTLET_MANAGE));
 
-router.post("/", createOutletController);
-router.get("/", getOutletsController);
-router.post("/get-one", getOutletByIdController);
-router.put("/", updateOutletController);
-router.delete("/", deleteOutletController);
+// Create Outlet
+router.post(
+  "/",
+  authorize(PERMISSIONS.OUTLET_CREATE),
+  createOutletController
+);
+
+// Get All Outlets
+router.get(
+  "/",
+  authorize(PERMISSIONS.OUTLET_VIEW),
+  getOutletsController
+);
+
+// Get One Outlet
+router.post(
+  "/get-one",
+  authorize(PERMISSIONS.OUTLET_VIEW),
+  getOutletByIdController
+);
+
+// Update Outlet
+router.put(
+  "/",
+  authorize(PERMISSIONS.OUTLET_UPDATE),
+  updateOutletController
+);
+
+// Delete Outlet
+router.delete(
+  "/",
+  authorize(PERMISSIONS.OUTLET_DELETE),
+  deleteOutletController
+);
 
 export default router;

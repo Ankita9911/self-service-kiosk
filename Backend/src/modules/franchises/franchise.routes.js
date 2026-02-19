@@ -14,13 +14,40 @@ import {
 const router = express.Router();
 
 router.use(authenticate);
-router.use(authorize(PERMISSIONS.FRANCHISE_MANAGE));
 
-router.post("/", createFranchiseController);
-router.get("/", getFranchisesController);
+// Create Franchise
+router.post(
+  "/",
+  authorize(PERMISSIONS.FRANCHISE_CREATE),
+  createFranchiseController
+);
 
-router.post("/get-one", getFranchiseByIdController);
-router.put("/", updateFranchiseController);
-router.delete("/", deleteFranchiseController);
+// Get All Franchises
+router.get(
+  "/",
+  authorize(PERMISSIONS.FRANCHISE_VIEW),
+  getFranchisesController
+);
+
+// Get One Franchise
+router.post(
+  "/get-one",
+  authorize(PERMISSIONS.FRANCHISE_VIEW),
+  getFranchiseByIdController
+);
+
+// Update Franchise
+router.put(
+  "/",
+  authorize(PERMISSIONS.FRANCHISE_UPDATE),
+  updateFranchiseController
+);
+
+// Delete Franchise
+router.delete(
+  "/",
+  authorize(PERMISSIONS.FRANCHISE_DELETE),
+  deleteFranchiseController
+);
 
 export default router;

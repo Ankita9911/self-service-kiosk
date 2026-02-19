@@ -1,47 +1,75 @@
 import { Routes, Route } from "react-router-dom";
 import Login from "@/pages/auth/Login";
-import ProtectedRoute from "./ProtectedRoute";
+import ForceReset from "@/pages/auth/ForceReset";
+
+import DashboardPage from "@/pages/dashboard/DashboardPage";
 import FranchisePage from "@/pages/super-admin/FranchisePage";
 import OutletPage from "@/pages/outlets/OutletPage";
-import DashboardPage from "@/pages/dashboard/DashboardPage";
-import KioskPage from "../pages/kiosk/KioskPage";
+import KioskPage from "@/pages/kiosk/KioskPage";
+
+import ProtectedRoute from "./ProtectedRoute";
+import AppLayout from "@/layout/AppLayout";
+import { PERMISSIONS } from "@/lib/permissions";
+import ResetPassword from "@/pages/auth/ResetPassword";
 
 export default function AppRoutes() {
   return (
     <Routes>
+      {/* Public */}
       <Route path="/login" element={<Login />} />
+
+      {/* 🔐 Force Reset (Protected but no layout) */}
       <Route
-        path="/"
+        path="/force-reset"
         element={
           <ProtectedRoute>
-            <DashboardPage />
+            <ForceReset />
           </ProtectedRoute>
         }
       />
+     
+      {/* 🔐 All Main App Routes (With Layout) */}
       <Route
-        path="/super-admin/franchises"
-        element={
-          <ProtectedRoute allowedRoles={["SUPER_ADMIN"]}>
-            <FranchisePage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/outlets"
-        element={
-          <ProtectedRoute allowedRoles={["SUPER_ADMIN", "FRANCHISE_ADMIN"]}>
-            <OutletPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/kiosk"
         element={
           <ProtectedRoute>
-            <KioskPage />
+            <AppLayout />
           </ProtectedRoute>
         }
-      />
+      >
+        <Route path="/" element={<DashboardPage />} />
+         <Route
+  path="/reset-password"
+  element={
+    <ProtectedRoute>
+      <ResetPassword />
+    </ProtectedRoute>
+  }
+/>
+
+        <Route
+          path="/super-admin/franchises"
+          element={
+            <ProtectedRoute
+              requiredPermission={PERMISSIONS.FRANCHISE_VIEW}
+            >
+              <FranchisePage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/outlets"
+          element={
+            <ProtectedRoute
+              requiredPermission={PERMISSIONS.OUTLET_VIEW}
+            >
+              <OutletPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route path="/kiosk" element={<KioskPage />} />
+      </Route>
     </Routes>
   );
 }

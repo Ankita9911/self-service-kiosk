@@ -1,31 +1,37 @@
-import { Navigate } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
 import useAuth from "@/hooks/useAuth";
+import { usePermission } from "@/hooks/usePermissions";
 
-interface ProtectedRouteProps {
+interface Props {
   children: React.ReactNode;
-  allowedRoles?: string[];
+  requiredPermission?: string;
 }
 
 export default function ProtectedRoute({
   children,
-  allowedRoles,
-}: ProtectedRouteProps) {
+  requiredPermission,
+}: Props) {
   const { user, loading } = useAuth();
+  const { hasPermission } = usePermission();
+  const location = useLocation();
 
-  if (loading) {
-    return null; // or loading spinner
-  }
+  if (loading) return null;
 
-  // Not logged in
+  // 🔐 Not logged in
   if (!user) {
     return <Navigate to="/login" replace />;
   }
 
-  // Role restriction exists
+  // 🔐 Force password reset (block everything except reset page)
   if (
-    allowedRoles &&
-    !allowedRoles.includes(user.role)
+    user.mustChangePassword &&
+    location.pathname !== "/force-reset"
   ) {
+    return <Navigate to="/force-reset" replace />;
+  }
+
+  // 🔐 Permission enforcement
+  if (requiredPermission && !hasPermission(requiredPermission)) {
     return <Navigate to="/" replace />;
   }
 

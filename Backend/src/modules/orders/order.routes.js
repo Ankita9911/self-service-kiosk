@@ -7,12 +7,13 @@ import * as controller from "./order.controller.js";
 
 const router = express.Router();
 
-router.use(
-  authenticate,
-  attachTenant,
-  authorize(PERMISSIONS.ORDERS_CREATE)
-);
+router.use(authenticate, attachTenant);
 
-router.post("/", controller.createOrder);
+// Create Order
+router.post(
+  "/",
+  authorize(PERMISSIONS.ORDERS_CREATE),
+  controller.createOrder
+);
 
 export default router;
