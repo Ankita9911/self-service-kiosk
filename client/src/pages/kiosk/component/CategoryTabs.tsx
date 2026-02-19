@@ -18,7 +18,7 @@ export default function CategoryTabs({ categories, selectedCategory, onCategoryC
               onClick={() => onCategoryChange(category._id)}
               className={`
                 px-6 py-3 rounded-xl font-black text-base uppercase tracking-tight
-                transition-all duration-300 whitespace-nowrap min-w-[140px]
+                transition-all duration-300 whitespace-nowrap min-w-35
                 ${isActive 
                   ? 'bg-orange-500 text-white shadow-lg shadow-orange-200' 
                   : 'bg-slate-50 text-slate-400 hover:bg-slate-100 hover:text-slate-600'

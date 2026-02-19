@@ -11,7 +11,7 @@ export function initDB(): Promise<IDBDatabase> {
 
     request.onupgradeneeded = (event) => {
       const database = request.result;
-
+      console.log(event.timeStamp)
       if (!database.objectStoreNames.contains("menuStore")) {
         database.createObjectStore("menuStore", { keyPath: "key" });
       }

@@ -45,7 +45,7 @@ export default function MenuGrid({ items, cart, onAddToCart, onUpdateQuantity }:
                 ) : (
                   <div className="flex items-center gap-2 bg-white rounded-xl p-1 shadow-md border-2 border-orange-100">
                     <button onClick={() => onUpdateQuantity(item._id, -1)} className="w-8 h-8 rounded-lg bg-slate-50 text-slate-600 flex items-center justify-center"><Minus className="w-4 h-4" /></button>
-                    <span className="text-lg font-black text-slate-800 min-w-[2rem] text-center">{quantity}</span>
+                    <span className="text-lg font-black text-slate-800 `min-w-8 text-center">{quantity}</span>
                     <button onClick={() => onAddToCart(item)} disabled={quantity >= item.stockQuantity} className={`w-8 h-8 rounded-lg flex items-center justify-center ${quantity >= item.stockQuantity ? 'bg-slate-100 text-slate-300' : 'bg-orange-500 text-white'}`}><Plus className="w-4 h-4" /></button>
                   </div>
                 )}

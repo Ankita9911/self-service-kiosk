@@ -131,7 +131,7 @@ export default function OutletPage() {
 
   return (
     <div className="w-full min-h-screen bg-[#fafafa]">
-      <div className="h-1.5 w-full bg-gradient-to-r from-orange-400 to-orange-600" />
+      <div className="h-1.5 w-full bg-linear-to-r from-orange-400 to-orange-600" />
 
       <div className="max-w-7xl mx-auto px-6 py-10 space-y-8">
         
@@ -238,7 +238,7 @@ export default function OutletPage() {
                       </TableCell>
 
                       <TableCell className="text-right pr-6">
-                        <div className="flex items-center justify-end min-h-[32px]">
+                        <div className="flex items-center justify-end min-h-8">
                           {/* Hover Actions */}
                           <div className="hidden group-hover:flex items-center gap-2">
                             <Button
@@ -275,7 +275,7 @@ export default function OutletPage() {
 
         {/* Modal Content */}
         <Dialog open={open} onOpenChange={setOpen}>
-          <DialogContent className="sm:max-w-[425px]">
+          <DialogContent className="sm:max-w-106.25">
             <DialogHeader>
               <DialogTitle className="text-2xl font-bold">
                 {editing ? "Edit Outlet" : "Create New Outlet"}

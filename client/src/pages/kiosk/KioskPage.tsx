@@ -27,11 +27,8 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogHeader,
   DialogTitle,
 } from "../../components/ui/dialog";
-import { Input } from "../../components/ui/input";
-import { Label } from "../../components/ui/label";
 
 type PaymentStep = "SELECTION" | "DETAILS";
 
@@ -133,13 +130,13 @@ export default function KioskPage() {
   const totalPrice = cart.reduce((acc, i) => acc + (i.price * i.quantity), 0);
 
   return (
-    <div className="h-screen flex flex-row bg-gradient-to-br from-orange-50 via-white to-orange-50 overflow-hidden">
+    <div className="h-screen flex flex-row bg-linear-to-br from-orange-50 via-white to-orange-50 overflow-hidden">
       
       {/* LEFT COLUMN: HEADER, CATEGORIES, MENU */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         <header className="relative h-20 w-full flex items-center justify-between px-8 overflow-hidden shrink-0 border-b-2 border-orange-100">
           <div 
-            className="absolute inset-0 w-full h-full bg-gradient-to-r from-orange-600 via-orange-500 to-orange-600"
+            className="absolute inset-0 w-full h-full bg-linear-to-r from-orange-600 via-orange-500 to-orange-600"
             style={{ 
               backgroundImage: 'url("https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=1200")',
               backgroundSize: 'cover',
@@ -147,7 +144,7 @@ export default function KioskPage() {
               opacity: 0.15
             }}
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-orange-500 to-orange-600 opacity-90" />
+          <div className="absolute inset-0 bg-linear-to-r from-orange-500 to-orange-600 opacity-90" />
           
           <div className="relative z-10">
             <h1 className="text-3xl font-black text-white tracking-tighter uppercase leading-none drop-shadow-lg">
@@ -187,8 +184,8 @@ export default function KioskPage() {
 
       {/* RIGHT COLUMN: FULL HEIGHT CART */}
       {isCartOpen && (
-        <aside className="w-[400px] h-full bg-white flex flex-col border-l-2 border-orange-100 shadow-lg transition-all duration-300 z-20">
-          <div className="p-4 border-b-2 border-orange-100 bg-gradient-to-r from-orange-500 to-orange-600">
+        <aside className="w-100 h-full bg-white flex flex-col border-l-2 border-orange-100 shadow-lg transition-all duration-300 z-20">
+          <div className="p-4 border-b-2 border-orange-100 bg-linear-to-r from-orange-500 to-orange-600">
             <div className="flex items-center gap-3 justify-between">
               {/* <div className="p-2 bg-white/20 backdrop-blur-sm rounded-xl">
                 <ShoppingBag className="text-white w-5 h-5" strokeWidth={2.5} />
@@ -220,8 +217,8 @@ export default function KioskPage() {
 
       {/* Payment Dialog */}
       <Dialog open={showPaymentDialog} onOpenChange={setShowPaymentDialog}>
-        <DialogContent className="sm:max-w-[480px] p-0 overflow-hidden rounded-2xl border-2 border-orange-200 shadow-xl">
-          <div className="bg-gradient-to-br from-orange-500 to-orange-600 p-6 text-white relative overflow-hidden">
+        <DialogContent className="`sm:max-w-120 p-0 overflow-hidden rounded-2xl border-2 border-orange-200 shadow-xl">
+          <div className="bg-linear-to-br from-orange-500 to-orange-600 p-6 text-white relative overflow-hidden">
             <DialogTitle className="text-2xl font-black tracking-tight uppercase">Checkout</DialogTitle>
             <DialogDescription className="text-orange-100 font-bold text-sm mt-2">
               Total: <span className="text-white text-xl ml-2 font-black">₹{(totalPrice * 1.05).toFixed(2)}</span>

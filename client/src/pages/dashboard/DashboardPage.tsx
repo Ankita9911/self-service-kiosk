@@ -38,7 +38,7 @@ export default function DashboardPage() {
   return (
     <div className="w-full min-h-screen bg-[#fafafa] text-slate-900">
       {/* Top Decorative Bar */}
-      <div className="h-1.5 w-full bg-gradient-to-r from-orange-400 to-orange-600" />
+      <div className="h-1.5 w-full bg-linear-to-r from-orange-400 to-orange-600" />
 
       <div className="max-w-7xl mx-auto px-6 py-10 space-y-10">
         

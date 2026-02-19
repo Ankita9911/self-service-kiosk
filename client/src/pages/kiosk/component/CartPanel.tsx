@@ -57,7 +57,7 @@ export default function CartPanel({
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 bg-white rounded-lg p-0.5 shadow-sm">
                 <button onClick={() => onUpdateQuantity(item.itemId, -1)} className="w-8 h-8 rounded-md bg-slate-50 text-slate-600 flex items-center justify-center"><Minus className="w-4 h-4" /></button>
-                <span className="text-lg font-black text-slate-800 min-w-[2rem] text-center">{item.quantity}</span>
+                <span className="text-lg font-black text-slate-800 min-w-8 text-center">{item.quantity}</span>
                 <button onClick={() => onUpdateQuantity(item.itemId, 1)} disabled={item.quantity >= item.stockQuantity} className={`w-8 h-8 rounded-md flex items-center justify-center ${item.quantity >= item.stockQuantity ? 'bg-slate-100 text-slate-300' : 'bg-orange-500 text-white'}`}><Plus className="w-4 h-4" /></button>
               </div>
               <div className="text-right">

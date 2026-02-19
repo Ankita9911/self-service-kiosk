@@ -112,7 +112,7 @@ export default function FranchisePage() {
 
   return (
     <div className="w-full min-h-screen bg-[#fafafa]">
-      <div className="h-1.5 w-full bg-gradient-to-r from-orange-400 to-orange-600" />
+      <div className="h-1.5 w-full bg-linear-to-r from-orange-400 to-orange-600" />
 
       <div className="max-w-7xl mx-auto px-6 py-10 space-y-8">
         
@@ -206,7 +206,7 @@ export default function FranchisePage() {
                         </span>
                       </TableCell>
 
-                      <TableCell className="text-right pr-6 min-w-[140px]">
+                      <TableCell className="text-right pr-6 min-w-35">
                         {/* Container for alignment fix */}
                         <div className="flex items-center justify-end h-full">
                           {/* Hover Actions */}
@@ -245,7 +245,7 @@ export default function FranchisePage() {
 
         {/* Modal Form - Phone Number Removed */}
         <Dialog open={open} onOpenChange={setOpen}>
-          <DialogContent className="sm:max-w-[425px]">
+          <DialogContent className="sm:max-w-106.25">
             <DialogHeader>
               <DialogTitle className="text-2xl font-bold">
                 {editing ? "Update Franchise" : "Register Franchise"}
