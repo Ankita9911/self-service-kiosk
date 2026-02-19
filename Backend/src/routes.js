@@ -8,7 +8,9 @@ import franchiseRoutes from "./modules/franchises/franchise.routes.js"
 import outletRoutes from "./modules/outlets/outlet.routes.js"
 import menuRoutes from "./modules/menu/menu.routes.js"
 import kioskRoutes from "./modules/kiosk/kiosk.routes.js"
+import orderRoutes from "./modules/orders/order.routes.js"
 const router = express.Router();
+
 
 router.get(
   "/tenant-test",
@@ -26,4 +28,5 @@ router.use("/franchises", franchiseRoutes);
 router.use("/outlets", outletRoutes);
 router.use("/menu", menuRoutes);
 router.use("/kiosk", kioskRoutes);
+router.use("/orders", orderRoutes);
 export default router;
