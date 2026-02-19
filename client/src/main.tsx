@@ -1,16 +1,21 @@
-// import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import './index.css'
-// import App from './App.tsx'
+import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import { AuthProvider } from "@/context/AuthContext";
 import AppRoutes from "@/routes/AppRoutes";
+import { initDB } from "@/lib/indexdb";
 import "./index.css";
 
-createRoot(document.getElementById('root')!).render(
- <BrowserRouter>
-    <AuthProvider>
-      <AppRoutes />
-    </AuthProvider>
-  </BrowserRouter>
-)
+async function bootstrap() {
+  await initDB();
+  console.log("IndexedDB initialized");
+
+  createRoot(document.getElementById("root")!).render(
+    <BrowserRouter>
+      <AuthProvider>
+        <AppRoutes />
+      </AuthProvider>
+    </BrowserRouter>
+  );
+}
+
+bootstrap();

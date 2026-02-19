@@ -4,6 +4,8 @@ import ProtectedRoute from "./ProtectedRoute";
 import FranchisePage from "@/pages/super-admin/FranchisePage";
 import OutletPage from "@/pages/outlets/OutletPage";
 import DashboardPage from "@/pages/dashboard/DashboardPage";
+import KioskPage from "../pages/kiosk/KioskPage";
+
 export default function AppRoutes() {
   return (
     <Routes>
@@ -29,6 +31,14 @@ export default function AppRoutes() {
         element={
           <ProtectedRoute allowedRoles={["SUPER_ADMIN", "FRANCHISE_ADMIN"]}>
             <OutletPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/kiosk"
+        element={
+          <ProtectedRoute>
+            <KioskPage />
           </ProtectedRoute>
         }
       />
