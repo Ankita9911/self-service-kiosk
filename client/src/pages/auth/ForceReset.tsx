@@ -18,16 +18,8 @@ export default function ForceReset() {
       await axios.post("/auth/force-reset-password", {
         password,
       });
-
-      const stored = localStorage.getItem("user");
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        localStorage.setItem(
-          "user",
-          JSON.stringify({ ...parsed, mustChangePassword: false })
-        );
-      }
-      navigate("/", { replace: true });
+      logout();
+      navigate("/login", { replace: true });
     } catch (err: unknown) {
       const msg =
         (err as { response?: { data?: { error?: { message?: string } } } })

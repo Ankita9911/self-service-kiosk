@@ -32,9 +32,10 @@ export const NAV_ITEMS = [
     permission: PERMISSIONS.DEVICE_VIEW,
   },
   {
-  label: "Users",
-  path: "/users",
-  permission: PERMISSIONS.USERS_VIEW,
-}
+    label: "Users",
+    path: "/users",
+    icon: Users,
+    permission: PERMISSIONS.USERS_VIEW,
+  },
 
 ];

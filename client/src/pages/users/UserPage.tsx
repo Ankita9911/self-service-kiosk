@@ -258,9 +258,6 @@ export default function UserPage() {
                       <option value="PICKUP_STAFF">
                         Pickup Staff
                       </option>
-                      <option value="KIOSK_DEVICE">
-                        Kiosk Device
-                      </option>
                     </>
                   )}
 
