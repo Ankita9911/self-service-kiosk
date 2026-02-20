@@ -31,4 +31,10 @@ export const NAV_ITEMS = [
     icon: Activity,
     permission: PERMISSIONS.DEVICE_VIEW,
   },
+  {
+  label: "Users",
+  path: "/users",
+  permission: PERMISSIONS.USERS_VIEW,
+}
+
 ];

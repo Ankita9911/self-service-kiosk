@@ -1,8 +1,10 @@
 export interface User {
-  id: string;
+  _id: string;
   name: string;
   email: string;
   role: string;
-  franchiseId: string | null;
-  outletId: string | null;
+  status: "ACTIVE" | "INACTIVE";
+  franchiseId?: string | null;
+  outletId?: string | null;
+  mustChangePassword?: boolean;
 }

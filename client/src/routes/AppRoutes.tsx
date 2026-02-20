@@ -11,6 +11,7 @@ import ProtectedRoute from "./ProtectedRoute";
 import AppLayout from "@/layout/AppLayout";
 import { PERMISSIONS } from "@/lib/permissions";
 import ResetPassword from "@/pages/auth/ResetPassword";
+import UserPage from "@/pages/users/UserPage";
 
 export default function AppRoutes() {
   return (
@@ -27,7 +28,7 @@ export default function AppRoutes() {
           </ProtectedRoute>
         }
       />
-     
+
       {/* 🔐 All Main App Routes (With Layout) */}
       <Route
         element={
@@ -36,22 +37,29 @@ export default function AppRoutes() {
           </ProtectedRoute>
         }
       >
+        <Route
+          path="/users"
+          element={
+            <ProtectedRoute>
+              <UserPage />
+            </ProtectedRoute>
+          }
+        />
+
         <Route path="/" element={<DashboardPage />} />
-         <Route
-  path="/reset-password"
-  element={
-    <ProtectedRoute>
-      <ResetPassword />
-    </ProtectedRoute>
-  }
-/>
+        <Route
+          path="/reset-password"
+          element={
+            <ProtectedRoute>
+              <ResetPassword />
+            </ProtectedRoute>
+          }
+        />
 
         <Route
           path="/super-admin/franchises"
           element={
-            <ProtectedRoute
-              requiredPermission={PERMISSIONS.FRANCHISE_VIEW}
-            >
+            <ProtectedRoute requiredPermission={PERMISSIONS.FRANCHISE_VIEW}>
               <FranchisePage />
             </ProtectedRoute>
           }
@@ -60,9 +68,7 @@ export default function AppRoutes() {
         <Route
           path="/outlets"
           element={
-            <ProtectedRoute
-              requiredPermission={PERMISSIONS.OUTLET_VIEW}
-            >
+            <ProtectedRoute requiredPermission={PERMISSIONS.OUTLET_VIEW}>
               <OutletPage />
             </ProtectedRoute>
           }

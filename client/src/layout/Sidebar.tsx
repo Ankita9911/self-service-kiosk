@@ -30,8 +30,8 @@ export default function Sidebar() {
                 }`
               }
             >
-              <Icon className="w-4 h-4" />
-              {item.label}
+              {Icon && <Icon className="w-4 h-4" />}
+      {item.label}
             </NavLink>
           );
         })}
