@@ -4,14 +4,11 @@ import AppError from "../../shared/errors/AppError.js";
 import { generateToken } from "./jwt.service.js";
 
 const SALT_ROUNDS = 10;
-
-/* =========================================
-   LOGIN
-========================================= */
 export async function login({ email, password }) {
   // 1️⃣ Fetch user first
   const user = await User.findOne({ email, isDeleted: false })
     .select("+passwordHash");
+  console.log("user",user);
   if (!user) {
     throw new AppError("Invalid credentials", 401, "INVALID_CREDENTIALS");
   }
@@ -20,18 +17,14 @@ export async function login({ email, password }) {
     throw new AppError("Account is inactive", 403, "ACCOUNT_INACTIVE");
   }
 
-  // 2️⃣ Compare password
-  
-//const isMatch = await bcrypt.compare(password, user.passwordHash);
- const isMatch=true;
+const isMatch = await bcrypt.compare(password, user.passwordHash);
   if (!isMatch) {
     throw new AppError("Invalid credentials", 401, "INVALID_CREDENTIALS");
   }
 
-  // 3️⃣ Generate token
+
   const token = generateToken(user);
 
-  // 4️⃣ Return response including mustChangePassword
   return {
     token,
     user: {
@@ -46,9 +39,7 @@ export async function login({ email, password }) {
   };
 }
 
-/* =========================================
-   FORCE RESET PASSWORD
-========================================= */
+
 export async function forceResetPassword(userId, newPassword) {
   const user = await User.findById(userId).select("+passwordHash");
 
