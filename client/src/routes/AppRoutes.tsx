@@ -30,6 +30,16 @@ export default function AppRoutes() {
         }
       />
 
+      {/* 🔐 Kiosk (Protected but no layout - full screen) */}
+      <Route
+        path="/kiosk"
+        element={
+          <ProtectedRoute>
+            <KioskPage />
+          </ProtectedRoute>
+        }
+      />
+
       {/* 🔐 All Main App Routes (With Layout) */}
       <Route
         element={
@@ -83,8 +93,6 @@ export default function AppRoutes() {
             </ProtectedRoute>
           }
         />
-
-        <Route path="/kiosk" element={<KioskPage />} />
       </Route>
     </Routes>
   );

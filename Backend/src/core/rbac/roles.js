@@ -69,4 +69,9 @@ export const ROLE_PERMISSIONS = {
   PICKUP_STAFF: [
     PERMISSIONS.ORDERS_VIEW,
   ],
+
+  // Kiosk devices (device login, not user) – can create orders only
+  KIOSK_DEVICE: [
+    PERMISSIONS.ORDERS_CREATE,
+  ],
 };
