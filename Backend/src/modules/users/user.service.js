@@ -35,8 +35,15 @@ function ensureSameTenant(currentUser, targetUser) {
    Create User
 ------------------------------------------------------- */
 
+const OUTLET_SCOPED_ROLES = [
+  "OUTLET_MANAGER",
+  "KITCHEN_STAFF",
+  "PICKUP_STAFF",
+  "KIOSK_DEVICE",
+];
+
 export async function createUser(currentUser, payload) {
-  const { name, email, role, outletId } = payload;
+  const { name, email, role, franchiseId: payloadFranchiseId, outletId: payloadOutletId } = payload;
 
   ensureHigherRole(currentUser.role, role);
 
@@ -45,14 +52,34 @@ export async function createUser(currentUser, payload) {
     throw new AppError("Email already exists", 400);
   }
 
-  const tempPassword = generateTempPassword();
-  const passwordHash = await bcrypt.hash(tempPassword, SALT_ROUNDS);
-
-  let franchiseId = currentUser.franchiseId;
+  let franchiseId = currentUser.franchiseId || null;
+  let outletId = payloadOutletId || null;
 
   if (currentUser.role === "SUPER_ADMIN") {
-    franchiseId = payload.franchiseId;
+    // SUPER_ADMIN must provide franchiseId for any non–platform-level user
+    if (role !== "SUPER_ADMIN" && !payloadFranchiseId) {
+      throw new AppError("Franchise is required when creating this role", 400);
+    }
+    franchiseId = payloadFranchiseId || null;
+    if (OUTLET_SCOPED_ROLES.includes(role) && !payloadOutletId) {
+      throw new AppError("Outlet is required for this role", 400);
+    }
+    outletId = payloadOutletId || null;
+  } else if (currentUser.role === "FRANCHISE_ADMIN") {
+    franchiseId = currentUser.franchiseId;
+    if (OUTLET_SCOPED_ROLES.includes(role)) {
+      if (!payloadOutletId) {
+        throw new AppError("Outlet is required for this role", 400);
+      }
+      outletId = payloadOutletId;
+    }
+  } else if (currentUser.role === "OUTLET_MANAGER") {
+    franchiseId = currentUser.franchiseId;
+    outletId = currentUser.outletId;
   }
+
+  const tempPassword = generateTempPassword();
+  const passwordHash = await bcrypt.hash(tempPassword, SALT_ROUNDS);
 
   const user = await User.create({
     name,
@@ -60,7 +87,7 @@ export async function createUser(currentUser, payload) {
     passwordHash,
     role,
     franchiseId,
-    outletId: outletId || null,
+    outletId,
     mustChangePassword: true,
   });
 

@@ -5,6 +5,7 @@ import ForceReset from "@/pages/auth/ForceReset";
 import DashboardPage from "@/pages/dashboard/DashboardPage";
 import FranchisePage from "@/pages/super-admin/FranchisePage";
 import OutletPage from "@/pages/outlets/OutletPage";
+import DevicePage from "@/pages/devices/DevicePage";
 import KioskPage from "@/pages/kiosk/KioskPage";
 
 import ProtectedRoute from "./ProtectedRoute";
@@ -70,6 +71,15 @@ export default function AppRoutes() {
           element={
             <ProtectedRoute requiredPermission={PERMISSIONS.OUTLET_VIEW}>
               <OutletPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/devices"
+          element={
+            <ProtectedRoute requiredPermission={PERMISSIONS.DEVICE_VIEW}>
+              <DevicePage />
             </ProtectedRoute>
           }
         />

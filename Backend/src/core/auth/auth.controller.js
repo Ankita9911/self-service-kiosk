@@ -1,4 +1,5 @@
-import { login,forceResetPassword } from "./auth.service.js";
+import AppError from "../../shared/errors/AppError.js";
+import { login, forceResetPassword } from "./auth.service.js";
 
 export async function loginController(req, res, next) {
   try {
@@ -16,7 +17,12 @@ export async function loginController(req, res, next) {
 }
 export async function forceResetPasswordController(req, res, next) {
   try {
-    await forceResetPassword(req.user.userId, req.body.password);
+    const userId = req.user?.userId ?? req.user?.id;
+    const newPassword = req.body?.password;
+    if (!userId || !newPassword || typeof newPassword !== "string") {
+      return next(new AppError("New password is required", 400));
+    }
+    await forceResetPassword(String(userId), newPassword);
     res.json({ success: true });
   } catch (err) {
     next(err);

@@ -3,9 +3,7 @@
 import { PERMISSIONS } from "./permissions.js";
 
 export const ROLE_PERMISSIONS = {
-  // ==========================================
-  // SUPER_ADMIN (Platform Level Only)
-  // ==========================================
+
   SUPER_ADMIN: [
     PERMISSIONS.FRANCHISE_CREATE,
     PERMISSIONS.FRANCHISE_VIEW,
@@ -17,14 +15,13 @@ export const ROLE_PERMISSIONS = {
     PERMISSIONS.DEVICE_VIEW,
     PERMISSIONS.DEVICE_MONITOR,
 
+    PERMISSIONS.USERS_CREATE,
     PERMISSIONS.USERS_VIEW,
 
     PERMISSIONS.ORDERS_VIEW,
   ],
 
-  // ==========================================
-  // FRANCHISE_ADMIN (Tenant Owner)
-  // ==========================================
+
   FRANCHISE_ADMIN: [
     PERMISSIONS.FRANCHISE_VIEW,
 
@@ -53,9 +50,7 @@ export const ROLE_PERMISSIONS = {
     PERMISSIONS.ORDERS_VIEW,
   ],
 
-  // ==========================================
-  // OUTLET_MANAGER
-  // ==========================================
+
   OUTLET_MANAGER: [
     PERMISSIONS.OUTLET_VIEW,
 
@@ -71,17 +66,12 @@ export const ROLE_PERMISSIONS = {
     PERMISSIONS.ORDERS_UPDATE_STATUS,
   ],
 
-  // ==========================================
-  // KITCHEN_STAFF
-  // ==========================================
+ 
   KITCHEN_STAFF: [
     PERMISSIONS.ORDERS_VIEW,
     PERMISSIONS.ORDERS_UPDATE_STATUS,
   ],
 
-  // ==========================================
-  // PICKUP_STAFF
-  // ==========================================
   PICKUP_STAFF: [
     PERMISSIONS.ORDERS_VIEW,
   ],

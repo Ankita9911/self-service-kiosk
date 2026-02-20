@@ -17,6 +17,13 @@ export async function createDevice(currentUser, payload) {
 
   const { outletId, name } = payload;
 
+  if (!outletId) {
+    throw new AppError("Outlet is required when creating a device", 400);
+  }
+  if (!currentUser.franchiseId) {
+    throw new AppError("Franchise context is required", 403);
+  }
+
   const deviceId = crypto.randomUUID().toUpperCase();
   const plainSecret = generateSecret();
   const deviceSecretHash = await bcrypt.hash(plainSecret, SALT_ROUNDS);
@@ -26,7 +33,7 @@ export async function createDevice(currentUser, payload) {
     outletId,
     deviceId,
     deviceSecretHash,
-    name,
+    name: name || null,
     createdBy: currentUser.userId,
   });
 
