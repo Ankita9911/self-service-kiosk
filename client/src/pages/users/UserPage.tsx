@@ -9,28 +9,10 @@ import { getOutlets } from "@/services/outlet.service";
 import type { Franchise } from "@/types/franchise.types";
 import type { Outlet } from "@/types/outlet.types";
 
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-
-import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent } from "@/components/ui/card";
-
-import { Users, Plus, Loader2 } from "lucide-react";
+import { Users, Plus, Search, Copy, Check, KeyRound, X, RefreshCcw, ShieldAlert } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 const OUTLET_SCOPED_ROLES = ["OUTLET_MANAGER", "KITCHEN_STAFF", "PICKUP_STAFF", "KIOSK_DEVICE"];
 
@@ -42,41 +24,294 @@ interface User {
   status: string;
 }
 
+/* ── Role badge colors ── */
+const ROLE_STYLES: Record<string, string> = {
+  SUPER_ADMIN: "bg-purple-50 text-purple-700 border-purple-200",
+  FRANCHISE_ADMIN: "bg-blue-50 text-blue-700 border-blue-200",
+  OUTLET_MANAGER: "bg-orange-50 text-orange-700 border-orange-200",
+  KITCHEN_STAFF: "bg-amber-50 text-amber-700 border-amber-200",
+  PICKUP_STAFF: "bg-teal-50 text-teal-700 border-teal-200",
+  KIOSK_DEVICE: "bg-slate-100 text-slate-600 border-slate-200",
+};
+
+function RoleBadge({ role }: { role: string }) {
+  const style = ROLE_STYLES[role] || "bg-slate-100 text-slate-600 border-slate-200";
+  return (
+    <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-clash-semibold border ${style}`}>
+      {role.replace(/_/g, " ")}
+    </span>
+  );
+}
+
+function StatusBadge({ status }: { status: string }) {
+  const isActive = status === "ACTIVE";
+  return (
+    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-clash-semibold border ${
+      isActive ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-slate-50 text-slate-500 border-slate-200"
+    }`}>
+      <span className={`h-1.5 w-1.5 rounded-full ${isActive ? "bg-emerald-500" : "bg-slate-400"}`} />
+      {status}
+    </span>
+  );
+}
+
+/* ── Shimmer ── */
+function Shimmer({ className = "" }: { className?: string }) {
+  return (
+    <div className={`relative overflow-hidden bg-slate-100 rounded-lg ${className}`}>
+      <div className="absolute inset-0 -translate-x-full animate-shimmer bg-gradient-to-r from-transparent via-white/70 to-transparent" />
+    </div>
+  );
+}
+
+/* ── Temp Password Modal ── */
+function TempPasswordModal({ password, onClose }: { password: string; onClose: () => void }) {
+  const [copied, setCopied] = useState(false);
+  const copy = () => {
+    navigator.clipboard.writeText(password);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2500);
+  };
+  return (
+    <Dialog open onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-md border-slate-200 rounded-2xl p-0 overflow-hidden">
+        <div className="bg-gradient-to-r from-orange-500 to-orange-600 px-6 py-5">
+          <div className="flex items-center gap-3">
+            <div className="h-9 w-9 rounded-xl bg-white/20 flex items-center justify-center">
+              <KeyRound className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <h3 className="font-clash-bold text-white text-base">User Created!</h3>
+              <p className="text-orange-100 text-xs font-satoshi">Share this temporary password with the user</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="p-6 space-y-4">
+          <div className="bg-slate-950 rounded-xl p-4 font-mono text-base text-orange-300 text-center tracking-widest border border-slate-800 relative">
+            {password}
+            <button
+              onClick={copy}
+              className="absolute top-2.5 right-2.5 flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-[11px] font-clash-semibold text-slate-300 transition-all"
+            >
+              {copied ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+              {copied ? "Copied!" : "Copy"}
+            </button>
+          </div>
+
+          <div className="bg-amber-50 border border-amber-200 rounded-xl p-3.5 flex items-start gap-2.5">
+            <ShieldAlert className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
+            <p className="text-xs font-satoshi text-amber-700 leading-relaxed">
+              The user must change this password on first login. This is a one-time display.
+            </p>
+          </div>
+
+          <button
+            onClick={onClose}
+            className="w-full h-10 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-sm font-clash-semibold transition-colors"
+          >
+            Done
+          </button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+/* ── Create User Modal ── */
+function CreateUserModal({
+  open,
+  onClose,
+  currentUser,
+  franchises,
+  outlets,
+  onCreated,
+}: {
+  open: boolean;
+  onClose: () => void;
+  currentUser: any;
+  franchises: Franchise[];
+  outlets: Outlet[];
+  onCreated: (pw: string) => void;
+}) {
+  const [form, setForm] = useState({ name: "", email: "", role: "", franchiseId: "", outletId: "" });
+  const [submitting, setSubmitting] = useState(false);
+
+  const needsFranchise = currentUser?.role === "SUPER_ADMIN" && form.role && form.role !== "SUPER_ADMIN";
+  const needsOutlet = form.role && OUTLET_SCOPED_ROLES.includes(form.role);
+  const outletsForSelection = currentUser?.role === "SUPER_ADMIN" && form.franchiseId
+    ? outlets.filter((o) => o.franchiseId === form.franchiseId)
+    : outlets;
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setSubmitting(true);
+    try {
+      const result = await createUser({
+        name: form.name,
+        email: form.email,
+        role: form.role,
+        ...(needsFranchise && form.franchiseId && { franchiseId: form.franchiseId }),
+        ...(needsOutlet && form.outletId && { outletId: form.outletId }),
+      });
+      setForm({ name: "", email: "", role: "", franchiseId: "", outletId: "" });
+      onClose();
+      onCreated(result.tempPassword);
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-md border-slate-200 rounded-2xl p-0 overflow-hidden">
+        <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
+          <div>
+            <h3 className="font-clash-bold text-slate-900 text-base">Create User</h3>
+            <p className="text-xs font-satoshi text-slate-500 mt-0.5">A temporary password will be generated</p>
+          </div>
+          <button onClick={onClose} className="h-7 w-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          {/* Name + Email row */}
+          <div className="grid grid-cols-2 gap-3">
+            {[
+              { key: "name", label: "Full Name", placeholder: "Jane Smith", type: "text" },
+              { key: "email", label: "Email", placeholder: "jane@example.com", type: "email" },
+            ].map(({ key, label, placeholder, type }) => (
+              <div key={key} className="space-y-1.5">
+                <label className="text-[12px] font-clash-semibold text-slate-600 uppercase tracking-wide">
+                  {label} <span className="text-red-400">*</span>
+                </label>
+                <Input
+                  type={type}
+                  value={form[key as keyof typeof form]}
+                  onChange={(e) => setForm({ ...form, [key]: e.target.value })}
+                  placeholder={placeholder}
+                  required
+                  className="h-10 rounded-xl border-slate-200 bg-slate-50 font-satoshi text-sm focus-visible:ring-orange-400/40 focus-visible:border-orange-400"
+                />
+              </div>
+            ))}
+          </div>
+
+          {/* Role */}
+          <div className="space-y-1.5">
+            <label className="text-[12px] font-clash-semibold text-slate-600 uppercase tracking-wide">
+              Role <span className="text-red-400">*</span>
+            </label>
+            <select
+              value={form.role}
+              onChange={(e) => setForm({ ...form, role: e.target.value, outletId: "" })}
+              required
+              className="w-full h-10 px-3 rounded-xl border border-slate-200 bg-slate-50 text-sm font-satoshi text-slate-700 focus:outline-none focus:ring-2 focus:ring-orange-400/40 focus:border-orange-400 transition-all"
+            >
+              <option value="">Select a role…</option>
+              {currentUser?.role === "SUPER_ADMIN" && (
+                <option value="FRANCHISE_ADMIN">Franchise Admin</option>
+              )}
+              {(currentUser?.role === "FRANCHISE_ADMIN" || currentUser?.role === "OUTLET_MANAGER") && (
+                <>
+                  <option value="OUTLET_MANAGER">Outlet Manager</option>
+                  <option value="KITCHEN_STAFF">Kitchen Staff</option>
+                  <option value="PICKUP_STAFF">Pickup Staff</option>
+                </>
+              )}
+            </select>
+          </div>
+
+          {/* Franchise select */}
+          {needsFranchise && (
+            <div className="space-y-1.5">
+              <label className="text-[12px] font-clash-semibold text-slate-600 uppercase tracking-wide">
+                Franchise <span className="text-red-400">*</span>
+              </label>
+              <select
+                value={form.franchiseId}
+                onChange={(e) => setForm({ ...form, franchiseId: e.target.value, outletId: "" })}
+                required
+                className="w-full h-10 px-3 rounded-xl border border-slate-200 bg-slate-50 text-sm font-satoshi text-slate-700 focus:outline-none focus:ring-2 focus:ring-orange-400/40 focus:border-orange-400 transition-all"
+              >
+                <option value="">Select franchise…</option>
+                {franchises.map((f) => (
+                  <option key={f._id} value={f._id}>{f.name} ({f.brandCode})</option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          {/* Outlet select */}
+          {needsOutlet && (
+            <div className="space-y-1.5">
+              <label className="text-[12px] font-clash-semibold text-slate-600 uppercase tracking-wide">
+                Outlet <span className="text-red-400">*</span>
+              </label>
+              <select
+                value={form.outletId}
+                onChange={(e) => setForm({ ...form, outletId: e.target.value })}
+                required={needsOutlet}
+                className="w-full h-10 px-3 rounded-xl border border-slate-200 bg-slate-50 text-sm font-satoshi text-slate-700 focus:outline-none focus:ring-2 focus:ring-orange-400/40 focus:border-orange-400 transition-all"
+              >
+                <option value="">Select outlet…</option>
+                {outletsForSelection.map((o) => (
+                  <option key={o._id} value={o._id}>{o.name} ({o.outletCode})</option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          <div className="flex gap-3 pt-2">
+            <button type="button" onClick={onClose} className="flex-1 h-10 rounded-xl border border-slate-200 text-sm font-clash-semibold text-slate-600 hover:bg-slate-50 transition-colors">
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={submitting}
+              className="flex-1 h-10 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white text-sm font-clash-semibold shadow-lg shadow-orange-500/20 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+            >
+              {submitting ? <RefreshCcw className="w-4 h-4 animate-spin" /> : <><Plus className="w-4 h-4" />Create User</>}
+            </button>
+          </div>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+/* ══════════════════════════════════
+   Main Page
+══════════════════════════════════ */
 export default function UserPage() {
   const { user: currentUser } = useAuth();
   const { hasPermission } = usePermission();
 
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [franchises, setFranchises] = useState<Franchise[]>([]);
   const [outlets, setOutlets] = useState<Outlet[]>([]);
-
   const [open, setOpen] = useState(false);
-  const [generatedPassword, setGeneratedPassword] = useState<string | null>(
-    null
-  );
+  const [generatedPassword, setGeneratedPassword] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [roleFilter, setRoleFilter] = useState("ALL");
 
-  const [form, setForm] = useState({
-    name: "",
-    email: "",
-    role: "",
-    franchiseId: "",
-    outletId: "",
-  });
+  const allRoles = ["ALL", ...Array.from(new Set(users.map((u) => u.role)))];
 
-  async function fetchUsers() {
-    setLoading(true);
+  async function fetchUsers(silent = false) {
+    if (silent) setRefreshing(true);
+    else setLoading(true);
     try {
-      const data = await getUsers();
-      setUsers(data);
+      setUsers(await getUsers());
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   }
 
-  useEffect(() => {
-    fetchUsers();
-  }, []);
+  useEffect(() => { fetchUsers(); }, []);
 
   useEffect(() => {
     if (!hasPermission(PERMISSIONS.USERS_CREATE)) return;
@@ -88,273 +323,190 @@ export default function UserPage() {
         ]);
         setOutlets(outletList);
         setFranchises(franchiseList);
-      } catch {
-        // ignore
-      }
+      } catch {}
     })();
-  }, [currentUser?.role, hasPermission(PERMISSIONS.USERS_CREATE)]);
+  }, [currentUser?.role]);
 
-  const needsFranchise = currentUser?.role === "SUPER_ADMIN" && form.role && form.role !== "SUPER_ADMIN";
-  const needsOutlet = form.role && OUTLET_SCOPED_ROLES.includes(form.role);
-  const outletsForSelection = currentUser?.role === "SUPER_ADMIN" && form.franchiseId
-    ? outlets.filter((o) => o.franchiseId === form.franchiseId)
-    : outlets;
+  const filtered = users.filter((u) => {
+    const matchSearch =
+      u.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      u.email.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchRole = roleFilter === "ALL" || u.role === roleFilter;
+    return matchSearch && matchRole;
+  });
 
-  async function handleCreate(e: React.FormEvent) {
-    e.preventDefault();
-
-    const result = await createUser({
-      name: form.name,
-      email: form.email,
-      role: form.role,
-      ...(needsFranchise && form.franchiseId && { franchiseId: form.franchiseId }),
-      ...(needsOutlet && form.outletId && { outletId: form.outletId }),
-    });
-
-    setGeneratedPassword(result.tempPassword);
-
-    setForm({
-      name: "",
-      email: "",
-      role: "",
-      franchiseId: "",
-      outletId: "",
-    });
-
-    setOpen(false);
-    fetchUsers();
-  }
+  const activeCount = users.filter((u) => u.status === "ACTIVE").length;
 
   return (
-    <div className="w-full min-h-screen bg-[#fafafa]">
-      <div className="h-1.5 w-full bg-gradient-to-r from-orange-400 to-orange-600" />
-
-      <div className="max-w-6xl mx-auto px-6 py-10 space-y-8">
-        {/* Header */}
-        <div className="flex justify-between items-center">
-          <div>
-            <div className="flex items-center gap-2 text-orange-600 text-sm uppercase font-medium">
-              <Users className="w-4 h-4" />
-              Identity
-            </div>
-            <h1 className="text-3xl font-bold text-slate-900">
-              User Management
-            </h1>
+    <div className="space-y-6">
+      {/* ── Header ── */}
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            <Users className="w-3.5 h-3.5 text-orange-500" />
+            <span className="text-[11px] font-clash-semibold text-orange-500 uppercase tracking-widest">Identity</span>
           </div>
-
-          {hasPermission(PERMISSIONS.USERS_CREATE) && (
-            <Button
-              onClick={() => setOpen(true)}
-              className="bg-orange-600 hover:bg-orange-700 text-white"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Create User
-            </Button>
-          )}
+          <div className="flex items-baseline gap-3">
+            <h1 className="text-[28px] font-clash-bold text-slate-900 tracking-tight">User Management</h1>
+            {!loading && (
+              <span className="text-sm font-satoshi text-slate-400">{users.length} users · {activeCount} active</span>
+            )}
+          </div>
+          <p className="text-sm font-satoshi text-slate-500 mt-0.5">Manage platform users, roles, and access levels.</p>
         </div>
 
-        {/* Table */}
-        <Card>
-          <CardContent className="p-0">
-            {loading ? (
-              <div className="py-20 flex justify-center">
-                <Loader2 className="w-6 h-6 animate-spin text-orange-600" />
-              </div>
-            ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead>Role</TableHead>
-                    <TableHead>Status</TableHead>
-                  </TableRow>
-                </TableHeader>
-
-                <TableBody>
-                  {users.map((u) => (
-                    <TableRow key={u._id}>
-                      <TableCell className="font-medium">
-                        {u.name}
-                      </TableCell>
-                      <TableCell>{u.email}</TableCell>
-                      <TableCell>{u.role}</TableCell>
-                      <TableCell>
-                        <span
-                          className={`px-2 py-1 rounded-full text-xs ${
-                            u.status === "ACTIVE"
-                              ? "bg-emerald-100 text-emerald-700"
-                              : "bg-slate-200 text-slate-600"
-                          }`}
-                        >
-                          {u.status}
-                        </span>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Create User Modal */}
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Create User</DialogTitle>
-            </DialogHeader>
-
-            <form onSubmit={handleCreate} className="space-y-4">
-              <div>
-                <Label>Name</Label>
-                <Input
-                  value={form.name}
-                  onChange={(e) =>
-                    setForm({ ...form, name: e.target.value })
-                  }
-                  required
-                />
-              </div>
-
-              <div>
-                <Label>Email</Label>
-                <Input
-                  type="email"
-                  value={form.email}
-                  onChange={(e) =>
-                    setForm({ ...form, email: e.target.value })
-                  }
-                  required
-                />
-              </div>
-
-              <div>
-                <Label>Role</Label>
-                <select
-                  className="w-full border rounded-md p-2 text-sm"
-                  value={form.role}
-                  onChange={(e) =>
-                    setForm({ ...form, role: e.target.value, outletId: "" })
-                  }
-                  required
-                >
-                  <option value="">Select Role</option>
-
-                  {currentUser?.role === "SUPER_ADMIN" && (
-                    <option value="FRANCHISE_ADMIN">
-                      Franchise Admin
-                    </option>
-                  )}
-
-                  {currentUser?.role === "FRANCHISE_ADMIN" && (
-                    <>
-                      <option value="OUTLET_MANAGER">
-                        Outlet Manager
-                      </option>
-                      <option value="KITCHEN_STAFF">
-                        Kitchen Staff
-                      </option>
-                      <option value="PICKUP_STAFF">
-                        Pickup Staff
-                      </option>
-                    </>
-                  )}
-
-                  {currentUser?.role === "OUTLET_MANAGER" && (
-                    <>
-                      <option value="KITCHEN_STAFF">
-                        Kitchen Staff
-                      </option>
-                      <option value="PICKUP_STAFF">
-                        Pickup Staff
-                      </option>
-                    </>
-                  )}
-                </select>
-              </div>
-
-              {needsFranchise && (
-                <div>
-                  <Label>Franchise</Label>
-                  <select
-                    className="w-full border rounded-md p-2 text-sm"
-                    value={form.franchiseId}
-                    onChange={(e) =>
-                      setForm({ ...form, franchiseId: e.target.value, outletId: "" })
-                    }
-                    required
-                  >
-                    <option value="">Select Franchise</option>
-                    {franchises.map((f) => (
-                      <option key={f._id} value={f._id}>
-                        {f.name} ({f.brandCode})
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              )}
-
-              {needsOutlet && (
-                <div>
-                  <Label>Outlet</Label>
-                  <select
-                    className="w-full border rounded-md p-2 text-sm"
-                    value={form.outletId}
-                    onChange={(e) =>
-                      setForm({ ...form, outletId: e.target.value })
-                    }
-                    required={needsOutlet}
-                  >
-                    <option value="">Select Outlet</option>
-                    {outletsForSelection.map((o) => (
-                      <option key={o._id} value={o._id}>
-                        {o.name} ({o.outletCode})
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              )}
-
-              <Button
-                type="submit"
-                className="w-full bg-orange-600 hover:bg-orange-700 text-white"
-              >
-                Create User
-              </Button>
-            </form>
-          </DialogContent>
-        </Dialog>
-
-        {/* Temp Password Modal */}
-        {generatedPassword && (
-          <Dialog
-            open={true}
-            onOpenChange={() => setGeneratedPassword(null)}
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => fetchUsers(true)}
+            disabled={refreshing}
+            className="h-9 w-9 rounded-xl border border-slate-200 bg-white flex items-center justify-center text-slate-500 hover:text-orange-600 hover:border-orange-200 transition-all"
           >
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>User Created</DialogTitle>
-              </DialogHeader>
+            <RefreshCcw className={cn("w-4 h-4", refreshing && "animate-spin")} />
+          </button>
+          {hasPermission(PERMISSIONS.USERS_CREATE) && (
+            <button
+              onClick={() => setOpen(true)}
+              className="flex items-center gap-2 h-9 px-4 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white text-sm font-clash-semibold shadow-lg shadow-orange-500/20 transition-all"
+            >
+              <Plus className="w-4 h-4" />
+              Create User
+            </button>
+          )}
+        </div>
+      </div>
 
-              <p className="text-sm text-slate-600">
-                Temporary Password:
-              </p>
+      {/* ── Stat pills ── */}
+      {!loading && (
+        <div className="flex flex-wrap gap-3">
+          {[
+            { label: "Total Users", value: users.length, color: "bg-slate-100 text-slate-700" },
+            { label: "Active", value: activeCount, color: "bg-emerald-50 text-emerald-700 border border-emerald-200" },
+            { label: "Inactive", value: users.length - activeCount, color: "bg-slate-50 text-slate-500 border border-slate-200" },
+          ].map((s) => (
+            <div key={s.label} className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-clash-semibold ${s.color}`}>
+              {s.value} <span className="font-satoshi font-normal text-xs">{s.label}</span>
+            </div>
+          ))}
+        </div>
+      )}
 
-              <div className="bg-slate-100 p-3 rounded font-mono text-sm">
-                {generatedPassword}
-              </div>
+      {/* ── Search + Role filter ── */}
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 flex flex-col sm:flex-row gap-3">
+        <div className="relative flex-1">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+          <Input
+            placeholder="Search by name or email…"
+            className="pl-10 h-10 rounded-xl border-slate-200 bg-slate-50 font-satoshi text-sm focus-visible:ring-orange-400/40 focus-visible:border-orange-400"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+        {/* Role filter pills */}
+        <div className="flex gap-2 flex-wrap">
+          {allRoles.map((r) => (
+            <button
+              key={r}
+              onClick={() => setRoleFilter(r)}
+              className={`px-3 h-10 rounded-xl text-xs font-clash-semibold transition-all whitespace-nowrap ${
+                roleFilter === r
+                  ? "bg-orange-500 text-white shadow-sm"
+                  : "bg-slate-100 text-slate-500 hover:bg-slate-200"
+              }`}
+            >
+              {r === "ALL" ? "All Roles" : r.replace(/_/g, " ")}
+            </button>
+          ))}
+        </div>
+      </div>
 
-              <Button
-                onClick={() => setGeneratedPassword(null)}
-                className="w-full bg-orange-600 hover:bg-orange-700 text-white"
+      {/* ── Table ── */}
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <table className="w-full">
+          <thead>
+            <tr className="border-b border-slate-100 bg-slate-50/60">
+              {["User", "Email", "Role", "Status"].map((h) => (
+                <th key={h} className="px-5 py-3.5 text-left text-[11px] font-clash-semibold text-slate-500 uppercase tracking-wider">
+                  {h}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-50">
+            {loading ? (
+              Array.from({ length: 5 }).map((_, i) => (
+                <tr key={i} className="border-b border-slate-50">
+                  {[1, 2, 3, 4].map((j) => (
+                    <td key={j} className="px-5 py-4">
+                      <Shimmer className={`h-4 ${j === 1 ? "w-32" : j === 3 ? "w-28" : j === 4 ? "w-16" : "w-40"}`} />
+                    </td>
+                  ))}
+                </tr>
+              ))
+            ) : filtered.length === 0 ? (
+              <tr>
+                <td colSpan={4} className="py-16 text-center">
+                  <div className="flex flex-col items-center gap-3">
+                    <div className="h-12 w-12 rounded-2xl bg-slate-100 flex items-center justify-center">
+                      <Users className="w-5 h-5 text-slate-400" />
+                    </div>
+                    <p className="font-clash-semibold text-slate-600">No users found</p>
+                    <p className="font-satoshi text-slate-400 text-sm">
+                      {searchTerm ? "Try a different search term" : "Create your first user to get started"}
+                    </p>
+                  </div>
+                </td>
+              </tr>
+            ) : (
+              filtered.map((u) => (
+                <tr key={u._id} className="group hover:bg-orange-50/20 transition-colors">
+                  <td className="px-5 py-4">
+                    <div className="flex items-center gap-3">
+                      <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-orange-100 to-orange-200 flex items-center justify-center flex-shrink-0">
+                        <span className="text-[12px] font-clash-bold text-orange-600">
+                          {u.name.charAt(0).toUpperCase()}
+                        </span>
+                      </div>
+                      <span className="font-clash-semibold text-slate-800 text-sm">{u.name}</span>
+                    </div>
+                  </td>
+                  <td className="px-5 py-4 font-satoshi text-sm text-slate-500">{u.email}</td>
+                  <td className="px-5 py-4"><RoleBadge role={u.role} /></td>
+                  <td className="px-5 py-4"><StatusBadge status={u.status} /></td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+
+        {!loading && filtered.length > 0 && (
+          <div className="px-5 py-3 border-t border-slate-100 bg-slate-50/50 flex items-center justify-between">
+            <p className="text-xs font-satoshi text-slate-400">
+              Showing {filtered.length} of {users.length} users
+            </p>
+            {(searchTerm || roleFilter !== "ALL") && (
+              <button
+                onClick={() => { setSearchTerm(""); setRoleFilter("ALL"); }}
+                className="text-xs font-satoshi text-orange-500 hover:underline"
               >
-                Close
-              </Button>
-            </DialogContent>
-          </Dialog>
+                Clear filters
+              </button>
+            )}
+          </div>
         )}
       </div>
+
+      {/* ── Modals ── */}
+      <CreateUserModal
+        open={open}
+        onClose={() => setOpen(false)}
+        currentUser={currentUser}
+        franchises={franchises}
+        outlets={outlets}
+        onCreated={(pw) => setGeneratedPassword(pw)}
+      />
+      {generatedPassword && (
+        <TempPasswordModal password={generatedPassword} onClose={() => setGeneratedPassword(null)} />
+      )}
     </div>
   );
 }

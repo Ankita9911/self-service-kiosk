@@ -1,6 +1,6 @@
 import { Routes, Route } from "react-router-dom";
 import Login from "@/pages/auth/Login";
-import ForceReset from "@/pages/auth/ForceReset";
+import {ForceReset} from "@/pages/auth/ForceReset";
 
 import DashboardPage from "@/pages/dashboard/DashboardPage";
 import FranchisePage from "@/pages/super-admin/FranchisePage";
@@ -11,7 +11,7 @@ import KioskPage from "@/pages/kiosk/KioskPage";
 import ProtectedRoute from "./ProtectedRoute";
 import AppLayout from "@/layout/AppLayout";
 import { PERMISSIONS } from "@/lib/permissions";
-import ResetPassword from "@/pages/auth/ResetPassword";
+import {ResetPassword} from "@/pages/auth/ResetPassword";
 import UserPage from "@/pages/users/UserPage";
 
 export default function AppRoutes() {
