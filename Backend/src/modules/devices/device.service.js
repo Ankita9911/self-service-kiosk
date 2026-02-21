@@ -2,9 +2,19 @@ import bcrypt from "bcrypt";
 import crypto from "crypto";
 import Device from "./device.model.js";
 import AppError from "../../shared/errors/AppError.js";
-//import { ROLE_HIERARCHY } from "../../core/rbac/roleHierarchy.js";
 
 const SALT_ROUNDS = 10;
+
+const ID_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+
+function generateShortDeviceId() {
+  let id = "";
+  const bytes = crypto.randomBytes(6);
+  for (let i = 0; i < 6; i++) {
+    id += ID_CHARS[bytes[i] % ID_CHARS.length];
+  }
+  return id; // e.g. "K7MN9Q"
+}
 
 function generateSecret() {
   return crypto.randomBytes(12).toString("hex");
@@ -24,7 +34,19 @@ export async function createDevice(currentUser, payload) {
     throw new AppError("Franchise context is required", 403);
   }
 
-  const deviceId = crypto.randomUUID().toUpperCase();
+  // Generate unique short device ID (collision-safe)
+  let deviceId;
+  let attempts = 0;
+  do {
+    deviceId = generateShortDeviceId();
+    const exists = await Device.findOne({ deviceId });
+    if (!exists) break;
+    attempts++;
+    if (attempts >= 10) {
+      throw new AppError("Failed to generate unique device ID", 500);
+    }
+  } while (true);
+
   const plainSecret = generateSecret();
   const deviceSecretHash = await bcrypt.hash(plainSecret, SALT_ROUNDS);
 
@@ -39,7 +61,7 @@ export async function createDevice(currentUser, payload) {
 
   return {
     device,
-    secret: plainSecret, // return once
+    secret: plainSecret, // returned once, store securely
   };
 }
 
@@ -60,10 +82,7 @@ export async function listDevices(currentUser) {
 }
 
 export async function updateDevice(currentUser, deviceId, payload) {
-  const device = await Device.findOne({
-    deviceId,
-    isDeleted: false,
-  });
+  const device = await Device.findOne({ deviceId, isDeleted: false });
 
   if (!device) {
     throw new AppError("Device not found", 404);

@@ -9,6 +9,7 @@ import OutletMenuPage from "@/pages/outlets/OutletMenuPage";
 import MenuLandingPage from "@/pages/outlets/MenuLandingPage";
 import DevicePage from "@/pages/devices/DevicePage";
 import KioskPage from "@/pages/kiosk/KioskPage";
+import KioskLoginPage from "@/pages/kiosk/KioskLoginPage";
 import KitchenPage from "@/pages/kitchen/KitchenPage";
 import PickupPage from "@/pages/pickup/PickupPage";
 
@@ -24,6 +25,9 @@ export default function AppRoutes() {
       {/* Public */}
       <Route path="/login" element={<Login />} />
 
+      {/* 🖥️ Kiosk Login — public, no auth needed */}
+      <Route path="/kiosk/login" element={<KioskLoginPage />} />
+
       {/* 🔐 Force Reset (Protected but no layout) */}
       <Route
         path="/force-reset"
@@ -34,15 +38,8 @@ export default function AppRoutes() {
         }
       />
 
-      {/* 🔐 Kiosk (Protected but no layout - full screen) */}
-      <Route
-        path="/kiosk"
-        element={
-          <ProtectedRoute>
-            <KioskPage />
-          </ProtectedRoute>
-        }
-      />
+      {/* 🖥️ Kiosk — full screen, guarded internally by KioskPage itself */}
+      <Route path="/kiosk" element={<KioskPage />} />
 
       {/* 🔐 All Main App Routes (With Layout) */}
       <Route
@@ -117,17 +114,17 @@ export default function AppRoutes() {
           }
         />
 
+        {/* 🍳 Kitchen Display */}
         <Route
           path="/kitchen"
           element={
-            <ProtectedRoute
-              requiredPermission={PERMISSIONS.ORDERS_KITCHEN_VIEW}
-            >
+            <ProtectedRoute requiredPermission={PERMISSIONS.ORDERS_KITCHEN_VIEW}>
               <KitchenPage />
             </ProtectedRoute>
           }
         />
 
+        {/* 🛍️ Pickup Counter */}
         <Route
           path="/pickup"
           element={

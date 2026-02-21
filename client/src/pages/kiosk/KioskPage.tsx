@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { toast } from "sonner";
 import { motion,AnimatePresence } from "framer-motion";
-import axiosInstance from "../../lib/axios";
+import kioskAxios from "../../services/kioskAxios";
 import { getMenuFromCache, saveMenu } from "../../lib/menuCache";
 import type { MenuCategory } from "../../lib/menuCache";
 import { addToQueue } from "../../lib/orderQueue";
@@ -12,6 +12,7 @@ import MenuGrid from "./component/MenuGrid";
 import CartPanel from "./component/CartPanel";
 import { CategoryTabsSkeleton, MenuGridSkeleton } from "./component/LoadingSkeleton";
 import type { CartItem } from "./component/CartPanel";
+import { useNavigate } from "react-router-dom";
 
 import { 
   CheckCircle2, 
@@ -35,7 +36,22 @@ import {
 
 type PaymentStep = "SELECTION" | "DETAILS";
 
+function getKioskToken(): string | null {
+  const token = localStorage.getItem("kiosk_token");
+  if (!token) return null;
+
+  try {
+    const payload = JSON.parse(atob(token.split(".")[1]));
+    if (payload.role !== "KIOSK_DEVICE") return null;
+    if (payload.exp && payload.exp * 1000 < Date.now()) return null;
+    return token;
+  } catch {
+    return null;
+  }
+}
+
 export default function KioskPage() {
+  const navigate = useNavigate();
   const [menu, setMenu] = useState<MenuCategory[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -54,7 +70,13 @@ export default function KioskPage() {
     loadMenu();
     processQueue();
   }, []);
-
+  
+    // 🔐 Kiosk Auth Guard
+  useEffect(() => {
+    if (!getKioskToken()) {
+      navigate("/kiosk/login", { replace: true });
+    }
+  }, [navigate]);
   async function loadMenu() {
     try {
       setIsLoading(true);
@@ -67,7 +89,7 @@ export default function KioskPage() {
         }
       }
       try {
-        const response = await axiosInstance.get("/kiosk/menu");
+        const response = await kioskAxios.get("/kiosk/menu");
         const freshMenu = response.data.data.sort((a: any, b: any) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0));
         const validCategories = freshMenu.filter((cat: any) => cat.items && cat.items.length > 0);
         setMenu(validCategories);
@@ -159,7 +181,7 @@ export default function KioskPage() {
       };
       
       try {
-        const response = await axiosInstance.post("/orders", orderData);
+        const response = await kioskAxios.post("/orders", orderData);
         toast.dismiss(loadingToast);
         setOrderNumber(response.data.data.orderNumber.toString());
         setShowSuccessDialog(true);
