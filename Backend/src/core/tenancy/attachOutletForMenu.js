@@ -1,0 +1,37 @@
+import Outlet from "../../modules/outlets/outlet.model.js";
+import AppError from "../../shared/errors/AppError.js";
+
+/**
+ * Resolves outletId for menu operations.
+ * - OUTLET_MANAGER: uses their outletId (ignores param)
+ * - FRANCHISE_ADMIN / SUPER_ADMIN: requires outletId in query/body, validates scope
+ */
+export async function attachOutletForMenu(req, res, next) {
+  const user = req.user;
+  const outletId = req.query.outletId || req.body?.outletId;
+
+  if (user.role === "OUTLET_MANAGER") {
+    if (!user.outletId) {
+      return next(new AppError("Outlet context required", 403, "OUTLET_REQUIRED"));
+    }
+    return next();
+  }
+
+  if (user.role === "FRANCHISE_ADMIN" || user.role === "SUPER_ADMIN") {
+    if (!outletId) {
+      return next(new AppError("Outlet ID is required for menu operations", 400, "OUTLET_REQUIRED"));
+    }
+    const outlet = await Outlet.findOne({ _id: outletId, isDeleted: false });
+    if (!outlet) {
+      return next(new AppError("Outlet not found", 404, "OUTLET_NOT_FOUND"));
+    }
+    if (user.role === "FRANCHISE_ADMIN" && outlet.franchiseId?.toString() !== user.franchiseId?.toString()) {
+      return next(new AppError("Cannot manage menu for outlet outside your franchise", 403, "FORBIDDEN"));
+    }
+    req.tenant.outletId = outlet._id;
+    req.tenant.franchiseId = outlet.franchiseId;
+    return next();
+  }
+
+  return next(new AppError("Forbidden", 403, "FORBIDDEN"));
+}

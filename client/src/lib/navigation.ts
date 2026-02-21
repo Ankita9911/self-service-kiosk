@@ -3,6 +3,7 @@ import {
   Store,
   Users,
   Activity,
+  UtensilsCrossed,
 } from "lucide-react";
 import { PERMISSIONS } from "@/lib/permissions";
 
@@ -24,6 +25,12 @@ export const NAV_ITEMS = [
     path: "/outlets",
     icon: Store,
     permission: PERMISSIONS.OUTLET_VIEW,
+  },
+  {
+    label: "Menu",
+    path: "/menu",
+    icon: UtensilsCrossed,
+    permission: PERMISSIONS.MENU_MANAGE,
   },
   {
     label: "Devices",

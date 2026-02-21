@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import useAuth from "@/hooks/useAuth";
 import type { Outlet } from "@/types/outlet.types";
 import type { Franchise } from "@/types/franchise.types";
@@ -15,6 +16,7 @@ import { Input } from "@/components/ui/input";
 import {
   Store, Plus, Search, MapPin, Pencil, Trash2,
   RefreshCcw, Building, ShieldAlert, X, AlertTriangle,
+  UtensilsCrossed,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PERMISSIONS } from "@/lib/permissions";
@@ -204,6 +206,7 @@ function OutletModal({
    Main Page
 ══════════════════════════════════ */
 export default function OutletPage() {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const { hasPermission } = usePermission();
 
@@ -211,6 +214,7 @@ export default function OutletPage() {
   const canCreateOutlet = hasPermission(PERMISSIONS.OUTLET_CREATE);
   const canUpdateOutlet = hasPermission(PERMISSIONS.OUTLET_UPDATE);
   const canDeleteOutlet = hasPermission(PERMISSIONS.OUTLET_DELETE);
+  const canManageMenu = hasPermission(PERMISSIONS.MENU_MANAGE);
   const isSuperAdmin = user?.role === "SUPER_ADMIN";
 
   const [outlets, setOutlets] = useState<Outlet[]>([]);
@@ -417,6 +421,15 @@ export default function OutletPage() {
                   </td>
                   <td className="px-5 py-4 text-right">
                     <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      {canManageMenu && (
+                        <button
+                          onClick={() => navigate(`/outlets/${o._id}/menu`)}
+                          className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-orange-600 hover:bg-orange-50 transition-colors"
+                          title="Manage Menu"
+                        >
+                          <UtensilsCrossed className="w-3.5 h-3.5" />
+                        </button>
+                      )}
                       {canUpdateOutlet && (
                         <button
                           onClick={() => { setEditing(o); setOpen(true); }}

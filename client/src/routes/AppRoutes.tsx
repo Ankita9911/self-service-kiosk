@@ -5,6 +5,8 @@ import {ForceReset} from "@/pages/auth/ForceReset";
 import DashboardPage from "@/pages/dashboard/DashboardPage";
 import FranchisePage from "@/pages/super-admin/FranchisePage";
 import OutletPage from "@/pages/outlets/OutletPage";
+import OutletMenuPage from "@/pages/outlets/OutletMenuPage";
+import MenuLandingPage from "@/pages/outlets/MenuLandingPage";
 import DevicePage from "@/pages/devices/DevicePage";
 import KioskPage from "@/pages/kiosk/KioskPage";
 
@@ -81,6 +83,24 @@ export default function AppRoutes() {
           element={
             <ProtectedRoute requiredPermission={PERMISSIONS.OUTLET_VIEW}>
               <OutletPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/menu"
+          element={
+            <ProtectedRoute requiredPermission={PERMISSIONS.MENU_MANAGE}>
+              <MenuLandingPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/outlets/:outletId/menu"
+          element={
+            <ProtectedRoute requiredPermission={PERMISSIONS.MENU_MANAGE}>
+              <OutletMenuPage />
             </ProtectedRoute>
           }
         />
