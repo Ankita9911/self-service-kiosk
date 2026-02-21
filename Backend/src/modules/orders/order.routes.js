@@ -16,4 +16,18 @@ router.post(
   controller.createOrder
 );
 
+// List Orders (Kitchen: CREATED,IN_KITCHEN,READY | Pickup: READY)
+router.get(
+  "/",
+  authorize(PERMISSIONS.ORDERS_VIEW),
+  controller.listOrders
+);
+
+// Update Order Status
+router.patch(
+  "/:id/status",
+  authorize(PERMISSIONS.ORDERS_UPDATE_STATUS),
+  controller.updateOrderStatus
+);
+
 export default router;

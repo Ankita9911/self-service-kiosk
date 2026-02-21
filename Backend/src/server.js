@@ -2,7 +2,8 @@ import http from "http";
 import dotenv from "dotenv";
 import app from "./app.js";
 import connectMongo from "./config/mongo.js";
-import { initRealtime } from "./realtime/realtime.manager.js";
+//import  initRealtime from "./realtime/realtime.manager.js";
+import { initSocket } from "./realtime/realtime.manager.js";
 //import { seedKioskDevice } from "./core/auth/seedKioskDevice.js";
 
 dotenv.config();
@@ -19,7 +20,8 @@ async function bootstrap() {
    //await seedKioskDevice();
   // console.log("device seeded ");
     server = http.createServer(app);
-    initRealtime(server);
+  //  initRealtime(server);
+    initSocket(server);
     server.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);
     });

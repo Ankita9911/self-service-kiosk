@@ -73,7 +73,8 @@ const orderSchema = new Schema(
 
     status: {
       type: String,
-      enum: ["CREATED", "IN_KITCHEN", "READY", "COMPLETED"],
+      // PICKED_UP is the terminal state — removes from both screens
+      enum: ["CREATED", "IN_KITCHEN", "READY", "COMPLETED", "PICKED_UP"],
       default: "CREATED",
     },
 
@@ -86,16 +87,10 @@ const orderSchema = new Schema(
 );
 
 // Idempotency protection
-orderSchema.index(
-  { outletId: 1, clientOrderId: 1 },
-  { unique: true }
-);
+orderSchema.index({ outletId: 1, clientOrderId: 1 }, { unique: true });
 
 // Order number per outlet uniqueness
-orderSchema.index(
-  { outletId: 1, orderNumber: 1 },
-  { unique: true }
-);
+orderSchema.index({ outletId: 1, orderNumber: 1 }, { unique: true });
 
 const Order = mongoose.model("Order", orderSchema);
 

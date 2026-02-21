@@ -1,6 +1,6 @@
 import { Routes, Route } from "react-router-dom";
 import Login from "@/pages/auth/Login";
-import {ForceReset} from "@/pages/auth/ForceReset";
+import { ForceReset } from "@/pages/auth/ForceReset";
 
 import DashboardPage from "@/pages/dashboard/DashboardPage";
 import FranchisePage from "@/pages/super-admin/FranchisePage";
@@ -9,11 +9,13 @@ import OutletMenuPage from "@/pages/outlets/OutletMenuPage";
 import MenuLandingPage from "@/pages/outlets/MenuLandingPage";
 import DevicePage from "@/pages/devices/DevicePage";
 import KioskPage from "@/pages/kiosk/KioskPage";
+import KitchenPage from "@/pages/kitchen/KitchenPage";
+import PickupPage from "@/pages/pickup/PickupPage";
 
 import ProtectedRoute from "./ProtectedRoute";
 import AppLayout from "@/layout/AppLayout";
 import { PERMISSIONS } from "@/lib/permissions";
-import {ResetPassword} from "@/pages/auth/ResetPassword";
+import { ResetPassword } from "@/pages/auth/ResetPassword";
 import UserPage from "@/pages/users/UserPage";
 
 export default function AppRoutes() {
@@ -50,21 +52,22 @@ export default function AppRoutes() {
           </ProtectedRoute>
         }
       >
-        <Route
-          path="/users"
-          element={
-            <ProtectedRoute>
-              <UserPage />
-            </ProtectedRoute>
-          }
-        />
-
         <Route path="/" element={<DashboardPage />} />
+
         <Route
           path="/reset-password"
           element={
             <ProtectedRoute>
               <ResetPassword />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/users"
+          element={
+            <ProtectedRoute>
+              <UserPage />
             </ProtectedRoute>
           }
         />
@@ -110,6 +113,26 @@ export default function AppRoutes() {
           element={
             <ProtectedRoute requiredPermission={PERMISSIONS.DEVICE_VIEW}>
               <DevicePage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/kitchen"
+          element={
+            <ProtectedRoute
+              requiredPermission={PERMISSIONS.ORDERS_KITCHEN_VIEW}
+            >
+              <KitchenPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/pickup"
+          element={
+            <ProtectedRoute requiredPermission={PERMISSIONS.ORDERS_PICKUP_VIEW}>
+              <PickupPage />
             </ProtectedRoute>
           }
         />

@@ -4,6 +4,8 @@ import {
   Users,
   Activity,
   UtensilsCrossed,
+  ChefHat,
+  ShoppingBag
 } from "lucide-react";
 import { PERMISSIONS } from "@/lib/permissions";
 
@@ -44,5 +46,16 @@ export const NAV_ITEMS = [
     icon: Users,
     permission: PERMISSIONS.USERS_VIEW,
   },
-
+ {
+  label: "Kitchen Display",
+  path: "/kitchen",
+  icon: ChefHat,
+  permission: PERMISSIONS.ORDERS_KITCHEN_VIEW, 
+},
+{
+  label: "Pickup Counter",
+  path: "/pickup",
+  icon: ShoppingBag,
+  permission: PERMISSIONS.ORDERS_PICKUP_VIEW, 
+},
 ];
