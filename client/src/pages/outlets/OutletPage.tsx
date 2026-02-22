@@ -1,8 +1,8 @@
 import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import useAuth from "@/shared/hooks/useAuth";
-import type { Outlet } from "@/types/outlet.types";
-import type { Franchise } from "@/types/franchise.types";
+import type { Outlet } from "@/shared/types/outlet.types";
+import type { Franchise } from "@/shared/types/franchise.types";
 import { getOutlets, createOutlet, updateOutlet, deleteOutlet } from "@/services/outlet.service";
 import { getFranchises } from "@/services/franchise.service";
 

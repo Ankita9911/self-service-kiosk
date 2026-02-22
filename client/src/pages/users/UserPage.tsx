@@ -6,8 +6,8 @@ import { PERMISSIONS } from "@/shared/lib/permissions";
 import { createUser, getUsers } from "@/services/user.service";
 import { getFranchises } from "@/services/franchise.service";
 import { getOutlets } from "@/services/outlet.service";
-import type { Franchise } from "@/types/franchise.types";
-import type { Outlet } from "@/types/outlet.types";
+import type { Franchise } from "@/shared/types/franchise.types";
+import type { Outlet } from "@/shared/types/outlet.types";
 
 import { Dialog, DialogContent } from "@/shared/components/ui/dialog";
 import { TablePagination } from "@/shared/components/ui/TablePagination";

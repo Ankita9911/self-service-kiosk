@@ -12,8 +12,8 @@ import {
   deleteMenuItem,
 } from "@/services/menu.service";
 import { getOutlets } from "@/services/outlet.service";
-import type { Category, MenuItem } from "@/types/menu.types";
-import type { Outlet } from "@/types/outlet.types";
+import type { Category, MenuItem } from "@/shared/types/menu.types";
+import type { Outlet } from "@/shared/types/outlet.types";
 import {
   Dialog,
   DialogContent,

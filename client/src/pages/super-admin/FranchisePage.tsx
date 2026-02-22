@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import type { Franchise } from "@/types/franchise.types";
+import type { Franchise } from "@/shared/types/franchise.types";
 import {
   getFranchises, createFranchise, updateFranchise, deleteFranchise,
 } from "@/services/franchise.service";

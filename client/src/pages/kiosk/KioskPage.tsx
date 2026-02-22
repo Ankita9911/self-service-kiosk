@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { toast } from "sonner";
 import { motion,AnimatePresence } from "framer-motion";
-import kioskAxios from "../../services/kioskAxios";
+import kioskAxios from "../../shared/lib/kioskAxios";
 import { getMenuFromCache, saveMenu } from "../../shared/lib/menuCache";
 import type { MenuCategory } from "../../shared/lib/menuCache";
 import { addToQueue } from "../../shared/lib/orderQueue";

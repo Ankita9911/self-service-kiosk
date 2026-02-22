@@ -1,8 +1,8 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "@/services/axiosInstance";
-import type { User } from "@/types/user.types";
-import type { LoginResponse } from "@/types/auth.types";
+import axios from "@/shared/lib/axiosInstance";
+import type { User } from "@/shared/types/user.types";
+import type { LoginResponse } from "@/shared/types/auth.types";
 
 export interface AuthContextType {
   user: (User & { mustChangePassword?: boolean }) | null;

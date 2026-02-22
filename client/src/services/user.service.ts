@@ -1,5 +1,5 @@
-import axios from "@/services/axiosInstance";
-import type { User } from "@/types/user.types";
+import axios from "@/shared/lib/axiosInstance";
+import type { User } from "@/shared/types/user.types";
 
 export async function getUsers(): Promise<User[]> {
   const response = await axios.get<{ data: User[] }>("/users");

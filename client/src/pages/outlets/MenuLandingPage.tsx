@@ -4,7 +4,7 @@ import useAuth from "@/shared/hooks/useAuth";
 import { usePermission } from "@/shared/hooks/usePermissions";
 import { PERMISSIONS } from "@/shared/lib/permissions";
 import { getOutlets } from "@/services/outlet.service";
-import type { Outlet } from "@/types/outlet.types";
+import type { Outlet } from "@/shared/types/outlet.types";
 import { UtensilsCrossed, Store, Loader2 } from "lucide-react";
 import { useState } from "react";
 

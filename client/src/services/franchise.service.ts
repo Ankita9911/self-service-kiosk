@@ -1,5 +1,5 @@
-import axiosInstance from "./axiosInstance";
-import type { Franchise } from "@/types/franchise.types";
+import axiosInstance from "../shared/lib/axiosInstance";
+import type { Franchise } from "@/shared/types/franchise.types";
 
 export async function getFranchises(): Promise<Franchise[]> {
   const response = await axiosInstance.get("/franchises");

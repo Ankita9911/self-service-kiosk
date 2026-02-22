@@ -3,8 +3,8 @@ import { usePermission } from "@/shared/hooks/usePermissions";
 import { PERMISSIONS } from "@/shared/lib/permissions";
 import { getDevices, createDevice } from "@/services/device.service";
 import { getOutlets } from "@/services/outlet.service";
-import type { Device } from "@/types/device.types";
-import type { Outlet } from "@/types/outlet.types";
+import type { Device } from "@/shared/types/device.types";
+import type { Outlet } from "@/shared/types/outlet.types";
 
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle,

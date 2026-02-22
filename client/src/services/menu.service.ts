@@ -1,5 +1,5 @@
-import axiosInstance from "./axiosInstance";
-import type { Category, MenuItem } from "@/types/menu.types";
+import axiosInstance from "../shared/lib/axiosInstance";
+import type { Category, MenuItem } from "@/shared/types/menu.types";
 
 function params(outletId?: string) {
   return outletId ? { params: { outletId } } : {};

@@ -1,5 +1,5 @@
-import axiosInstance from "./axiosInstance";
-import type { Device } from "@/types/device.types";
+import axiosInstance from "../shared/lib/axiosInstance";
+import type { Device } from "@/shared/types/device.types";
 
 export async function getDevices(): Promise<Device[]> {
   const response = await axiosInstance.get<{ data: Device[] }>("/devices");
