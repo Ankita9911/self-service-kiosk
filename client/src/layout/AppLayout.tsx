@@ -3,6 +3,24 @@ import { LogOut, KeyRound, ChevronDown } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import Sidebar from "./Sidebar";
 import useAuth from "@/hooks/useAuth";
+import { Shield, Crown, Store, ChefHat, PackageCheck } from "lucide-react";
+
+function getRoleIcon(role?: string) {
+  switch (role) {
+    case "SUPER_ADMIN":
+      return <Crown className="w-3.5 h-3.5" />;
+    case "FRANCHISE_ADMIN":
+      return <Shield className="w-3.5 h-3.5" />;
+    case "OUTLET_MANAGER":
+      return <Store className="w-3.5 h-3.5" />;
+    case "KITCHEN_STAFF":
+      return <ChefHat className="w-3.5 h-3.5" />;
+    case "PICKUP_STAFF":
+      return <PackageCheck className="w-3.5 h-3.5" />;
+    default:
+      return <Shield className="w-3.5 h-3.5" />;
+  }
+}
 
 /* ─── tiny toast hook (no external dep) ─── */
 function useToast() {
@@ -12,13 +30,13 @@ function useToast() {
 
   const show = (
     message: string,
-    type: "success" | "error" | "info" = "info"
+    type: "success" | "error" | "info" = "info",
   ) => {
     const id = Date.now();
     setToasts((prev) => [...prev, { id, message, type }]);
     setTimeout(
       () => setToasts((prev) => prev.filter((t) => t.id !== id)),
-      3500
+      3500,
     );
   };
 
@@ -86,8 +104,8 @@ function ToastContainer({
             t.type === "success"
               ? "bg-emerald-900/90 border-emerald-500/30 text-emerald-200"
               : t.type === "error"
-              ? "bg-red-900/90 border-red-500/30 text-red-200"
-              : "bg-slate-800/90 border-white/10 text-slate-200"
+                ? "bg-red-900/90 border-red-500/30 text-red-200"
+                : "bg-slate-800/90 border-white/10 text-slate-200"
           }`}
         >
           {t.message}
@@ -107,7 +125,11 @@ function Breadcrumb() {
       {parts.map((p, i) => (
         <span key={i} className="flex items-center gap-1.5">
           <span>/</span>
-          <span className={i === parts.length - 1 ? "text-orange-400 font-medium" : ""}>
+          <span
+            className={
+              i === parts.length - 1 ? "text-orange-400 font-medium" : ""
+            }
+          >
             {p.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}
           </span>
         </span>
@@ -127,7 +149,10 @@ export default function AppLayout() {
   // Close dropdown on outside click
   useEffect(() => {
     const handler = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(e.target as Node)
+      ) {
         setDropdownOpen(false);
       }
     };
@@ -149,8 +174,9 @@ export default function AppLayout() {
         <header className="h-16 bg-white/80 backdrop-blur-md border-b border-slate-200/70 px-6 flex items-center justify-between sticky top-0 z-30 shadow-sm">
           {/* Left */}
           <div className="flex flex-col justify-center">
-            <Breadcrumb />
-            <span className="text-sm font-clash-medium text-slate-700 leading-tight mt-0.5">
+            {/* <Breadcrumb /> */}
+            <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-100 text-orange-700 text-[11px] font-clash-semibold uppercase tracking-wide shadow-sm">
+              {getRoleIcon(user?.role)}
               {user?.role?.replace(/_/g, " ")}
             </span>
           </div>
@@ -183,7 +209,9 @@ export default function AppLayout() {
               {dropdownOpen && (
                 <div className="absolute right-0 top-full mt-2 w-52 bg-white rounded-xl border border-slate-200 shadow-xl shadow-slate-200/50 overflow-hidden z-50 animate-fade-down">
                   <div className="px-4 py-3 border-b border-slate-100 bg-slate-50">
-                    <p className="text-xs font-satoshi text-slate-500">Signed in as</p>
+                    <p className="text-xs font-satoshi text-slate-500">
+                      Signed in as
+                    </p>
                     <p className="text-sm font-clash-semibold text-slate-800 truncate">
                       {user?.name}
                     </p>
@@ -229,7 +257,6 @@ export default function AppLayout() {
         onCancel={() => setLogoutOpen(false)}
       />
       <ToastContainer toasts={toasts} />
-
     </div>
   );
 }

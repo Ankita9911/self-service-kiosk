@@ -100,9 +100,9 @@ function CreateDeviceModal({ open, onClose, outlets, onCreated }: { open: boolea
             <h3 className="font-clash-bold text-slate-900 text-base">Register Kiosk Device</h3>
             <p className="text-xs font-satoshi text-slate-500 mt-0.5">Assign device to an outlet</p>
           </div>
-          <button onClick={onClose} className="h-7 w-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"><X className="w-4 h-4" /></button>
+          {/* <button onClick={onClose} className="h-7 w-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"><X className="w-4 h-4" /></button> */}
         </div>
-        <form onSubmit={handleCreate} className="p-6 space-y-4">
+        <form onSubmit={handleCreate} className="px-6 pb-6 space-y-4">
           <div className="space-y-1.5">
             <label className="text-[12px] font-clash-semibold text-slate-600 uppercase tracking-wide">Outlet <span className="text-red-400">*</span></label>
             <select value={form.outletId} onChange={e => setForm({ ...form, outletId: e.target.value })} required

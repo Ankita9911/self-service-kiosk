@@ -313,7 +313,7 @@ export default function FranchisePage() {
           <table className="w-full">
             <thead>
               <tr className="border-b border-slate-100 bg-slate-50/60">
-                {["Franchise", "Brand Code", "Contact", "Status", ""].map((h, i) => (
+                {["Franchise", "Brand Code", "Contact", "Status", "Actions"].map((h, i) => (
                   <th key={i} className={cn("px-5 py-3.5 text-left text-[11px] font-clash-semibold text-slate-500 uppercase tracking-wider", i === 4 && "w-10")}>{h}</th>
                 ))}
               </tr>

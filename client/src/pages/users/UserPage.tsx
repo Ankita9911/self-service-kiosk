@@ -129,9 +129,9 @@ function CreateUserModal({ open, onClose, currentUser, franchises, outlets, onCr
             <h3 className="font-clash-bold text-slate-900 text-base">Create User</h3>
             <p className="text-xs font-satoshi text-slate-500 mt-0.5">A temporary password will be generated</p>
           </div>
-          <button onClick={onClose} className="h-7 w-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"><X className="w-4 h-4" /></button>
+          {/* <button onClick={onClose} className="h-7 w-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"><X className="w-4 h-4" /></button> */}
         </div>
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="px-6 pb-6 space-y-4">
           <div className="grid grid-cols-2 gap-3">
             {[
               { key: "name", label: "Full Name", placeholder: "Jane Smith", type: "text" },

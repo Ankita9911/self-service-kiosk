@@ -139,9 +139,9 @@ function OutletModal({ open, onClose, editing, franchises, isSuperAdmin, onSubmi
             <h3 className="font-clash-bold text-slate-900 text-base">{editing ? "Edit Outlet" : "Create New Outlet"}</h3>
             <p className="text-xs font-satoshi text-slate-500 mt-0.5">{editing ? "Update the outlet details below" : "Fill in the details to register a new outlet"}</p>
           </div>
-          <button onClick={onClose} className="h-7 w-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"><X className="w-4 h-4" /></button>
+          {/* <button onClick={onClose} className="h-7 w-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"><X className="w-4 h-4" /></button> */}
         </div>
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="px-6 pb-6 space-y-4">
           {isSuperAdmin && (
             <div className="space-y-1.5">
               <label className="text-[12px] font-clash-semibold text-slate-600 uppercase tracking-wide">Franchise <span className="text-red-400">*</span></label>
@@ -327,7 +327,7 @@ export default function OutletPage() {
         <table className="w-full">
           <thead>
             <tr className="border-b border-slate-100 bg-slate-50/60">
-              {["Outlet", "Code", ...(isSuperAdmin ? ["Franchise"] : []), "Status", ""].map((h, i) => (
+              {["Outlet", "Code", ...(isSuperAdmin ? ["Franchise"] : []), "Status", "Actions"].map((h, i) => (
                 <th key={i} className={cn("px-5 py-3.5 text-left text-[11px] font-clash-semibold text-slate-500 uppercase tracking-wider", (h === "" || h === "Actions") && "w-10")}>{h}</th>
               ))}
             </tr>

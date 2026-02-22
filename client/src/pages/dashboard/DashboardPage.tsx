@@ -253,8 +253,8 @@ export default function DashboardPage() {
           )}
         </div>
 
-        {/* Live clock */}
-        <div className="flex items-center gap-2 bg-white border border-slate-200 rounded-xl px-4 py-3 shadow-sm self-start sm:self-auto">
+       {/* Live clock */}
+        {/* <div className="flex items-center gap-2 bg-white border border-slate-200 rounded-xl px-4 py-3 shadow-sm self-start sm:self-auto">
           <Clock className="w-4 h-4 text-orange-400" />
           <div>
             <p className="text-xs text-slate-400 leading-none">Current Time</p>
@@ -265,8 +265,8 @@ export default function DashboardPage() {
                 second: "2-digit",
               })}
             </p>
-          </div>
-        </div>
+          </div> 
+        </div> */}
       </div>
 
       {/* ── Stat cards ── */}
