@@ -13,6 +13,7 @@ import {
   CheckCircle2, Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { TablePagination } from "@/components/ui/TablePagination";
 
 /* ══════════════════════════════════════════
    CARD SHIMMER
@@ -372,6 +373,8 @@ export default function FranchisePage() {
   const [deleteTarget, setDeleteTarget] = useState<Franchise | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<"ALL" | "ACTIVE" | "INACTIVE">("ALL");
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   async function fetchData(silent = false) {
     if (silent) setRefreshing(true);
@@ -404,6 +407,12 @@ export default function FranchisePage() {
       (statusFilter === "ACTIVE" ? f.status === "ACTIVE" : f.status !== "ACTIVE");
     return matchSearch && matchStatus;
   });
+
+  const paginated = filtered.slice((page - 1) * pageSize, page * pageSize);
+
+  useEffect(() => {
+    setPage(1);
+  }, [searchTerm, statusFilter]);
 
   const activeCount = franchises.filter(f => f.status === "ACTIVE").length;
 
@@ -541,7 +550,7 @@ export default function FranchisePage() {
         ) : (
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              {filtered.map((f, i) => (
+              {paginated.map((f, i) => (
                 <FranchiseCard
                   key={f._id}
                   franchise={f}
@@ -552,13 +561,21 @@ export default function FranchisePage() {
               ))}
             </div>
 
-            <div className="flex items-center justify-between pt-2 border-t border-slate-100 text-[12px] font-satoshi text-slate-400">
-              <span>Showing {filtered.length} of {franchises.length} franchises</span>
+            <div className="space-y-2 pt-2 border-t border-slate-100">
               {(searchTerm || statusFilter !== "ALL") && (
-                <button onClick={() => { setSearchTerm(""); setStatusFilter("ALL"); }} className="text-orange-500 hover:text-orange-600 transition-colors">
-                  Clear filters
-                </button>
+                <div className="flex justify-end">
+                  <button onClick={() => { setSearchTerm(""); setStatusFilter("ALL"); }} className="text-[12px] font-satoshi text-orange-500 hover:text-orange-600 transition-colors">
+                    Clear filters
+                  </button>
+                </div>
               )}
+              <TablePagination
+                total={filtered.length}
+                page={page}
+                pageSize={pageSize}
+                onPageChange={setPage}
+                onPageSizeChange={(s) => { setPageSize(s); setPage(1); }}
+              />
             </div>
           </>
         )}

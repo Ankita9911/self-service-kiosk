@@ -11,6 +11,7 @@ import { getFranchises } from "@/services/franchise.service";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
+import { TablePagination } from "@/components/ui/TablePagination";
 import { Input } from "@/components/ui/input";
 
 import {
@@ -226,6 +227,8 @@ export default function OutletPage() {
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Outlet | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Outlet | null>(null);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   async function fetchData(silent = false) {
     if (!canViewOutlet) return;
@@ -272,6 +275,12 @@ export default function OutletPage() {
     const matchStatus = statusFilter === "ALL" || o.status === statusFilter;
     return matchSearch && matchStatus;
   });
+
+  const paginated = filtered.slice((page - 1) * pageSize, page * pageSize);
+
+  useEffect(() => {
+    setPage(1);
+  }, [searchTerm, statusFilter]);
 
   if (!canViewOutlet) {
     return (
@@ -388,7 +397,7 @@ export default function OutletPage() {
                 </td>
               </tr>
             ) : (
-              filtered.map((o) => (
+              paginated.map((o) => (
                 <tr key={o._id} className="group hover:bg-orange-50/20 transition-colors">
                   <td className="px-5 py-4">
                     <div>
@@ -455,19 +464,13 @@ export default function OutletPage() {
         </table>
 
         {!loading && filtered.length > 0 && (
-          <div className="px-5 py-3 border-t border-slate-100 bg-slate-50/50 flex items-center justify-between">
-            <p className="text-xs font-satoshi text-slate-400">
-              Showing {filtered.length} of {outlets.length} outlets
-            </p>
-            {searchTerm && (
-              <button
-                onClick={() => setSearchTerm("")}
-                className="text-xs font-satoshi text-orange-500 hover:underline"
-              >
-                Clear search
-              </button>
-            )}
-          </div>
+          <TablePagination
+            total={filtered.length}
+            page={page}
+            pageSize={pageSize}
+            onPageChange={setPage}
+            onPageSizeChange={(s) => { setPageSize(s); setPage(1); }}
+          />
         )}
       </div>
 

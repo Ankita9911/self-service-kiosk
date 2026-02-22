@@ -12,6 +12,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { TablePagination } from "@/components/ui/TablePagination";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
@@ -238,6 +239,8 @@ export default function DevicePage() {
   const [createdSecret, setCreatedSecret] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<"ALL" | "ACTIVE" | "INACTIVE">("ALL");
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   async function fetchData(silent = false) {
     if (!canView) return;
@@ -266,6 +269,12 @@ export default function DevicePage() {
       statusFilter === "ALL" || d.status === statusFilter;
     return matchSearch && matchStatus;
   });
+
+  const paginated = filtered.slice((page - 1) * pageSize, page * pageSize);
+
+  useEffect(() => {
+    setPage(1);
+  }, [searchTerm, statusFilter]);
 
   const activeCount = devices.filter((d) => d.status === "ACTIVE").length;
 
@@ -398,7 +407,7 @@ export default function DevicePage() {
                 </td>
               </tr>
             ) : (
-              filtered.map((d) => (
+              paginated.map((d) => (
                 <tr key={d._id} className="group hover:bg-orange-50/30 transition-colors">
                   <td className="px-5 py-4">
                     <span className="font-mono text-[13px] text-slate-600 bg-slate-100 px-2 py-0.5 rounded-lg">
@@ -427,13 +436,14 @@ export default function DevicePage() {
           </tbody>
         </table>
 
-        {/* Result count */}
         {!loading && filtered.length > 0 && (
-          <div className="px-5 py-3 border-t border-slate-100 bg-slate-50/50">
-            <p className="text-xs font-satoshi text-slate-400">
-              Showing {filtered.length} of {devices.length} devices
-            </p>
-          </div>
+          <TablePagination
+            total={filtered.length}
+            page={page}
+            pageSize={pageSize}
+            onPageChange={setPage}
+            onPageSizeChange={(s) => { setPageSize(s); setPage(1); }}
+          />
         )}
       </div>
 

@@ -10,6 +10,7 @@ import type { Franchise } from "@/types/franchise.types";
 import type { Outlet } from "@/types/outlet.types";
 
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { TablePagination } from "@/components/ui/TablePagination";
 import { Input } from "@/components/ui/input";
 import { Users, Plus, Search, Copy, Check, KeyRound, X, RefreshCcw, ShieldAlert } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -297,6 +298,8 @@ export default function UserPage() {
   const [generatedPassword, setGeneratedPassword] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState("ALL");
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   const allRoles = ["ALL", ...Array.from(new Set(users.map((u) => u.role)))];
 
@@ -334,6 +337,12 @@ export default function UserPage() {
     const matchRole = roleFilter === "ALL" || u.role === roleFilter;
     return matchSearch && matchRole;
   });
+
+  const paginated = filtered.slice((page - 1) * pageSize, page * pageSize);
+
+  useEffect(() => {
+    setPage(1);
+  }, [searchTerm, roleFilter]);
 
   const activeCount = users.filter((u) => u.status === "ACTIVE").length;
 
@@ -457,7 +466,7 @@ export default function UserPage() {
                 </td>
               </tr>
             ) : (
-              filtered.map((u) => (
+              paginated.map((u) => (
                 <tr key={u._id} className="group hover:bg-orange-50/20 transition-colors">
                   <td className="px-5 py-4">
                     <div className="flex items-center gap-3">
@@ -479,19 +488,13 @@ export default function UserPage() {
         </table>
 
         {!loading && filtered.length > 0 && (
-          <div className="px-5 py-3 border-t border-slate-100 bg-slate-50/50 flex items-center justify-between">
-            <p className="text-xs font-satoshi text-slate-400">
-              Showing {filtered.length} of {users.length} users
-            </p>
-            {(searchTerm || roleFilter !== "ALL") && (
-              <button
-                onClick={() => { setSearchTerm(""); setRoleFilter("ALL"); }}
-                className="text-xs font-satoshi text-orange-500 hover:underline"
-              >
-                Clear filters
-              </button>
-            )}
-          </div>
+          <TablePagination
+            total={filtered.length}
+            page={page}
+            pageSize={pageSize}
+            onPageChange={setPage}
+            onPageSizeChange={(s) => { setPageSize(s); setPage(1); }}
+          />
         )}
       </div>
 

@@ -34,6 +34,7 @@ import {
   Package,
 } from "lucide-react";
 import { ImageWithFallback } from "@/components/figma/ImageWithFallback";
+import { TablePagination } from "@/components/ui/TablePagination";
 
 const outletIdParam = (role: string, userOutletId?: string | null, paramOutletId?: string) => {
   if (role === "OUTLET_MANAGER") return userOutletId ?? undefined;
@@ -57,6 +58,8 @@ export default function OutletMenuPage() {
   const [addItemOpen, setAddItemOpen] = useState(false);
   const [editItem, setEditItem] = useState<MenuItem | null>(null);
   const [deleteItem, setDeleteItem] = useState<MenuItem | null>(null);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(12);
 
   const [catForm, setCatForm] = useState({ name: "", description: "" });
   const [itemForm, setItemForm] = useState({
@@ -106,6 +109,12 @@ export default function OutletMenuPage() {
     selectedCategoryId === "ALL"
       ? items
       : items.filter((i) => i.categoryId === selectedCategoryId);
+
+  const paginatedItems = filteredItems.slice((page - 1) * pageSize, page * pageSize);
+
+  useEffect(() => {
+    setPage(1);
+  }, [selectedCategoryId]);
 
   const oidForApi = user?.role === "FRANCHISE_ADMIN" || user?.role === "SUPER_ADMIN" ? outletId : undefined;
 
@@ -280,7 +289,7 @@ export default function OutletMenuPage() {
             </Button>
           </div>
         ) : (
-          filteredItems.map((item) => (
+          paginatedItems.map((item) => (
             <div
               key={item._id}
               className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow group"
@@ -329,6 +338,16 @@ export default function OutletMenuPage() {
           ))
         )}
       </div>
+
+      {!loading && filteredItems.length > 0 && (
+        <TablePagination
+          total={filteredItems.length}
+          page={page}
+          pageSize={pageSize}
+          onPageChange={setPage}
+          onPageSizeChange={(s) => { setPageSize(s); setPage(1); }}
+        />
+      )}
 
       {/* Add Category Modal */}
       <Dialog open={addCategoryOpen} onOpenChange={setAddCategoryOpen}>
