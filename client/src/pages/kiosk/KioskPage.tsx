@@ -77,9 +77,9 @@ export default function KioskPage() {
       navigate("/kiosk/login", { replace: true });
     }
   }, [navigate]);
-  async function loadMenu() {
+  async function loadMenu(silent = false) {
     try {
-      setIsLoading(true);
+      if (!silent) setIsLoading(true);
       const cachedMenu = (await getMenuFromCache()) as MenuCategory[];
       if (cachedMenu?.length > 0) {
         const validCategories = cachedMenu.filter(cat => cat.items && cat.items.length > 0);
@@ -113,7 +113,7 @@ export default function KioskPage() {
         }
       }
     } finally {
-      setTimeout(() => setIsLoading(false), 500);
+      if (!silent) setTimeout(() => setIsLoading(false), 500);
     }
   }
 
@@ -190,6 +190,7 @@ export default function KioskPage() {
           duration: 3000,
           icon: <CheckCircle2 className="w-5 h-5" />,
         });
+        loadMenu(true);
       } catch (error: any) {
         toast.dismiss(loadingToast);
         if (!error.response) {

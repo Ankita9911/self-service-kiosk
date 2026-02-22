@@ -40,11 +40,16 @@ const isMatch = await bcrypt.compare(password, user.passwordHash);
 }
 
 
-export async function forceResetPassword(userId, newPassword) {
+export async function forceResetPassword(userId, currentPassword, newPassword) {
   const user = await User.findById(userId).select("+passwordHash");
 
   if (!user) {
     throw new AppError("User not found", 404);
+  }
+
+  const isMatch = await bcrypt.compare(currentPassword, user.passwordHash);
+  if (!isMatch) {
+    throw new AppError("Current password is incorrect", 401, "INVALID_CURRENT_PASSWORD");
   }
 
   user.passwordHash = await bcrypt.hash(newPassword, SALT_ROUNDS);

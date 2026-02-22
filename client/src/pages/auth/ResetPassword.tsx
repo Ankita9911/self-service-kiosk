@@ -56,8 +56,10 @@ function PasswordStrength({ password }: { password: string }) {
   );
 }
 export function ResetPassword() {
+  const [currentPassword, setCurrentPassword] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
+  const [showCurrent, setShowCurrent] = useState(false);
   const [showPw, setShowPw] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -66,7 +68,7 @@ export function ResetPassword() {
   const navigate = useNavigate();
 
   const mismatch = confirm.length > 0 && password !== confirm;
-  const isValid = password.length >= 8 && password === confirm;
+  const isValid = currentPassword.length > 0 && password.length >= 8 && password === confirm;
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -74,7 +76,7 @@ export function ResetPassword() {
     setError("");
     setLoading(true);
     try {
-      await axios.post("/auth/force-reset-password", { password });
+      await axios.post("/auth/force-reset-password", { currentPassword, password });
       setSuccess(true);
       setTimeout(() => navigate("/"), 1800);
     } catch (err: unknown) {
@@ -113,6 +115,27 @@ export function ResetPassword() {
           <div className="h-1 w-full bg-gradient-to-r from-orange-400 to-orange-600" />
           <div className="p-7 space-y-5">
             <form onSubmit={handleSubmit} className="space-y-5">
+              {/* Current password */}
+              <div className="space-y-1.5">
+                <label className="text-[12px] font-clash-semibold text-slate-600 uppercase tracking-wide">
+                  Current Password
+                </label>
+                <div className="relative">
+                  <LockKeyhole className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <input
+                    type={showCurrent ? "text" : "password"}
+                    value={currentPassword}
+                    onChange={(e) => setCurrentPassword(e.target.value)}
+                    placeholder="Enter your current password"
+                    required
+                    className="w-full h-11 pl-10 pr-10 rounded-xl border border-slate-200 bg-slate-50 text-sm font-satoshi text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-400/40 focus:border-orange-400 transition-all"
+                  />
+                  <button type="button" onClick={() => setShowCurrent((v) => !v)} tabIndex={-1} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors">
+                    {showCurrent ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+
               {/* New password */}
               <div className="space-y-1.5">
                 <label className="text-[12px] font-clash-semibold text-slate-600 uppercase tracking-wide">

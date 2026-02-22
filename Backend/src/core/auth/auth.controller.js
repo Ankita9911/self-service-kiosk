@@ -18,11 +18,15 @@ export async function loginController(req, res, next) {
 export async function forceResetPasswordController(req, res, next) {
   try {
     const userId = req.user?.userId ?? req.user?.id;
+    const currentPassword = req.body?.currentPassword;
     const newPassword = req.body?.password;
-    if (!userId || !newPassword || typeof newPassword !== "string") {
+    if (!userId || !currentPassword || typeof currentPassword !== "string") {
+      return next(new AppError("Current password is required", 400));
+    }
+    if (!newPassword || typeof newPassword !== "string") {
       return next(new AppError("New password is required", 400));
     }
-    await forceResetPassword(String(userId), newPassword);
+    await forceResetPassword(String(userId), currentPassword, newPassword);
     res.json({ success: true });
   } catch (err) {
     next(err);
