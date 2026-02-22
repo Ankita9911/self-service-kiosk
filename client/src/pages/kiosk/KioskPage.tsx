@@ -235,12 +235,7 @@ export default function KioskPage() {
             className="absolute inset-0 w-full h-full"
             style={{ backgroundImage: `linear-gradient(135deg, #f97316 0%, #fb923c 50%, #fdba74 100%)` }}
           />
-          <div 
-            className="absolute inset-0 opacity-10"
-            style={{
-              backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
-            }}
-          />
+
           <div className="relative z-10 flex items-center gap-4">
             <div className="p-3 bg-white/20 backdrop-blur-sm rounded-2xl shadow-xl">
               <StoreIcon className="w-8 h-8 text-white" strokeWidth={2.5} />
@@ -260,30 +255,22 @@ export default function KioskPage() {
             onClick={() => setIsCartOpen(!isCartOpen)}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
-            className="relative z-10 bg-white/95 backdrop-blur-sm h-16 px-6 rounded-2xl flex gap-4 items-center shadow-2xl hover:shadow-3xl transition-all border-2 border-white/50"
+            className="relative z-10 bg-white h-14 pl-2 pr-5 rounded-2xl flex items-center gap-3 shadow-2xl hover:shadow-3xl transition-all border border-orange-100"
           >
-            <div className="relative">
-              <ShoppingBag className="w-7 h-7 text-orange-600" strokeWidth={2.5} />
-              {totalItems > 0 && (
-                <motion.span
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  className="absolute -top-2 -right-2 bg-gradient-to-br from-red-500 to-red-600 text-white text-xs font-black w-5 h-5 rounded-full flex items-center justify-center shadow-lg"
-                  style={{ fontFamily: 'var(--font-body)' }}
-                >
-                  {totalItems}
-                </motion.span>
-              )}
+            {/* Item count bubble — like Swiggy/Zomato cart button */}
+            <div className="bg-orange-500 text-white h-10 w-10 rounded-xl flex items-center justify-center shrink-0 shadow-md">
+              <span className="text-lg font-black leading-none" style={{ fontFamily: 'var(--font-display)' }}>
+                {totalItems}
+              </span>
             </div>
             <div className="text-left">
-              <p className="text-xs font-bold text-gray-500 leading-none" style={{ fontFamily: 'var(--font-body)' }}>CART TOTAL</p>
-              <p className="text-2xl font-black text-orange-600 leading-none mt-0.5" style={{ fontFamily: 'var(--font-display)' }}>
+              <p className="text-xs font-bold text-gray-400 leading-none uppercase tracking-wide" style={{ fontFamily: 'var(--font-body)' }}>
+                {totalItems === 0 ? "View Cart" : `${totalItems} item${totalItems !== 1 ? "s" : ""}`}
+              </p>
+              <p className="text-xl font-black text-orange-600 leading-tight mt-0.5" style={{ fontFamily: 'var(--font-display)' }}>
                 ₹{totalPrice.toFixed(2)}
               </p>
             </div>
-            <motion.div animate={{ rotate: isCartOpen ? 0 : 180 }} transition={{ duration: 0.3 }}>
-              <ChevronLeft className="w-5 h-5 text-orange-600" strokeWidth={3} />
-            </motion.div>
           </motion.button>
         </header>
 
@@ -341,14 +328,12 @@ export default function KioskPage() {
                   </p>
                 </div>
               </div>
-              <motion.button
+              <button
                 onClick={() => setIsCartOpen(false)}
-                whileHover={{ scale: 1.1, rotate: 90 }}
-                whileTap={{ scale: 0.9 }}
                 className="p-2.5 hover:bg-white/20 rounded-xl transition-all"
               >
                 <X className="w-6 h-6 text-white" strokeWidth={2.5} />
-              </motion.button>
+              </button>
             </div>
           </div>
           <div className="flex-1 overflow-hidden">

@@ -1,107 +1,84 @@
+// src/components/ui/TablePagination.tsx
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const PAGE_SIZES = [5, 10, 12, 20, 50];
-
-interface TablePaginationProps {
+interface Props {
   total: number;
   page: number;
   pageSize: number;
-  onPageChange: (page: number) => void;
-  onPageSizeChange?: (size: number) => void;
-  className?: string;
+  onPageChange: (p: number) => void;
+  onPageSizeChange: (s: number) => void;
 }
 
-export function TablePagination({
-  total,
-  page,
-  pageSize,
-  onPageChange,
-  onPageSizeChange,
-  className,
-}: TablePaginationProps) {
+export function TablePagination({ total, page, pageSize, onPageChange, onPageSizeChange }: Props) {
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
-  const start = total === 0 ? 0 : (page - 1) * pageSize + 1;
-  const end = Math.min(page * pageSize, total);
+  const from = total === 0 ? 0 : (page - 1) * pageSize + 1;
+  const to = Math.min(page * pageSize, total);
+
+  // Build page numbers with ellipsis
+  function getPages(): (number | "…")[] {
+    if (totalPages <= 7) return Array.from({ length: totalPages }, (_, i) => i + 1);
+    if (page <= 4) return [1, 2, 3, 4, 5, "…", totalPages];
+    if (page >= totalPages - 3) return [1, "…", totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages];
+    return [1, "…", page - 1, page, page + 1, "…", totalPages];
+  }
 
   return (
-    <div
-      className={cn(
-        "flex flex-col sm:flex-row items-center justify-between gap-3 px-5 py-3 border-t border-slate-100 bg-slate-50/50",
-        className
-      )}
-    >
-      <div className="flex items-center gap-4">
-        <p className="text-xs font-satoshi text-slate-400">
-          Showing {start}–{end} of {total}
-        </p>
-        {onPageSizeChange && total > 0 && (
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-satoshi text-slate-500">Rows per page</span>
-            <select
-              value={pageSize}
-              onChange={(e) => onPageSizeChange(Number(e.target.value))}
-              className="h-7 px-2 rounded-lg border border-slate-200 bg-white text-xs font-satoshi text-slate-700 focus:outline-none focus:ring-2 focus:ring-orange-400/40"
-            >
-              {PAGE_SIZES.map((s) => (
-                <option key={s} value={s}>
-                  {s}
-                </option>
-              ))}
-            </select>
-          </div>
-        )}
+    <div className="flex items-center justify-between px-5 py-3 border-t border-slate-100 bg-white">
+      {/* Left: count + rows per page */}
+      <div className="flex items-center gap-4 text-sm font-satoshi text-slate-500">
+        <span>
+          {total === 0 ? "No results" : `Showing ${from}–${to} of ${total}`}
+        </span>
+        <div className="flex items-center gap-1.5">
+          <span className="text-slate-400 text-xs">Rows per page:</span>
+          <select
+            value={pageSize}
+            onChange={e => onPageSizeChange(Number(e.target.value))}
+            className="h-7 px-1.5 rounded-lg border border-slate-200 bg-white text-xs font-clash-semibold text-slate-600 focus:outline-none focus:ring-1 focus:ring-orange-400/40 focus:border-orange-400 cursor-pointer"
+          >
+            {[10, 20, 50].map(s => <option key={s} value={s}>{s}</option>)}
+          </select>
+        </div>
       </div>
 
-      {totalPages > 1 && (
-        <div className="flex items-center gap-1">
-          <button
-            onClick={() => onPageChange(page - 1)}
-            disabled={page <= 1}
-            className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-500 hover:bg-slate-200 hover:text-slate-700 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent transition-colors"
-          >
-            <ChevronLeft className="w-4 h-4" />
-          </button>
-          <div className="flex items-center gap-1 px-2">
-            {Array.from({ length: totalPages }, (_, i) => i + 1)
-              .filter((p) => {
-                if (totalPages <= 7) return true;
-                if (p === 1 || p === totalPages) return true;
-                if (Math.abs(p - page) <= 1) return true;
-                return false;
-              })
-              .map((p, idx, arr) => {
-                const prev = arr[idx - 1];
-                const showEllipsis = prev !== undefined && p - prev > 1;
-                return (
-                  <span key={p} className="flex items-center gap-1">
-                    {showEllipsis && (
-                      <span className="px-1 text-slate-400 text-xs">…</span>
-                    )}
-                    <button
-                      onClick={() => onPageChange(p)}
-                      className={cn(
-                        "min-w-[28px] h-8 px-2 rounded-lg text-xs font-clash-semibold transition-colors",
-                        p === page
-                          ? "bg-orange-500 text-white"
-                          : "text-slate-600 hover:bg-slate-200"
-                      )}
-                    >
-                      {p}
-                    </button>
-                  </span>
-                );
-              })}
-          </div>
-          <button
-            onClick={() => onPageChange(page + 1)}
-            disabled={page >= totalPages}
-            className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-500 hover:bg-slate-200 hover:text-slate-700 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent transition-colors"
-          >
-            <ChevronRight className="w-4 h-4" />
-          </button>
-        </div>
-      )}
+      {/* Right: prev / pages / next */}
+      <div className="flex items-center gap-0.5">
+        <button
+          onClick={() => onPageChange(page - 1)}
+          disabled={page === 1}
+          className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-500 hover:bg-slate-100 hover:text-slate-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+        >
+          <ChevronLeft className="w-4 h-4" />
+        </button>
+
+        {getPages().map((p, i) =>
+          p === "…" ? (
+            <span key={`el-${i}`} className="h-8 w-8 flex items-center justify-center text-slate-400 text-sm select-none">…</span>
+          ) : (
+            <button
+              key={p}
+              onClick={() => onPageChange(p as number)}
+              className={cn(
+                "h-8 w-8 rounded-lg text-sm font-clash-semibold transition-all",
+                page === p
+                  ? "bg-slate-900 text-white shadow-sm"
+                  : "text-slate-500 hover:bg-slate-100 hover:text-slate-800"
+              )}
+            >
+              {p}
+            </button>
+          )
+        )}
+
+        <button
+          onClick={() => onPageChange(page + 1)}
+          disabled={page === totalPages}
+          className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-500 hover:bg-slate-100 hover:text-slate-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+        >
+          <ChevronRight className="w-4 h-4" />
+        </button>
+      </div>
     </div>
   );
 }
