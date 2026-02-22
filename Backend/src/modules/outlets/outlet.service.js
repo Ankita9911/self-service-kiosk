@@ -62,6 +62,12 @@ export async function getOutlets(user) {
       franchiseId: user.franchiseId,
     }).sort({ createdAt: -1 });
   }
+  if (user.role === "OUTLET_MANAGER") {
+    return Outlet.find({
+      ...filter,
+      _id: user.outletId,
+    });
+  }
 
   throw new AppError("Forbidden", 403, "FORBIDDEN");
 }

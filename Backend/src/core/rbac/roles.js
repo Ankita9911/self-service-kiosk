@@ -56,6 +56,8 @@ export const ROLE_PERMISSIONS = {
 
     PERMISSIONS.ORDERS_VIEW,
     PERMISSIONS.ORDERS_UPDATE_STATUS,
+
+    PERMISSIONS.OUTLET_VIEW,
   ],
 
   // Kitchen staff: view orders + update status (CREATED→IN_KITCHEN→READY)
