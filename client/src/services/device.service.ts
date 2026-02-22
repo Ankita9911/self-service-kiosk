@@ -1,4 +1,4 @@
-import axiosInstance from "../shared/lib/axiosInstance";
+import axiosInstance from "@/shared/lib/axiosInstance";
 import type { Device } from "@/shared/types/device.types";
 
 export async function getDevices(): Promise<Device[]> {

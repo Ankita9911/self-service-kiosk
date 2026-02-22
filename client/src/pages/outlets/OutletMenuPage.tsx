@@ -33,7 +33,7 @@ import {
   ArrowLeft,
   Package,
 } from "lucide-react";
-import { ImageWithFallback } from "@/shared/components/figma/ImageWithFallback";
+import { ImageWithFallback } from "@/shared/components/utils/ImageWithFallback";
 import { TablePagination } from "@/shared/components/ui/TablePagination";
 
 const outletIdParam = (role: string, userOutletId?: string | null, paramOutletId?: string) => {

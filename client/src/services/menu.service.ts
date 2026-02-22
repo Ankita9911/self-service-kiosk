@@ -1,4 +1,4 @@
-import axiosInstance from "../shared/lib/axiosInstance";
+import axiosInstance from "@/shared/lib/axiosInstance";
 import type { Category, MenuItem } from "@/shared/types/menu.types";
 
 function params(outletId?: string) {

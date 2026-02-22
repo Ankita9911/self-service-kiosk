@@ -1,97 +1,44 @@
-// ═══════════════════════════════════════
-//  ForceReset.tsx
-// ═══════════════════════════════════════
 import { useState } from "react";
-import axios from "@/shared/lib/axiosInstance";
 import { useNavigate } from "react-router-dom";
 import useAuth from "@/shared/hooks/useAuth";
 import {
-  LockKeyhole, Eye, EyeOff, ShieldCheck, Loader2,
-  ChefHat, ArrowRight, AlertCircle, CheckCircle2, LogOut,
+  LockKeyhole,
+  Eye,
+  EyeOff,
+  ShieldCheck,
+  Loader2,
+  ChefHat,
+  ArrowRight,
+  AlertCircle,
+  LogOut,
 } from "lucide-react";
-
-function PasswordStrength({ password }: { password: string }) {
-  const checks = [
-    { label: "8+ characters", pass: password.length >= 8 },
-    { label: "Uppercase letter", pass: /[A-Z]/.test(password) },
-    { label: "Number", pass: /[0-9]/.test(password) },
-    { label: "Special character", pass: /[^A-Za-z0-9]/.test(password) },
-  ];
-  const score = checks.filter((c) => c.pass).length;
-  const strength = score <= 1 ? "Weak" : score === 2 ? "Fair" : score === 3 ? "Good" : "Strong";
-  const colors = ["bg-red-400", "bg-orange-400", "bg-yellow-400", "bg-emerald-500"];
-  const textColors = ["text-red-500", "text-orange-500", "text-yellow-600", "text-emerald-600"];
-
-  if (!password) return null;
-
-  return (
-    <div className="space-y-2.5 animate-fade-in">
-      {/* Strength bar */}
-      <div className="flex gap-1">
-        {[0, 1, 2, 3].map((i) => (
-          <div
-            key={i}
-            className={`h-1 flex-1 rounded-full transition-all duration-300 ${
-              i < score ? colors[score - 1] : "bg-slate-200"
-            }`}
-          />
-        ))}
-      </div>
-      <div className="flex items-center justify-between">
-        <div className="flex flex-wrap gap-2">
-          {checks.map((c) => (
-            <span
-              key={c.label}
-              className={`flex items-center gap-1 text-[11px] font-satoshi transition-colors ${
-                c.pass ? "text-emerald-600" : "text-slate-400"
-              }`}
-            >
-              <CheckCircle2 className={`w-3 h-3 ${c.pass ? "opacity-100" : "opacity-30"}`} />
-              {c.label}
-            </span>
-          ))}
-        </div>
-        <span className={`text-[11px] font-clash-semibold ${textColors[score - 1] || "text-slate-400"}`}>
-          {strength}
-        </span>
-      </div>
-    </div>
-  );
-}
+import PasswordStrength from "../components/PasswordStrength";
+import { useForceReset } from "../hooks/useForceReset";
 
 export function ForceReset() {
-  const [currentPassword, setCurrentPassword] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirm, setConfirm] = useState("");
-  const [showCurrent, setShowCurrent] = useState(false);
-  const [showPw, setShowPw] = useState(false);
-  const [showConfirm, setShowConfirm] = useState(false);
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { logout } = useAuth();
 
-  const mismatch = confirm.length > 0 && password !== confirm;
-  const isValid = currentPassword.length > 0 && password.length >= 8 && password === confirm;
+  const [showCurrent, setShowCurrent] = useState(false);
+  const [showPw, setShowPw] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!isValid) return;
-    setError("");
-    setLoading(true);
-    try {
-      await axios.post("/auth/force-reset-password", { currentPassword, password });
-      logout();
-      navigate("/login", { replace: true });
-    } catch (err: unknown) {
-      const msg =
-        (err as any)?.response?.data?.error?.message ?? "Failed to update password.";
-      setError(msg);
-    } finally {
-      setLoading(false);
-    }
-  }
-
+  const {
+    currentPassword,
+    setCurrentPassword,
+    password,
+    setPassword,
+    confirm,
+    setConfirm,
+    loading,
+    error,
+    mismatch,
+    isValid,
+    submit,
+  } = useForceReset(() => {
+    logout();
+    navigate("/login", { replace: true });
+  });
   return (
     <div className="min-h-screen bg-[#f7f8fa] flex items-center justify-center px-4 relative overflow-hidden">
       {/* Subtle bg glow */}
@@ -115,7 +62,8 @@ export function ForceReset() {
                   Set New Password
                 </h2>
                 <p className="text-sm font-satoshi text-slate-500 mt-1">
-                  Your account requires a password change before you can continue.
+                  Your account requires a password change before you can
+                  continue.
                 </p>
               </div>
             </div>
@@ -124,11 +72,18 @@ export function ForceReset() {
             <div className="flex items-start gap-2.5 bg-amber-50 border border-amber-200 rounded-xl p-3.5">
               <AlertCircle className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
               <p className="text-xs font-satoshi text-amber-700 leading-relaxed">
-                After setting a new password, you'll be redirected to log in again with your new credentials.
+                After setting a new password, you'll be redirected to log in
+                again with your new credentials.
               </p>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                submit();
+              }}
+              className="space-y-4"
+            >
               {/* Current password */}
               <div className="space-y-1.5">
                 <label className="text-[12px] font-clash-semibold text-slate-600 uppercase tracking-wide">
@@ -150,7 +105,11 @@ export function ForceReset() {
                     tabIndex={-1}
                     className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
                   >
-                    {showCurrent ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    {showCurrent ? (
+                      <EyeOff className="w-4 h-4" />
+                    ) : (
+                      <Eye className="w-4 h-4" />
+                    )}
                   </button>
                 </div>
               </div>
@@ -177,7 +136,11 @@ export function ForceReset() {
                     tabIndex={-1}
                     className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
                   >
-                    {showPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    {showPw ? (
+                      <EyeOff className="w-4 h-4" />
+                    ) : (
+                      <Eye className="w-4 h-4" />
+                    )}
                   </button>
                 </div>
                 <PasswordStrength password={password} />
@@ -208,7 +171,11 @@ export function ForceReset() {
                     tabIndex={-1}
                     className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
                   >
-                    {showConfirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    {showConfirm ? (
+                      <EyeOff className="w-4 h-4" />
+                    ) : (
+                      <Eye className="w-4 h-4" />
+                    )}
                   </button>
                 </div>
                 {mismatch && (
@@ -233,16 +200,25 @@ export function ForceReset() {
                 disabled={loading || !isValid}
                 className="w-full h-11 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white text-sm font-clash-semibold shadow-lg shadow-orange-500/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 active:scale-[0.98]"
               >
-                {loading
-                  ? <><Loader2 className="w-4 h-4 animate-spin" /> Updating…</>
-                  : <><ArrowRight className="w-4 h-4" /> Update Password</>}
+                {loading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" /> Updating…
+                  </>
+                ) : (
+                  <>
+                    <ArrowRight className="w-4 h-4" /> Update Password
+                  </>
+                )}
               </button>
             </form>
 
             {/* Sign out link */}
             <div className="text-center pt-2 border-t border-slate-100">
               <button
-                onClick={() => { logout(); navigate("/login", { replace: true }); }}
+                onClick={() => {
+                  logout();
+                  navigate("/login", { replace: true });
+                }}
                 className="flex items-center gap-2 text-sm font-satoshi text-slate-400 hover:text-red-500 transition-colors mx-auto"
               >
                 <LogOut className="w-3.5 h-3.5" />
@@ -257,7 +233,9 @@ export function ForceReset() {
           <div className="h-6 w-6 rounded-lg bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center">
             <ChefHat className="w-3.5 h-3.5 text-white" />
           </div>
-          <span className="text-xs font-clash-semibold text-slate-400">Hyper Kitchen · Admin Portal</span>
+          <span className="text-xs font-clash-semibold text-slate-400">
+            Hyper Kitchen · Admin Portal
+          </span>
         </div>
       </div>
     </div>

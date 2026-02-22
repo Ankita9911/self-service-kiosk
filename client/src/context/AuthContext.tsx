@@ -2,12 +2,11 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "@/shared/lib/axiosInstance";
 import type { User } from "@/shared/types/user.types";
-import type { LoginResponse } from "@/shared/types/auth.types";
 
 export interface AuthContextType {
   user: (User & { mustChangePassword?: boolean }) | null;
   loading: boolean;
-  login: (email: string, password: string) => Promise<void>;
+  setSession: (token: string, user: any) => void;
   logout: () => void;
 }
 
@@ -41,46 +40,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const parsedUser = JSON.parse(storedUser);
       setUser(parsedUser);
 
-      // Sync axios header
-      axios.defaults.headers.common[
-        "Authorization"
-      ] = `Bearer ${token}`;
+      axios.defaults.headers.common["Authorization"] =
+        `Bearer ${token}`;
     }
 
     setLoading(false);
   }, []);
 
   /* =========================================
-     LOGIN
+     SET SESSION (NEW)
   ========================================= */
-  const login = async (email: string, password: string) => {
-    const response = await axios.post<{ data: LoginResponse }>(
-      "/auth/login",
-      { email, password }
-    );
-
-    const { token, user, mustChangePassword } =
-      response.data.data;
-
-    // Save token
+  const setSession = (token: string, userData: any) => {
     localStorage.setItem("token", token);
 
-    // Sync axios header
-    axios.defaults.headers.common[
-      "Authorization"
-    ] = `Bearer ${token}`;
+    axios.defaults.headers.common["Authorization"] =
+      `Bearer ${token}`;
 
-    const enrichedUser = {
-      ...user,
-      mustChangePassword,
-    };
+    localStorage.setItem("user", JSON.stringify(userData));
 
-    localStorage.setItem("user", JSON.stringify(enrichedUser));
+    setUser(userData);
 
-    setUser(enrichedUser);
-
-    // 🔐 Force reset redirect
-    if (mustChangePassword) {
+    // 🔐 Handle redirect centrally
+    if (userData?.mustChangePassword) {
       navigate("/force-reset");
     } else {
       navigate("/");
@@ -102,7 +83,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ user, loading, login, logout }}
+      value={{ user, loading, setSession, logout }}
     >
       {children}
     </AuthContext.Provider>

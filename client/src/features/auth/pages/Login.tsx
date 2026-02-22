@@ -1,9 +1,4 @@
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import useAuth from "@/shared/hooks/useAuth";
-
-import { Input } from "@/shared/components/ui/input";
-import { Label } from "@/shared/components/ui/label";
 import {
   LockKeyhole,
   Mail,
@@ -17,54 +12,31 @@ import {
   BarChart3,
   Wifi,
 } from "lucide-react";
+import { useState } from "react";
 
-/* ── tiny feature pill ── */
-function FeaturePill({
-  icon: Icon,
-  text,
-}: {
-  icon: React.ElementType;
-  text: string;
-}) {
-  return (
-    <div className="flex items-center gap-2.5 bg-white/8 backdrop-blur-sm border border-white/12 rounded-xl px-4 py-2.5">
-      <Icon className="w-3.5 h-3.5 text-orange-300 flex-shrink-0" />
-      <span className="text-[13px] font-satoshi text-orange-100/90">{text}</span>
-    </div>
-  );
-}
+import { Input } from "@/shared/components/ui/input";
+import { Label } from "@/shared/components/ui/label";
+import { useLogin } from "../hooks/useLogin";
+import { FeaturePill } from "../components/FeaturePill";
+
 
 export default function Login() {
-  const { login } = useAuth();
   const navigate = useNavigate();
-
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [focused, setFocused] = useState<"email" | "password" | null>(null);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
-    setLoading(true);
-    try {
-      await login(email, password);
-      navigate("/");
-    } catch {
-      setError("Invalid email or password. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
+  const {
+    email,
+    setEmail,
+    password,
+    setPassword,
+    loading,
+    error,
+    submit,
+  } = useLogin();
 
   return (
     <div className="min-h-screen w-full flex overflow-hidden" style={{ fontFamily: "var(--font-body, 'Satoshi', sans-serif)" }}>
-
-      {/* ══════════════════════════════════
-          LEFT — Branding Panel
-      ══════════════════════════════════ */}
       <div className="hidden lg:flex w-[52%] relative bg-[#0f1117] flex-col justify-between p-12 overflow-hidden">
 
         {/* Layered background */}
@@ -247,7 +219,7 @@ export default function Login() {
             {/* Submit */}
             <button
               type="button"
-              onClick={handleSubmit as any}
+              onClick={submit}
               disabled={loading || !email || !password}
               className={`
                 w-full h-11 rounded-xl text-sm font-clash-semibold text-white

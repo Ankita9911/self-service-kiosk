@@ -1,4 +1,4 @@
-import axiosInstance from "../shared/lib/axiosInstance";
+import axiosInstance from "@/shared/lib/axiosInstance";
 import type { Outlet } from "@/shared/types/outlet.types";
 
 export async function getOutlets(): Promise<Outlet[]> {
