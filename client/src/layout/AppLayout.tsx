@@ -1,5 +1,5 @@
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
-import { LogOut, KeyRound, Bell, ChevronDown } from "lucide-react";
+import { LogOut, KeyRound, ChevronDown } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import Sidebar from "./Sidebar";
 import useAuth from "@/hooks/useAuth";
@@ -157,15 +157,6 @@ export default function AppLayout() {
 
           {/* Right */}
           <div className="flex items-center gap-2">
-            {/* Notification bell (UI only) */}
-            <button className="relative h-9 w-9 rounded-xl flex items-center justify-center text-slate-500 hover:bg-slate-100 hover:text-slate-700 transition">
-              <Bell className="w-4 h-4" />
-              <span className="absolute top-1.5 right-1.5 h-2 w-2 bg-orange-500 rounded-full ring-2 ring-white" />
-            </button>
-
-            {/* Divider */}
-            <div className="h-6 w-px bg-slate-200 mx-1" />
-
             {/* Profile dropdown */}
             <div className="relative" ref={dropdownRef}>
               <button

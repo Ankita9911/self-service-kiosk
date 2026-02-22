@@ -332,16 +332,21 @@ export default function KioskPage() {
         </main>
       </div>
 
-      {/* RIGHT COLUMN: CART PANEL */}
-      <AnimatePresence>
-        {isCartOpen && (
-          <motion.aside
-            initial={{ x: "100%", opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            exit={{ x: "100%", opacity: 0 }}
-            transition={{ type: "spring", bounce: 0, duration: 0.4 }}
-            className="w-96 h-full bg-white flex flex-col border-l-4 border-orange-500 shadow-2xl z-20"
-          >
+      {/* RIGHT COLUMN: CART PANEL - always in DOM, animate width for smooth layout */}
+      <motion.aside
+        initial={false}
+        animate={{
+          width: isCartOpen ? 384 : 0,
+        }}
+        transition={{
+          type: "spring",
+          stiffness: 400,
+          damping: 35,
+        }}
+        className="h-full bg-white flex flex-col border-l-4 border-orange-500 shadow-2xl z-20 shrink-0 overflow-hidden"
+        style={{ minWidth: 0 }}
+      >
+        <div className="w-96 min-w-96 flex flex-col h-full">
             {/* Cart Header */}
             <div className="p-5 border-b-4 border-orange-100 bg-gradient-to-br from-orange-500 via-orange-600 to-orange-500 relative overflow-hidden">
               {/* Decorative elements */}
@@ -389,9 +394,8 @@ export default function KioskPage() {
                 isProcessing={isProcessing}
               />
             </div>
-          </motion.aside>
-        )}
-      </AnimatePresence>
+        </div>
+      </motion.aside>
 
       {/* Payment Dialog */}
       <Dialog open={showPaymentDialog} onOpenChange={setShowPaymentDialog}>
