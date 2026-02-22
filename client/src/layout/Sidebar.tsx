@@ -31,9 +31,6 @@ export default function Sidebar() {
 
       {/* Navigation */}
       <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto scrollbar-hide">
-        <p className="text-[10px] font-clash-semibold text-slate-600 uppercase tracking-widest px-3 mb-3">
-          Navigation
-        </p>
         {visibleItems.map((item) => {
           const Icon = item.icon;
           return (
@@ -41,10 +38,10 @@ export default function Sidebar() {
               key={item.path}
               to={item.path}
               className={({ isActive }) =>
-                `group flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-satoshi-medium transition-all duration-200 relative ${
+                `group flex items-center gap-3 pl-3 pr-3 py-2.5 rounded-lg text-sm font-satoshi-medium transition-all duration-200 border-l-2 -ml-px ${
                   isActive
-                    ? "bg-orange-500/10 text-orange-400 before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2 before:h-5 before:w-0.5 before:bg-orange-400 before:rounded-r-full"
-                    : "text-slate-400 hover:text-slate-200 hover:bg-white/5"
+                    ? "border-l-orange-400 bg-orange-500/10 text-orange-400"
+                    : "border-l-transparent text-slate-400 hover:text-slate-200 hover:bg-white/5 hover:border-l-orange-400"
                 }`
               }
             >
