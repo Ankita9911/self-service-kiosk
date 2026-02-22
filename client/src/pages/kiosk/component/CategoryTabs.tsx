@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import type { MenuCategory } from "../../../lib/menuCache";
+import type { MenuCategory } from "../../../shared/lib/menuCache";
 
 interface CategoryTabsProps {
   categories: MenuCategory[];

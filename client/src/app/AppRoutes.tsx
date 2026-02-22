@@ -14,8 +14,8 @@ import KitchenPage from "@/pages/kitchen/KitchenPage";
 import PickupPage from "@/pages/pickup/PickupPage";
 
 import ProtectedRoute from "./ProtectedRoute";
-import AppLayout from "@/layout/AppLayout";
-import { PERMISSIONS } from "@/lib/permissions";
+import AppLayout from "@/shared/components/layout/AppLayout";
+import { PERMISSIONS } from "@/shared/lib/permissions";
 import { ResetPassword } from "@/pages/auth/ResetPassword";
 import UserPage from "@/pages/users/UserPage";
 

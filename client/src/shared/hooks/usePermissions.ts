@@ -1,5 +1,5 @@
-import  useAuth  from "@/hooks/useAuth";
-import { ROLE_PERMISSIONS } from "@/lib/rolePermissions";
+import  useAuth  from "@/shared/hooks/useAuth";
+import { ROLE_PERMISSIONS } from "@/shared/lib/rolePermissions";
 
 export function usePermission() {
   const { user } = useAuth();

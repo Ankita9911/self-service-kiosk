@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
-import { usePermission } from "@/hooks/usePermissions";
-import { PERMISSIONS } from "@/lib/permissions";
+import { usePermission } from "@/shared/hooks/usePermissions";
+import { PERMISSIONS } from "@/shared/lib/permissions";
 import { getDevices, createDevice } from "@/services/device.service";
 import { getOutlets } from "@/services/outlet.service";
 import type { Device } from "@/types/device.types";
@@ -8,15 +8,15 @@ import type { Outlet } from "@/types/outlet.types";
 
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
-} from "@/components/ui/dialog";
-import { TablePagination } from "@/components/ui/TablePagination";
-import { Input } from "@/components/ui/input";
+} from "@/shared/components/ui/dialog";
+import { TablePagination } from "@/shared/components/ui/TablePagination";
+import { Input } from "@/shared/components/ui/input";
 
 import {
   Activity, Plus, Search, RefreshCcw, Monitor, ShieldAlert,
   Copy, Check, KeyRound, X, Cpu, Wifi, WifiOff, MoreVertical,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/lib/utils";
 
 /* ── Shimmer cell ── */
 function ShimmerCell({ w = "w-24" }: { w?: string }) {

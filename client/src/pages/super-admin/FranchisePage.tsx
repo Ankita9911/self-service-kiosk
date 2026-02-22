@@ -7,8 +7,8 @@ import {
   Plus, Pencil, Trash2, Search, Mail, RefreshCcw,
   X, AlertTriangle, Building2, MoreVertical, CheckCircle2, Loader2,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { TablePagination } from "@/components/ui/TablePagination";
+import { cn } from "@/shared/lib/utils";
+import { TablePagination } from "@/shared/components/ui/TablePagination";
 
 /* ── Shimmer cell ── */
 function ShimmerCell({ w = "w-24" }: { w?: string }) {

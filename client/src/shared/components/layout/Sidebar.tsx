@@ -1,6 +1,6 @@
 import { NavLink } from "react-router-dom";
-import { NAV_ITEMS } from "@/lib/navigation";
-import { usePermission } from "@/hooks/usePermissions";
+import { NAV_ITEMS } from "@/shared/lib/navigation";
+import { usePermission } from "@/shared/hooks/usePermissions";
 import { ChefHat } from "lucide-react";
 
 export default function Sidebar() {

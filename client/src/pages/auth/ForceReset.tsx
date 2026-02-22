@@ -4,7 +4,7 @@
 import { useState } from "react";
 import axios from "@/services/axiosInstance";
 import { useNavigate } from "react-router-dom";
-import useAuth from "@/hooks/useAuth";
+import useAuth from "@/shared/hooks/useAuth";
 import {
   LockKeyhole, Eye, EyeOff, ShieldCheck, Loader2,
   ChefHat, ArrowRight, AlertCircle, CheckCircle2, LogOut,

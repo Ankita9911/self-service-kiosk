@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import useAuth from "@/hooks/useAuth";
-import { usePermission } from "@/hooks/usePermissions";
-import { PERMISSIONS } from "@/lib/permissions";
+import useAuth from "@/shared/hooks/useAuth";
+import { usePermission } from "@/shared/hooks/usePermissions";
+import { PERMISSIONS } from "@/shared/lib/permissions";
 import {
   getCategories,
   getMenuItems,
@@ -19,10 +19,10 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+} from "@/shared/components/ui/dialog";
+import { Button } from "@/shared/components/ui/button";
+import { Input } from "@/shared/components/ui/input";
+import { Label } from "@/shared/components/ui/label";
 import {
   UtensilsCrossed,
   Plus,
@@ -33,8 +33,8 @@ import {
   ArrowLeft,
   Package,
 } from "lucide-react";
-import { ImageWithFallback } from "@/components/figma/ImageWithFallback";
-import { TablePagination } from "@/components/ui/TablePagination";
+import { ImageWithFallback } from "@/shared/components/figma/ImageWithFallback";
+import { TablePagination } from "@/shared/components/ui/TablePagination";
 
 const outletIdParam = (role: string, userOutletId?: string | null, paramOutletId?: string) => {
   if (role === "OUTLET_MANAGER") return userOutletId ?? undefined;

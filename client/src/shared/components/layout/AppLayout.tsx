@@ -2,7 +2,7 @@ import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { LogOut, KeyRound, ChevronDown } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import Sidebar from "./Sidebar";
-import useAuth from "@/hooks/useAuth";
+import useAuth from "@/shared/hooks/useAuth";
 import { Shield, Crown, Store, ChefHat, PackageCheck } from "lucide-react";
 
 function getRoleIcon(role?: string) {

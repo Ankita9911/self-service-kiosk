@@ -3,10 +3,10 @@ import { v4 as uuidv4 } from "uuid";
 import { toast } from "sonner";
 import { motion,AnimatePresence } from "framer-motion";
 import kioskAxios from "../../services/kioskAxios";
-import { getMenuFromCache, saveMenu } from "../../lib/menuCache";
-import type { MenuCategory } from "../../lib/menuCache";
-import { addToQueue } from "../../lib/orderQueue";
-import { processQueue } from "../../lib/syncEngine";
+import { getMenuFromCache, saveMenu } from "../../shared/lib/menuCache";
+import type { MenuCategory } from "../../shared/lib/menuCache";
+import { addToQueue } from "../../shared/lib/orderQueue";
+import { processQueue } from "../../shared/lib/syncEngine";
 import CategoryTabs from "./component/CategoryTabs";
 import MenuGrid from "./component/MenuGrid";
 import CartPanel from "./component/CartPanel";
@@ -26,13 +26,13 @@ import {
   Clock,
   Store as StoreIcon
 } from "lucide-react";
-import { Button } from "../../components/ui/button";
+import { Button } from "../../shared/components/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogTitle,
-} from "../../components/ui/dialog";
+} from "../../shared/components/ui/dialog";
 
 type PaymentStep = "SELECTION" | "DETAILS";
 

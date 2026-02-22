@@ -7,7 +7,7 @@ import {
   ChefHat,
   ShoppingBag
 } from "lucide-react";
-import { PERMISSIONS } from "@/lib/permissions";
+import { PERMISSIONS } from "@/shared/lib/permissions";
 
 export const NAV_ITEMS = [
   {

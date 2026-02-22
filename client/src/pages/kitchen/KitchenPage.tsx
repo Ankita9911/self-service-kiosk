@@ -1,8 +1,8 @@
 import { useEffect, useState, useCallback } from "react";
 import { getOrders, updateOrderStatus } from "@/services/order.service";
-import { useSocket } from "@/hooks/useSocket";
+import { useSocket } from "@/shared/hooks/useSocket";
 import type { Order, OrderStatus } from "@/types/order.types";
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/lib/utils";
 
 // ─── Status config ────────────────────────────────────────────────────────────
 

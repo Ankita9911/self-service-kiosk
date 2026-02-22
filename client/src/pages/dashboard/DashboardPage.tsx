@@ -1,10 +1,10 @@
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
-import useAuth from "@/hooks/useAuth";
-import { usePermission } from "@/hooks/usePermissions";
-import { PERMISSIONS } from "@/lib/permissions";
+import useAuth from "@/shared/hooks/useAuth";
+import { usePermission } from "@/shared/hooks/usePermissions";
+import { PERMISSIONS } from "@/shared/lib/permissions";
 
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent } from "@/shared/components/ui/card";
 import {
   LayoutDashboard,
   Store,

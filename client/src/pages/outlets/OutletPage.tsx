@@ -1,23 +1,23 @@
 import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import useAuth from "@/hooks/useAuth";
+import useAuth from "@/shared/hooks/useAuth";
 import type { Outlet } from "@/types/outlet.types";
 import type { Franchise } from "@/types/franchise.types";
 import { getOutlets, createOutlet, updateOutlet, deleteOutlet } from "@/services/outlet.service";
 import { getFranchises } from "@/services/franchise.service";
 
-import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { TablePagination } from "@/components/ui/TablePagination";
-import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent } from "@/shared/components/ui/dialog";
+import { TablePagination } from "@/shared/components/ui/TablePagination";
+import { Input } from "@/shared/components/ui/input";
 
 import {
   Store, Plus, Search, MapPin, Pencil, Trash2,
   RefreshCcw, Building, ShieldAlert, X, AlertTriangle,
   UtensilsCrossed, MoreVertical,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { PERMISSIONS } from "@/lib/permissions";
-import { usePermission } from "@/hooks/usePermissions";
+import { cn } from "@/shared/lib/utils";
+import { PERMISSIONS } from "@/shared/lib/permissions";
+import { usePermission } from "@/shared/hooks/usePermissions";
 
 /* ── Shimmer cell ── */
 function ShimmerCell({ w = "w-24" }: { w?: string }) {
