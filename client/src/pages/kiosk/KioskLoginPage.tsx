@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { kioskLogin } from "@/services/device.service";
+import { kioskLogin } from "@/features/device/services/device.service";
 import { ChefHat, Eye, EyeOff, Wifi, AlertCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 

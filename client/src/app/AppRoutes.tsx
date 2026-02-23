@@ -7,7 +7,7 @@ import FranchisePage from "@/features/franchise/pages/FranchisePage";;
 import OutletPage from "@/pages/outlets/OutletPage";
 import OutletMenuPage from "@/pages/outlets/OutletMenuPage";
 import MenuLandingPage from "@/pages/outlets/MenuLandingPage";
-import DevicePage from "@/pages/devices/DevicePage";
+import DevicePage from "@/features/device/pages/Devicepage";
 import KioskPage from "@/pages/kiosk/KioskPage";
 import KioskLoginPage from "@/pages/kiosk/KioskLoginPage";
 import KitchenPage from "@/pages/kitchen/KitchenPage";
