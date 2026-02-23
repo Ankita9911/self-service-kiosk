@@ -26,13 +26,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<
     (User & { mustChangePassword?: boolean }) | null
   >(null);
-
   const [loading, setLoading] = useState(true);
-
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     const token = localStorage.getItem("token");
-
     if (storedUser && token) {
       const parsedUser = JSON.parse(storedUser);
       setUser(parsedUser);
@@ -40,7 +37,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       axios.defaults.headers.common["Authorization"] =
         `Bearer ${token}`;
     }
-
     setLoading(false);
   }, []);
 
@@ -49,11 +45,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     axios.defaults.headers.common["Authorization"] =
       `Bearer ${token}`;
-
     localStorage.setItem("user", JSON.stringify(userData));
-
     setUser(userData);
-
     if (userData?.mustChangePassword) {
       navigate("/force-reset");
     } else {
