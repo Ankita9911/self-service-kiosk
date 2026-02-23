@@ -82,7 +82,7 @@ export default function Login() {
             </p>
           </div>
 
-          <div className="flex flex-col gap-2.5">
+          <div className="flex flex-col gap-2.5 text-white">
             <FeaturePill
               icon={ShieldCheck}
               text="Secure enterprise-grade access"
