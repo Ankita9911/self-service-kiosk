@@ -1,187 +1,25 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import useAuth from "@/shared/hooks/useAuth";
-import type { Outlet } from "@/shared/types/outlet.types";
+import type { Outlet } from "@/features/outlet/types/outlet.types";
 import type { Franchise } from "@/features/franchise/types/franchise.types";
-import { getOutlets, createOutlet, updateOutlet, deleteOutlet } from "@/services/outlet.service";
+import { getOutlets, createOutlet, updateOutlet, deleteOutlet } from "@/features/outlet/services/outlet.service";
 import { getFranchises } from "@/features/franchise/services/franchise.service";
-
-import { Dialog, DialogContent } from "@/shared/components/ui/dialog";
 import { TablePagination } from "@/shared/components/ui/TablePagination";
 import { Input } from "@/shared/components/ui/input";
-
 import {
-  Store, Plus, Search, MapPin, Pencil, Trash2,
-  RefreshCcw, Building, ShieldAlert, X, AlertTriangle,
-  UtensilsCrossed, MoreVertical,
+  Store, Plus, Search, MapPin, 
+  RefreshCcw, Building, ShieldAlert,
 } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
 import { PERMISSIONS } from "@/shared/lib/permissions";
 import { usePermission } from "@/shared/hooks/usePermissions";
+import { ShimmerCell } from "../components/ShimmerCell";
+import { StatusBadge } from "../components/StatusBadge";
+import { RowMenu } from "../components/RowMenu";
+import { DeleteModal } from "../components/DeleteOutletModal";
+import { OutletModal } from "../components/OutletModal";
 
-/* ── Shimmer cell ── */
-function ShimmerCell({ w = "w-24" }: { w?: string }) {
-  return (
-    <td className="px-5 py-4">
-      <div className={cn("relative overflow-hidden bg-slate-100 rounded-lg h-4", w)}>
-        <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.4s_ease-in-out_infinite] bg-gradient-to-r from-transparent via-white/70 to-transparent" />
-      </div>
-    </td>
-  );
-}
-
-/* ── Status Badge ── */
-function StatusBadge({ status }: { status: string }) {
-  const isActive = status === "ACTIVE";
-  return (
-    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-clash-semibold border ${isActive ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-slate-50 text-slate-500 border-slate-200"}`}>
-      <span className={`h-1.5 w-1.5 rounded-full ${isActive ? "bg-emerald-500" : "bg-slate-400"}`} />
-      {status || "UNKNOWN"}
-    </span>
-  );
-}
-
-/* ── Three-dot row menu ── */
-function RowMenu({
-  onEdit, onDelete, onMenu,
-  showEdit, showDelete, showMenu,
-}: {
-  onEdit?: () => void; onDelete?: () => void; onMenu?: () => void;
-  showEdit: boolean; showDelete: boolean; showMenu: boolean;
-}) {
-  const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    const fn = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false); };
-    document.addEventListener("mousedown", fn);
-    return () => document.removeEventListener("mousedown", fn);
-  }, []);
-  if (!showEdit && !showDelete && !showMenu) return null;
-  return (
-    <div className="relative" ref={ref}>
-      <button
-        onClick={() => setOpen(v => !v)}
-        className="h-7 w-7 rounded-lg flex items-center justify-center text-slate-300 hover:text-slate-600 hover:bg-slate-100 transition-all opacity-100"
-      >
-        <MoreVertical className="w-4 h-4" />
-      </button>
-      {open && (
-        <div className="absolute right-5 top-full mt-1.5 w-48 bg-white rounded-xl border border-slate-200 shadow-xl z-500 overflow-hidden" style={{ animation: "fadeDown 0.12s ease-out forwards" }}>
-          {showMenu && (
-            <button onClick={() => { setOpen(false); onMenu?.(); }} className="w-full flex items-center gap-3 px-4 py-3 text-[13px] font-satoshi text-slate-600 hover:bg-slate-50 transition-colors">
-              <UtensilsCrossed className="w-3.5 h-3.5 text-slate-400" /> Manage Menu
-            </button>
-          )}
-          {showEdit && (
-            <button onClick={() => { setOpen(false); onEdit?.(); }} className="w-full flex items-center gap-3 px-4 py-3 text-[13px] font-satoshi text-slate-600 hover:bg-slate-50 transition-colors">
-              <Pencil className="w-3.5 h-3.5 text-slate-400" /> Edit details
-            </button>
-          )}
-          {(showMenu || showEdit) && showDelete && <div className="h-px bg-slate-100 mx-3" />}
-          {showDelete && (
-            <button onClick={() => { setOpen(false); onDelete?.(); }} className="w-full flex items-center gap-3 px-4 py-3 text-[13px] font-satoshi text-red-500 hover:bg-red-50 transition-colors">
-              <Trash2 className="w-3.5 h-3.5" /> Delete
-            </button>
-          )}
-        </div>
-      )}
-    </div>
-  );
-}
-
-/* ── Delete Modal ── */
-function DeleteModal({ outlet, onConfirm, onCancel }: { outlet: Outlet; onConfirm: () => void; onCancel: () => void }) {
-  return (
-    <Dialog open onOpenChange={onCancel}>
-      <DialogContent className="sm:max-w-sm border-slate-200 rounded-2xl p-0 overflow-hidden">
-        <div className="p-6 text-center space-y-4">
-          <div className="h-14 w-14 rounded-2xl bg-red-50 border border-red-100 flex items-center justify-center mx-auto">
-            <AlertTriangle className="w-6 h-6 text-red-500" />
-          </div>
-          <div>
-            <h3 className="font-clash-bold text-slate-900 text-base">Delete Outlet?</h3>
-            <p className="font-satoshi text-slate-500 text-sm mt-1">
-              <span className="font-satoshi-medium text-slate-700">{outlet.name}</span> will be permanently removed.
-            </p>
-          </div>
-          <div className="flex gap-3 pt-2">
-            <button onClick={onCancel} className="flex-1 h-10 rounded-xl border border-slate-200 text-sm font-clash-semibold text-slate-600 hover:bg-slate-50 transition-colors">Cancel</button>
-            <button onClick={onConfirm} className="flex-1 h-10 rounded-xl bg-red-500 hover:bg-red-600 text-white text-sm font-clash-semibold transition-colors shadow-lg shadow-red-500/20">Delete Outlet</button>
-          </div>
-        </div>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-/* ── Outlet form modal ── */
-function OutletModal({ open, onClose, editing, franchises, isSuperAdmin, onSubmit }: {
-  open: boolean; onClose: () => void; editing: Outlet | null;
-  franchises: Franchise[]; isSuperAdmin: boolean;
-  onSubmit: (form: { franchiseId: string; name: string; outletCode: string; address: string }) => Promise<void>;
-}) {
-  const [form, setForm] = useState({ franchiseId: editing?.franchiseId || "", name: editing?.name || "", outletCode: editing?.outletCode || "", address: editing?.address || "" });
-  const [submitting, setSubmitting] = useState(false);
-  useEffect(() => {
-    setForm({ franchiseId: editing?.franchiseId || "", name: editing?.name || "", outletCode: editing?.outletCode || "", address: editing?.address || "" });
-  }, [editing, open]);
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault(); setSubmitting(true);
-    try { await onSubmit(form); } finally { setSubmitting(false); }
-  }
-
-  return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md border-slate-200 rounded-2xl p-0 overflow-hidden">
-        <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
-          <div>
-            <h3 className="font-clash-bold text-slate-900 text-base">{editing ? "Edit Outlet" : "Create New Outlet"}</h3>
-            <p className="text-xs font-satoshi text-slate-500 mt-0.5">{editing ? "Update the outlet details below" : "Fill in the details to register a new outlet"}</p>
-          </div>
-          {/* <button onClick={onClose} className="h-7 w-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"><X className="w-4 h-4" /></button> */}
-        </div>
-        <form onSubmit={handleSubmit} className="px-6 pb-6 space-y-4">
-          {isSuperAdmin && (
-            <div className="space-y-1.5">
-              <label className="text-[12px] font-clash-semibold text-slate-600 uppercase tracking-wide">Franchise <span className="text-red-400">*</span></label>
-              <select value={form.franchiseId} onChange={e => setForm({ ...form, franchiseId: e.target.value })} required
-                className="w-full h-10 px-3 rounded-xl border border-slate-200 bg-slate-50 text-sm font-satoshi text-slate-700 focus:outline-none focus:ring-2 focus:ring-orange-400/40 focus:border-orange-400 transition-all">
-                <option value="">Select a franchise…</option>
-                {franchises.map(f => <option key={f._id} value={f._id}>{f.name}</option>)}
-              </select>
-            </div>
-          )}
-          {[
-            { key: "name", label: "Outlet Name", placeholder: "e.g. Downtown Branch", required: true },
-            { key: "outletCode", label: "Outlet Code", placeholder: "e.g. HK-001", required: true },
-            { key: "address", label: "Address", placeholder: "Full street address", required: false },
-          ].map(({ key, label, placeholder, required }) => (
-            <div key={key} className="space-y-1.5">
-              <label className="text-[12px] font-clash-semibold text-slate-600 uppercase tracking-wide">
-                {label}{required ? <span className="text-red-400 ml-1">*</span> : <span className="text-slate-400 font-satoshi normal-case ml-1">(optional)</span>}
-              </label>
-              <Input value={form[key as keyof typeof form]} onChange={e => setForm({ ...form, [key]: e.target.value })}
-                placeholder={placeholder} required={required}
-                className="h-10 rounded-xl border-slate-200 bg-slate-50 font-satoshi text-sm focus-visible:ring-orange-400/40 focus-visible:border-orange-400" />
-            </div>
-          ))}
-          <div className="flex gap-3 pt-2">
-            <button type="button" onClick={onClose} className="flex-1 h-10 rounded-xl border border-slate-200 text-sm font-clash-semibold text-slate-600 hover:bg-slate-50 transition-colors">Cancel</button>
-            <button type="submit" disabled={submitting}
-              className="flex-1 h-10 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white text-sm font-clash-semibold shadow-lg shadow-orange-500/20 transition-all disabled:opacity-50 flex items-center justify-center gap-2">
-              {submitting ? <RefreshCcw className="w-4 h-4 animate-spin" /> : editing ? "Save Changes" : "Create Outlet"}
-            </button>
-          </div>
-        </form>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-/* ══════════════════════════════════
-   Main Page
-══════════════════════════════════ */
 export default function OutletPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -255,15 +93,12 @@ export default function OutletPage() {
 
   return (
     <div className="space-y-6">
-
-      {/* ── Header ── */}
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 mb-1">
             <Store className="w-3.5 h-3.5 text-orange-500" />
             <span className="text-[11px] font-clash-semibold text-orange-500 uppercase tracking-widest">Operations</span>
           </div>
-          {/* No inline counts — shown in pills below */}
           <h1 className="text-[28px] font-clash-bold text-slate-900 tracking-tight">Outlet Management</h1>
           <p className="text-sm font-satoshi text-slate-500 mt-0.5">Manage physical kiosk locations and their details.</p>
         </div>
@@ -284,7 +119,6 @@ export default function OutletPage() {
         </div>
       </div>
 
-      {/* ── Stat pills only ── */}
       <div className="flex flex-wrap gap-2">
         {showShimmer ? (
           [80, 72, 80].map((w, i) => (
@@ -305,7 +139,6 @@ export default function OutletPage() {
         )}
       </div>
 
-      {/* ── Search + Filter ── */}
       <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
@@ -322,7 +155,6 @@ export default function OutletPage() {
         </div>
       </div>
 
-      {/* ── Table ── */}
       <div className="bg-white rounded-2xl border border-slate-200 shadow-sm ">
         <table className="w-full">
           <thead>
@@ -395,7 +227,6 @@ export default function OutletPage() {
         )}
       </div>
 
-      {/* ── Modals ── */}
       <OutletModal open={open} onClose={() => { setOpen(false); setEditing(null); }} editing={editing} franchises={franchises} isSuperAdmin={isSuperAdmin} onSubmit={handleSubmit} />
       {deleteTarget && <DeleteModal outlet={deleteTarget} onConfirm={handleDelete} onCancel={() => setDeleteTarget(null)} />}
 

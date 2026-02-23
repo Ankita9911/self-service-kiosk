@@ -1,8 +1,8 @@
 import { useEffect, useState, useCallback } from "react";
 import { getDevices, createDevice } from "@/features/device/services/device.service";
-import { getOutlets } from "@/services/outlet.service";
+import { getOutlets } from "@/features/outlet/services/outlet.service";
 import type { Device } from "@/features/device/types/device.types";
-import type { Outlet } from "@/shared/types/outlet.types";
+import type { Outlet } from "@/features/outlet/types/outlet.types";
 
 export function useDevices(canView: boolean) {
   const [devices, setDevices] = useState<Device[]>([]);

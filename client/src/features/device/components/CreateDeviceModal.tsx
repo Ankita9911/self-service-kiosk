@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Dialog, DialogContent } from "@/shared/components/ui/dialog";
 import { Input } from "@/shared/components/ui/input";
 import { Plus, RefreshCcw } from "lucide-react";
-import type { Outlet } from "@/shared/types/outlet.types";
+import type { Outlet } from "@/features/outlet/types/outlet.types";
 
 interface Props {
   open: boolean;

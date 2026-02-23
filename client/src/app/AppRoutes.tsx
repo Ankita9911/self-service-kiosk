@@ -4,9 +4,9 @@ import {ForceReset} from "@/features/auth/pages/ForceReset";
 
 import DashboardPage from "@/features/dashboard/pages/DashboardPage";
 import FranchisePage from "@/features/franchise/pages/FranchisePage";;
-import OutletPage from "@/pages/outlets/OutletPage";
-import OutletMenuPage from "@/pages/outlets/OutletMenuPage";
-import MenuLandingPage from "@/pages/outlets/MenuLandingPage";
+import OutletPage from "@/features/outlet/pages/OutletPage";
+import OutletMenuPage from "@/features/outlet/pages/OutletMenuPage";
+import MenuLandingPage from "@/features/outlet/pages/MenuLandingPage";
 import DevicePage from "@/features/device/pages/Devicepage";
 import KioskPage from "@/pages/kiosk/KioskPage";
 import KioskLoginPage from "@/pages/kiosk/KioskLoginPage";
@@ -17,7 +17,7 @@ import ProtectedRoute from "./ProtectedRoute";
 import AppLayout from "@/shared/components/layout/AppLayout";
 import { PERMISSIONS } from "@/shared/lib/permissions";
 import { ResetPassword} from "@/features/auth/pages/ResetPassword"
-import UserPage from "@/pages/users/UserPage";
+import UserPage from "@/features/users/pages/UserPage";
 
 export default function AppRoutes() {
   return (
