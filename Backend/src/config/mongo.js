@@ -16,20 +16,15 @@ async function connectMongo(retries = 5) {
 
     isConnected = true;
 
-    console.log("MongoDB connection established");
-
     registerMongoEvents();
 
   } catch (error) {
-    console.error("MongoDB connection failed:", error.message);
-
     if (retries > 0) {
       console.log(`Retrying MongoDB connection... (${retries} attempts left)`);
       await new Promise(res => setTimeout(res, 3000));
       return connectMongo(retries - 1);
     }
 
-    console.error("Could not connect to MongoDB after retries.");
     process.exit(1);
   }
 }
