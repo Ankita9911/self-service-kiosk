@@ -25,7 +25,7 @@ export function usePickup() {
   }, [fetchOrders]);
 
   const handleNewOrder = useCallback((_order: Order) => {
-    // Pickup doesn't handle CREATED orders
+    // Pickup doesn't handle CREATED orders//todo->bad me 
   }, []);
 
   const handleStatusUpdated = useCallback(

@@ -8,7 +8,6 @@ interface CategoryTabsProps {
 }
 
 export default function CategoryTabs({ categories, selectedCategory, onCategoryChange }: CategoryTabsProps) {
-  // Filter out categories with no items (business logic)
   const availableCategories = categories.filter(cat => cat.items && cat.items.length > 0);
 
   if (availableCategories.length === 0) {

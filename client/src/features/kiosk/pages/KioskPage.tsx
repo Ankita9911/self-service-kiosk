@@ -4,7 +4,10 @@ import { processQueue } from "@/shared/lib/syncEngine";
 
 import CategoryTabs from "../components/CategoryTabs";
 import MenuGrid from "../components/MenuGrid";
-import { CategoryTabsSkeleton, MenuGridSkeleton } from "../components/LoadingSkeleton";
+import {
+  CategoryTabsSkeleton,
+  MenuGridSkeleton,
+} from "../components/LoadingSkeleton";
 import KioskHeader from "../components/KioskHeader";
 import CartSidebar from "../components/CartSideBar";
 import PaymentDialouge from "../components/PaymentDialouge";
@@ -77,10 +80,7 @@ export default function KioskPage() {
 
   return (
     <div className="h-screen flex flex-row bg-gradient-to-br from-gray-50 via-white to-orange-50/30 overflow-hidden">
-
-      {/* LEFT SIDE: HEADER + MENU */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-
         <KioskHeader
           totalItems={totalItems}
           totalPrice={totalPrice}
@@ -114,7 +114,6 @@ export default function KioskPage() {
         </main>
       </div>
 
-      {/* RIGHT SIDE: CART */}
       <CartSidebar
         isCartOpen={isCartOpen}
         cart={cart}
@@ -129,7 +128,6 @@ export default function KioskPage() {
         isProcessing={isProcessing}
       />
 
-      {/* PAYMENT DIALOG */}
       <PaymentDialouge
         open={showPaymentDialog}
         onOpenChange={setShowPaymentDialog}
@@ -141,13 +139,11 @@ export default function KioskPage() {
         onConfirm={handleConfirmOrder}
       />
 
-      {/* SUCCESS DIALOG */}
       <SuccessDialouge
         open={showSuccessDialog}
         orderNumber={orderNumber}
         onClose={() => setShowSuccessDialog(false)}
       />
-
     </div>
   );
 }

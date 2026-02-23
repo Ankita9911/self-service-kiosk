@@ -33,7 +33,6 @@ export function FranchiseModal({
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
 
-  // Populate form when editing
   useEffect(() => {
     if (open) {
       setDone(false);
@@ -93,7 +92,6 @@ export function FranchiseModal({
           </div>
         ) : (
           <>
-            {/* Header */}
             <div className="px-7 pt-6 pb-5 flex items-start justify-between border-b border-slate-100">
               <div>
                 <p className="text-[10px] font-clash-semibold text-orange-500 uppercase tracking-[0.15em] mb-1">
@@ -113,7 +111,6 @@ export function FranchiseModal({
               </button>
             </div>
 
-            {/* Form */}
             <form onSubmit={handleSubmit} className="px-7 py-6 space-y-5">
               {(
                 [
@@ -169,7 +166,7 @@ export function FranchiseModal({
                       "w-full h-11 px-4 rounded-xl border border-slate-200 bg-slate-50 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-400/20 transition-all",
                       key === "brandCode"
                         ? "font-mono uppercase"
-                        : "font-satoshi"
+                        : "font-satoshi",
                     )}
                   />
 
@@ -181,7 +178,6 @@ export function FranchiseModal({
                 </div>
               ))}
 
-              {/* Actions */}
               <div className="flex gap-3 pt-2">
                 <button
                   type="button"

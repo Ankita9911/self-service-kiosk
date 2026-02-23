@@ -32,7 +32,6 @@ export function useSocket(onOrderNew: (order: any) => void, onOrderStatusUpdated
     return () => {
       socket.disconnect();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return socketRef;

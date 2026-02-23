@@ -21,21 +21,16 @@ export default function DevicePage() {
   const canView = hasPermission(PERMISSIONS.DEVICE_VIEW);
   const canCreate = hasPermission(PERMISSIONS.DEVICE_CREATE);
 
-  const {
-    devices,
-    outlets,
-    loading,
-    refreshing,
-    fetchData,
-    handleCreate,
-  } = useDevices(canView);
+  const { devices, outlets, loading, refreshing, fetchData, handleCreate } =
+    useDevices(canView);
 
   const [open, setOpen] = useState(false);
   const [createdSecret, setCreatedSecret] = useState<string | null>(null);
 
   const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] =
-    useState<"ALL" | "ACTIVE" | "INACTIVE">("ALL");
+  const [statusFilter, setStatusFilter] = useState<
+    "ALL" | "ACTIVE" | "INACTIVE"
+  >("ALL");
 
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
@@ -46,43 +41,36 @@ export default function DevicePage() {
         (d.deviceId?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
         (d.name?.toLowerCase() || "").includes(searchTerm.toLowerCase());
 
-      const matchesStatus =
-        statusFilter === "ALL" || d.status === statusFilter;
+      const matchesStatus = statusFilter === "ALL" || d.status === statusFilter;
 
       return matchesSearch && matchesStatus;
     });
   }, [devices, searchTerm, statusFilter]);
 
   const paginatedDevices = useMemo(() => {
-    return filteredDevices.slice(
-      (page - 1) * pageSize,
-      page * pageSize
-    );
+    return filteredDevices.slice((page - 1) * pageSize, page * pageSize);
   }, [filteredDevices, page, pageSize]);
 
   useEffect(() => {
     setPage(1);
   }, [searchTerm, statusFilter]);
 
-
   const activeCount = useMemo(
     () => devices.filter((d) => d.status === "ACTIVE").length,
-    [devices]
+    [devices],
   );
 
   function getOutletName(d: Device): string {
     if ((d as any).outlet?.name) return (d as any).outlet.name;
     const found = outlets.find(
-      (o) => o._id === (d.outletId || (d as any).outlet)
+      (o) => o._id === (d.outletId || (d as any).outlet),
     );
     return found?.name || "—";
   }
 
   function formatLastSeen(d: Device): string {
     const ts =
-      (d as any).lastSeenAt ||
-      (d as any).lastSeen ||
-      (d as any).last_seen;
+      (d as any).lastSeenAt || (d as any).lastSeen || (d as any).last_seen;
     if (!ts) return "Never";
 
     return new Date(ts).toLocaleString([], {
@@ -97,9 +85,7 @@ export default function DevicePage() {
     return (
       <div className="flex flex-col items-center justify-center min-h-[40vh] gap-3 text-center">
         <ShieldAlert className="w-10 h-10 text-slate-300" />
-        <p className="font-clash-semibold text-slate-600">
-          Access Restricted
-        </p>
+        <p className="font-clash-semibold text-slate-600">Access Restricted</p>
         <p className="font-satoshi text-slate-400 text-sm">
           You don't have permission to view devices.
         </p>
@@ -107,29 +93,22 @@ export default function DevicePage() {
     );
   }
 
-
   return (
     <div className="space-y-6">
-      {/* Header */}
       <DeviceHeader
         refreshing={refreshing}
         canCreate={canCreate}
         onRefresh={() => fetchData(true)}
         onCreate={() => setOpen(true)}
       />
-
-      {/* Stats */}
       <DeviceStats devices={devices} loading={showShimmer} />
 
-      {/* Filters */}
       <DeviceFilters
         searchTerm={searchTerm}
         statusFilter={statusFilter}
         onSearchChange={setSearchTerm}
         onStatusChange={setStatusFilter}
       />
-
-      {/* Table */}
       <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
         <table className="w-full">
           <thead>
@@ -142,7 +121,7 @@ export default function DevicePage() {
                   >
                     {h}
                   </th>
-                )
+                ),
               )}
             </tr>
           </thead>
@@ -190,9 +169,7 @@ export default function DevicePage() {
 
                   <td className="px-5 py-4 font-satoshi text-sm text-slate-700">
                     {d.name || (
-                      <span className="text-slate-400 italic">
-                        Unnamed
-                      </span>
+                      <span className="text-slate-400 italic">Unnamed</span>
                     )}
                   </td>
 
@@ -227,7 +204,6 @@ export default function DevicePage() {
         )}
       </div>
 
-      {/* Modals */}
       <CreateDeviceModal
         open={open}
         onClose={() => setOpen(false)}

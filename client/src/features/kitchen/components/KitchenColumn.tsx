@@ -19,7 +19,7 @@ export function Column({
 
   return (
     <div className="flex flex-col gap-3 min-w-0">
-      {/* Column header */}
+    
       <div className={cn("flex items-center gap-2 px-3 py-2 rounded-xl", cfg.bg, "border", cfg.border)}>
         <span className={cn("font-bold text-sm", cfg.color)}>{cfg.label}</span>
         <span
@@ -33,8 +33,6 @@ export function Column({
           {orders.length}
         </span>
       </div>
-
-      {/* Cards */}
       <div className="flex flex-col gap-3 overflow-y-auto max-h-[calc(100vh-200px)] pr-1">
         {orders.length === 0 ? (
           <div className="text-center text-gray-400 text-sm py-10 border-2 border-dashed border-gray-200 rounded-2xl">

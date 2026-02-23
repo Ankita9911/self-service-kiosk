@@ -31,21 +31,18 @@ interface UseKioskCheckoutReturn {
 export function useKioskCheckout(
   cart: CartItem[],
   setCart: React.Dispatch<React.SetStateAction<CartItem[]>>,
-  reloadMenu: (silent?: boolean) => Promise<void>
+  reloadMenu: (silent?: boolean) => Promise<void>,
 ): UseKioskCheckoutReturn {
   const [showPaymentDialog, setShowPaymentDialog] = useState(false);
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
 
-  const [paymentStep, setPaymentStep] =
-    useState<PaymentStep>("SELECTION");
+  const [paymentStep, setPaymentStep] = useState<PaymentStep>("SELECTION");
 
-  const [selectedMethod, setSelectedMethod] =
-    useState<PaymentMethod>("");
+  const [selectedMethod, setSelectedMethod] = useState<PaymentMethod>("");
 
   const [isProcessing, setIsProcessing] = useState(false);
   const [orderNumber, setOrderNumber] = useState("");
 
- 
   const handleOpenCheckout = () => {
     if (cart.length === 0) {
       toast.error("Cart is empty", {
@@ -68,9 +65,7 @@ export function useKioskCheckout(
     setIsProcessing(true);
     setShowPaymentDialog(false);
 
-    const loadingToast = toast.loading(
-      "Processing your order..."
-    );
+    const loadingToast = toast.loading("Processing your order...");
 
     try {
       const clientOrderId = uuidv4();
@@ -85,17 +80,11 @@ export function useKioskCheckout(
       };
 
       try {
-        // Try online first
-        const response = await kioskAxios.post(
-          "/orders",
-          orderData
-        );
+        const response = await kioskAxios.post("/orders", orderData);
 
         toast.dismiss(loadingToast);
 
-        setOrderNumber(
-          response.data.data.orderNumber.toString()
-        );
+        setOrderNumber(response.data.data.orderNumber.toString());
 
         setShowSuccessDialog(true);
         setCart([]);
@@ -108,13 +97,11 @@ export function useKioskCheckout(
       } catch (error: any) {
         toast.dismiss(loadingToast);
 
-        // Offline fallback
         if (!error.response) {
           await addToQueue(orderData);
 
           toast.warning("Offline: Order queued", {
-            description:
-              "Will be processed when connection is restored",
+            description: "Will be processed when connection is restored",
             duration: 4000,
           });
 
@@ -122,8 +109,7 @@ export function useKioskCheckout(
         } else {
           toast.error("Order failed", {
             description:
-              error.response.data?.error?.message ||
-              "Please try again",
+              error.response.data?.error?.message || "Please try again",
             duration: 4000,
           });
         }

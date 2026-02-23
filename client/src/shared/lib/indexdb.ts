@@ -1,7 +1,5 @@
-// src/lib/indexeddb.ts
-
-const DB_NAME = "hyper-kitchen-kiosk";
-const DB_VERSION = 1;
+const DB_NAME = import.meta.env.VITE_DB_NAME;
+const DB_VERSION = import.meta.env.VITE_DB_VERSION;
 
 let db: IDBDatabase;
 

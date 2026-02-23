@@ -41,18 +41,14 @@ export function ForceReset() {
   });
   return (
     <div className="min-h-screen bg-[#f7f8fa] flex items-center justify-center px-4 relative overflow-hidden">
-      {/* Subtle bg glow */}
       <div className="absolute top-0 right-0 w-96 h-96 bg-orange-100/50 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-0 left-0 w-72 h-72 bg-orange-50/40 rounded-full blur-3xl pointer-events-none" />
 
       <div className="w-full max-w-md relative z-10">
-        {/* Card */}
         <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xl shadow-slate-200/40 overflow-hidden">
-          {/* Top accent */}
           <div className="h-1 w-full bg-gradient-to-r from-orange-400 to-orange-600" />
 
           <div className="p-8 space-y-6">
-            {/* Icon + heading */}
             <div className="text-center space-y-3">
               <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center mx-auto shadow-lg shadow-orange-500/25">
                 <ShieldCheck className="w-7 h-7 text-white" />
@@ -68,7 +64,6 @@ export function ForceReset() {
               </div>
             </div>
 
-            {/* Alert */}
             <div className="flex items-start gap-2.5 bg-amber-50 border border-amber-200 rounded-xl p-3.5">
               <AlertCircle className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
               <p className="text-xs font-satoshi text-amber-700 leading-relaxed">
@@ -84,7 +79,6 @@ export function ForceReset() {
               }}
               className="space-y-4"
             >
-              {/* Current password */}
               <div className="space-y-1.5">
                 <label className="text-[12px] font-clash-semibold text-slate-600 uppercase tracking-wide">
                   Current Password
@@ -114,7 +108,6 @@ export function ForceReset() {
                 </div>
               </div>
 
-              {/* New password */}
               <div className="space-y-1.5">
                 <label className="text-[12px] font-clash-semibold text-slate-600 uppercase tracking-wide">
                   New Password
@@ -146,7 +139,6 @@ export function ForceReset() {
                 <PasswordStrength password={password} />
               </div>
 
-              {/* Confirm password */}
               <div className="space-y-1.5">
                 <label className="text-[12px] font-clash-semibold text-slate-600 uppercase tracking-wide">
                   Confirm Password
@@ -186,7 +178,6 @@ export function ForceReset() {
                 )}
               </div>
 
-              {/* Error */}
               {error && (
                 <div className="flex items-center gap-2.5 bg-red-50 border border-red-100 rounded-xl px-4 py-3 animate-fade-in">
                   <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0" />
@@ -194,7 +185,6 @@ export function ForceReset() {
                 </div>
               )}
 
-              {/* Submit */}
               <button
                 type="submit"
                 disabled={loading || !isValid}
@@ -211,8 +201,6 @@ export function ForceReset() {
                 )}
               </button>
             </form>
-
-            {/* Sign out link */}
             <div className="text-center pt-2 border-t border-slate-100">
               <button
                 onClick={() => {
@@ -228,7 +216,6 @@ export function ForceReset() {
           </div>
         </div>
 
-        {/* Branding footer */}
         <div className="flex items-center justify-center gap-2 mt-6">
           <div className="h-6 w-6 rounded-lg bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center">
             <ChefHat className="w-3.5 h-3.5 text-white" />

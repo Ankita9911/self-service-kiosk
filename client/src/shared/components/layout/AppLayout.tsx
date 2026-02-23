@@ -21,8 +21,6 @@ function getRoleIcon(role?: string) {
       return <Shield className="w-3.5 h-3.5" />;
   }
 }
-
-/* ─── tiny toast hook (no external dep) ─── */
 function useToast() {
   const [toasts, setToasts] = useState<
     { id: number; message: string; type: "success" | "error" | "info" }[]
@@ -43,7 +41,6 @@ function useToast() {
   return { toasts, show };
 }
 
-/* ─── Logout confirmation modal ─── */
 function LogoutModal({
   open,
   onConfirm,
@@ -88,8 +85,6 @@ function LogoutModal({
     </div>
   );
 }
-
-/* ─── Toast container ─── */
 function ToastContainer({
   toasts,
 }: {
@@ -115,7 +110,6 @@ function ToastContainer({
   );
 }
 
-/* ─── Breadcrumb ─── */
 function Breadcrumb() {
   const location = useLocation();
   const parts = location.pathname.split("/").filter(Boolean);
@@ -146,7 +140,6 @@ export default function AppLayout() {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const { toasts, show: showToast } = useToast();
 
-  // Close dropdown on outside click
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (
@@ -170,20 +163,20 @@ export default function AppLayout() {
       <Sidebar />
 
       <div className="flex-1 flex flex-col min-h-screen">
-        {/* ── Top Bar ── */}
+      
         <header className="h-16 bg-white/80 backdrop-blur-md border-b border-slate-200/70 px-6 flex items-center justify-between sticky top-0 z-30 shadow-sm">
-          {/* Left */}
+       
           <div className="flex flex-col justify-center">
-            {/* <Breadcrumb /> */}
+           
             <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-100 text-orange-700 text-[11px] font-clash-semibold uppercase tracking-wide shadow-sm">
               {getRoleIcon(user?.role)}
               {user?.role?.replace(/_/g, " ")}
             </span>
           </div>
 
-          {/* Right */}
+        
           <div className="flex items-center gap-2">
-            {/* Profile dropdown */}
+          
             <div className="relative" ref={dropdownRef}>
               <button
                 onClick={() => setDropdownOpen((v) => !v)}
@@ -205,7 +198,7 @@ export default function AppLayout() {
                 />
               </button>
 
-              {/* Dropdown menu */}
+           
               {dropdownOpen && (
                 <div className="absolute right-0 top-full mt-2 w-52 bg-white rounded-xl border border-slate-200 shadow-xl shadow-slate-200/50 overflow-hidden z-50 animate-fade-down">
                   <div className="px-4 py-3 border-b border-slate-100 bg-slate-50">
@@ -244,13 +237,13 @@ export default function AppLayout() {
           </div>
         </header>
 
-        {/* ── Page Content ── */}
+      
         <main className="flex-1 p-6 md:p-8">
           <Outlet context={{ showToast }} />
         </main>
       </div>
 
-      {/* Modals & Toasts */}
+     
       <LogoutModal
         open={logoutOpen}
         onConfirm={handleLogoutConfirm}

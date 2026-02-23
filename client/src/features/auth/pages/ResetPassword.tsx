@@ -36,7 +36,6 @@ export function ResetPassword() {
 
   return (
     <div className="space-y-6 max-w-lg">
-      {/* Header */}
       <div>
         <div className="flex items-center gap-2 mb-1">
           <LockKeyhole className="w-3.5 h-3.5 text-orange-500" />
@@ -52,7 +51,6 @@ export function ResetPassword() {
         </p>
       </div>
 
-      {/* Success state */}
       {success ? (
         <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-8 text-center space-y-4 animate-scale-in">
           <div className="h-14 w-14 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-center mx-auto">
@@ -78,7 +76,6 @@ export function ResetPassword() {
               }}
               className="space-y-5"
             >
-              {/* Current password */}
               <div className="space-y-1.5">
                 <label className="text-[12px] font-clash-semibold text-slate-600 uppercase tracking-wide">
                   Current Password
@@ -108,7 +105,6 @@ export function ResetPassword() {
                 </div>
               </div>
 
-              {/* New password */}
               <div className="space-y-1.5">
                 <label className="text-[12px] font-clash-semibold text-slate-600 uppercase tracking-wide">
                   New Password
@@ -140,7 +136,6 @@ export function ResetPassword() {
                 <PasswordStrength password={password} />
               </div>
 
-              {/* Confirm */}
               <div className="space-y-1.5">
                 <label className="text-[12px] font-clash-semibold text-slate-600 uppercase tracking-wide">
                   Confirm Password
@@ -218,5 +213,3 @@ export function ResetPassword() {
     </div>
   );
 }
-
-// Default exports (keep existing router compatibility)

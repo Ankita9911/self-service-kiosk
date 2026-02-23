@@ -14,24 +14,20 @@ export function useFranchises() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
+  const fetchFranchises = useCallback(async (silent = false) => {
+    if (silent) setRefreshing(true);
+    else setLoading(true);
 
-  const fetchFranchises = useCallback(
-    async (silent = false) => {
-      if (silent) setRefreshing(true);
-      else setLoading(true);
-
-      try {
-        const data = await getFranchises();
-        setFranchises(data);
-      } catch (error) {
-        console.error("Failed to fetch franchises:", error);
-      } finally {
-        setLoading(false);
-        setRefreshing(false);
-      }
-    },
-    []
-  );
+    try {
+      const data = await getFranchises();
+      setFranchises(data);
+    } catch (error) {
+      console.error("Failed to fetch franchises:", error);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  }, []);
 
   useEffect(() => {
     fetchFranchises();

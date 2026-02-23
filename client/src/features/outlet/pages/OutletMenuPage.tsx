@@ -98,7 +98,7 @@ export default function OutletMenuPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
+    
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
           <button
@@ -163,14 +163,14 @@ export default function OutletMenuPage() {
         </div>
       </div>
 
-      {/* Category Filter */}
+     
       <CategoryFilter
         categories={categories}
         selectedCategoryId={selectedCategoryId}
         onSelect={setSelectedCategoryId}
       />
 
-      {/* Grid */}
+    
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {loading ? (
           Array.from({ length: 8 }).map((_, i) => (
@@ -226,7 +226,7 @@ export default function OutletMenuPage() {
         />
       )}
 
-      {/* Modals */}
+    
       <AddCategoryModal
         open={addCategoryOpen}
         onClose={() => setAddCategoryOpen(false)}

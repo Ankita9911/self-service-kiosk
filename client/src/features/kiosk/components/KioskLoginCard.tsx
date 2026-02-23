@@ -34,8 +34,6 @@ export default function KioskLoginCard({
       className="relative w-full max-w-md mx-4"
     >
       <div className="bg-white rounded-[2.5rem] shadow-2xl overflow-hidden">
-        
-        {/* HEADER */}
         <div
           className="px-10 pt-10 pb-8 text-center"
           style={{
@@ -47,18 +45,13 @@ export default function KioskLoginCard({
             <ChefHat className="w-10 h-10 text-white" strokeWidth={1.5} />
           </div>
 
-          <h1 className="text-3xl font-black text-white">
-            Hyper Kitchen
-          </h1>
+          <h1 className="text-3xl font-black text-white">Hyper Kitchen</h1>
           <p className="text-orange-100 text-sm font-semibold mt-2 tracking-wider uppercase">
             Kiosk Terminal
           </p>
         </div>
 
-        {/* FORM */}
         <div className="px-10 py-8 space-y-4">
-
-          {/* DEVICE ID */}
           <input
             value={deviceId}
             onChange={(e) => setDeviceId(e.target.value.toUpperCase())}
@@ -67,7 +60,6 @@ export default function KioskLoginCard({
             className="w-full h-14 px-5 rounded-2xl border-2 border-gray-100 bg-gray-50 font-black text-xl tracking-[0.25em] focus:border-orange-400 focus:bg-white transition-all"
           />
 
-          {/* SECRET */}
           <div className="relative">
             <input
               type={showSecret ? "text" : "password"}
@@ -86,7 +78,6 @@ export default function KioskLoginCard({
             </button>
           </div>
 
-          {/* ERROR */}
           <AnimatePresence>
             {error && (
               <motion.div
@@ -96,14 +87,11 @@ export default function KioskLoginCard({
                 className="flex items-center gap-3 bg-red-50 border-2 border-red-100 rounded-2xl px-4 py-3"
               >
                 <AlertCircle className="w-4 h-4 text-red-500" />
-                <p className="text-sm font-semibold text-red-600">
-                  {error}
-                </p>
+                <p className="text-sm font-semibold text-red-600">{error}</p>
               </motion.div>
             )}
           </AnimatePresence>
 
-          {/* SUBMIT */}
           <motion.button
             onClick={onLogin}
             disabled={loading}
@@ -116,7 +104,9 @@ export default function KioskLoginCard({
                 : "linear-gradient(135deg, #f97316 0%, #ea580c 60%, #c2410c 100%)",
             }}
           >
-            {loading ? "Connecting..." : (
+            {loading ? (
+              "Connecting..."
+            ) : (
               <span className="flex items-center justify-center gap-2">
                 <Wifi className="w-5 h-5" />
                 Activate Kiosk

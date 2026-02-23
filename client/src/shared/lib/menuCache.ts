@@ -1,5 +1,3 @@
-// src/lib/menuCache.ts
-
 import { getDB } from "./indexdb";
 
 

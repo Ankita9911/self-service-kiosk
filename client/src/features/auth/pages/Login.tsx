@@ -19,32 +19,24 @@ import { Label } from "@/shared/components/ui/label";
 import { useLogin } from "../hooks/useLogin";
 import { FeaturePill } from "../components/FeaturePill";
 
-
 export default function Login() {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [focused, setFocused] = useState<"email" | "password" | null>(null);
 
-  const {
-    email,
-    setEmail,
-    password,
-    setPassword,
-    loading,
-    error,
-    submit,
-  } = useLogin();
+  const { email, setEmail, password, setPassword, loading, error, submit } =
+    useLogin();
 
   return (
-    <div className="min-h-screen w-full flex overflow-hidden" style={{ fontFamily: "var(--font-body, 'Satoshi', sans-serif)" }}>
+    <div
+      className="min-h-screen w-full flex overflow-hidden"
+      style={{ fontFamily: "var(--font-body, 'Satoshi', sans-serif)" }}
+    >
       <div className="hidden lg:flex w-[52%] relative bg-[#0f1117] flex-col justify-between p-12 overflow-hidden">
-
-        {/* Layered background */}
         <div className="absolute inset-0 bg-gradient-to-br from-orange-600/20 via-orange-500/5 to-transparent pointer-events-none" />
         <div className="absolute -top-40 -right-40 w-[500px] h-[500px] bg-orange-500/10 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute -bottom-32 -left-32 w-[400px] h-[400px] bg-orange-600/8 rounded-full blur-3xl pointer-events-none" />
 
-        {/* Grid texture */}
         <div
           className="absolute inset-0 opacity-[0.04] pointer-events-none"
           style={{
@@ -54,20 +46,21 @@ export default function Login() {
           }}
         />
 
-        {/* Top: Logo */}
         <div className="relative z-10 flex items-center gap-3">
           <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center shadow-lg shadow-orange-500/30">
             <ChefHat className="w-5 h-5 text-white" />
           </div>
           <div>
-            <p className="text-white text-sm font-clash-bold leading-none">Hyper Kitchen</p>
-            <p className="text-slate-500 text-[10px] font-satoshi tracking-widest uppercase mt-0.5">Management Suite</p>
+            <p className="text-white text-sm font-clash-bold leading-none">
+              Hyper Kitchen
+            </p>
+            <p className="text-slate-500 text-[10px] font-satoshi tracking-widest uppercase mt-0.5">
+              Management Suite
+            </p>
           </div>
         </div>
 
-        {/* Center: Main copy */}
         <div className="relative z-10 space-y-8">
-          {/* Decorative tag */}
           <div className="inline-flex items-center gap-2 bg-orange-500/10 border border-orange-500/20 rounded-full px-3.5 py-1.5">
             <span className="h-1.5 w-1.5 rounded-full bg-orange-400 animate-pulse" />
             <span className="text-[11px] font-clash-medium text-orange-400 uppercase tracking-widest">
@@ -76,9 +69,7 @@ export default function Login() {
           </div>
 
           <div className="space-y-4">
-            <h1
-              className="text-5xl xl:text-6xl font-clash-bold text-white leading-[1.05] tracking-tight"
-            >
+            <h1 className="text-5xl xl:text-6xl font-clash-bold text-white leading-[1.05] tracking-tight">
               Central Kitchen
               <br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-orange-300">
@@ -86,20 +77,24 @@ export default function Login() {
               </span>
             </h1>
             <p className="text-slate-400 font-satoshi text-[15px] leading-relaxed max-w-sm">
-              Manage franchises, oversee kiosk outlets, and monitor devices — all from one unified command center.
+              Manage franchises, oversee kiosk outlets, and monitor devices —
+              all from one unified command center.
             </p>
           </div>
 
-          {/* Feature pills */}
           <div className="flex flex-col gap-2.5">
-            <FeaturePill icon={ShieldCheck} text="Secure enterprise-grade access" />
-            <FeaturePill icon={BarChart3} text="Real-time outlet performance tracking" />
+            <FeaturePill
+              icon={ShieldCheck}
+              text="Secure enterprise-grade access"
+            />
+            <FeaturePill
+              icon={BarChart3}
+              text="Real-time outlet performance tracking"
+            />
             <FeaturePill icon={Utensils} text="Multi-franchise management" />
             <FeaturePill icon={Wifi} text="Live device monitoring" />
           </div>
         </div>
-
-        {/* Bottom: Footer */}
         <div className="relative z-10">
           <p className="text-slate-600 text-xs font-satoshi">
             © {new Date().getFullYear()} Hyper Kitchen · Internal use only
@@ -107,25 +102,19 @@ export default function Login() {
         </div>
       </div>
 
-      {/* ══════════════════════════════════
-          RIGHT — Login Form
-      ══════════════════════════════════ */}
       <div className="flex-1 flex items-center justify-center bg-[#f7f8fa] px-6 py-12 relative">
-
-        {/* Subtle top-right glow */}
         <div className="absolute top-0 right-0 w-72 h-72 bg-orange-100/60 rounded-full blur-3xl pointer-events-none" />
 
         <div className="w-full max-w-[400px] relative z-10">
-
-          {/* Mobile logo */}
           <div className="lg:hidden flex items-center gap-2.5 mb-10">
             <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center">
               <ChefHat className="w-4 h-4 text-white" />
             </div>
-            <span className="font-clash-bold text-slate-800 text-sm">Hyper Kitchen</span>
+            <span className="font-clash-bold text-slate-800 text-sm">
+              Hyper Kitchen
+            </span>
           </div>
 
-          {/* Heading */}
           <div className="mb-8">
             <h2 className="text-[32px] font-clash-bold text-slate-900 leading-tight tracking-tight mb-1.5">
               Welcome back
@@ -135,10 +124,7 @@ export default function Login() {
             </p>
           </div>
 
-          {/* Form card */}
           <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xl shadow-slate-200/40 p-7 space-y-5">
-
-            {/* Email */}
             <div className="space-y-1.5">
               <Label
                 htmlFor="email"
@@ -166,7 +152,6 @@ export default function Login() {
               </div>
             </div>
 
-            {/* Password */}
             <div className="space-y-1.5">
               <Label
                 htmlFor="password"
@@ -177,7 +162,9 @@ export default function Login() {
               <div className="relative">
                 <LockKeyhole
                   className={`absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors duration-200 ${
-                    focused === "password" ? "text-orange-500" : "text-slate-400"
+                    focused === "password"
+                      ? "text-orange-500"
+                      : "text-slate-400"
                   }`}
                 />
                 <Input
@@ -206,7 +193,6 @@ export default function Login() {
               </div>
             </div>
 
-            {/* Error message */}
             {error && (
               <div className="flex items-start gap-3 rounded-xl bg-red-50 border border-red-100 px-4 py-3 animate-fade-in">
                 <div className="h-1.5 w-1.5 rounded-full bg-red-500 mt-1.5 flex-shrink-0" />
@@ -216,7 +202,6 @@ export default function Login() {
               </div>
             )}
 
-            {/* Submit */}
             <button
               type="button"
               onClick={submit}
@@ -246,7 +231,6 @@ export default function Login() {
             </button>
           </div>
 
-          {/* Footer note */}
           <div className="mt-6 flex items-center justify-center gap-2">
             <ShieldCheck className="w-3.5 h-3.5 text-slate-400" />
             <p className="text-[12px] font-satoshi text-slate-400">

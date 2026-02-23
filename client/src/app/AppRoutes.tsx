@@ -1,9 +1,8 @@
 import { Routes, Route } from "react-router-dom";
 import Login from "@/features/auth/pages/Login";
-import {ForceReset} from "@/features/auth/pages/ForceReset";
-
+import { ForceReset } from "@/features/auth/pages/ForceReset";
 import DashboardPage from "@/features/dashboard/pages/DashboardPage";
-import FranchisePage from "@/features/franchise/pages/FranchisePage";;
+import FranchisePage from "@/features/franchise/pages/FranchisePage";
 import OutletPage from "@/features/outlet/pages/OutletPage";
 import OutletMenuPage from "@/features/outlet/pages/OutletMenuPage";
 import MenuLandingPage from "@/features/outlet/pages/MenuLandingPage";
@@ -11,24 +10,18 @@ import DevicePage from "@/features/device/pages/Devicepage";
 import KioskPage from "@/features/kiosk/pages/KioskPage";
 import KioskLoginPage from "@/features/kiosk/pages/KioskLoginPage";
 import KitchenPage from "@/features/kitchen/pages/Kitchenpage";
-import PickupPage from "@/features/pickup/pages/PickupPage"
-
+import PickupPage from "@/features/pickup/pages/PickupPage";
 import ProtectedRoute from "./ProtectedRoute";
 import AppLayout from "@/shared/components/layout/AppLayout";
 import { PERMISSIONS } from "@/shared/lib/permissions";
-import { ResetPassword} from "@/features/auth/pages/ResetPassword"
+import { ResetPassword } from "@/features/auth/pages/ResetPassword";
 import UserPage from "@/features/users/pages/UserPage";
 
 export default function AppRoutes() {
   return (
     <Routes>
-      {/* Public */}
       <Route path="/login" element={<Login />} />
-
-      {/* 🖥️ Kiosk Login — public, no auth needed */}
       <Route path="/kiosk/login" element={<KioskLoginPage />} />
-
-      {/* 🔐 Force Reset (Protected but no layout) */}
       <Route
         path="/force-reset"
         element={
@@ -37,11 +30,7 @@ export default function AppRoutes() {
           </ProtectedRoute>
         }
       />
-
-      {/* 🖥️ Kiosk — full screen, guarded internally by KioskPage itself */}
       <Route path="/kiosk" element={<KioskPage />} />
-
-      {/* 🔐 All Main App Routes (With Layout) */}
       <Route
         element={
           <ProtectedRoute>
@@ -50,7 +39,6 @@ export default function AppRoutes() {
         }
       >
         <Route path="/" element={<DashboardPage />} />
-
         <Route
           path="/reset-password"
           element={
@@ -59,7 +47,6 @@ export default function AppRoutes() {
             </ProtectedRoute>
           }
         />
-
         <Route
           path="/users"
           element={
@@ -68,7 +55,6 @@ export default function AppRoutes() {
             </ProtectedRoute>
           }
         />
-
         <Route
           path="/super-admin/franchises"
           element={
@@ -77,7 +63,6 @@ export default function AppRoutes() {
             </ProtectedRoute>
           }
         />
-
         <Route
           path="/outlets"
           element={
@@ -86,7 +71,6 @@ export default function AppRoutes() {
             </ProtectedRoute>
           }
         />
-
         <Route
           path="/menu"
           element={
@@ -95,7 +79,6 @@ export default function AppRoutes() {
             </ProtectedRoute>
           }
         />
-
         <Route
           path="/outlets/:outletId/menu"
           element={
@@ -104,7 +87,6 @@ export default function AppRoutes() {
             </ProtectedRoute>
           }
         />
-
         <Route
           path="/devices"
           element={
@@ -113,18 +95,16 @@ export default function AppRoutes() {
             </ProtectedRoute>
           }
         />
-
-        {/* 🍳 Kitchen Display */}
         <Route
           path="/kitchen"
           element={
-            <ProtectedRoute requiredPermission={PERMISSIONS.ORDERS_KITCHEN_VIEW}>
+            <ProtectedRoute
+              requiredPermission={PERMISSIONS.ORDERS_KITCHEN_VIEW}
+            >
               <KitchenPage />
             </ProtectedRoute>
           }
         />
-
-        {/* 🛍️ Pickup Counter */}
         <Route
           path="/pickup"
           element={

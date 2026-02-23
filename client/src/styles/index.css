@@ -1,17 +1,15 @@
-@import url('https://api.fontshare.com/v2/css?f[]=clash-display@300,400,500,600,700&f[]=satoshi@300,400,500,700&display=swap');
+@import url("https://api.fontshare.com/v2/css?f[]=clash-display@300,400,500,600,700&f[]=satoshi@300,400,500,700&display=swap");
 @import "tailwindcss";
 @plugin "tailwindcss-animate";
 
 @theme {
   --radius: 0.75rem;
 
-  /* ── Fonts ── */
-  --font-display: 'Clash Display', sans-serif;
-  --font-body:    'Satoshi', sans-serif;
-  --font-sans:    'Satoshi', sans-serif;   /* overrides Tailwind default body font */
-  --font-mono:    'JetBrains Mono', monospace;
+  --font-display: "Clash Display", sans-serif;
+  --font-body: "Satoshi", sans-serif;
+  --font-sans: "Satoshi", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
 
-  /* ── Brand Colors ── */
   --color-background: oklch(1 0 0);
   --color-foreground: oklch(0.145 0 0);
 
@@ -21,7 +19,7 @@
   --color-popover: oklch(1 0 0);
   --color-popover-foreground: oklch(0.145 0 0);
 
-  --color-primary: oklch(0.72 0.19 60); /* ORANGE */
+  --color-primary: oklch(0.72 0.19 60);
   --color-primary-foreground: oklch(0.99 0 0);
 
   --color-secondary: oklch(0.97 0 0);
@@ -39,15 +37,13 @@
   --color-input: oklch(0.922 0 0);
   --color-ring: oklch(0.708 0 0);
 
-  /* ── Sidebar surface ── */
   --color-sidebar: oklch(0.11 0.01 260);
   --color-sidebar-border: oklch(1 0 0 / 0.05);
 }
 
-/* ═══════════════════════════════════════════════════
-   Base
-════════════════════════════════════════════════════ */
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
 }
 
@@ -63,19 +59,18 @@ body {
   color: var(--color-foreground);
 }
 
-/* Clash Display on all headings automatically */
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-family: var(--font-display);
   font-weight: 600;
   letter-spacing: -0.025em;
 }
 
-/* ═══════════════════════════════════════════════════
-   Utilities
-════════════════════════════════════════════════════ */
 @layer utilities {
-
-  /* Font family shortcuts */
   .font-display {
     font-family: var(--font-display);
     letter-spacing: -0.025em;
@@ -84,57 +79,116 @@ h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-body);
   }
 
-  /* Clash Display weight variants */
-  .font-clash-light    { font-family: var(--font-display); font-weight: 300; }
-  .font-clash          { font-family: var(--font-display); font-weight: 400; }
-  .font-clash-medium   { font-family: var(--font-display); font-weight: 500; }
-  .font-clash-semibold { font-family: var(--font-display); font-weight: 600; }
-  .font-clash-bold     { font-family: var(--font-display); font-weight: 700; }
+  .font-clash-light {
+    font-family: var(--font-display);
+    font-weight: 300;
+  }
+  .font-clash {
+    font-family: var(--font-display);
+    font-weight: 400;
+  }
+  .font-clash-medium {
+    font-family: var(--font-display);
+    font-weight: 500;
+  }
+  .font-clash-semibold {
+    font-family: var(--font-display);
+    font-weight: 600;
+  }
+  .font-clash-bold {
+    font-family: var(--font-display);
+    font-weight: 700;
+  }
 
-  /* Satoshi weight variants */
-  .font-satoshi-light  { font-family: var(--font-body); font-weight: 300; }
-  .font-satoshi        { font-family: var(--font-body); font-weight: 400; }
-  .font-satoshi-medium { font-family: var(--font-body); font-weight: 500; }
-  .font-satoshi-bold   { font-family: var(--font-body); font-weight: 700; }
+  .font-satoshi-light {
+    font-family: var(--font-body);
+    font-weight: 300;
+  }
+  .font-satoshi {
+    font-family: var(--font-body);
+    font-weight: 400;
+  }
+  .font-satoshi-medium {
+    font-family: var(--font-body);
+    font-weight: 500;
+  }
+  .font-satoshi-bold {
+    font-family: var(--font-body);
+    font-weight: 700;
+  }
 
-  /* Scrollbar hide */
-  .scrollbar-hide::-webkit-scrollbar { display: none; }
-  .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
 
-  /* Shimmer */
-  .animate-shimmer { animation: shimmer 1.5s infinite; }
+  .animate-shimmer {
+    animation: shimmer 1.5s infinite;
+  }
 }
-
-/* ═══════════════════════════════════════════════════
-   Keyframes — shared across all pages
-   (defined here so inline <style> tags aren't needed)
-════════════════════════════════════════════════════ */
 @keyframes shimmer {
-  0%   { transform: translateX(-100%); }
-  100% { transform: translateX(250%); }
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(250%);
+  }
 }
 
 @keyframes scale-in {
-  from { opacity: 0; transform: scale(0.93); }
-  to   { opacity: 1; transform: scale(1); }
+  from {
+    opacity: 0;
+    transform: scale(0.93);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 @keyframes fade-down {
-  from { opacity: 0; transform: translateY(-8px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes slide-up {
-  from { opacity: 0; transform: translateY(14px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes fade-in {
-  from { opacity: 0; }
-  to   { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
-.animate-scale-in  { animation: scale-in  0.18s ease-out forwards; }
-.animate-fade-down { animation: fade-down  0.15s ease-out forwards; }
-.animate-slide-up  { animation: slide-up   0.2s  ease-out forwards; }
-.animate-fade-in   { animation: fade-in    0.25s ease-out forwards; }
+.animate-scale-in {
+  animation: scale-in 0.18s ease-out forwards;
+}
+.animate-fade-down {
+  animation: fade-down 0.15s ease-out forwards;
+}
+.animate-slide-up {
+  animation: slide-up 0.2s ease-out forwards;
+}
+.animate-fade-in {
+  animation: fade-in 0.25s ease-out forwards;
+}

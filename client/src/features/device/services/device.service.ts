@@ -16,7 +16,6 @@ export async function createDevice(payload: {
   return response.data.data;
 }
 
-// Used by KioskLoginPage — no auth token needed, hits the public endpoint
 export async function kioskLogin(
   deviceId: string,
   password: string

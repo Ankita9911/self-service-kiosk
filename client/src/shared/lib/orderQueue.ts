@@ -1,5 +1,3 @@
-// src/lib/orderQueue.ts
-
 import { getDB } from "./indexdb";
 
 export async function addToQueue(orderPayload: any) {

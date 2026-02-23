@@ -12,7 +12,7 @@ export default function Sidebar() {
 
   return (
     <aside className="w-64 bg-[#0f1117] border-r border-white/5 h-screen flex flex-col sticky top-0 shadow-2xl">
-      {/* Logo */}
+     
       <div className="px-6 py-6 border-b border-white/5">
         <div className="flex items-center gap-3">
           <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center shadow-lg shadow-orange-500/30">
@@ -29,7 +29,7 @@ export default function Sidebar() {
         </div>
       </div>
 
-      {/* Navigation */}
+      
       <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto scrollbar-hide">
         {visibleItems.map((item) => {
           const Icon = item.icon;
@@ -56,7 +56,6 @@ export default function Sidebar() {
         })}
       </nav>
 
-      {/* Footer hint */}
       <div className="px-6 py-4 border-t border-white/5">
         <p className="text-[10px] text-slate-600 text-center">
           © {new Date().getFullYear()} Hyper Kitchen

@@ -29,9 +29,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const [loading, setLoading] = useState(true);
 
-  /* =========================================
-     INITIAL LOAD
-  ========================================= */
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     const token = localStorage.getItem("token");
@@ -47,9 +44,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setLoading(false);
   }, []);
 
-  /* =========================================
-     SET SESSION (NEW)
-  ========================================= */
   const setSession = (token: string, userData: any) => {
     localStorage.setItem("token", token);
 
@@ -60,7 +54,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     setUser(userData);
 
-    // 🔐 Handle redirect centrally
     if (userData?.mustChangePassword) {
       navigate("/force-reset");
     } else {
@@ -68,9 +61,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  /* =========================================
-     LOGOUT
-  ========================================= */
   const logout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");

@@ -79,7 +79,6 @@ export default function UserPage() {
 
   return (
     <div className="space-y-6">
-      {/* ── Header ── */}
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 mb-1">
@@ -122,7 +121,6 @@ export default function UserPage() {
         </div>
       </div>
 
-      {/* ── Stat Pills ── */}
       <div className="flex flex-wrap gap-2">
         {showShimmer ? (
           [80, 72, 80].map((w, i) => (
@@ -165,7 +163,6 @@ export default function UserPage() {
         )}
       </div>
 
-      {/* ── Search + Role Filter ── */}
       <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
@@ -195,7 +192,6 @@ export default function UserPage() {
         </div>
       </div>
 
-      {/* ── Table ── */}
       <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
         <table className="w-full">
           <thead>

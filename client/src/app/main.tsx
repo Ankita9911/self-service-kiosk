@@ -7,8 +7,6 @@ import "@/styles/index.css";
 
 async function bootstrap() {
   await initDB();
-  console.log("IndexedDB initialized");
-
   createRoot(document.getElementById("root")!).render(
     <BrowserRouter>
       <AuthProvider>
@@ -17,5 +15,4 @@ async function bootstrap() {
     </BrowserRouter>
   );
 }
-
 bootstrap();
