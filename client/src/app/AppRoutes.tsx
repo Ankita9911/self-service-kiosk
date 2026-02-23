@@ -8,10 +8,10 @@ import OutletPage from "@/features/outlet/pages/OutletPage";
 import OutletMenuPage from "@/features/outlet/pages/OutletMenuPage";
 import MenuLandingPage from "@/features/outlet/pages/MenuLandingPage";
 import DevicePage from "@/features/device/pages/Devicepage";
-import KioskPage from "@/pages/kiosk/KioskPage";
-import KioskLoginPage from "@/pages/kiosk/KioskLoginPage";
-import KitchenPage from "@/pages/kitchen/KitchenPage";
-import PickupPage from "@/pages/pickup/PickupPage";
+import KioskPage from "@/features/kiosk/pages/KioskPage";
+import KioskLoginPage from "@/features/kiosk/pages/KioskLoginPage";
+import KitchenPage from "@/features/kitchen/pages/Kitchenpage";
+import PickupPage from "@/features/pickup/pages/PickupPage"
 
 import ProtectedRoute from "./ProtectedRoute";
 import AppLayout from "@/shared/components/layout/AppLayout";

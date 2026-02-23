@@ -1,13 +1,7 @@
 import { Minus, Plus, Trash2, ShoppingCart, Package } from "lucide-react";
 import { Button } from "../../../shared/components/ui/button";
+import type { CartItem } from "../types/cartItem.types";
 
-export interface CartItem {
-  itemId: string;
-  name: string;
-  price: number;
-  quantity: number;
-  stockQuantity: number;
-}
 
 interface CartPanelProps {
   cart: CartItem[];

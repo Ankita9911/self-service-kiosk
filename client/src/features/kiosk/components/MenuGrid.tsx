@@ -1,7 +1,7 @@
 import { Plus, ImageOff, Minus, AlertCircle, Package } from "lucide-react";
 import { motion } from "framer-motion";
 import type { MenuItem } from "../../../shared/lib/menuCache";
-import type { CartItem } from "./CartPanel";
+import type { CartItem } from "../types/cartItem.types";
 
 interface MenuGridProps {
   items: MenuItem[];

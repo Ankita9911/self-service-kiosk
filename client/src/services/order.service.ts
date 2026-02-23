@@ -1,5 +1,5 @@
 import axiosInstance from "@/shared/lib/axiosInstance";
-import type { Order, OrderStatus } from "@/shared/types/order.types";
+import type { Order, OrderStatus } from "@/features/kiosk/types/order.types";
 
 export async function getOrders(statuses?: OrderStatus[]): Promise<Order[]> {
   const params = statuses?.length

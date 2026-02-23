@@ -1,5 +1,5 @@
 import axios from "@/shared/lib/axiosInstance";
-import type { LoginResponse } from "@/shared/types/auth.types";
+import type { LoginResponse } from "@/features/auth/types/auth.types";
 
 export async function loginRequest(email: string, password: string) {
   const response = await axios.post<{ data: LoginResponse }>(

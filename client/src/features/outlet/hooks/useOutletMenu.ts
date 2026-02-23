@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { getCategories, getMenuItems, createCategory, createMenuItem, updateMenuItem, deleteMenuItem } from "@/services/menu.service";
 import { getOutlets } from "@/features/outlet/services/outlet.service";
-import type { Category, MenuItem } from "@/shared/types/menu.types";
+import type { Category, MenuItem } from "@/features/kiosk/types/menu.types";
 import type { Outlet } from "@/features/outlet/types/outlet.types";
 
 export function useOutletMenu(
