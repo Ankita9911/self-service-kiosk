@@ -42,7 +42,7 @@ export function StatCard({
 
   if (loading) {
     return (
-      <div className="bg-white rounded-2xl border p-6 space-y-4">
+      <div className="bg-white rounded-2xl p-6 space-y-4">
         <Shimmer className="h-4 w-24" />
         <Shimmer className="h-7 w-32" />
         <Shimmer className="h-3 w-20" />

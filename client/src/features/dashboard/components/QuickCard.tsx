@@ -20,7 +20,7 @@ export function QuickCard({
 }: Props) {
   if (loading) {
     return (
-      <div className="bg-white rounded-2xl border p-7 space-y-4">
+      <div className="bg-white rounded-2xl  p-7 space-y-4">
         <Shimmer className="h-12 w-12 rounded-xl" />
         <Shimmer className="h-5 w-32" />
         <Shimmer className="h-3 w-full" />
