@@ -69,7 +69,7 @@ export default function KioskHeader({
             className="text-xl font-black text-orange-600 leading-tight mb-0.5"
             style={{ fontFamily: "var(--font-display)" }}
           >
-            view cart
+            View Cart
           </p>
           <p
             className="text-xs font-bold text-gray-400 leading-none uppercase tracking-wide"
