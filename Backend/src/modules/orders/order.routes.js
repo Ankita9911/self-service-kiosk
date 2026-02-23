@@ -9,21 +9,19 @@ const router = express.Router();
 
 router.use(authenticate, attachTenant);
 
-// Create Order
+
 router.post(
   "/",
   authorize(PERMISSIONS.ORDERS_CREATE),
   controller.createOrder
 );
 
-// List Orders (Kitchen: CREATED,IN_KITCHEN,READY | Pickup: READY)
 router.get(
   "/",
   authorize(PERMISSIONS.ORDERS_VIEW),
   controller.listOrders
 );
 
-// Update Order Status
 router.patch(
   "/:id/status",
   authorize(PERMISSIONS.ORDERS_UPDATE_STATUS),

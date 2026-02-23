@@ -8,7 +8,6 @@ import AppError from "./shared/errors/AppError.js";
 
 const app = express();
 
-// Security headers
 app.use(helmet());
 app.use(cors());
 app.use(express.json());

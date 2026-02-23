@@ -1,4 +1,3 @@
-// src/realtime/realtime.manager.js
 import { Server } from "socket.io";
 import jwt from "jsonwebtoken";
 import  env  from "../config/env.js";
@@ -14,7 +13,6 @@ export function initSocket(httpServer) {
     },
   });
 
-  // Auth middleware — validate JWT and attach user/tenant info
   io.use((socket, next) => {
     const token =
       socket.handshake.auth?.token ||
@@ -35,12 +33,10 @@ export function initSocket(httpServer) {
     const { outletId, role } = socket.user;
 
     if (outletId) {
-      // Join the outlet-scoped room so broadcasts are isolated per outlet
       socket.join(`outlet:${outletId}`);
     }
 
     socket.on("disconnect", () => {
-      // cleanup handled automatically by Socket.IO
     });
   });
 

@@ -17,7 +17,7 @@ export async function getKioskMenu(tenant) {
     stockQuantity: { $gt: 0 },
   });
 
-  // Group items by category
+
   const categoryMap = {};
 
   categories.forEach((cat) => {

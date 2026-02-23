@@ -1,7 +1,6 @@
 import Franchise from "./franchise.model.js";
 import AppError from "../../shared/errors/AppError.js";
 
-/* -------------------- CREATE -------------------- */
 export async function createFranchise(payload, user) {
   if (user.role !== "SUPER_ADMIN") {
     throw new AppError("Forbidden", 403, "FORBIDDEN");
@@ -39,8 +38,6 @@ export async function createFranchise(payload, user) {
 
   return franchise;
 }
-
-/* -------------------- GET ALL -------------------- */
 export async function getFranchises(user) {
   if (user.role !== "SUPER_ADMIN") {
     throw new AppError("Forbidden", 403, "FORBIDDEN");
@@ -51,7 +48,6 @@ export async function getFranchises(user) {
   });
 }
 
-/* -------------------- GET ONE -------------------- */
 export async function getFranchiseById(id, user) {
   if (user.role !== "SUPER_ADMIN") {
     throw new AppError("Forbidden", 403, "FORBIDDEN");
@@ -73,7 +69,6 @@ export async function getFranchiseById(id, user) {
   return franchise;
 }
 
-/* -------------------- UPDATE -------------------- */
 export async function updateFranchise(id, payload, user) {
   if (user.role !== "SUPER_ADMIN") {
     throw new AppError("Forbidden", 403, "FORBIDDEN");
@@ -93,7 +88,6 @@ export async function updateFranchise(id, payload, user) {
   return franchise;
 }
 
-/* -------------------- DELETE (Soft) -------------------- */
 export async function deleteFranchise(id, user) {
   if (user.role !== "SUPER_ADMIN") {
     throw new AppError("Forbidden", 403, "FORBIDDEN");

@@ -13,7 +13,7 @@ function generateShortDeviceId() {
   for (let i = 0; i < 6; i++) {
     id += ID_CHARS[bytes[i] % ID_CHARS.length];
   }
-  return id; // e.g. "K7MN9Q"
+  return id; 
 }
 
 function generateSecret() {
@@ -34,7 +34,6 @@ export async function createDevice(currentUser, payload) {
     throw new AppError("Franchise context is required", 403);
   }
 
-  // Generate unique short device ID (collision-safe)
   let deviceId;
   let attempts = 0;
   do {
@@ -61,7 +60,7 @@ export async function createDevice(currentUser, payload) {
 
   return {
     device,
-    secret: plainSecret, // returned once, store securely
+    secret: plainSecret, 
   };
 }
 

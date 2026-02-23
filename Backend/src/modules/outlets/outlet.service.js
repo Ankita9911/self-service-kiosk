@@ -2,7 +2,6 @@ import Outlet from "./outlet.model.js";
 import Franchise from "../franchises/franchise.model.js";
 import AppError from "../../shared/errors/AppError.js";
 
-/* -------------------- CREATE -------------------- */
 export async function createOutlet(payload, user) {
   let { franchiseId, name, outletCode, address } = payload;
 
@@ -14,7 +13,6 @@ export async function createOutlet(payload, user) {
     );
   }
 
-  // Role enforcement
   if (user.role === "SUPER_ADMIN") {
     if (!franchiseId) {
       throw new AppError(
@@ -48,7 +46,6 @@ export async function createOutlet(payload, user) {
   return outlet;
 }
 
-/* -------------------- GET ALL -------------------- */
 export async function getOutlets(user) {
   const filter = { isDeleted: false };
 
@@ -71,8 +68,6 @@ export async function getOutlets(user) {
 
   throw new AppError("Forbidden", 403, "FORBIDDEN");
 }
-
-/* -------------------- GET ONE -------------------- */
 export async function getOutletById(id, user) {
   const outlet = await Outlet.findOne({
     _id: id,
@@ -98,7 +93,6 @@ export async function getOutletById(id, user) {
   return outlet;
 }
 
-/* -------------------- UPDATE -------------------- */
 export async function updateOutlet(id, payload, user) {
   const outlet = await getOutletById(id, user);
 
@@ -114,7 +108,6 @@ export async function updateOutlet(id, payload, user) {
   return outlet;
 }
 
-/* -------------------- DELETE (Soft) -------------------- */
 export async function deleteOutlet(id, user) {
   const outlet = await getOutletById(id, user);
 

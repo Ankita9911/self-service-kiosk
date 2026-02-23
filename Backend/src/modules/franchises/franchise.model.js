@@ -47,7 +47,6 @@ const franchiseSchema = new Schema(
   }
 );
 
-// Future scalability index
 franchiseSchema.index({ status: 1 });
 franchiseSchema.index({ brandCode: 1 }, { unique: true });
 

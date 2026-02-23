@@ -8,66 +8,45 @@ import * as controller from "./device.controller.js";
 import { deviceLoginController } from "./device.auth.controller.js";
 
 const router = express.Router();
-
-/**
- * =========================================
- * PUBLIC ROUTE — DEVICE LOGIN
- * =========================================
- */
 router.post("/login", deviceLoginController);
 
-/**
- * =========================================
- * DEVICE-ONLY ROUTE — HEARTBEAT
- * =========================================
- */
 router.post(
   "/heartbeat",
   authenticate,
   requireDevice,
-  controller.heartbeatController
+  controller.heartbeatController,
 );
 
-/**
- * =========================================
- * ADMIN ROUTES (USER ONLY)
- * =========================================
- */
 router.use(authenticate, requireUser);
 
-// Create Device (Franchise Admin only)
 router.post(
   "/",
   authorize(PERMISSIONS.DEVICE_CREATE),
-  controller.createDeviceController
+  controller.createDeviceController,
 );
 
-// List Devices
 router.get(
   "/",
   authorize(PERMISSIONS.DEVICE_VIEW),
-  controller.listDevicesController
+  controller.listDevicesController,
 );
 
-// Update Device
 router.patch(
   "/:deviceId",
   authorize(PERMISSIONS.DEVICE_UPDATE),
-  controller.updateDeviceController
+  controller.updateDeviceController,
 );
 
-// Soft Delete Device
 router.delete(
   "/:deviceId",
   authorize(PERMISSIONS.DEVICE_DELETE),
-  controller.deleteDeviceController
+  controller.deleteDeviceController,
 );
 
-// Reset Device Secret
 router.post(
   "/:deviceId/reset-secret",
   authorize(PERMISSIONS.DEVICE_UPDATE),
-  controller.resetSecretController
+  controller.resetSecretController,
 );
 
 export default router;

@@ -13,8 +13,6 @@ import deviceRoutes from "./modules/devices/device.routes.js";
 import userRoutes from "./modules/users/user.routes.js";
 const router = express.Router();
 
-
-
 router.get(
   "/tenant-test",
   authenticate,

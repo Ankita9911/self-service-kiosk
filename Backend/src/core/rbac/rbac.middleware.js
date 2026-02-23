@@ -1,5 +1,3 @@
-// core/rbac/rbac.middleware.js
-
 import AppError from "../../shared/errors/AppError.js";
 import { ROLE_PERMISSIONS } from "./roles.js";
 

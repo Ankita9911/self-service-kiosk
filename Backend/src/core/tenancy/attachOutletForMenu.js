@@ -1,11 +1,6 @@
 import Outlet from "../../modules/outlets/outlet.model.js";
 import AppError from "../../shared/errors/AppError.js";
 
-/**
- * Resolves outletId for menu operations.
- * - OUTLET_MANAGER: uses their outletId (ignores param)
- * - FRANCHISE_ADMIN / SUPER_ADMIN: requires outletId in query/body, validates scope
- */
 export async function attachOutletForMenu(req, res, next) {
   const user = req.user;
   const outletId = req.query.outletId || req.body?.outletId;

@@ -1,6 +1,3 @@
-// core/rbac/roles.js
-// Note: PICKED_UP transition uses ORDERS_UPDATE_STATUS (same as kitchen → ready)
-
 import { PERMISSIONS } from "./permissions.js";
 
 export const ROLE_PERMISSIONS = {
@@ -60,19 +57,16 @@ export const ROLE_PERMISSIONS = {
     PERMISSIONS.OUTLET_VIEW,
   ],
 
-  // Kitchen staff: view orders + update status (CREATED→IN_KITCHEN→READY)
   KITCHEN_STAFF: [
     PERMISSIONS.ORDERS_VIEW,
     PERMISSIONS.ORDERS_UPDATE_STATUS,
   ],
 
-  // Pickup staff: view orders + update status (READY→PICKED_UP)
   PICKUP_STAFF: [
     PERMISSIONS.ORDERS_VIEW,
     PERMISSIONS.ORDERS_UPDATE_STATUS,
   ],
 
-  // Kiosk devices (device login, not user) – can create orders only
   KIOSK_DEVICE: [
     PERMISSIONS.ORDERS_CREATE,
   ],

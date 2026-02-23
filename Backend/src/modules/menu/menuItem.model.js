@@ -39,7 +39,6 @@ const menuItemSchema = new Schema(
       min: 0,
     },
 
-    // 🔥 Inventory Control
     stockQuantity: {
       type: Number,
       required: true,
@@ -47,7 +46,6 @@ const menuItemSchema = new Schema(
       min: 0,
     },
 
-    // 🔥 Manual Admin Control
     isActive: {
       type: Boolean,
       default: true,
@@ -64,7 +62,6 @@ const menuItemSchema = new Schema(
   }
 );
 
-// Optimized compound index
 menuItemSchema.index({
   franchiseId: 1,
   outletId: 1,

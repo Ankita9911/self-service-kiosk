@@ -5,7 +5,6 @@ import { generateToken } from "./jwt.service.js";
 
 const SALT_ROUNDS = 10;
 export async function login({ email, password }) {
-  // 1️⃣ Fetch user first
   const user = await User.findOne({ email, isDeleted: false })
     .select("+passwordHash");
   console.log("user",user);

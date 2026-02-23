@@ -2,10 +2,6 @@ import Category from "./category.model.js";
 import MenuItem from "./menuItem.model.js";
 import AppError from "../../shared/errors/AppError.js";
 
-// ======================
-// CATEGORY
-// ======================
-
 export async function createCategory(data, tenant) {
   return Category.create({
     ...data,
@@ -59,10 +55,6 @@ export async function deleteCategory(id, tenant) {
 
   return category;
 }
-
-// ======================
-// MENU ITEMS
-// ======================
 
 export async function createMenuItem(data, tenant) {
   return MenuItem.create({

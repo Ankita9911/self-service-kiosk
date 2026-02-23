@@ -12,42 +12,19 @@ import {
 } from "./outlet.controller.js";
 
 const router = express.Router();
-
 router.use(authenticate);
-
-// Create Outlet
-router.post(
-  "/",
-  authorize(PERMISSIONS.OUTLET_CREATE),
-  createOutletController
-);
-
-// Get All Outlets
-router.get(
-  "/",
-  authorize(PERMISSIONS.OUTLET_VIEW),
-  getOutletsController
-);
-
-// Get One Outlet
+router.post("/", authorize(PERMISSIONS.OUTLET_CREATE), createOutletController);
+router.get("/", authorize(PERMISSIONS.OUTLET_VIEW), getOutletsController);
 router.post(
   "/get-one",
   authorize(PERMISSIONS.OUTLET_VIEW),
-  getOutletByIdController
+  getOutletByIdController,
 );
-
-// Update Outlet
-router.put(
-  "/",
-  authorize(PERMISSIONS.OUTLET_UPDATE),
-  updateOutletController
-);
-
-// Delete Outlet
+router.put("/", authorize(PERMISSIONS.OUTLET_UPDATE), updateOutletController);
 router.delete(
   "/",
   authorize(PERMISSIONS.OUTLET_DELETE),
-  deleteOutletController
+  deleteOutletController,
 );
 
 export default router;

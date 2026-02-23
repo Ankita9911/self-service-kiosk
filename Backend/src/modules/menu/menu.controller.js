@@ -1,7 +1,5 @@
 import * as menuService from "./menu.service.js";
 
-// CATEGORY
-
 export async function createCategory(req, res, next) {
   try {
     const result = await menuService.createCategory(

@@ -10,10 +10,6 @@ const router = express.Router();
 
 router.use(authenticate, attachTenant, attachOutletForMenu);
 
-// =========================
-// CATEGORY
-// =========================
-
 router.post(
   "/categories",
   authorize(PERMISSIONS.MENU_MANAGE),
@@ -22,7 +18,7 @@ router.post(
 
 router.get(
   "/categories",
-  authorize(PERMISSIONS.MENU_MANAGE), // later change to MENU_VIEW
+  authorize(PERMISSIONS.MENU_MANAGE), 
   controller.getCategories
 );
 

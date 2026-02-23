@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import env from "./env.js";
+import env from "../../config/env.js";
 
 let isConnected = false;
 
@@ -10,18 +10,17 @@ async function connectMongo(retries = 5) {
     mongoose.set("strictQuery", true);
 
     await mongoose.connect(env.MONGO_URI, {
-      autoIndex: false, // production safety
-      maxPoolSize: 10,  // scalable connection pool
+      autoIndex: false,
+      maxPoolSize: 10,
     });
 
     isConnected = true;
 
     registerMongoEvents();
-
   } catch (error) {
     if (retries > 0) {
       console.log(`Retrying MongoDB connection... (${retries} attempts left)`);
-      await new Promise(res => setTimeout(res, 3000));
+      await new Promise((res) => setTimeout(res, 3000));
       return connectMongo(retries - 1);
     }
 

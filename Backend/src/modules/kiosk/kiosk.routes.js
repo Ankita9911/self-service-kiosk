@@ -7,7 +7,6 @@ import * as controller from "./kiosk.controller.js";
 
 const router = express.Router();
 
-// Only KIOSK_DEVICE can access
 router.use(
   authenticate,
   attachTenant,

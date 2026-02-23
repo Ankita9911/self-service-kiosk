@@ -74,7 +74,6 @@ const userSchema = new Schema(
   { timestamps: true }
 );
 
-// Multi-tenant compound index
 userSchema.index({ franchiseId: 1, outletId: 1 });
 
 const User = mongoose.model("User", userSchema);

@@ -42,7 +42,6 @@ const categorySchema = new Schema(
   }
 );
 
-// Tenancy performance indexes
 categorySchema.index({ franchiseId: 1, outletId: 1, isDeleted: 1 });
 categorySchema.index({ franchiseId: 1, outletId: 1, displayOrder: 1 });
 

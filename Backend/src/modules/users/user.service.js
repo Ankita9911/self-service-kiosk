@@ -10,10 +10,6 @@ function generateTempPassword() {
 
 const SALT_ROUNDS = 10;
 
-/* -------------------------------------------------------
-   Helpers
-------------------------------------------------------- */
-
 function ensureHigherRole(creatorRole, targetRole) {
   if (ROLE_HIERARCHY[creatorRole] <= ROLE_HIERARCHY[targetRole]) {
     throw new AppError("Insufficient hierarchy level", 403);
@@ -24,16 +20,11 @@ function ensureSameTenant(currentUser, targetUser) {
   if (currentUser.role === "SUPER_ADMIN") return;
 
   if (
-    currentUser.franchiseId?.toString() !==
-    targetUser.franchiseId?.toString()
+    currentUser.franchiseId?.toString() !== targetUser.franchiseId?.toString()
   ) {
     throw new AppError("Cross-tenant access denied", 403);
   }
 }
-
-/* -------------------------------------------------------
-   Create User
-------------------------------------------------------- */
 
 const OUTLET_SCOPED_ROLES = [
   "OUTLET_MANAGER",
@@ -43,7 +34,13 @@ const OUTLET_SCOPED_ROLES = [
 ];
 
 export async function createUser(currentUser, payload) {
-  const { name, email, role, franchiseId: payloadFranchiseId, outletId: payloadOutletId } = payload;
+  const {
+    name,
+    email,
+    role,
+    franchiseId: payloadFranchiseId,
+    outletId: payloadOutletId,
+  } = payload;
 
   ensureHigherRole(currentUser.role, role);
 
@@ -56,7 +53,6 @@ export async function createUser(currentUser, payload) {
   let outletId = payloadOutletId || null;
 
   if (currentUser.role === "SUPER_ADMIN") {
-    // SUPER_ADMIN must provide franchiseId for any non–platform-level user
     if (role !== "SUPER_ADMIN" && !payloadFranchiseId) {
       throw new AppError("Franchise is required when creating this role", 400);
     }
@@ -97,10 +93,6 @@ export async function createUser(currentUser, payload) {
   };
 }
 
-/* -------------------------------------------------------
-   List Users
-------------------------------------------------------- */
-
 export async function listUsers(currentUser) {
   const filter = { isDeleted: false };
 
@@ -115,10 +107,6 @@ export async function listUsers(currentUser) {
   return User.find(filter);
 }
 
-/* -------------------------------------------------------
-   Get User
-------------------------------------------------------- */
-
 export async function getUser(currentUser, id) {
   const user = await User.findById(id);
 
@@ -130,10 +118,6 @@ export async function getUser(currentUser, id) {
 
   return user;
 }
-
-/* -------------------------------------------------------
-   Update User
-------------------------------------------------------- */
 
 export async function updateUser(currentUser, id, payload) {
   const user = await User.findById(id);
@@ -151,10 +135,6 @@ export async function updateUser(currentUser, id, payload) {
 
   return user;
 }
-
-/* -------------------------------------------------------
-   Soft Delete
-------------------------------------------------------- */
 
 export async function deleteUser(currentUser, id) {
   const user = await User.findById(id);
@@ -175,11 +155,6 @@ export async function deleteUser(currentUser, id) {
 
   return true;
 }
-
-/* -------------------------------------------------------
-   Change Role
-------------------------------------------------------- */
-
 export async function changeUserRole(currentUser, id, newRole) {
   const user = await User.findById(id);
 
@@ -197,10 +172,6 @@ export async function changeUserRole(currentUser, id, newRole) {
 
   return user;
 }
-
-/* -------------------------------------------------------
-   Change Status
-------------------------------------------------------- */
 
 export async function changeUserStatus(currentUser, id, status) {
   const user = await User.findById(id);
@@ -221,10 +192,6 @@ export async function changeUserStatus(currentUser, id, status) {
 
   return user;
 }
-
-/* -------------------------------------------------------
-   Reset Password
-------------------------------------------------------- */
 
 export async function resetPassword(currentUser, id, newPassword) {
   const user = await User.findById(id).select("+passwordHash");

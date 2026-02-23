@@ -4,26 +4,29 @@ import Counter from "./counter.model.js";
 import MenuItem from "../menu/menuItem.model.js";
 import AppError from "../../shared/errors/AppError.js";
 import { getIO } from "../../realtime/realtime.manager.js";
+const VALID_STATUS_TRANSITIONS = {
+  CREATED: ["IN_KITCHEN"],
+  IN_KITCHEN: ["READY"],
+  READY: ["PICKED_UP", "COMPLETED"],
+  COMPLETED: ["PICKED_UP"],
+  PICKED_UP: [],
+};
 
 async function getNextOrderNumber(outletId, session) {
   const counter = await Counter.findOneAndUpdate(
     { outletId },
     { $inc: { seq: 1 } },
-    { new: true, upsert: true, session }
+    { new: true, upsert: true, session },
   );
   return counter.seq;
 }
 
-/**
- * Emit a socket event scoped to a specific outlet room.
- * Rooms are named: outlet:<outletId>
- */
 function emitToOutlet(outletId, event, payload) {
   try {
     const io = getIO();
     io.to(`outlet:${outletId}`).emit(event, payload);
   } catch (_) {
-    // Socket not initialised in test env — ignore
+    console.log("socket not initalized");
   }
 }
 
@@ -38,7 +41,6 @@ export async function createOrder(data, tenant, userRole) {
       throw new AppError("Order items required", 400, "INVALID_ORDER");
     }
 
-    // Idempotency check
     const existing = await Order.findOne({
       outletId: tenant.outletId,
       clientOrderId,
@@ -64,14 +66,14 @@ export async function createOrder(data, tenant, userRole) {
           stockQuantity: { $gte: item.quantity },
         },
         { $inc: { stockQuantity: -item.quantity } },
-        { new: true, session }
+        { new: true, session },
       );
 
       if (!menuItem) {
         throw new AppError(
           "Insufficient stock or invalid item",
           400,
-          "STOCK_ERROR"
+          "STOCK_ERROR",
         );
       }
 
@@ -103,13 +105,12 @@ export async function createOrder(data, tenant, userRole) {
           createdByRole: userRole,
         },
       ],
-      { session }
+      { session },
     );
 
     await session.commitTransaction();
     session.endSession();
 
-    // Notify kitchen screen of new order
     emitToOutlet(tenant.outletId, "order:new", order[0]);
 
     return order[0];
@@ -119,16 +120,6 @@ export async function createOrder(data, tenant, userRole) {
     throw error;
   }
 }
-
-// CREATED → IN_KITCHEN → READY → PICKED_UP (terminal)
-// COMPLETED kept for backwards compat but PICKED_UP is primary terminal
-const VALID_STATUS_TRANSITIONS = {
-  CREATED: ["IN_KITCHEN"],
-  IN_KITCHEN: ["READY"],
-  READY: ["PICKED_UP", "COMPLETED"],
-  COMPLETED: ["PICKED_UP"],
-  PICKED_UP: [],
-};
 
 export async function listOrders(tenant, statuses) {
   if (!tenant.outletId) {
@@ -163,14 +154,12 @@ export async function updateOrderStatus(orderId, newStatus, tenant) {
     throw new AppError(
       `Cannot transition from ${order.status} to ${newStatus}`,
       400,
-      "INVALID_STATUS_TRANSITION"
+      "INVALID_STATUS_TRANSITION",
     );
   }
 
   order.status = newStatus;
   await order.save();
-
-  // Broadcast status change to all screens in this outlet
   emitToOutlet(order.outletId, "order:statusUpdated", {
     orderId: order._id,
     orderNumber: order.orderNumber,
