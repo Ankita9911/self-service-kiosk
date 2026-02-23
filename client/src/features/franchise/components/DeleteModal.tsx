@@ -25,7 +25,7 @@ export function DeleteModal({ franchise, onConfirm, onCancel }: Props) {
             </div>
 
             <div>
-              <p className="font-clash-bold text-slate-900">Delete franchise?</p>
+              <p className="font-clash-bold text-slate-900">Are you sure that you want to Delete franchise?</p>
               <p className="font-satoshi text-slate-500 text-sm mt-0.5 truncate max-w-[180px]">
                 {franchise.name}
               </p>
