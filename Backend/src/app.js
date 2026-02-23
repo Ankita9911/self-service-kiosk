@@ -2,7 +2,7 @@ import express from "express";
 import cors from "cors";
 import helmet from "helmet";
 
-import routes from "./routes.js";
+import routes from "./routes/index.js";
 import errorMiddleware from "./shared/errors/error.middleware.js";
 import AppError from "./shared/errors/AppError.js";
 
