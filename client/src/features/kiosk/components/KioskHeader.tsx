@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Clock, Store as StoreIcon} from "lucide-react";
+import { Clock, Store as StoreIcon, ShoppingCart} from "lucide-react";
 
 interface KioskHeaderProps {
   totalItems: number;
@@ -61,23 +61,23 @@ export default function KioskHeader({
             className="text-lg font-black leading-none"
             style={{ fontFamily: "var(--font-display)" }}
           >
-            {totalItems}
+          <ShoppingCart/>
           </span>
         </div>
         <div className="text-left">
+            <p
+            className="text-xl font-black text-orange-600 leading-tight mb-0.5"
+            style={{ fontFamily: "var(--font-display)" }}
+          >
+            view cart
+          </p>
           <p
             className="text-xs font-bold text-gray-400 leading-none uppercase tracking-wide"
             style={{ fontFamily: "var(--font-body)" }}
           >
             {totalItems === 0
-              ? "View Cart"
+              ? ""
               : `${totalItems} item${totalItems !== 1 ? "s" : ""}`}
-          </p>
-          <p
-            className="text-xl font-black text-orange-600 leading-tight mt-0.5"
-            style={{ fontFamily: "var(--font-display)" }}
-          >
-            ₹{totalPrice.toFixed(2)}
           </p>
         </div>
       </motion.button>
