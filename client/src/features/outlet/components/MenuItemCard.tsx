@@ -1,5 +1,5 @@
 import { Pencil, Trash2, ImageOff, Package } from "lucide-react";
-import { ImageWithFallback } from "@/shared/components/utils/ImageWithFallback";
+import { ImageWithFallback } from "@/shared/utils/ImageWithFallback";
 import type { MenuItem } from "@/features/kiosk/types/menu.types";
 
 interface Props {

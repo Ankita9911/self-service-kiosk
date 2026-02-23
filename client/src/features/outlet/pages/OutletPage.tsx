@@ -11,7 +11,7 @@ import {
   Store, Plus, Search, MapPin, 
   RefreshCcw, Building, ShieldAlert,
 } from "lucide-react";
-import { cn } from "@/shared/lib/utils";
+import { cn } from "@/shared/utils/commonFunction";
 import { PERMISSIONS } from "@/shared/lib/permissions";
 import { usePermission } from "@/shared/hooks/usePermissions";
 import { ShimmerCell } from "../components/ShimmerCell";

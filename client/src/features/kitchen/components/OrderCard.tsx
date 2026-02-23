@@ -1,8 +1,8 @@
 import type { Order,OrderStatus } from "@/features/kiosk/types/order.types";
 import type { KitchenStatus } from "../config/kitchen.contant";
-import { cn } from "@/shared/lib/utils";
+import { cn } from "@/shared/utils/commonFunction";
 import { STATUS_CONFIG } from "../config/kitchen.contant";
-import { formatTime,elapsedMinutes } from "@/shared/lib/utils";
+import { formatTime,elapsedMinutes } from "@/shared/utils/commonFunction";
 
 export function OrderCard({
   order,

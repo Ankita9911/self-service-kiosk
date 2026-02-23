@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { X, CheckCircle2, Loader2 } from "lucide-react";
-import { cn } from "@/shared/lib/utils";
+import { cn } from "@/shared/utils/commonFunction";
 import type { Franchise } from "../types/franchise.types";
 
 interface FranchiseForm {

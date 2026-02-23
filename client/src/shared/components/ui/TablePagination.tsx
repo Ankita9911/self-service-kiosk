@@ -1,6 +1,6 @@
 // src/components/ui/TablePagination.tsx
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { cn } from "@/shared/lib/utils";
+import { cn } from "@/shared/utils/commonFunction";
 
 interface Props {
   total: number;

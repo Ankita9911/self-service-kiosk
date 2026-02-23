@@ -1,5 +1,5 @@
 import type { Order } from "@/features/kiosk/types/order.types";
-import { elapsedMinutes,formatTime,cn } from "@/shared/lib/utils";
+import { elapsedMinutes,formatTime,cn } from "@/shared/utils/commonFunction";
 interface PickupCardProps {
   order: Order;
   onPickup: (order: Order) => void;

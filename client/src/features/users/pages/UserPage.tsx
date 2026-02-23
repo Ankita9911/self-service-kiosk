@@ -13,7 +13,7 @@ import { TempPasswordModal } from "../components/TempPasswordModal";
 import { Users, Plus, Search, RefreshCcw } from "lucide-react";
 import { TablePagination } from "@/shared/components/ui/TablePagination";
 import { Input } from "@/shared/components/ui/input";
-import { cn } from "@/shared/lib/utils";
+import { cn } from "@/shared/utils/commonFunction";
 
 export default function UserPage() {
   const { user: currentUser } = useAuth();

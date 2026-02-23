@@ -2,7 +2,7 @@ import type { KitchenStatus } from "../config/kitchen.contant";
 import type { OrderStatus } from "@/features/kiosk/types/order.types";
 import type{ Order } from "@/features/kiosk/types/order.types";
 import { STATUS_CONFIG } from "../config/kitchen.contant";
-import { cn } from "@/shared/lib/utils";
+import { cn } from "@/shared/utils/commonFunction";
 import { OrderCard } from "./OrderCard";
 export function Column({
   status,
