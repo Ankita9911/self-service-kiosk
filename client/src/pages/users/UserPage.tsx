@@ -4,9 +4,9 @@ import { usePermission } from "@/shared/hooks/usePermissions";
 import { PERMISSIONS } from "@/shared/lib/permissions";
 
 import { createUser, getUsers } from "@/services/user.service";
-import { getFranchises } from "@/services/franchise.service";
+import { getFranchises } from "@/features/franchise/services/franchise.service";
 import { getOutlets } from "@/services/outlet.service";
-import type { Franchise } from "@/shared/types/franchise.types";
+import type { Franchise } from "@/features/franchise/types/franchise.types";
 import type { Outlet } from "@/shared/types/outlet.types";
 
 import { Dialog, DialogContent } from "@/shared/components/ui/dialog";

@@ -2,9 +2,9 @@ import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import useAuth from "@/shared/hooks/useAuth";
 import type { Outlet } from "@/shared/types/outlet.types";
-import type { Franchise } from "@/shared/types/franchise.types";
+import type { Franchise } from "@/features/franchise/types/franchise.types";
 import { getOutlets, createOutlet, updateOutlet, deleteOutlet } from "@/services/outlet.service";
-import { getFranchises } from "@/services/franchise.service";
+import { getFranchises } from "@/features/franchise/services/franchise.service";
 
 import { Dialog, DialogContent } from "@/shared/components/ui/dialog";
 import { TablePagination } from "@/shared/components/ui/TablePagination";

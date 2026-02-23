@@ -24,7 +24,7 @@ export function TablePagination({ total, page, pageSize, onPageChange, onPageSiz
   }
 
   return (
-    <div className="flex items-center justify-between px-5 py-3 border-t border-slate-100 bg-white">
+    <div className="flex items-center justify-between px-5 py-3 border-t border-slate-100 bg-white rounded-b-2xl">
       {/* Left: count + rows per page */}
       <div className="flex items-center gap-4 text-sm font-satoshi text-slate-500">
         <span>

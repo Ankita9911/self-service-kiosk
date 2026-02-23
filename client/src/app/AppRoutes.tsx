@@ -3,7 +3,7 @@ import Login from "@/features/auth/pages/Login";
 import {ForceReset} from "@/features/auth/pages/ForceReset";
 
 import DashboardPage from "@/features/dashboard/pages/DashboardPage";
-import FranchisePage from "@/pages/super-admin/FranchisePage";
+import FranchisePage from "@/features/franchise/pages/FranchisePage";;
 import OutletPage from "@/pages/outlets/OutletPage";
 import OutletMenuPage from "@/pages/outlets/OutletMenuPage";
 import MenuLandingPage from "@/pages/outlets/MenuLandingPage";
