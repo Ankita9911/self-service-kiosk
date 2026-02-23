@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
-import { getOrders, updateOrderStatus } from "@/services/order.service";
+import { getOrders, updateOrderStatus } from "@/features/kiosk/services/order.service";
 import { useSocket } from "@/shared/hooks/useSocket";
 import type { Order, OrderStatus } from "@/features/kiosk/types/order.types";
 import { COLUMN_ORDER } from "../config/kitchen.contant";
