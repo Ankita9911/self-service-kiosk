@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/shared/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitl } from "@/shared/components/ui/dialog";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
@@ -10,8 +10,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/components/ui/select";
-import { RefreshCcw, Plus } from "lucide-react";
-import { toast } from "react-hot-toast"; // Using sonner for success toast
+import { RefreshCcw, Plus, ImageIcon } from "lucide-react";
+import { toast } from "react-hot-toast"; 
 
 interface Props {
   open: boolean;
@@ -111,6 +111,31 @@ export function AddItemModal({
               placeholder="Short description"
               className="h-10 rounded-xl border-slate-200 bg-slate-50 font-satoshi text-sm focus-visible:ring-orange-400/40"
             />
+          </div>
+
+           <div className="space-y-1.5">
+            <Label className="text-[11px] font-clash-semibold text-slate-500 uppercase tracking-wider">
+              Image URL <span className="text-slate-400 font-satoshi normal-case">(optional)</span>
+            </Label>
+            <div className="flex gap-2">
+              <Input
+                value={form.imageUrl}
+                onChange={(e) => setForm((prev: any) => ({ ...prev, imageUrl: e.target.value }))}
+                placeholder="https://images.com/item.jpg"
+                className="h-10 rounded-xl border-slate-200 bg-slate-50 font-satoshi text-sm focus-visible:ring-orange-400/40 flex-1"
+              />
+              {form.imageUrl && (
+                <div className="h-10 w-10 rounded-xl border border-slate-200 overflow-hidden bg-slate-100 flex items-center justify-center shrink-0">
+                  <img 
+                    src={form.imageUrl} 
+                    alt="Preview" 
+                    className="h-full w-full object-cover"
+                    onError={(e) => (e.currentTarget.style.display = 'none')}
+                  />
+                  {!form.imageUrl && <ImageIcon className="w-4 h-4 text-slate-400" />}
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
