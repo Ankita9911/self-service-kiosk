@@ -1,4 +1,3 @@
-// src/components/ui/TablePagination.tsx
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/shared/utils/commonFunction";
 
@@ -15,7 +14,6 @@ export function TablePagination({ total, page, pageSize, onPageChange, onPageSiz
   const from = total === 0 ? 0 : (page - 1) * pageSize + 1;
   const to = Math.min(page * pageSize, total);
 
-  // Build page numbers with ellipsis
   function getPages(): (number | "…")[] {
     if (totalPages <= 7) return Array.from({ length: totalPages }, (_, i) => i + 1);
     if (page <= 4) return [1, 2, 3, 4, 5, "…", totalPages];
@@ -25,7 +23,6 @@ export function TablePagination({ total, page, pageSize, onPageChange, onPageSiz
 
   return (
     <div className="flex items-center justify-between px-5 py-3 border-t border-slate-100 bg-white rounded-b-2xl">
-      {/* Left: count + rows per page */}
       <div className="flex items-center gap-4 text-sm font-satoshi text-slate-500">
         <span>
           {total === 0 ? "No results" : `Showing ${from}–${to} of ${total}`}
@@ -37,12 +34,11 @@ export function TablePagination({ total, page, pageSize, onPageChange, onPageSiz
             onChange={e => onPageSizeChange(Number(e.target.value))}
             className="h-7 px-1.5 rounded-lg border border-slate-200 bg-white text-xs font-clash-semibold text-slate-600 focus:outline-none focus:ring-1 focus:ring-orange-400/40 focus:border-orange-400 cursor-pointer"
           >
-            {[10, 20, 50].map(s => <option key={s} value={s}>{s}</option>)}
+            {[5, 10, 20, 50].map(s => <option key={s} value={s}>{s}</option>)}
           </select>
         </div>
       </div>
 
-      {/* Right: prev / pages / next */}
       <div className="flex items-center gap-0.5">
         <button
           onClick={() => onPageChange(page - 1)}

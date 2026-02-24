@@ -47,7 +47,7 @@ export default function OutletMenuPage() {
   const [deleteItem, setDeleteItem] = useState<any | null>(null);
 
   const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(12);
+  const [pageSize, setPageSize] = useState(5);
 
   useEffect(() => {
     if (!canManage) {

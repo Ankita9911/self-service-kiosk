@@ -49,7 +49,7 @@ export default function DevicePage() {
   >("ALL");
 
   const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  const [pageSize, setPageSize] = useState(5);
 
   const filteredDevices = useMemo(() => {
     return devices.filter((d) => {

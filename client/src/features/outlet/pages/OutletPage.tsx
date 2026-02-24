@@ -42,7 +42,7 @@ export default function OutletPage() {
   const [editing, setEditing] = useState<Outlet | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Outlet | null>(null);
   const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  const [pageSize, setPageSize] = useState(5);
 
   async function fetchData(silent = false) {
     if (!canViewOutlet) return;
