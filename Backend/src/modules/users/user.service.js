@@ -4,6 +4,8 @@ import AppError from "../../shared/errors/AppError.js";
 import { ROLE_HIERARCHY } from "../../core/rbac/roleHierarchy.js";
 import crypto from "crypto";
 
+//helper
+
 function generateTempPassword() {
   return crypto.randomBytes(6).toString("hex");
 }

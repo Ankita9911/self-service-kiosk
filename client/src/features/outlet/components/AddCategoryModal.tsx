@@ -32,7 +32,7 @@ export function AddCategoryModal({
        await onSubmit();
        toast.success('Successfully added category!')
     }catch(e){
-      toast.error('failed to add category, try adain!')
+      toast.error('Failed to add category, Please try again!')
     }
     
   }
