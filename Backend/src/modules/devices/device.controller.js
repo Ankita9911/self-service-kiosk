@@ -60,3 +60,18 @@ export async function heartbeatController(req, res, next) {
     next(err);
   }
 }
+
+export async function setDeviceStatusController(req, res, next) {
+  try {
+    const {status} =req.body;
+    const result = await service.setDeviceStatus(
+      req.user,
+      req.params.deviceId,
+      status
+    );
+
+    res.json({ success: true, data: result });
+  } catch (err) {
+    next(err);
+  }
+}

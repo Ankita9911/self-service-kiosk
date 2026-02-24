@@ -10,19 +10,35 @@ import { StatusBadge } from "../components/StatusBadge";
 import { ShimmerCell } from "../components/ShimmerCell";
 import { CreateDeviceModal } from "../components/CreateDeviceModal";
 import { SecretRevealModal } from "../components/SecretRevealModal";
+import { DeviceRowMenu } from "../components/DeviceRowMenu";
 
 import { TablePagination } from "@/shared/components/ui/TablePagination";
 import { Cpu, ShieldAlert } from "lucide-react";
 import type { Device } from "../types/device.types";
+import { EditDeviceModal } from "../components/EditDeviceModal";
 
 export default function DevicePage() {
   const { hasPermission } = usePermission();
 
   const canView = hasPermission(PERMISSIONS.DEVICE_VIEW);
   const canCreate = hasPermission(PERMISSIONS.DEVICE_CREATE);
+  const canUpdate = hasPermission(PERMISSIONS.DEVICE_UPDATE);
+  const canDelete = hasPermission(PERMISSIONS.DEVICE_DELETE);
+  const canChangeStatus = hasPermission(PERMISSIONS.DEVICE_CHANGE_STATUS);
 
-  const { devices, outlets, loading, refreshing, fetchData, handleCreate } =
-    useDevices(canView);
+  const {
+    devices,
+    outlets,
+    loading,
+    refreshing,
+    fetchData,
+    handleCreate,
+    handleUpdate,
+    handleDelete: deleteDeviceHook,
+    handleStatusChange,
+  } = useDevices(canView);
+
+  const [editingDevice, setEditingDevice] = useState<Device | null>(null);
 
   const [open, setOpen] = useState(false);
   const [createdSecret, setCreatedSecret] = useState<string | null>(null);
@@ -55,11 +71,6 @@ export default function DevicePage() {
     setPage(1);
   }, [searchTerm, statusFilter]);
 
-  const activeCount = useMemo(
-    () => devices.filter((d) => d.status === "ACTIVE").length,
-    [devices],
-  );
-
   function getOutletName(d: Device): string {
     if ((d as any).outlet?.name) return (d as any).outlet.name;
     const found = outlets.find(
@@ -71,6 +82,7 @@ export default function DevicePage() {
   function formatLastSeen(d: Device): string {
     const ts =
       (d as any).lastSeenAt || (d as any).lastSeen || (d as any).last_seen;
+
     if (!ts) return "Never";
 
     return new Date(ts).toLocaleString([], {
@@ -93,6 +105,24 @@ export default function DevicePage() {
     );
   }
 
+  function handleEdit(device: Device) {
+    setEditingDevice(device);
+  }
+  async function handleToggleStatus(device: Device) {
+    const newStatus = device.status === "ACTIVE" ? "INACTIVE" : "ACTIVE";
+    await handleStatusChange(device.deviceId, newStatus);
+  }
+
+  async function handleDelete(device: Device) {
+    console.log("Deleting:", device.deviceId);
+    await deleteDeviceHook(device.deviceId);
+  }
+
+  async function handleSaveEdit(name: string) {
+    if (!editingDevice) return;
+    await handleUpdate(editingDevice.deviceId, name);
+  }
+
   return (
     <div className="space-y-6">
       <DeviceHeader
@@ -101,6 +131,7 @@ export default function DevicePage() {
         onRefresh={() => fetchData(true)}
         onCreate={() => setOpen(true)}
       />
+
       <DeviceStats devices={devices} loading={showShimmer} />
 
       <DeviceFilters
@@ -109,20 +140,26 @@ export default function DevicePage() {
         onSearchChange={setSearchTerm}
         onStatusChange={setStatusFilter}
       />
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm ">
         <table className="w-full">
           <thead>
             <tr className="border-b border-slate-100 bg-slate-50/60">
-              {["Device ID", "Name", "Outlet", "Status", "Last Seen"].map(
-                (h) => (
-                  <th
-                    key={h}
-                    className="px-5 py-3.5 text-left text-[11px] font-clash-semibold text-slate-500 uppercase tracking-wider"
-                  >
-                    {h}
-                  </th>
-                ),
-              )}
+              {[
+                "Device ID",
+                "Name",
+                "Outlet",
+                "Status",
+                "Last Seen",
+                "Actions",
+              ].map((h) => (
+                <th
+                  key={h}
+                  className="px-5 py-3.5 text-left text-[11px] font-clash-semibold text-slate-500 uppercase tracking-wider"
+                >
+                  {h}
+                </th>
+              ))}
             </tr>
           </thead>
 
@@ -135,11 +172,12 @@ export default function DevicePage() {
                   <ShimmerCell w="w-32" />
                   <ShimmerCell w="w-16" />
                   <ShimmerCell w="w-28" />
+                  <td />
                 </tr>
               ))
             ) : filteredDevices.length === 0 ? (
               <tr>
-                <td colSpan={5} className="py-16 text-center">
+                <td colSpan={6} className="py-16 text-center">
                   <div className="flex flex-col items-center gap-3">
                     <div className="h-12 w-12 rounded-2xl bg-slate-100 flex items-center justify-center">
                       <Cpu className="w-5 h-5 text-slate-400" />
@@ -184,6 +222,21 @@ export default function DevicePage() {
                   <td className="px-5 py-4 font-satoshi text-sm text-slate-400">
                     {formatLastSeen(d)}
                   </td>
+
+                  <td className="px-5 py-4">
+                    {(canUpdate || canDelete || canChangeStatus) && (
+                      <DeviceRowMenu
+                        deviceName={d.name || d.deviceId} 
+                        status={d.status}
+                        canEdit={canUpdate}
+                        canDelete={canDelete}
+                        canToggleStatus={canChangeStatus}
+                        onEdit={(newName) => handleUpdate(d.deviceId, newName)}
+                        onDelete={() => handleDelete(d)}
+                        onToggleStatus={() => handleToggleStatus(d)}
+                      />
+                    )}
+                  </td>
                 </tr>
               ))
             )}
@@ -212,6 +265,14 @@ export default function DevicePage() {
         onCreated={(secret) => setCreatedSecret(secret)}
       />
 
+      {canUpdate && (
+        <EditDeviceModal
+          open={!!editingDevice}
+          initialName={editingDevice?.name}
+          onClose={() => setEditingDevice(null)}
+          onSave={handleSaveEdit}
+        />
+      )}
       {createdSecret && (
         <SecretRevealModal
           secret={createdSecret}

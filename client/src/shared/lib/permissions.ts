@@ -22,6 +22,7 @@ export const PERMISSIONS = {
   DEVICE_UPDATE: "device:update",
   DEVICE_DELETE: "device:delete",
   DEVICE_MONITOR: "device:monitor",
+  DEVICE_CHANGE_STATUS: "device:changeStatus",
 
   MENU_MANAGE: "menu:manage",
   INVENTORY_MANAGE: "inventory:manage",

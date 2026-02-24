@@ -32,6 +32,12 @@ router.get(
 );
 
 router.patch(
+  "/:deviceId/status",
+  authorize(PERMISSIONS.DEVICE_CHANGE_STATUS),
+  controller.setDeviceStatusController,
+);
+
+router.patch(
   "/:deviceId",
   authorize(PERMISSIONS.DEVICE_UPDATE),
   controller.updateDeviceController,

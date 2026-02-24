@@ -1,5 +1,11 @@
 import { useEffect, useState, useCallback } from "react";
-import { getDevices, createDevice } from "@/features/device/services/device.service";
+import {
+  getDevices,
+  createDevice,
+  updateDevice,
+  deleteDevice,
+  changeDeviceStatus,
+} from "@/features/device/services/device.service";
 import { getOutlets } from "@/features/outlet/services/outlet.service";
 import type { Device } from "@/features/device/types/device.types";
 import type { Outlet } from "@/features/outlet/types/outlet.types";
@@ -29,19 +35,34 @@ export function useDevices(canView: boolean) {
         setRefreshing(false);
       }
     },
-    [canView]
+    [canView],
   );
 
   useEffect(() => {
     fetchData();
   }, [fetchData]);
 
-  async function handleCreate(payload: {
-    outletId: string;
-    name?: string;
-  }) {
+  async function handleCreate(payload: { outletId: string; name?: string }) {
     const result = await createDevice(payload);
     return result.secret;
+  }
+
+  async function handleUpdate(deviceId: string, name: string) {
+    await updateDevice(deviceId, { name });
+    await fetchData(true);
+  }
+
+  async function handleDelete(deviceId: string) {
+    await deleteDevice(deviceId);
+    await fetchData(true);
+  }
+
+  async function handleStatusChange(
+    deviceId: string,
+    status: "ACTIVE" | "INACTIVE",
+  ) {
+    await changeDeviceStatus(deviceId, status);
+    await fetchData(true);
   }
 
   return {
@@ -51,5 +72,8 @@ export function useDevices(canView: boolean) {
     refreshing,
     fetchData,
     handleCreate,
+    handleDelete,
+    handleUpdate,
+    handleStatusChange,
   };
 }

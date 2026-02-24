@@ -4,25 +4,30 @@ import Device from "./device.model.js";
 import AppError from "../../shared/errors/AppError.js";
 
 const SALT_ROUNDS = 10;
-
 const ID_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 
+//helpers
 function generateShortDeviceId() {
   let id = "";
   const bytes = crypto.randomBytes(6);
   for (let i = 0; i < 6; i++) {
     id += ID_CHARS[bytes[i] % ID_CHARS.length];
   }
-  return id; 
+  return id;
 }
-
 function generateSecret() {
   return crypto.randomBytes(12).toString("hex");
 }
 
 export async function createDevice(currentUser, payload) {
-  if (currentUser.role !== "FRANCHISE_ADMIN") {
-    throw new AppError("Only Franchise Admin can create devices", 403);
+  if (
+    currentUser.role !== "FRANCHISE_ADMIN" &&
+    currentUser.role !== "OUTLET_MANAGER"
+  ) {
+    throw new AppError(
+      "Only Franchise Admin or Outlet Manager can create devices",
+      403,
+    );
   }
 
   const { outletId, name } = payload;
@@ -30,12 +35,25 @@ export async function createDevice(currentUser, payload) {
   if (!outletId) {
     throw new AppError("Outlet is required when creating a device", 400);
   }
+
   if (!currentUser.franchiseId) {
     throw new AppError("Franchise context is required", 403);
   }
+  if (currentUser.role === "OUTLET_MANAGER") {
+    if (!currentUser.outletId) {
+      throw new AppError("Outlet context is required", 403);
+    }
 
+    if (outletId.toString() !== currentUser.outletId.toString()) {
+      throw new AppError(
+        "Outlet Manager can only create devices for their own outlet",
+        403,
+      );
+    }
+  }
   let deviceId;
   let attempts = 0;
+
   do {
     deviceId = generateShortDeviceId();
     const exists = await Device.findOne({ deviceId });
@@ -60,51 +78,23 @@ export async function createDevice(currentUser, payload) {
 
   return {
     device,
-    secret: plainSecret, 
+    secret: plainSecret,
   };
 }
 
 export async function listDevices(currentUser) {
   const filter = { isDeleted: false };
-
   if (currentUser.role === "SUPER_ADMIN") {
     return Device.find(filter);
   }
-
   filter.franchiseId = currentUser.franchiseId;
-
   if (currentUser.role === "OUTLET_MANAGER") {
     filter.outletId = currentUser.outletId;
   }
-
   return Device.find(filter);
 }
 
 export async function updateDevice(currentUser, deviceId, payload) {
-  const device = await Device.findOne({ deviceId, isDeleted: false });
-
-  if (!device) {
-    throw new AppError("Device not found", 404);
-  }
-
-  if (
-    currentUser.role !== "FRANCHISE_ADMIN" &&
-    currentUser.role !== "OUTLET_MANAGER"
-  ) {
-    throw new AppError("Forbidden", 403);
-  }
-
-  Object.assign(device, payload);
-  await device.save();
-
-  return device;
-}
-
-export async function softDeleteDevice(currentUser, deviceId) {
-  if (currentUser.role !== "FRANCHISE_ADMIN") {
-    throw new AppError("Only Franchise Admin can delete devices", 403);
-  }
-
   const device = await Device.findOne({
     deviceId,
     franchiseId: currentUser.franchiseId,
@@ -114,10 +104,57 @@ export async function softDeleteDevice(currentUser, deviceId) {
   if (!device) {
     throw new AppError("Device not found", 404);
   }
-
+  if (
+    currentUser.role !== "FRANCHISE_ADMIN" &&
+    currentUser.role !== "OUTLET_MANAGER"
+  ) {
+    throw new AppError(
+      "Only Franchise Admin or Outlet Manager can update devices",
+      403,
+    );
+  }
+  if (currentUser.role === "OUTLET_MANAGER") {
+    if (device.outletId.toString() !== currentUser.outletId.toString()) {
+      throw new AppError(
+        "Outlet Manager can only update devices in their own outlet",
+        403,
+      );
+    }
+  }
+  if (payload.name !== undefined) {
+    device.name = payload.name;
+  }
+  await device.save();
+  return device;
+}
+export async function softDeleteDevice(currentUser, deviceId) {
+  if (
+    currentUser.role !== "FRANCHISE_ADMIN" &&
+    currentUser.role !== "OUTLET_MANAGER"
+  ) {
+    throw new AppError(
+      "Only Franchise Admin or Outlet Manager can delete devices",
+      403,
+    );
+  }
+  const device = await Device.findOne({
+    deviceId,
+    franchiseId: currentUser.franchiseId,
+    isDeleted: false,
+  });
+  if (!device) {
+    throw new AppError("Device not found", 404);
+  }
+  if (currentUser.role === "OUTLET_MANAGER") {
+    if (device.outletId.toString() !== currentUser.outletId.toString()) {
+      throw new AppError(
+        "Outlet Manager can only delete devices in their own outlet",
+        403,
+      );
+    }
+  }
   device.isDeleted = true;
   await device.save();
-
   return true;
 }
 
@@ -125,7 +162,6 @@ export async function resetDeviceSecret(currentUser, deviceId) {
   if (currentUser.role !== "FRANCHISE_ADMIN") {
     throw new AppError("Only Franchise Admin can reset device secret", 403);
   }
-
   const device = await Device.findOne({
     deviceId,
     franchiseId: currentUser.franchiseId,
@@ -135,11 +171,9 @@ export async function resetDeviceSecret(currentUser, deviceId) {
   if (!device) {
     throw new AppError("Device not found", 404);
   }
-
   const newSecret = generateSecret();
   device.deviceSecretHash = await bcrypt.hash(newSecret, SALT_ROUNDS);
   await device.save();
-
   return { newSecret };
 }
 
@@ -151,6 +185,40 @@ export async function updateHeartbeat(deviceUser, metadata, ip) {
       appVersion: metadata.appVersion,
       osVersion: metadata.osVersion,
       ipAddress: ip,
-    }
+    },
   );
+}
+
+export async function setDeviceStatus(currentUser, deviceId, status) {
+  if (
+    currentUser.role !== "FRANCHISE_ADMIN" &&
+    currentUser.role !== "OUTLET_MANAGER"
+  ) {
+    throw new AppError(
+      "Only Franchise Admin or Outlet Manager can change device status",
+      403,
+    );
+  }
+  if (!["ACTIVE", "INACTIVE"].includes(status)) {
+    throw new AppError("Invalid status value", 400);
+  }
+  const device = await Device.findOne({
+    deviceId,
+    franchiseId: currentUser.franchiseId,
+    isDeleted: false,
+  });
+  if (!device) {
+    throw new AppError("Device not found", 404);
+  }
+  if (currentUser.role === "OUTLET_MANAGER") {
+    if (device.outletId.toString() !== currentUser.outletId.toString()) {
+      throw new AppError(
+        "Outlet Manager can only change status of devices in their own outlet",
+        403,
+      );
+    }
+  }
+  device.status = status;
+  await device.save();
+  return device;
 }

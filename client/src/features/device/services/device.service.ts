@@ -16,6 +16,32 @@ export async function createDevice(payload: {
   return response.data.data;
 }
 
+export async function updateDevice(
+  deviceId: string,
+  payload: { name?: string }
+): Promise<Device> {
+  const response = await axiosInstance.patch<{ data: Device }>(
+    `/devices/${deviceId}`,
+    payload
+  );
+  return response.data.data;
+}
+
+export async function deleteDevice(deviceId: string): Promise<void> {
+  await axiosInstance.delete(`/devices/${deviceId}`);
+}
+
+export async function changeDeviceStatus(
+  deviceId: string,
+  status: "ACTIVE" | "INACTIVE"
+): Promise<Device> {
+  const response = await axiosInstance.patch<{ data: Device }>(
+    `/devices/${deviceId}/status`,
+    { status }
+  );
+  return response.data.data;
+}
+
 export async function kioskLogin(
   deviceId: string,
   password: string
@@ -26,3 +52,4 @@ export async function kioskLogin(
   );
   return response.data.data;
 }
+
