@@ -2,7 +2,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/shared/compo
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
-
+import { toast } from "react-hot-toast";
 interface Props {
   open: boolean;
   onClose: () => void;
@@ -28,7 +28,13 @@ export function AddCategoryModal({
 }: Props) {
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    await onSubmit();
+    try{
+       await onSubmit();
+       toast.success('Successfully added category!')
+    }catch(e){
+      toast.error('failed to add category, try adain!')
+    }
+    
   }
 
   return (
