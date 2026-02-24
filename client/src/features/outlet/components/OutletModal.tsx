@@ -4,6 +4,7 @@ import { Dialog, DialogContent } from "@/shared/components/ui/dialog";
 import { useState, useEffect } from "react";
 import { Input } from "@/shared/components/ui/input";
 import { RefreshCcw } from "lucide-react";
+import toast from "react-hot-toast";
 
 export function OutletModal({
   open,
@@ -46,8 +47,15 @@ export function OutletModal({
     setSubmitting(true);
     try {
       await onSubmit(form);
-    } finally {
+      let msg='outlet created successfully!'
+      if(editing) msg='Outlet updated successfully!'
+      toast.success(msg);
+    } catch(e){
+      toast.error('failed to update or create outlet')
+    }
+    finally {
       setSubmitting(false);
+
     }
   }
 

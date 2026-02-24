@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitl } from "@/shared/components/ui/dialog";
+import { Dialog, DialogContent} from "@/shared/components/ui/dialog";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
@@ -56,7 +56,6 @@ export function AddItemModal({
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md border-slate-200 rounded-2xl p-0 overflow-hidden">
-        {/* Styled Header */}
         <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
           <div>
             <h3 className="font-clash-bold text-slate-900 text-base">Add Menu Item</h3>
@@ -65,7 +64,6 @@ export function AddItemModal({
         </div>
 
         <form onSubmit={handleSubmit} className="px-6 pb-6 pt-4 space-y-4">
-          {/* CATEGORY SELECT - SHADCN UI */}
           <div className="space-y-1.5">
             <Label className="text-[12px] font-clash-semibold text-slate-600 uppercase tracking-wide">
               Category <span className="text-red-400">*</span>
@@ -171,7 +169,6 @@ export function AddItemModal({
             </div>
           </div>
 
-          {/* Action Buttons */}
           <div className="flex gap-3 pt-4">
             <Button
               type="button"

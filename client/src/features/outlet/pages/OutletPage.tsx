@@ -19,6 +19,7 @@ import { StatusBadge } from "../components/StatusBadge";
 import { RowMenu } from "../components/RowMenu";
 import { DeleteModal } from "../components/DeleteOutletModal";
 import { OutletModal } from "../components/OutletModal";
+import toast from "react-hot-toast";
 
 export default function OutletPage() {
   const navigate = useNavigate();
@@ -65,8 +66,15 @@ export default function OutletPage() {
 
   async function handleDelete() {
     if (!deleteTarget) return;
-    await deleteOutlet(deleteTarget._id);
-    setDeleteTarget(null); fetchData(true);
+    try{
+      await deleteOutlet(deleteTarget._id);
+      setDeleteTarget(null); fetchData(true);
+      toast.success('Outlet Deleted successfully');
+    }
+    catch(e){
+      toast.error('failed to delete outlet');
+    }
+    
   }
 
   const filtered = outlets.filter(o => {
