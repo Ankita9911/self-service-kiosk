@@ -249,7 +249,7 @@ export default function OutletMenuPage() {
           setAddItemOpen(false);
         }}
       />
-
+{editItem && (
       <EditItemModal
         open={!!editItem}
         onClose={() => setEditItem(null)}
@@ -259,17 +259,19 @@ export default function OutletMenuPage() {
           await updateItem(editItem._id);
           setEditItem(null);
         }}
-      />
+      />)}
 
-      <DeleteItemModal
-        open={!!deleteItem}
-        item={deleteItem}
-        onClose={() => setDeleteItem(null)}
-        onConfirm={async () => {
-          await removeItem(deleteItem._id);
-          setDeleteItem(null);
-        }}
-      />
+      {deleteItem && (
+  <DeleteItemModal
+    open={true}
+    item={deleteItem}
+    onClose={() => setDeleteItem(null)}
+    onConfirm={async () => {
+      await removeItem(deleteItem._id);
+      setDeleteItem(null);
+    }}
+  />
+)}
     </div>
   );
 }

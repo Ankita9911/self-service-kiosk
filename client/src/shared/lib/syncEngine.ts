@@ -6,7 +6,7 @@ export async function processQueue() {
 
   for (const order of pending) {
     try {
-      await axios.post("/api/orders", order.payload);
+      await axios.post("/orders", order.payload);
       await markOrderSynced(order.clientOrderId);
     } catch (error: any) {
       if (!error.response) {
