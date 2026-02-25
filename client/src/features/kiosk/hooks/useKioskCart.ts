@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { toast } from "sonner";
+import { toast } from "react-hot-toast";
 import type { CartItem } from "../types/cartItem.types";
 
 export function useKioskCart() {
@@ -11,9 +11,7 @@ export function useKioskCart() {
 
       if (existing) {
         if (existing.quantity >= item.stockQuantity) {
-          toast.error("Maximum quantity reached", {
-            description: `Only ${item.stockQuantity} available`,
-          });
+          toast.error("Maximum quantity reached");
           return prev;
         }
 
