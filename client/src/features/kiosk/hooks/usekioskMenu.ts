@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
 import kioskAxios from "@/shared/lib/kioskAxios";
-import { getMenuFromCache, saveMenu } from "@/shared/lib/menuCache";
-import type { MenuCategory } from "@/shared/lib/menuCache";
-import { toast } from "sonner";
+import type { MenuCategory } from "../types/menu.types";
+import { toast } from "react-hot-toast";
 
 const ALL_CATEGORY_ID = "__ALL__";
 
@@ -16,49 +15,23 @@ export function useKioskMenu() {
     loadMenu();
   }, []);
 
-  async function loadMenu(silent = false) {
+  async function loadMenu() {
     try {
-      if (!silent) setIsLoading(true);
-
-      const cachedMenu = (await getMenuFromCache()) as MenuCategory[];
-
-      if (cachedMenu?.length > 0) {
-        const valid = cachedMenu.filter(
-          (c) => c.items && c.items.length > 0
-        );
-        setMenu(valid);
-      }
-
-      try {
-        const response = await kioskAxios.get("/kiosk/menu");
-        const freshMenu = response.data.data.sort(
-          (a: any, b: any) =>
-            (a.displayOrder ?? 0) - (b.displayOrder ?? 0)
-        );
-
-        const valid = freshMenu.filter(
-          (c: any) => c.items && c.items.length > 0
-        );
-
-        setMenu(valid);
-        await saveMenu(freshMenu);
-
-        toast.success("Menu loaded successfully", {
-          duration: 2000,
-        });
-      } catch {
-        if (!cachedMenu?.length) {
-          toast.error("Offline: No menu available", {
-            description: "Please check your connection",
-          });
-        } else {
-          toast.warning("Using cached menu", {
-            description: "Unable to fetch latest updates",
-          });
-        }
-      }
+      setIsLoading(true);
+      const response = await kioskAxios.get("/kiosk/menu");
+      const freshMenu = response.data.data.sort(
+        (a: any, b: any) =>
+          (a.displayOrder ?? 0) - (b.displayOrder ?? 0)
+      );
+      const valid = freshMenu.filter(
+        (c: any) => c.items && c.items.length > 0
+      );
+      setMenu(valid);
+      toast.success("Menu loaded successfully");
+    } catch {
+      toast.error("Unable to load menu");
     } finally {
-      if (!silent) setTimeout(() => setIsLoading(false), 500);
+      setTimeout(() => setIsLoading(false), 500);
     }
   }
 

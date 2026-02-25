@@ -16,3 +16,10 @@ export interface MenuItem {
   stockQuantity: number;
   isActive: boolean;
 }
+
+export interface MenuCategory {
+  _id: string;
+  name: string;
+  displayOrder?: number;
+  items: MenuItem[];
+}
