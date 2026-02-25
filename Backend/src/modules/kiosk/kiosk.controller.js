@@ -1,14 +1,12 @@
 import * as kioskService from "./kiosk.service.js";
+import { sendSuccess } from "../../shared/utils/response.js";
+import { asyncHandler } from "../../shared/utils/asyncHandler.js";
 
-export async function getMenu(req, res, next) {
-  try {
-    const result = await kioskService.getKioskMenu(req.tenant);
+export const getMenu = asyncHandler(async (req, res) => {
+  const result = await kioskService.getKioskMenu(req.tenant);
 
-    res.status(200).json({
-      success: true,
-      data: result,
-    });
-  } catch (error) {
-    next(error);
-  }
-}
+  return sendSuccess(res, {
+    message: "Kiosk menu fetched successfully",
+    data: result,
+  });
+});

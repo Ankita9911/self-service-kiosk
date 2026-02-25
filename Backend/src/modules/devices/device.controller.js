@@ -1,77 +1,95 @@
 import * as service from "./device.service.js";
+import { sendSuccess } from "../../shared/utils/response.js";
+import { asyncHandler } from "../../shared/utils/asyncHandler.js";
+import AppError from "../../shared/errors/AppError.js";
 
-export async function createDeviceController(req, res, next) {
-  try {
-    const result = await service.createDevice(req.user, req.body);
-    res.status(201).json({ success: true, data: result });
-  } catch (err) {
-    next(err);
-  }
-}
+export const createDeviceController = asyncHandler(async (req, res) => {
+  const result = await service.createDevice(req.user, req.body);
 
-export async function listDevicesController(req, res, next) {
-  try {
-    const result = await service.listDevices(req.user);
-    res.json({ success: true, data: result });
-  } catch (err) {
-    next(err);
-  }
-}
+  return sendSuccess(res, {
+    statusCode: 201,
+    message: "Device created successfully",
+    data: result,
+  });
+});
 
-export async function updateDeviceController(req, res, next) {
-  try {
-    const result = await service.updateDevice(
-      req.user,
-      req.params.deviceId,
-      req.body
+export const listDevicesController = asyncHandler(async (req, res) => {
+  const result = await service.listDevices(req.user);
+
+  return sendSuccess(res, {
+    message: "Devices fetched successfully",
+    data: result,
+  });
+});
+
+export const updateDeviceController = asyncHandler(async (req, res) => {
+  const result = await service.updateDevice(
+    req.user,
+    req.params.deviceId,
+    req.body
+  );
+
+  return sendSuccess(res, {
+    message: "Device updated successfully",
+    data: result,
+  });
+});
+
+
+export const deleteDeviceController = asyncHandler(async (req, res) => {
+  await service.softDeleteDevice(
+    req.user,
+    req.params.deviceId
+  );
+
+  return sendSuccess(res, {
+    message: "Device deleted successfully",
+  });
+});
+
+export const resetSecretController = asyncHandler(async (req, res) => {
+  const result = await service.resetDeviceSecret(
+    req.user,
+    req.params.deviceId
+  );
+
+  return sendSuccess(res, {
+    message: "Device secret reset successfully",
+    data: result,
+  });
+});
+
+export const heartbeatController = asyncHandler(async (req, res) => {
+  await service.updateHeartbeat(
+    req.user,
+    req.body,
+    req.ip
+  );
+
+  return sendSuccess(res, {
+    message: "Heartbeat recorded successfully",
+  });
+});
+
+export const setDeviceStatusController = asyncHandler(async (req, res) => {
+  const { status } = req.body;
+
+  if (!status) {
+    throw new AppError(
+      "Status is required",
+      400,
+      "VALIDATION_ERROR"
     );
-    res.json({ success: true, data: result });
-  } catch (err) {
-    next(err);
   }
-}
 
-export async function deleteDeviceController(req, res, next) {
-  try {
-    await service.softDeleteDevice(req.user, req.params.deviceId);
-    res.json({ success: true });
-  } catch (err) {
-    next(err);
-  }
-}
+  const result = await service.setDeviceStatus(
+    req.user,
+    req.params.deviceId,
+    status
+  );
 
-export async function resetSecretController(req, res, next) {
-  try {
-    const result = await service.resetDeviceSecret(
-      req.user,
-      req.params.deviceId
-    );
-    res.json({ success: true, data: result });
-  } catch (err) {
-    next(err);
-  }
-}
-
-export async function heartbeatController(req, res, next) {
-  try {
-    await service.updateHeartbeat(req.user, req.body, req.ip);
-    res.json({ success: true });
-  } catch (err) {
-    next(err);
-  }
-}
-
-export async function setDeviceStatusController(req, res, next) {
-  try {
-    const {status} =req.body;
-    const result = await service.setDeviceStatus(
-      req.user,
-      req.params.deviceId,
-      status
-    );
-
-    res.json({ success: true, data: result });
-  } catch (err) {
-    next(err);
-  }
-}
+  return sendSuccess(res, {
+    message: "Device status updated successfully",
+    data: result,
+  });
+});

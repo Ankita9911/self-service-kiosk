@@ -6,65 +6,70 @@ import {
   deleteOutlet,
 } from "./outlet.service.js";
 
-export async function createOutletController(req, res, next) {
-  try {
-    const outlet = await createOutlet(req.body, req.user);
-    res.status(201).json({ success: true, data: outlet });
-  } catch (error) {
-    next(error);
+import { sendSuccess } from "../../shared/utils/response.js";
+import { asyncHandler } from "../../shared/utils/asyncHandler.js";
+import AppError from "../../shared/errors/AppError.js";
+
+export const createOutletController = asyncHandler(async (req, res) => {
+  const outlet = await createOutlet(req.body, req.user);
+
+  return sendSuccess(res, {
+    statusCode: 201,
+    message: "Outlet created successfully",
+    data: outlet,
+  });
+});
+
+export const getOutletsController = asyncHandler(async (req, res) => {
+  const outlets = await getOutlets(req.user);
+
+  return sendSuccess(res, {
+    message: "Outlets fetched successfully",
+    data: outlets,
+  });
+});
+
+
+export const getOutletByIdController = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+
+  if (!id) {
+    throw new AppError("Outlet ID is required", 400, "VALIDATION_ERROR");
   }
-}
 
-export async function getOutletsController(req, res, next) {
-  try {
-    const outlets = await getOutlets(req.user);
-    res.status(200).json({ success: true, data: outlets });
-  } catch (error) {
-    next(error);
+  const outlet = await getOutletById(id, req.user);
+
+  return sendSuccess(res, {
+    message: "Outlet fetched successfully",
+    data: outlet,
+  });
+});
+
+export const updateOutletController = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+
+  if (!id) {
+    throw new AppError("Outlet ID is required", 400, "VALIDATION_ERROR");
   }
-}
 
-export async function getOutletByIdController(req, res, next) {
-  try {
-    const { id } = req.body;
+  const outlet = await updateOutlet(id, req.body, req.user);
 
-    if (!id) {
-      throw new Error("ID is required");
-    }
+  return sendSuccess(res, {
+    message: "Outlet updated successfully",
+    data: outlet,
+  });
+});
 
-    const outlet = await getOutletById(id, req.user);
-    res.status(200).json({ success: true, data: outlet });
-  } catch (error) {
-    next(error);
+export const deleteOutletController = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+
+  if (!id) {
+    throw new AppError("Outlet ID is required", 400, "VALIDATION_ERROR");
   }
-}
 
-export async function updateOutletController(req, res, next) {
-  try {
-    const { id, ...payload } = req.body;
+  await deleteOutlet(id, req.user);
 
-    if (!id) {
-      throw new Error("ID is required");
-    }
-
-    const outlet = await updateOutlet(id, payload, req.user);
-    res.status(200).json({ success: true, data: outlet });
-  } catch (error) {
-    next(error);
-  }
-}
-
-export async function deleteOutletController(req, res, next) {
-  try {
-    const { id } = req.body;
-
-    if (!id) {
-      throw new Error("ID is required");
-    }
-
-    const result = await deleteOutlet(id, req.user);
-    res.status(200).json({ success: true, data: result });
-  } catch (error) {
-    next(error);
-  }
-}
+  return sendSuccess(res, {
+    message: "Outlet deleted successfully",
+  });
+});

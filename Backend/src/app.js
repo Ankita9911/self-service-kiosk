@@ -5,18 +5,22 @@ import helmet from "helmet";
 import routes from "./routes/index.js";
 import errorMiddleware from "./shared/errors/error.middleware.js";
 import AppError from "./shared/errors/AppError.js";
+import { sendSuccess } from "./shared/utils/response.js";
 
 const app = express();
 
 app.use(helmet());
 app.use(cors());
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.get("/health", (req, res) => {
-  res.status(200).json({
-    status: "OK",
-    uptime: process.uptime(),
+  return sendSuccess(res, {
+    message: "Service healthy",
+    data: {
+      uptime: process.uptime(),
+    },
   });
 });
 

@@ -30,15 +30,10 @@ export async function updateFranchise(
   id: string,
   payload: Partial<Franchise>
 ): Promise<Franchise> {
-  const response = await axiosInstance.put("/franchises", {
-    id,
-    ...payload,
-  });
+  const response = await axiosInstance.put(`/franchises/${id}`, payload);
 
   return response.data.data;
 }
 export async function deleteFranchise(id: string): Promise<void> {
-  await axiosInstance.delete("/franchises", {
-    data: { id },
-  });
+  await axiosInstance.delete(`/franchises/${id}`);
 }

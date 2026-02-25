@@ -20,19 +20,13 @@ export async function updateOutlet(
   id: string,
   payload: Partial<Outlet>
 ) {
-  const response = await axiosInstance.put("/outlets", {
-    id,
-    ...payload,
-  });
+  const response = await axiosInstance.put(`/outlets/${id}`,payload);
 
   return response.data.data;
 }
 
 export async function deleteOutlet(id: string) {
-  const response = await axiosInstance.delete("/outlets", {
-    data: { id },
-  });
-
+  const response = await axiosInstance.delete(`/outlets/${id}`);
   return response.data.data;
 }
 

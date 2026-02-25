@@ -18,11 +18,11 @@ router.post(
 
 router.get(
   "/categories",
-  authorize(PERMISSIONS.MENU_MANAGE), 
+  authorize(PERMISSIONS.MENU_MANAGE),
   controller.getCategories
 );
 
-router.put(
+router.patch(
   "/categories/:id",
   authorize(PERMISSIONS.MENU_MANAGE),
   controller.updateCategory
@@ -34,10 +34,6 @@ router.delete(
   controller.deleteCategory
 );
 
-// =========================
-// MENU ITEMS
-// =========================
-
 router.post(
   "/items",
   authorize(PERMISSIONS.MENU_MANAGE),
@@ -46,7 +42,7 @@ router.post(
 
 router.get(
   "/items",
-  authorize(PERMISSIONS.MENU_MANAGE), // later change to MENU_VIEW
+  authorize(PERMISSIONS.MENU_MANAGE), 
   controller.getMenuItems
 );
 

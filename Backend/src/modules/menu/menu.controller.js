@@ -1,100 +1,101 @@
 import * as menuService from "./menu.service.js";
+import { sendSuccess } from "../../shared/utils/response.js";
+import { asyncHandler } from "../../shared/utils/asyncHandler.js";
 
-export async function createCategory(req, res, next) {
-  try {
-    const result = await menuService.createCategory(
-      req.body,
-      req.tenant
-    );
+export const createCategory = asyncHandler(async (req, res) => {
+  const result = await menuService.createCategory(
+    req.body,
+    req.tenant
+  );
 
-    res.status(201).json({ success: true, data: result });
-  } catch (error) {
-    next(error);
-  }
-}
+  return sendSuccess(res, {
+    statusCode: 201,
+    message: "Category created successfully",
+    data: result,
+  });
+});
 
-export async function getCategories(req, res, next) {
-  try {
-    const result = await menuService.getCategories(req.tenant);
+export const getCategories = asyncHandler(async (req, res) => {
+  const result = await menuService.getCategories(req.tenant);
 
-    res.status(200).json({ success: true, data: result });
-  } catch (error) {
-    next(error);
-  }
-}
+  return sendSuccess(res, {
+    message: "Categories fetched successfully",
+    data: result,
+  });
+});
 
-export async function updateCategory(req, res, next) {
-  try {
-    const result = await menuService.updateCategory(
-      req.params.id,
-      req.body,
-      req.tenant
-    );
+export const updateCategory = asyncHandler(async (req, res) => {
+  const result = await menuService.updateCategory(
+    req.params.id,
+    req.body,
+    req.tenant
+  );
 
-    res.status(200).json({ success: true, data: result });
-  } catch (error) {
-    next(error);
-  }
-}
+  return sendSuccess(res, {
+    message: "Category updated successfully",
+    data: result,
+  });
+});
 
-export async function deleteCategory(req, res, next) {
-  try {
-    await menuService.deleteCategory(req.params.id, req.tenant);
-    res.status(200).json({ success: true });
-  } catch (error) {
-    next(error);
-  }
-}
+export const deleteCategory = asyncHandler(async (req, res) => {
+  await menuService.deleteCategory(
+    req.params.id,
+    req.tenant
+  );
 
-// MENU ITEMS
+  return sendSuccess(res, {
+    message: "Category deleted successfully",
+  });
+});
 
-export async function createMenuItem(req, res, next) {
-  try {
-    const result = await menuService.createMenuItem(
-      req.body,
-      req.tenant
-    );
+export const createMenuItem = asyncHandler(async (req, res) => {
+  const result = await menuService.createMenuItem(
+    req.body,
+    req.tenant
+  );
 
-    res.status(201).json({ success: true, data: result });
-  } catch (error) {
-    next(error);
-  }
-}
+  return sendSuccess(res, {
+    statusCode: 201,
+    message: "Menu item created successfully",
+    data: result,
+  });
+});
 
-export async function getMenuItems(req, res, next) {
-  try {
-    const { categoryId } = req.query;
+export const getMenuItems = asyncHandler(async (req, res) => {
+  const { categoryId } = req.query;
 
-    const result = await menuService.getMenuItems(
-      req.tenant,
-      categoryId
-    );
+  const result = await menuService.getMenuItems(
+    req.tenant,
+    categoryId
+  );
 
-    res.status(200).json({ success: true, data: result });
-  } catch (error) {
-    next(error);
-  }
-}
+  return sendSuccess(res, {
+    message: "Menu items fetched successfully",
+    data: result,
+  });
+});
 
-export async function updateMenuItem(req, res, next) {
-  try {
-    const result = await menuService.updateMenuItem(
-      req.params.id,
-      req.body,
-      req.tenant
-    );
+export const updateMenuItem = asyncHandler(async (req, res) => {
+  const result = await menuService.updateMenuItem(
+    req.params.id,
+    req.body,
+    req.tenant
+  );
 
-    res.status(200).json({ success: true, data: result });
-  } catch (error) {
-    next(error);
-  }
-}
+  return sendSuccess(res, {
+    message: "Menu item updated successfully",
+    data: result,
+  });
+});
 
-export async function deleteMenuItem(req, res, next) {
-  try {
-    await menuService.deleteMenuItem(req.params.id, req.tenant);
-    res.status(200).json({ success: true });
-  } catch (error) {
-    next(error);
-  }
-}
+
+export const deleteMenuItem = asyncHandler(async (req, res) => {
+  await menuService.deleteMenuItem(
+    req.params.id,
+    req.tenant
+  );
+
+  return sendSuccess(res, {
+    message: "Menu item deleted successfully",
+  });
+});

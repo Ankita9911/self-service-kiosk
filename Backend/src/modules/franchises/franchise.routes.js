@@ -34,13 +34,13 @@ router.post(
 );
 
 router.put(
-  "/",
+  "/:id",
   authorize(PERMISSIONS.FRANCHISE_UPDATE),
   updateFranchiseController
 );
 
 router.delete(
-  "/",
+  "/:id",
   authorize(PERMISSIONS.FRANCHISE_DELETE),
   deleteFranchiseController
 );
