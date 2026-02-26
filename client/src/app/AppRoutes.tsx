@@ -16,6 +16,8 @@ import AppLayout from "@/shared/components/layout/AppLayout";
 import { PERMISSIONS } from "@/shared/lib/permissions";
 import { ResetPassword } from "@/features/auth/pages/ResetPassword";
 import UserPage from "@/features/users/pages/UserPage";
+import AnalyticsPage from "@/features/analytics/pages/AnalyticsPage";
+
 
 export default function AppRoutes() {
   return (
@@ -52,6 +54,14 @@ export default function AppRoutes() {
           element={
             <ProtectedRoute>
               <UserPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/analytics"
+          element={
+            <ProtectedRoute requiredPermission={PERMISSIONS.ANALYTICS_VIEW}>
+              <AnalyticsPage />
             </ProtectedRoute>
           }
         />

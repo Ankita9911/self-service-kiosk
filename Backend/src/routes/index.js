@@ -14,6 +14,7 @@ import { authenticate } from "../core/auth/auth.middleware.js";
 import { attachTenant } from "../core/tenancy/tenancy.middleware.js";
 
 import uploadRoutes from "../modules/upload/upload.routes.js";
+import analyticsRoutes from "../modules/analytics/analytics.routes.js";
 
 const router = express.Router();
 router.get(
@@ -39,6 +40,7 @@ router.use("/kiosk", kioskRoutes);
 router.use("/orders", orderRoutes);
 router.use("/devices", deviceRoutes);
 router.use("/users", userRoutes);
-router.use("/upload",uploadRoutes);
+router.use("/upload", uploadRoutes);
+router.use("/analytics", analyticsRoutes);
 
 export default router;

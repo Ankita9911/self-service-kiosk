@@ -33,4 +33,6 @@ export const PERMISSIONS = {
 
   ORDERS_KITCHEN_VIEW: "orders:kitchenView",
   ORDERS_PICKUP_VIEW: "orders:pickupView",
+
+  ANALYTICS_VIEW: "analytics:view",
 };

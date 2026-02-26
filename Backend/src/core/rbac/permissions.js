@@ -31,4 +31,6 @@ export const PERMISSIONS = {
   ORDERS_CREATE: "orders:create",
   ORDERS_VIEW: "orders:view",
   ORDERS_UPDATE_STATUS: "orders:updateStatus",
+
+  ANALYTICS_VIEW: "analytics:view",
 };
