@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Dialog, DialogContent} from "@/shared/components/ui/dialog";
+import { Dialog, DialogContent } from "@/shared/components/ui/dialog";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
@@ -11,7 +11,7 @@ import {
   SelectValue,
 } from "@/shared/components/ui/select";
 import { RefreshCcw, Plus, ImageIcon } from "lucide-react";
-import { toast } from "react-hot-toast"; 
+import { toast } from "react-hot-toast";
 
 interface Props {
   open: boolean;
@@ -21,7 +21,7 @@ interface Props {
     categoryId: string;
     name: string;
     description: string;
-    imageUrl: string;
+    imageFile: File | null;
     price: string;
     stockQuantity: string;
   };
@@ -58,8 +58,12 @@ export function AddItemModal({
       <DialogContent className="sm:max-w-md border-slate-200 rounded-2xl p-0 overflow-hidden">
         <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
           <div>
-            <h3 className="font-clash-bold text-slate-900 text-base">Add Menu Item</h3>
-            <p className="text-xs font-satoshi text-slate-500 mt-0.5">Fill in the details for the new product</p>
+            <h3 className="font-clash-bold text-slate-900 text-base">
+              Add Menu Item
+            </h3>
+            <p className="text-xs font-satoshi text-slate-500 mt-0.5">
+              Fill in the details for the new product
+            </p>
           </div>
         </div>
 
@@ -70,7 +74,9 @@ export function AddItemModal({
             </Label>
             <Select
               value={form.categoryId}
-              onValueChange={(val) => setForm((prev: any) => ({ ...prev, categoryId: val }))}
+              onValueChange={(val) =>
+                setForm((prev: any) => ({ ...prev, categoryId: val }))
+              }
               required
             >
               <SelectTrigger className="h-10 rounded-xl border-slate-200 bg-white font-satoshi text-sm focus:ring-orange-400/40">
@@ -78,7 +84,11 @@ export function AddItemModal({
               </SelectTrigger>
               <SelectContent className="rounded-xl border-slate-200 shadow-xl">
                 {categories.map((c) => (
-                  <SelectItem key={c._id} value={c._id} className="font-satoshi text-sm">
+                  <SelectItem
+                    key={c._id}
+                    value={c._id}
+                    className="font-satoshi text-sm"
+                  >
                     {c.name}
                   </SelectItem>
                 ))}
@@ -92,7 +102,9 @@ export function AddItemModal({
             </Label>
             <Input
               value={form.name}
-              onChange={(e) => setForm((prev: any) => ({ ...prev, name: e.target.value }))}
+              onChange={(e) =>
+                setForm((prev: any) => ({ ...prev, name: e.target.value }))
+              }
               required
               placeholder="e.g. Masala Chai"
               className="h-10 rounded-xl border-slate-200 bg-slate-50 font-satoshi text-sm focus-visible:ring-orange-400/40"
@@ -101,17 +113,25 @@ export function AddItemModal({
 
           <div className="space-y-1.5">
             <Label className="text-[12px] font-clash-semibold text-slate-600 uppercase tracking-wide">
-              Description <span className="text-slate-400 font-satoshi normal-case">(optional)</span>
+              Description{" "}
+              <span className="text-slate-400 font-satoshi normal-case">
+                (optional)
+              </span>
             </Label>
             <Input
               value={form.description}
-              onChange={(e) => setForm((prev: any) => ({ ...prev, description: e.target.value }))}
+              onChange={(e) =>
+                setForm((prev: any) => ({
+                  ...prev,
+                  description: e.target.value,
+                }))
+              }
               placeholder="Short description"
               className="h-10 rounded-xl border-slate-200 bg-slate-50 font-satoshi text-sm focus-visible:ring-orange-400/40"
             />
           </div>
 
-           <div className="space-y-1.5">
+          {/* <div className="space-y-1.5">
             <Label className="text-[11px] font-clash-semibold text-slate-500 uppercase tracking-wider">
               Image URL <span className="text-slate-400 font-satoshi normal-case">(optional)</span>
             </Label>
@@ -134,6 +154,45 @@ export function AddItemModal({
                 </div>
               )}
             </div>
+          </div> */}
+
+          <div className="space-y-1.5">
+            <Label className="text-[11px] font-clash-semibold text-slate-500 uppercase tracking-wider">
+              Image{" "}
+              <span className="text-slate-400 font-satoshi normal-case">
+                (optional)
+              </span>
+            </Label>
+
+            <div className="flex gap-2 items-center">
+              <Input
+                type="file"
+                accept="image/*"
+                onChange={(e) =>
+                  setForm((prev: any) => ({
+                    ...prev,
+                    imageFile: e.target.files?.[0] || null,
+                  }))
+                }
+                className="h-10 rounded-xl border-slate-200 bg-slate-50 font-satoshi text-sm focus-visible:ring-orange-400/40"
+              />
+
+              {form.imageFile && (
+                <div className="h-10 w-10 rounded-xl border border-slate-200 overflow-hidden bg-slate-100 flex items-center justify-center shrink-0">
+                  <img
+                    src={URL.createObjectURL(form.imageFile)}
+                    alt="Preview"
+                    className="h-full w-full object-cover"
+                  />
+                </div>
+              )}
+
+              {!form.imageFile && (
+                <div className="h-10 w-10 rounded-xl border border-slate-200 bg-slate-100 flex items-center justify-center shrink-0">
+                  <ImageIcon className="w-4 h-4 text-slate-400" />
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -146,7 +205,9 @@ export function AddItemModal({
                 step="0.01"
                 min="0"
                 value={form.price}
-                onChange={(e) => setForm((prev: any) => ({ ...prev, price: e.target.value }))}
+                onChange={(e) =>
+                  setForm((prev: any) => ({ ...prev, price: e.target.value }))
+                }
                 required
                 placeholder="0"
                 className="h-10 rounded-xl border-slate-200 bg-slate-50 font-satoshi text-sm focus-visible:ring-orange-400/40"
@@ -161,7 +222,12 @@ export function AddItemModal({
                 type="number"
                 min="0"
                 value={form.stockQuantity}
-                onChange={(e) => setForm((prev: any) => ({ ...prev, stockQuantity: e.target.value }))}
+                onChange={(e) =>
+                  setForm((prev: any) => ({
+                    ...prev,
+                    stockQuantity: e.target.value,
+                  }))
+                }
                 required
                 placeholder="0"
                 className="h-10 rounded-xl border-slate-200 bg-slate-50 font-satoshi text-sm focus-visible:ring-orange-400/40"

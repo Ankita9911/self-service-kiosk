@@ -39,6 +39,6 @@ router.use("/kiosk", kioskRoutes);
 router.use("/orders", orderRoutes);
 router.use("/devices", deviceRoutes);
 router.use("/users", userRoutes);
-router.use("upload",uploadRoutes);
+router.use("/upload",uploadRoutes);
 
 export default router;

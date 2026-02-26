@@ -1,4 +1,9 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/shared/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/shared/components/ui/dialog";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
@@ -6,7 +11,14 @@ import { Label } from "@/shared/components/ui/label";
 interface Props {
   open: boolean;
   onClose: () => void;
-  form: any;
+  form: {
+    name: string;
+    description: string;
+    imageUrl?: string;
+    imageFile: File | null;
+    price: string;
+    stockQuantity: string;
+  };
   setForm: React.Dispatch<React.SetStateAction<any>>;
   onSubmit: () => Promise<void>;
 }
@@ -55,17 +67,41 @@ export function EditItemModal({
             />
           </div>
 
-          <div>
-            <Label>Image URL (optional)</Label>
+          <div className="space-y-2">
+            <Label>Image (optional)</Label>
+
             <Input
-              value={form.imageUrl}
+              type="file"
+              accept="image/*"
               onChange={(e) =>
                 setForm((prev: any) => ({
                   ...prev,
-                  imageUrl: e.target.value,
+                  imageFile: e.target.files?.[0] || null,
                 }))
               }
             />
+
+            {/* Show new selected image preview */}
+            {form.imageFile && (
+              <div className="h-24 w-24 rounded-md overflow-hidden border">
+                <img
+                  src={URL.createObjectURL(form.imageFile)}
+                  alt="New Preview"
+                  className="h-full w-full object-cover"
+                />
+              </div>
+            )}
+
+            {/* Show existing image if no new file selected */}
+            {!form.imageFile && form.imageUrl && (
+              <div className="h-24 w-24 rounded-md overflow-hidden border">
+                <img
+                  src={form.imageUrl}
+                  alt="Current"
+                  className="h-full w-full object-cover"
+                />
+              </div>
+            )}
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -103,7 +139,10 @@ export function EditItemModal({
             </div>
           </div>
 
-          <Button type="submit" className="w-full bg-orange-600 hover:bg-orange-700">
+          <Button
+            type="submit"
+            className="w-full bg-orange-600 hover:bg-orange-700"
+          >
             Save Changes
           </Button>
         </form>

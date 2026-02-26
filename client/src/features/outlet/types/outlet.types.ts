@@ -8,3 +8,12 @@ export interface Outlet {
   createdAt: string;
   updatedAt: string;
 }
+
+export type ItemFormState = {
+  categoryId: string;
+  name: string;
+  description: string;
+  imageFile: File | null;
+  price: string;
+  stockQuantity: string;
+};

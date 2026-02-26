@@ -1,13 +1,27 @@
 import { useEffect, useState } from "react";
-import { getCategories, getMenuItems, createCategory, createMenuItem, updateMenuItem, deleteMenuItem } from "@/features/kiosk/services/menu.service";
+import {
+  getCategories,
+  getMenuItems,
+  createCategory,
+  createMenuItem,
+  updateMenuItem,
+  deleteMenuItem,
+} from "@/features/kiosk/services/menu.service";
 import { getOutlets } from "@/features/outlet/services/outlet.service";
 import type { Category, MenuItem } from "@/features/kiosk/types/menu.types";
-import type { Outlet } from "@/features/outlet/types/outlet.types";
+import type {
+  Outlet,
+  ItemFormState,
+} from "@/features/outlet/types/outlet.types";
+import {
+  getUploadUrl,
+  uploadFileToS3,
+} from "@/features/upload/service/upload.service";
 
 export function useOutletMenu(
   outletId: string | undefined,
   userRole?: string,
-  canManage?: boolean
+  canManage?: boolean,
 ) {
   const [outlets, setOutlets] = useState<Outlet[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -17,11 +31,11 @@ export function useOutletMenu(
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>("ALL");
 
   const [catForm, setCatForm] = useState({ name: "", description: "" });
-  const [itemForm, setItemForm] = useState({
+  const [itemForm, setItemForm] = useState<ItemFormState>({
     categoryId: "",
     name: "",
     description: "",
-    imageUrl: "",
+    imageFile: null,
     price: "",
     stockQuantity: "",
   });
@@ -57,47 +71,73 @@ export function useOutletMenu(
   async function addCategory() {
     await createCategory(
       { name: catForm.name, description: catForm.description || undefined },
-      oidForApi
+      oidForApi,
     );
     setCatForm({ name: "", description: "" });
     await fetchData();
   }
 
   async function addItem() {
+    let imageUrl: string | undefined;
+
+    if (itemForm.imageFile) {
+      const { uploadUrl, publicUrl } = await getUploadUrl(
+        itemForm.imageFile,
+        "menu",
+        oidForApi,
+      );
+      console.log("image upload to getuplaodurl");
+      await uploadFileToS3(uploadUrl, itemForm.imageFile);
+
+      imageUrl = publicUrl;
+    }
+
     await createMenuItem(
       {
         categoryId: itemForm.categoryId,
         name: itemForm.name,
         description: itemForm.description || undefined,
-        imageUrl: itemForm.imageUrl || undefined,
+        imageUrl,
         price: parseFloat(itemForm.price),
         stockQuantity: parseInt(itemForm.stockQuantity, 10) || 0,
       },
-      oidForApi
+      oidForApi,
     );
+  
     setItemForm({
       categoryId: "",
       name: "",
       description: "",
-      imageUrl: "",
+      imageFile: null,
       price: "",
       stockQuantity: "",
     });
+
     await fetchData();
   }
 
   async function updateItem(id: string) {
-    await updateMenuItem(
-      id,
-      {
-        name: itemForm.name,
-        description: itemForm.description || undefined,
-        imageUrl: itemForm.imageUrl || undefined,
-        price: parseFloat(itemForm.price),
-        stockQuantity: parseInt(itemForm.stockQuantity, 10) ?? 0,
-      },
-      oidForApi
-    );
+    let payload: any = {
+      name: itemForm.name,
+      description: itemForm.description || undefined,
+      price: parseFloat(itemForm.price),
+      stockQuantity: parseInt(itemForm.stockQuantity, 10) || 0,
+    };
+
+    if (itemForm.imageFile) {
+      const { uploadUrl, publicUrl } = await getUploadUrl(
+        itemForm.imageFile,
+        "menu",
+        oidForApi,
+      );
+
+      await uploadFileToS3(uploadUrl, itemForm.imageFile);
+
+      payload.imageUrl = publicUrl;
+    }
+
+    await updateMenuItem(id, payload, oidForApi);
+
     await fetchData();
   }
 
