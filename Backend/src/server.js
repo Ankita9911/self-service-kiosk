@@ -10,7 +10,7 @@ let server;
 
 async function bootstrap() {
   try {
-    console.log("tarting Hyper Kitchen Hub Backend...");
+    console.log("starting Hyper Kitchen Hub Backend...");
     await connectMongo();
     console.log("MongoDB Connected");
     server = http.createServer(app);

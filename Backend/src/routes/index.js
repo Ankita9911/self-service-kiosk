@@ -13,6 +13,8 @@ import userRoutes from "../modules/users/user.routes.js";
 import { authenticate } from "../core/auth/auth.middleware.js";
 import { attachTenant } from "../core/tenancy/tenancy.middleware.js";
 
+import uploadRoutes from "../modules/upload/upload.routes.js";
+
 const router = express.Router();
 router.get(
   "/tenant-test",
@@ -37,5 +39,6 @@ router.use("/kiosk", kioskRoutes);
 router.use("/orders", orderRoutes);
 router.use("/devices", deviceRoutes);
 router.use("/users", userRoutes);
+router.use("upload",uploadRoutes);
 
 export default router;
