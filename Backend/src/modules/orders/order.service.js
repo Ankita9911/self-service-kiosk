@@ -1,4 +1,5 @@
 import Order from "./order.model.js";
+import Counter from "./counter.model.js";
 import AppError from "../../shared/errors/AppError.js";
 import { getIO } from "../../realtime/realtime.manager.js";
 import { enqueue } from "../../core/queue/queue.producer.js";
@@ -23,15 +24,24 @@ export async function createOrder(data, tenant, userRole) {
     throw new AppError("clientOrderId is required", 400, "INVALID_ORDER");
   }
 
+  // Pre-generate the order number so it can be returned immediately
+  const counter = await Counter.findOneAndUpdate(
+    { outletId: tenant.outletId },
+    { $inc: { seq: 1 } },
+    { new: true, upsert: true }
+  );
+  const orderNumber = counter.seq;
+
   await enqueue("ORDER_PLACED", {
     items,
     paymentMethod,
     clientOrderId,
+    orderNumber,
     tenant,
     userRole,
   });
 
-  return { clientOrderId, queued: true };
+  return { clientOrderId, orderNumber, queued: true };
 }
 
 export async function listOrders(tenant, statuses) {

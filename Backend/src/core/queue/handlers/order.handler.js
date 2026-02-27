@@ -27,7 +27,7 @@ function emitToOutlet(outletId, event, data) {
  * Performs idempotency check, stock deduction, and order creation in a transaction.
  */
 export async function handleOrderPlaced(payload) {
-  const { items, paymentMethod, clientOrderId, tenant, userRole } = payload;
+  const { items, paymentMethod, clientOrderId, orderNumber, tenant, userRole } = payload;
 
   const session = await mongoose.startSession();
   session.startTransaction();
@@ -81,14 +81,15 @@ export async function handleOrderPlaced(payload) {
       });
     }
 
-    const orderNumber = await getNextOrderNumber(tenant.outletId, session);
+    // Use the pre-assigned orderNumber from the HTTP layer (already incremented the counter)
+    const resolvedOrderNumber = orderNumber ?? await getNextOrderNumber(tenant.outletId, session);
 
     const order = await Order.create(
       [
         {
           franchiseId: tenant.franchiseId,
           outletId: tenant.outletId,
-          orderNumber,
+          orderNumber: resolvedOrderNumber,
           clientOrderId,
           items: processedItems,
           totalAmount,
