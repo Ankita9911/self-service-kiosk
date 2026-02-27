@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import {
   getCategories,
   getMenuItems,
@@ -19,6 +19,7 @@ import {
   getUploadUrl,
   uploadFileToS3,
 } from "@/features/upload/service/upload.service";
+import { useMenuSocket } from "@/shared/hooks/useMenuSocket";
 
 export function useOutletMenu(
   outletId: string | undefined,
@@ -47,7 +48,7 @@ export function useOutletMenu(
 
   const oidForApi = needsOutletId ? outletId : undefined;
 
-  async function fetchData() {
+  const fetchData = useCallback(async () => {
     if (!canManage || !outletId) return;
 
     setLoading(true);
@@ -64,11 +65,16 @@ export function useOutletMenu(
     } finally {
       setLoading(false);
     }
-  }
+  }, [outletId, canManage, oidForApi, needsOutletId]);
 
   useEffect(() => {
     fetchData();
-  }, [outletId]);
+  }, [fetchData]);
+
+  // Silently reload whenever the queue worker finishes a menu change.
+  // Pass outletId so admin users (who have no outletId in their JWT) can
+  // join the correct outlet socket room via join:outlet.
+  useMenuSocket(fetchData, outletId);
 
   async function addCategory() {
     await createCategory(

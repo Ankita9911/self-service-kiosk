@@ -1,7 +1,17 @@
 import { useEffect, useRef } from "react";
 import { io, Socket } from "socket.io-client";
 
-const SOCKET_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
+function getSocketUrl(): string {
+  const apiUrl = import.meta.env.VITE_API_BASE_URL;
+  if (!apiUrl) return "http://localhost:3000";
+  try {
+    return new URL(apiUrl).origin; // strips /api — socket.io lives at the root
+  } catch {
+    return "http://localhost:3000";
+  }
+}
+
+const SOCKET_URL = getSocketUrl();
 
 export function useSocket(onOrderNew: (order: any) => void, onOrderStatusUpdated: (payload: any) => void) {
   const socketRef = useRef<Socket | null>(null);

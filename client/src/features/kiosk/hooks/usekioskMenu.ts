@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import kioskAxios from "@/shared/lib/kioskAxios";
 import type { MenuCategory } from "../types/menu.types";
 import { toast } from "react-hot-toast";
+import { useMenuSocket } from "@/shared/hooks/useMenuSocket";
 
 const ALL_CATEGORY_ID = "__ALL__";
 
@@ -11,13 +12,9 @@ export function useKioskMenu() {
     useState<string>(ALL_CATEGORY_ID);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    loadMenu();
-  }, []);
-
-  async function loadMenu() {
+  const loadMenu = useCallback(async (silent = false) => {
     try {
-      setIsLoading(true);
+      if (!silent) setIsLoading(true);
       const response = await kioskAxios.get("/kiosk/menu");
       const freshMenu = response.data.data.sort(
         (a: any, b: any) =>
@@ -27,13 +24,21 @@ export function useKioskMenu() {
         (c: any) => c.items && c.items.length > 0
       );
       setMenu(valid);
-      toast.success("Menu loaded successfully");
+      if (!silent) toast.success("Menu loaded successfully");
     } catch {
-      toast.error("Unable to load menu");
+      if (!silent) toast.error("Unable to load menu");
     } finally {
-      setTimeout(() => setIsLoading(false), 500);
+      if (!silent) setTimeout(() => setIsLoading(false), 500);
+      else setIsLoading(false);
     }
-  }
+  }, []);
+
+  useEffect(() => {
+    loadMenu();
+  }, [loadMenu]);
+
+  // Silently reload whenever the queue worker finishes a menu change
+  useMenuSocket(() => loadMenu(true));
 
   const selectedItems =
     selectedCategory === ALL_CATEGORY_ID

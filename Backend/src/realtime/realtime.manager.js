@@ -32,9 +32,24 @@ export function initSocket(httpServer) {
   io.on("connection", (socket) => {
     const { outletId, role } = socket.user;
 
+    // Auto-join for device tokens (kiosk) that have outletId in JWT
     if (outletId) {
       socket.join(`outlet:${outletId}`);
     }
+
+    // Admin users (FRANCHISE_ADMIN, SUPER_ADMIN) have no outletId in JWT
+    // so they explicitly request the room for the outlet they are viewing
+    socket.on("join:outlet", (requestedOutletId) => {
+      if (requestedOutletId) {
+        socket.join(`outlet:${requestedOutletId}`);
+      }
+    });
+
+    socket.on("leave:outlet", (requestedOutletId) => {
+      if (requestedOutletId) {
+        socket.leave(`outlet:${requestedOutletId}`);
+      }
+    });
 
     socket.on("disconnect", () => {
     });

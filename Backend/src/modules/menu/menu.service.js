@@ -1,23 +1,12 @@
 import Category from "./category.model.js";
 import MenuItem from "./menuItem.model.js";
-import AppError from "../../shared/errors/AppError.js";
 import { getRedisClient } from "../../core/cache/redis.client.js";
 import { buildTenantKey } from "../../core/cache/cache.utils.js";
 import { enqueue } from "../../core/queue/queue.producer.js";
 
 export async function createCategory(data, tenant) {
-  const redis = getRedisClient();
-  const cacheKey = buildTenantKey("categories", tenant);
-
-  const category = await Category.create({
-    ...data,
-    franchiseId: tenant.franchiseId,
-    outletId: tenant.outletId,
-  });
-
-  await redis.del(cacheKey); 
-
-  return category;
+  await enqueue("MENU_CATEGORY_CREATE", { data, tenant });
+  return { queued: true };
 }
 
 export async function getCategories(tenant) {
@@ -44,66 +33,18 @@ export async function getCategories(tenant) {
 }
 
 export async function updateCategory(id, data, tenant) {
-  const redis = getRedisClient();
-  const cacheKey = buildTenantKey("categories", tenant);
-
-  const category = await Category.findOneAndUpdate(
-    {
-      _id: id,
-      franchiseId: tenant.franchiseId,
-      outletId: tenant.outletId,
-      isDeleted: false,
-    },
-    data,
-    { new: true }
-  );
-
-  if (!category) {
-    throw new AppError("Category not found", 404, "CATEGORY_NOT_FOUND");
-  }
-
-  await redis.del(cacheKey);
-
-  return category;
+  await enqueue("MENU_CATEGORY_UPDATE", { id, data, tenant });
+  return { queued: true };
 }
 
 export async function deleteCategory(id, tenant) {
-  const redis = getRedisClient();
-  const cacheKey = buildTenantKey("categories", tenant);
-
-  const category = await Category.findOneAndUpdate(
-    {
-      _id: id,
-      franchiseId: tenant.franchiseId,
-      outletId: tenant.outletId,
-      isDeleted: false,
-    },
-    { isDeleted: true },
-    { new: true }
-  );
-
-  if (!category) {
-    throw new AppError("Category not found", 404, "CATEGORY_NOT_FOUND");
-  }
-
-  await redis.del(cacheKey);
-
-  return category;
+  await enqueue("MENU_CATEGORY_DELETE", { id, tenant });
+  return { queued: true };
 }
 
 export async function createMenuItem(data, tenant) {
-  const redis = getRedisClient();
-  const cacheKey = buildTenantKey("menuItems", tenant);
-
-  const item = await MenuItem.create({
-    ...data,
-    franchiseId: tenant.franchiseId,
-    outletId: tenant.outletId,
-  });
-
-  await redis.del(cacheKey);
-
-  return item;
+  await enqueue("MENU_ITEM_CREATE", { data, tenant });
+  return { queued: true };
 }
 
 export async function getMenuItems(tenant, categoryId) {
@@ -141,27 +82,8 @@ export async function getMenuItems(tenant, categoryId) {
 }
 
 export async function updateMenuItem(id, data, tenant) {
-  const redis = getRedisClient();
-  const cacheKey = buildTenantKey("menuItems", tenant);
-
-  const item = await MenuItem.findOneAndUpdate(
-    {
-      _id: id,
-      franchiseId: tenant.franchiseId,
-      outletId: tenant.outletId,
-      isDeleted: false,
-    },
-    data,
-    { new: true }
-  );
-
-  if (!item) {
-    throw new AppError("Menu item not found", 404, "MENU_ITEM_NOT_FOUND");
-  }
-
-  await redis.del(cacheKey);
-
-  return item;
+  await enqueue("MENU_ITEM_UPDATE", { id, data, tenant });
+  return { queued: true };
 }
 
 export async function updateItemPrice(id, price, tenant) {
@@ -175,25 +97,6 @@ export async function updateItemStock(id, stockQuantity, tenant) {
 }
 
 export async function deleteMenuItem(id, tenant) {
-  const redis = getRedisClient();
-  const cacheKey = buildTenantKey("menuItems", tenant);
-
-  const item = await MenuItem.findOneAndUpdate(
-    {
-      _id: id,
-      franchiseId: tenant.franchiseId,
-      outletId: tenant.outletId,
-      isDeleted: false,
-    },
-    { isDeleted: true },
-    { new: true }
-  );
-
-  if (!item) {
-    throw new AppError("Menu item not found", 404, "MENU_ITEM_NOT_FOUND");
-  }
-
-  await redis.del(cacheKey);
-
-  return item;
+  await enqueue("MENU_ITEM_DELETE", { id, tenant });
+  return { queued: true };
 }

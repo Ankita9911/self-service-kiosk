@@ -9,8 +9,8 @@ export const createCategory = asyncHandler(async (req, res) => {
   );
 
   return sendSuccess(res, {
-    statusCode: 201,
-    message: "Category created successfully",
+    statusCode: 202,
+    message: "Category creation accepted and queued for processing",
     data: result,
   });
 });
@@ -32,7 +32,8 @@ export const updateCategory = asyncHandler(async (req, res) => {
   );
 
   return sendSuccess(res, {
-    message: "Category updated successfully",
+    statusCode: 202,
+    message: "Category update accepted and queued for processing",
     data: result,
   });
 });
@@ -44,7 +45,8 @@ export const deleteCategory = asyncHandler(async (req, res) => {
   );
 
   return sendSuccess(res, {
-    message: "Category deleted successfully",
+    statusCode: 202,
+    message: "Category deletion accepted and queued for processing",
   });
 });
 
@@ -55,8 +57,8 @@ export const createMenuItem = asyncHandler(async (req, res) => {
   );
 
   return sendSuccess(res, {
-    statusCode: 201,
-    message: "Menu item created successfully",
+    statusCode: 202,
+    message: "Menu item creation accepted and queued for processing",
     data: result,
   });
 });
@@ -83,7 +85,8 @@ export const updateMenuItem = asyncHandler(async (req, res) => {
   );
 
   return sendSuccess(res, {
-    message: "Menu item updated successfully",
+    statusCode: 202,
+    message: "Menu item update accepted and queued for processing",
     data: result,
   });
 });
@@ -124,6 +127,7 @@ export const deleteMenuItem = asyncHandler(async (req, res) => {
   );
 
   return sendSuccess(res, {
-    message: "Menu item deleted successfully",
+    statusCode: 202,
+    message: "Menu item deletion accepted and queued for processing",
   });
 });
