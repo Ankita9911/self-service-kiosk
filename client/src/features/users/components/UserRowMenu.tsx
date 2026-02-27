@@ -135,7 +135,7 @@ export function UserRowMenu({
       {modal === "edit" && (
         <Modal onClose={!busy ? close : undefined}>
           <div className="h-0.5 bg-gradient-to-r from-indigo-400 via-indigo-500 to-violet-500" />
-          <div className="px-5 py-4 border-b border-slate-100 dark:border-white/[0.06]">
+          <div className="px-5 py-4 border-b border-slate-100 dark:border-white/[0.06] text-left">
             <h3 className="font-semibold text-slate-900 dark:text-white text-sm">Edit User</h3>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
               Update name and email for <span className="font-medium">{user.name}</span>
@@ -179,7 +179,7 @@ export function UserRowMenu({
       {modal === "role" && (
         <Modal onClose={!busy ? close : undefined}>
           <div className="h-0.5 bg-gradient-to-r from-indigo-400 via-indigo-500 to-violet-500" />
-          <div className="px-5 py-4 border-b border-slate-100 dark:border-white/[0.06]">
+          <div className="px-5 py-4 border-b border-slate-100 dark:border-white/[0.06] text-left">
             <h3 className="font-semibold text-slate-900 dark:text-white text-sm">Change Role</h3>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
               Assign a new role to <span className="font-medium">{user.name}</span>
@@ -216,7 +216,7 @@ export function UserRowMenu({
       {modal === "status" && (
         <Modal onClose={!busy ? close : undefined}>
           <div className="h-0.5 bg-gradient-to-r from-indigo-400 via-indigo-500 to-violet-500" />
-          <div className="px-5 py-5">
+          <div className="px-5 py-5 text-left">
             <h3 className="font-semibold text-slate-900 dark:text-white text-sm">
               {user.status === "ACTIVE" ? "Deactivate" : "Activate"} User?
             </h3>
@@ -245,7 +245,7 @@ export function UserRowMenu({
       {modal === "resetPw" && (
         <Modal onClose={!busy ? close : undefined}>
           <div className="h-0.5 bg-gradient-to-r from-amber-400 via-orange-400 to-red-400" />
-          <div className="px-5 py-5">
+          <div className="px-5 py-5 text-left">
             <h3 className="font-semibold text-slate-900 dark:text-white text-sm">Reset Password?</h3>
             <p className="text-sm text-slate-500 dark:text-slate-400 mt-1.5">
               A new temporary password will be generated for{" "}
@@ -283,7 +283,7 @@ export function UserRowMenu({
       {/* ── Show New Password Modal ── */}
       {modal === "showPw" && (
         <Modal onClose={close}>
-          <div className="h-0.5 bg-gradient-to-r from-indigo-400 via-indigo-500 to-violet-500" />
+          <div className="h-0.5 bg-gradient-to-r from-indigo-400 via-indigo-500 to-violet-500 text-left" />
           <div className="px-5 py-5 space-y-4">
             <div>
               <h3 className="font-semibold text-slate-900 dark:text-white text-sm">Temporary Password</h3>
@@ -315,7 +315,7 @@ export function UserRowMenu({
       {modal === "delete" && (
         <Modal onClose={!busy ? close : undefined}>
           <div className="h-0.5 bg-gradient-to-r from-red-400 to-red-600" />
-          <div className="px-5 py-5">
+          <div className="px-5 py-5 text-left">
             <h3 className="font-semibold text-slate-900 dark:text-white text-sm">Delete User?</h3>
             <p className="text-sm text-slate-500 dark:text-slate-400 mt-1.5">
               This will permanently delete{" "}
