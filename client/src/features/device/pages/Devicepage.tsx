@@ -15,7 +15,6 @@ import { DeviceRowMenu } from "../components/DeviceRowMenu";
 import { TablePagination } from "@/shared/components/ui/TablePagination";
 import { Cpu, ShieldAlert } from "lucide-react";
 import type { Device } from "../types/device.types";
-import { EditDeviceModal } from "../components/EditDeviceModal";
 
 export default function DevicePage() {
   const { hasPermission } = usePermission();
@@ -37,8 +36,6 @@ export default function DevicePage() {
     handleDelete: deleteDeviceHook,
     handleStatusChange,
   } = useDevices(canView);
-
-  const [editingDevice, setEditingDevice] = useState<Device | null>(null);
 
   const [open, setOpen] = useState(false);
   const [createdSecret, setCreatedSecret] = useState<string | null>(null);
@@ -96,31 +93,27 @@ export default function DevicePage() {
   if (!canView) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[40vh] gap-3 text-center">
-        <ShieldAlert className="w-10 h-10 text-slate-300" />
-        <p className="font-clash-semibold text-slate-600">Access Restricted</p>
-        <p className="font-satoshi text-slate-400 text-sm">
+        <ShieldAlert className="w-10 h-10 text-slate-300 dark:text-slate-600" />
+        <p className="font-medium text-slate-600 dark:text-slate-300">Access Restricted</p>
+        <p className="text-slate-400 dark:text-slate-500 text-sm">
           You don't have permission to view devices.
         </p>
       </div>
     );
   }
 
-  function handleEdit(device: Device) {
-    setEditingDevice(device);
-  }
   async function handleToggleStatus(device: Device) {
     const newStatus = device.status === "ACTIVE" ? "INACTIVE" : "ACTIVE";
     await handleStatusChange(device.deviceId, newStatus);
   }
 
   async function handleDelete(device: Device) {
-    console.log("Deleting:", device.deviceId);
     await deleteDeviceHook(device.deviceId);
   }
 
   async function handleSaveEdit(name: string) {
-    if (!editingDevice) return;
-    await handleUpdate(editingDevice.deviceId, name);
+    // no-op: inline rename handled by DeviceRowMenu
+    void name;
   }
 
   return (
@@ -141,10 +134,10 @@ export default function DevicePage() {
         onStatusChange={setStatusFilter}
       />
 
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm ">
+      <div className="bg-white dark:bg-[#161920] rounded-2xl border border-slate-100 dark:border-white/[0.06] shadow-sm overflow-hidden">
         <table className="w-full">
           <thead>
-            <tr className="border-b border-slate-100 bg-slate-50/60">
+            <tr className="border-b border-slate-100 dark:border-white/[0.06] bg-slate-50/60 dark:bg-white/[0.02]">
               {[
                 "Device ID",
                 "Name",
@@ -155,7 +148,7 @@ export default function DevicePage() {
               ].map((h) => (
                 <th
                   key={h}
-                  className="px-5 py-3.5 text-left text-[11px] font-clash-semibold text-slate-500 uppercase tracking-wider"
+                  className="px-5 py-3.5 text-left text-[11px] font-medium text-slate-500 dark:text-slate-500 uppercase tracking-wider"
                 >
                   {h}
                 </th>
@@ -163,7 +156,7 @@ export default function DevicePage() {
             </tr>
           </thead>
 
-          <tbody className="divide-y divide-slate-50">
+          <tbody className="divide-y divide-slate-50 dark:divide-white/[0.04]">
             {showShimmer ? (
               Array.from({ length: 5 }).map((_, i) => (
                 <tr key={i}>
@@ -179,13 +172,13 @@ export default function DevicePage() {
               <tr>
                 <td colSpan={6} className="py-16 text-center">
                   <div className="flex flex-col items-center gap-3">
-                    <div className="h-12 w-12 rounded-2xl bg-slate-100 flex items-center justify-center">
-                      <Cpu className="w-5 h-5 text-slate-400" />
+                    <div className="h-12 w-12 rounded-2xl bg-slate-100 dark:bg-white/[0.06] flex items-center justify-center">
+                      <Cpu className="w-5 h-5 text-slate-400 dark:text-slate-500" />
                     </div>
-                    <p className="font-clash-semibold text-slate-600">
+                    <p className="font-medium text-slate-600 dark:text-slate-300">
                       No devices found
                     </p>
-                    <p className="font-satoshi text-slate-400 text-sm">
+                    <p className="text-slate-400 dark:text-slate-500 text-sm">
                       {searchTerm
                         ? "Try a different search term"
                         : "Register your first device to get started"}
@@ -197,21 +190,21 @@ export default function DevicePage() {
               paginatedDevices.map((d) => (
                 <tr
                   key={d._id}
-                  className="group hover:bg-orange-50/30 transition-colors"
+                  className="group hover:bg-indigo-50/30 dark:hover:bg-indigo-500/[0.04] transition-colors"
                 >
                   <td className="px-5 py-4">
-                    <span className="font-mono text-[13px] text-slate-600 bg-slate-100 px-2 py-0.5 rounded-lg">
+                    <span className="font-mono text-[13px] text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-white/[0.06] px-2 py-0.5 rounded-lg">
                       {d.deviceId}
                     </span>
                   </td>
 
-                  <td className="px-5 py-4 font-satoshi text-sm text-slate-700">
+                  <td className="px-5 py-4 text-sm text-slate-700 dark:text-slate-300">
                     {d.name || (
-                      <span className="text-slate-400 italic">Unnamed</span>
+                      <span className="text-slate-400 dark:text-slate-600 italic">Unnamed</span>
                     )}
                   </td>
 
-                  <td className="px-5 py-4 font-satoshi text-sm text-slate-600">
+                  <td className="px-5 py-4 text-sm text-slate-600 dark:text-slate-400">
                     {getOutletName(d)}
                   </td>
 
@@ -219,7 +212,7 @@ export default function DevicePage() {
                     <StatusBadge status={d.status} />
                   </td>
 
-                  <td className="px-5 py-4 font-satoshi text-sm text-slate-400">
+                  <td className="px-5 py-4 text-sm text-slate-400 dark:text-slate-500">
                     {formatLastSeen(d)}
                   </td>
 
@@ -265,14 +258,6 @@ export default function DevicePage() {
         onCreated={(secret) => setCreatedSecret(secret)}
       />
 
-      {canUpdate && (
-        <EditDeviceModal
-          open={!!editingDevice}
-          initialName={editingDevice?.name}
-          onClose={() => setEditingDevice(null)}
-          onSave={handleSaveEdit}
-        />
-      )}
       {createdSecret && (
         <SecretRevealModal
           secret={createdSecret}

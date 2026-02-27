@@ -23,17 +23,7 @@ export function FranchiseFilters({
           placeholder="Search by name, code or email…"
           value={searchTerm}
           onChange={(e) => onSearchChange(e.target.value)}
-          className="
-            w-full h-9 pl-9 pr-9 rounded-xl
-            bg-white dark:bg-[#161920]
-            border border-slate-100 dark:border-white/[0.08]
-            text-[13px] text-slate-700 dark:text-slate-200
-            placeholder:text-slate-400 dark:placeholder:text-slate-600
-            focus:outline-none
-            focus:border-indigo-400 dark:focus:border-indigo-500/60
-            focus:ring-2 focus:ring-indigo-400/15 dark:focus:ring-indigo-500/10
-            transition-all
-          "
+          className="w-full h-9 pl-9 pr-9 rounded-xl bg-white dark:bg-[#161920] border border-slate-100 dark:border-white/[0.08] text-[13px] text-slate-700 dark:text-slate-200 placeholder:text-slate-400 dark:placeholder:text-slate-600 focus:outline-none focus:border-indigo-400 dark:focus:border-indigo-500/60 focus:ring-2 focus:ring-indigo-400/15 dark:focus:ring-indigo-500/10 transition-all"
         />
         {searchTerm && (
           <button
@@ -51,13 +41,11 @@ export function FranchiseFilters({
           <button
             key={s}
             onClick={() => onStatusChange(s)}
-            className={`
-              px-3 h-7 rounded-lg text-[12px] font-semibold transition-all
-              ${statusFilter === s
+            className={`px-3 h-7 rounded-lg text-[12px] font-semibold transition-all ${
+              statusFilter === s
                 ? "bg-indigo-600 text-white shadow-sm"
                 : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-white/[0.05]"
-              }
-            `}
+            }`}
           >
             {s === "ALL" ? "All" : s === "ACTIVE" ? "Active" : "Inactive"}
           </button>
