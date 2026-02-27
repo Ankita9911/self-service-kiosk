@@ -163,6 +163,52 @@ export async function updateMenuItem(id, data, tenant) {
   return item;
 }
 
+export async function updateItemPrice(id, price, tenant) {
+  const redis = getRedisClient();
+  const cacheKey = buildTenantKey("menuItems", tenant);
+
+  const item = await MenuItem.findOneAndUpdate(
+    {
+      _id: id,
+      franchiseId: tenant.franchiseId,
+      outletId: tenant.outletId,
+      isDeleted: false,
+    },
+    { price },
+    { new: true }
+  );
+
+  if (!item) {
+    throw new AppError("Menu item not found", 404, "MENU_ITEM_NOT_FOUND");
+  }
+
+  await redis.del(cacheKey);
+  return item;
+}
+
+export async function updateItemStock(id, stockQuantity, tenant) {
+  const redis = getRedisClient();
+  const cacheKey = buildTenantKey("menuItems", tenant);
+
+  const item = await MenuItem.findOneAndUpdate(
+    {
+      _id: id,
+      franchiseId: tenant.franchiseId,
+      outletId: tenant.outletId,
+      isDeleted: false,
+    },
+    { stockQuantity },
+    { new: true }
+  );
+
+  if (!item) {
+    throw new AppError("Menu item not found", 404, "MENU_ITEM_NOT_FOUND");
+  }
+
+  await redis.del(cacheKey);
+  return item;
+}
+
 export async function deleteMenuItem(id, tenant) {
   const redis = getRedisClient();
   const cacheKey = buildTenantKey("menuItems", tenant);

@@ -1,11 +1,37 @@
-export function ShimmerCell({ w = "w-24" }: { w?: string }) {
+export function Shimmer({
+  w = "w-24",
+  h = "h-4",
+  rounded = "rounded-md",
+  className = "",
+}: {
+  w?: string;
+  h?: string;
+  rounded?: string;
+  className?: string;
+}) {
   return (
-    <td className="px-5 py-4">
-      <div
-        className={`h-4 ${w} rounded-md bg-gradient-to-r from-slate-100 via-slate-200 to-slate-100
-          dark:from-white/[0.04] dark:via-white/10 dark:to-white/[0.04]
-          animate-shimmer bg-[length:400%_100%]`}
-      />
+    <div
+      className={`relative overflow-hidden ${h} ${w} ${rounded} bg-slate-100 dark:bg-white/[0.06] ${className}`}
+    >
+      <div className="absolute inset-0 -translate-x-full animate-shimmer bg-gradient-to-r from-transparent via-white/60 dark:via-white/10 to-transparent" />
+    </div>
+  );
+}
+
+export function ShimmerCell({
+  w = "w-24",
+  h = "h-4",
+  rounded = "rounded-md",
+  tdClassName = "",
+}: {
+  w?: string;
+  h?: string;
+  rounded?: string;
+  tdClassName?: string;
+}) {
+  return (
+    <td className={`px-5 py-4 ${tdClassName}`}>
+      <Shimmer w={w} h={h} rounded={rounded} />
     </td>
   );
 }

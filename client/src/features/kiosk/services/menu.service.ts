@@ -83,6 +83,30 @@ export async function updateMenuItem(
   return response.data.data;
 }
 
+export async function updateMenuItemPrice(
+  id: string,
+  price: number,
+  outletId?: string
+): Promise<MenuItem> {
+  const response = await axiosInstance.patch<{ data: MenuItem }>(
+    `/menu/items/${id}/price`,
+    { price, ...(outletId && { outletId }) }
+  );
+  return response.data.data;
+}
+
+export async function updateMenuItemStock(
+  id: string,
+  stockQuantity: number,
+  outletId?: string
+): Promise<MenuItem> {
+  const response = await axiosInstance.patch<{ data: MenuItem }>(
+    `/menu/items/${id}/stock`,
+    { stockQuantity, ...(outletId && { outletId }) }
+  );
+  return response.data.data;
+}
+
 export async function deleteMenuItem(id: string, outletId?: string): Promise<void> {
   await axiosInstance.delete(`/menu/items/${id}`, params(outletId));
 }

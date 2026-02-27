@@ -274,7 +274,7 @@ export default function OutletPage() {
         </div>
 
         {/* ── Table ───────────────────────────────────────────────────────── */}
-        <div className="bg-white dark:bg-[#161920] rounded-2xl border border-slate-100 dark:border-white/[0.06] overflow-hidden">
+        <div className="bg-white dark:bg-[#161920] rounded-2xl border border-slate-100 dark:border-white/[0.06]">
           <table className="w-full">
             <thead>
               <tr className="border-b border-slate-50 dark:border-white/[0.05] bg-slate-50/60 dark:bg-white/[0.02]">

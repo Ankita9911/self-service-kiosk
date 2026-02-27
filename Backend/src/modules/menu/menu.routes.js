@@ -52,6 +52,18 @@ router.put(
   controller.updateMenuItem
 );
 
+router.patch(
+  "/items/:id/price",
+  authorize(PERMISSIONS.MENU_MANAGE),
+  controller.updateItemPrice
+);
+
+router.patch(
+  "/items/:id/stock",
+  authorize(PERMISSIONS.MENU_MANAGE),
+  controller.updateItemStock
+);
+
 router.delete(
   "/items/:id",
   authorize(PERMISSIONS.MENU_MANAGE),

@@ -7,7 +7,7 @@ import { DeviceHeader } from "../components/DeviceHeader";
 import { DeviceStats } from "../components/DeviceStats";
 import { DeviceFilters } from "../components/DeviceFilters";
 import { StatusBadge } from "../components/StatusBadge";
-import { ShimmerCell } from "../components/ShimmerCell";
+import { ShimmerCell, Shimmer } from "../components/ShimmerCell";
 import { CreateDeviceModal } from "../components/CreateDeviceModal";
 import { SecretRevealModal } from "../components/SecretRevealModal";
 import { DeviceRowMenu } from "../components/DeviceRowMenu";
@@ -77,12 +77,8 @@ export default function DevicePage() {
   }
 
   function formatLastSeen(d: Device): string {
-    const ts =
-      (d as any).lastSeenAt || (d as any).lastSeen || (d as any).last_seen;
-
-    if (!ts) return "Never";
-
-    return new Date(ts).toLocaleString([], {
+    if (!d.lastSeenAt) return "Never";
+    return new Date(d.lastSeenAt).toLocaleString([], {
       dateStyle: "medium",
       timeStyle: "short",
     });
@@ -134,7 +130,7 @@ export default function DevicePage() {
         onStatusChange={setStatusFilter}
       />
 
-      <div className="bg-white dark:bg-[#161920] rounded-2xl border border-slate-100 dark:border-white/[0.06] shadow-sm overflow-hidden">
+      <div className="bg-white dark:bg-[#161920] rounded-2xl border border-slate-100 dark:border-white/[0.06] shadow-sm">
         <table className="w-full">
           <thead>
             <tr className="border-b border-slate-100 dark:border-white/[0.06] bg-slate-50/60 dark:bg-white/[0.02]">
@@ -160,12 +156,24 @@ export default function DevicePage() {
             {showShimmer ? (
               Array.from({ length: 5 }).map((_, i) => (
                 <tr key={i}>
-                  <ShimmerCell w="w-28" />
+                  {/* Device ID — mono badge */}
+                  <td className="px-5 py-4">
+                    <Shimmer w="w-28" h="h-6" rounded="rounded-lg" />
+                  </td>
+                  {/* Name */}
                   <ShimmerCell w="w-24" />
+                  {/* Outlet */}
                   <ShimmerCell w="w-32" />
-                  <ShimmerCell w="w-16" />
+                  {/* Status badge */}
+                  <td className="px-5 py-4">
+                    <Shimmer w="w-16" h="h-6" rounded="rounded-full" />
+                  </td>
+                  {/* Last Seen */}
                   <ShimmerCell w="w-28" />
-                  <td />
+                  {/* Actions */}
+                  <td className="px-5 py-4">
+                    <Shimmer w="w-6" h="h-6" rounded="rounded-md" />
+                  </td>
                 </tr>
               ))
             ) : filteredDevices.length === 0 ? (

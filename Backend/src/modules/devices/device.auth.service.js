@@ -24,6 +24,10 @@ export async function deviceLogin({ deviceId, password }) {
     throw new AppError("Invalid credentials", 401);
   }
 
+  // Record when login happened so "Last Seen" is always up-to-date
+  device.lastSeenAt = new Date();
+  await device.save();
+
   const token = jwt.sign(
     {
       deviceId: device.deviceId,

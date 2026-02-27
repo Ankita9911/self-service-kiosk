@@ -5,6 +5,8 @@ import {
   createCategory,
   createMenuItem,
   updateMenuItem,
+  updateMenuItemPrice,
+  updateMenuItemStock,
   deleteMenuItem,
 } from "@/features/kiosk/services/menu.service";
 import { getOutlets } from "@/features/outlet/services/outlet.service";
@@ -141,6 +143,16 @@ export function useOutletMenu(
     await fetchData();
   }
 
+  async function updatePrice(id: string, price: number) {
+    await updateMenuItemPrice(id, price, oidForApi);
+    await fetchData();
+  }
+
+  async function updateStock(id: string, quantity: number) {
+    await updateMenuItemStock(id, quantity, oidForApi);
+    await fetchData();
+  }
+
   async function removeItem(id: string) {
     await deleteMenuItem(id, oidForApi);
     await fetchData();
@@ -160,6 +172,8 @@ export function useOutletMenu(
     addCategory,
     addItem,
     updateItem,
+    updatePrice,
+    updateStock,
     removeItem,
   };
 }

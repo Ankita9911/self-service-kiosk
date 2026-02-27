@@ -6,7 +6,7 @@ import { PERMISSIONS } from "@/shared/lib/permissions";
 import { useUsers } from "../hooks/useUsers";
 import { RoleBadge } from "../components/RoleBadge";
 import { StatusBadge } from "../components/StatusBadge";
-import { ShimmerCell } from "../components/ShimmerCell";
+import { ShimmerCell, Shimmer } from "../components/ShimmerCell";
 import { CreateUserModal } from "../components/CreateUserModal";
 import { TempPasswordModal } from "../components/TempPasswordModal";
 import { UserRowMenu } from "../components/UserRowMenu";
@@ -35,7 +35,7 @@ export default function UserPage() {
   } = useUsers();
 
   const [open, setOpen] = useState(false);
-  const [generatedPassword, setGeneratedPassword] = useState<string | null>(null);
+  const [createdUser, setCreatedUser] = useState<{ password: string; email: string } | null>(null);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState("ALL");
@@ -179,7 +179,7 @@ export default function UserPage() {
       </div>
 
       {/* ── Table ── */}
-      <div className="bg-white dark:bg-[#161920] rounded-2xl border border-slate-100 dark:border-white/[0.06] shadow-sm overflow-hidden">
+      <div className="bg-white dark:bg-[#161920] rounded-2xl border border-slate-100 dark:border-white/[0.06] shadow-sm">
         <table className="w-full">
           <thead>
             <tr className="border-b border-slate-100 dark:border-white/[0.06] bg-slate-50/60 dark:bg-white/[0.02]">
@@ -198,11 +198,27 @@ export default function UserPage() {
             {showShimmer ? (
               Array.from({ length: 5 }).map((_, i) => (
                 <tr key={i}>
-                  <ShimmerCell w="w-32" />
+                  {/* User — avatar circle + name */}
+                  <td className="px-5 py-4">
+                    <div className="flex items-center gap-3">
+                      <Shimmer w="w-8" h="h-8" rounded="rounded-lg" className="shrink-0" />
+                      <Shimmer w="w-28" h="h-4" rounded="rounded-md" />
+                    </div>
+                  </td>
+                  {/* Email */}
                   <ShimmerCell w="w-40" />
-                  <ShimmerCell w="w-28" />
-                  <ShimmerCell w="w-16" />
-                  <td className="px-5 py-4 w-10" />
+                  {/* Role badge */}
+                  <td className="px-5 py-4">
+                    <Shimmer w="w-28" h="h-6" rounded="rounded-lg" />
+                  </td>
+                  {/* Status badge */}
+                  <td className="px-5 py-4">
+                    <Shimmer w="w-16" h="h-6" rounded="rounded-full" />
+                  </td>
+                  {/* Actions */}
+                  <td className="px-3 py-4">
+                    <Shimmer w="w-6" h="h-6" rounded="rounded-md" className="ml-auto" />
+                  </td>
                 </tr>
               ))
             ) : filtered.length === 0 ? (
@@ -296,13 +312,14 @@ export default function UserPage() {
         currentUser={currentUser}
         franchises={franchises}
         outlets={outlets}
-        onCreated={(pw) => setGeneratedPassword(pw)}
+        onCreated={(pw, email) => setCreatedUser({ password: pw, email })}
       />
 
-      {generatedPassword && (
+      {createdUser && (
         <TempPasswordModal
-          password={generatedPassword}
-          onClose={() => setGeneratedPassword(null)}
+          password={createdUser.password}
+          email={createdUser.email}
+          onClose={() => setCreatedUser(null)}
         />
       )}
     </div>

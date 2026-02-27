@@ -89,6 +89,32 @@ export const updateMenuItem = asyncHandler(async (req, res) => {
 });
 
 
+export const updateItemPrice = asyncHandler(async (req, res) => {
+  const { price } = req.body;
+  const result = await menuService.updateItemPrice(
+    req.params.id,
+    parseFloat(price),
+    req.tenant
+  );
+  return sendSuccess(res, {
+    message: "Price updated successfully",
+    data: result,
+  });
+});
+
+export const updateItemStock = asyncHandler(async (req, res) => {
+  const { stockQuantity } = req.body;
+  const result = await menuService.updateItemStock(
+    req.params.id,
+    parseInt(stockQuantity, 10),
+    req.tenant
+  );
+  return sendSuccess(res, {
+    message: "Stock quantity updated successfully",
+    data: result,
+  });
+});
+
 export const deleteMenuItem = asyncHandler(async (req, res) => {
   await menuService.deleteMenuItem(
     req.params.id,

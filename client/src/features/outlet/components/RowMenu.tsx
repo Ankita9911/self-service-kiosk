@@ -17,7 +17,9 @@ export function RowMenu({
   showMenu: boolean;
 }) {
   const [open, setOpen] = useState(false);
+  const [openAbove, setOpenAbove] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const btnRef = useRef<HTMLButtonElement>(null);
   useEffect(() => {
     const fn = (e: MouseEvent) => {
       if (ref.current && !ref.current.contains(e.target as Node))
@@ -30,7 +32,14 @@ export function RowMenu({
   return (
     <div className="relative" ref={ref}>
       <button
-        onClick={() => setOpen((v) => !v)}
+        ref={btnRef}
+        onClick={() => {
+          if (btnRef.current) {
+            const rect = btnRef.current.getBoundingClientRect();
+            setOpenAbove(window.innerHeight - rect.bottom < 200);
+          }
+          setOpen((v) => !v);
+        }}
         className="
           h-7 w-7 rounded-lg flex items-center justify-center
           text-slate-300 dark:text-slate-600
@@ -43,12 +52,13 @@ export function RowMenu({
       </button>
 
       {open && (
-        <div className="
-          absolute right-0 top-full mt-1.5 w-44 z-20 overflow-hidden
-          bg-white dark:bg-[#1a1d26]
-          border border-slate-100 dark:border-white/[0.08]
-          rounded-xl shadow-xl shadow-slate-200/50 dark:shadow-black/30
-        ">
+        <div className={[
+          "absolute right-0 w-44 z-20 overflow-hidden",
+          "bg-white dark:bg-[#1a1d26]",
+          "border border-slate-100 dark:border-white/[0.08]",
+          "rounded-xl shadow-xl shadow-slate-200/50 dark:shadow-black/30",
+          openAbove ? "bottom-full mb-1.5" : "top-full mt-1.5",
+        ].join(" ")}>
           {showMenu && (
             <button
               onClick={() => { setOpen(false); onMenu?.(); }}

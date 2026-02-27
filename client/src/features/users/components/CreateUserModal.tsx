@@ -14,7 +14,7 @@ export function CreateUserModal({
   open, onClose, currentUser, franchises, outlets, onCreated,
 }: {
   open: boolean; onClose: () => void; currentUser: any;
-  franchises: Franchise[]; outlets: Outlet[]; onCreated: (pw: string) => void;
+  franchises: Franchise[]; outlets: Outlet[]; onCreated: (pw: string, email: string) => void;
 }) {
   const [form, setForm] = useState<FormState>({ name: "", email: "", role: "", franchiseId: "", outletId: "" });
   const [submitting, setSubmitting] = useState(false);
@@ -67,7 +67,7 @@ export function CreateUserModal({
       setForm({ name: "", email: "", role: "", franchiseId: "", outletId: "" });
       setErrors({});
       onClose();
-      onCreated(result.tempPassword);
+      onCreated(result.tempPassword, form.email.trim().toLowerCase());
     } finally { setSubmitting(false); }
   }
 

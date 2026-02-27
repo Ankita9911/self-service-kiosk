@@ -41,6 +41,8 @@ export function UserRowMenu({
   const [showPw, setShowPw] = useState(false);
 
   const ref = useRef<HTMLDivElement>(null);
+  const [openAbove, setOpenAbove] = useState(false);
+  const btnRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     const fn = (e: MouseEvent) => {
@@ -74,7 +76,16 @@ export function UserRowMenu({
     <div className="relative" ref={ref}>
       {/* ── Trigger ── */}
       <button
-        onClick={() => !busy && setMenuOpen((v) => !v)}
+        ref={btnRef}
+        onClick={() => {
+          if (!busy) {
+            if (btnRef.current) {
+              const rect = btnRef.current.getBoundingClientRect();
+              setOpenAbove(window.innerHeight - rect.bottom < 200);
+            }
+            setMenuOpen((v) => !v);
+          }
+        }}
         disabled={busy}
         className="h-7 w-7 rounded-lg flex items-center justify-center text-slate-300 dark:text-slate-600 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/[0.06] transition-all disabled:opacity-50"
       >
@@ -83,7 +94,7 @@ export function UserRowMenu({
 
       {/* ── Dropdown ── */}
       {menuOpen && (
-        <div className="absolute right-0 top-full mt-1.5 w-48 bg-white dark:bg-[#1a1d26] rounded-xl border border-slate-200 dark:border-white/[0.08] shadow-xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-1 duration-150">
+        <div className={`absolute right-0 ${openAbove ? "bottom-full mb-1.5" : "top-full mt-1.5"} w-48 bg-white dark:bg-[#1a1d26] rounded-xl border border-slate-200 dark:border-white/[0.08] shadow-xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-1 duration-150`}>
           {canEdit && (
             <button
               onClick={() => { setEditName(user.name); setEditEmail(user.email); open("edit"); }}

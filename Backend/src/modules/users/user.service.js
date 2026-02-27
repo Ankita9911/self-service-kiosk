@@ -3,6 +3,7 @@ import User from "./user.model.js";
 import AppError from "../../shared/errors/AppError.js";
 import { ROLE_HIERARCHY } from "../../core/rbac/roleHierarchy.js";
 import crypto from "crypto";
+import { sendWelcomeEmail, sendPasswordResetEmail } from "../../core/email/email.service.js";
 
 //helper
 
@@ -88,6 +89,9 @@ export async function createUser(currentUser, payload) {
     outletId,
     mustChangePassword: true,
   });
+
+  // Fire-and-forget — never block the response
+  sendWelcomeEmail({ name, email, tempPassword, role }).catch(() => {});
 
   return {
     user,
@@ -206,7 +210,11 @@ export async function resetPassword(currentUser, id, newPassword) {
   ensureHigherRole(currentUser.role, user.role);
 
   user.passwordHash = await bcrypt.hash(newPassword, SALT_ROUNDS);
+  user.mustChangePassword = true;
   await user.save();
+
+  // Fire-and-forget
+  sendPasswordResetEmail({ name: user.name, email: user.email, tempPassword: newPassword }).catch(() => {});
 
   return true;
 }
