@@ -1,5 +1,4 @@
 import { Plus, RefreshCcw, Building2 } from "lucide-react";
-import { cn } from "@/shared/utils/commonFunction";
 
 interface Props {
   refreshing: boolean;
@@ -12,36 +11,48 @@ export function FranchiseHeader({ refreshing, onRefresh, onNew }: Props) {
     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
       <div>
         <div className="flex items-center gap-2 mb-1.5">
-          <div className="h-5 w-5 rounded bg-orange-100 flex items-center justify-center">
-            <Building2 className="w-3 h-3 text-orange-600" />
+          <div className="h-5 w-5 rounded-md bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center">
+            <Building2 className="w-3 h-3 text-indigo-500" />
           </div>
-          <span className="text-[11px] font-clash-semibold text-orange-500 uppercase tracking-[0.15em]">
+          <span className="text-[11px] font-semibold text-indigo-500 uppercase tracking-[0.15em]">
             Franchise Directory
           </span>
         </div>
-
-        <h1 className="text-[28px] font-clash-bold text-slate-900 tracking-tight leading-none">
+        <h1 className="text-[26px] font-bold text-slate-800 dark:text-white tracking-tight leading-none">
           Partners
         </h1>
       </div>
 
-      <div className="flex items-center gap-2.5">
+      <div className="flex items-center gap-2">
         <button
           onClick={onRefresh}
           disabled={refreshing}
           title="Refresh"
-          className="h-9 w-9 rounded-xl border border-slate-200 bg-white flex items-center justify-center text-slate-400 hover:text-orange-500 hover:border-orange-200 transition-all shadow-sm disabled:opacity-50"
+          className="
+            h-9 w-9 rounded-xl
+            bg-white dark:bg-[#161920]
+            border border-slate-100 dark:border-white/[0.08]
+            flex items-center justify-center
+            text-slate-400 dark:text-slate-500
+            hover:text-indigo-500 dark:hover:text-indigo-400
+            hover:border-indigo-200 dark:hover:border-indigo-500/30
+            transition-all disabled:opacity-50
+          "
         >
-          <RefreshCcw
-            className={cn("w-4 h-4", refreshing && "animate-spin")}
-          />
+          <RefreshCcw className={`w-3.5 h-3.5 ${refreshing ? "animate-spin" : ""}`} />
         </button>
 
         <button
           onClick={onNew}
-          className="flex items-center gap-2 h-9 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-sm font-clash-semibold transition-all shadow-lg shadow-slate-900/15"
+          className="
+            flex items-center gap-2 h-9 px-4 rounded-xl
+            bg-indigo-600 hover:bg-indigo-700
+            text-white text-[13px] font-semibold
+            shadow-lg shadow-indigo-500/20
+            transition-all
+          "
         >
-          <Plus className="w-4 h-4" />
+          <Plus className="w-3.5 h-3.5" />
           New Franchise
         </button>
       </div>

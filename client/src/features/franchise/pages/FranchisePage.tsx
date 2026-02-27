@@ -19,17 +19,16 @@ export default function FranchisePage() {
     handleUpdate,
   } = useFranchises();
 
-  const [modalOpen, setModalOpen] = useState(false);
-  const [editing, setEditing] = useState<Franchise | null>(null);
+  const [modalOpen,    setModalOpen]    = useState(false);
+  const [editing,      setEditing]      = useState<Franchise | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Franchise | null>(null);
-
-  const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] =
-    useState<"ALL" | "ACTIVE" | "INACTIVE">("ALL");
+  const [searchTerm,   setSearchTerm]   = useState("");
+  const [statusFilter, setStatusFilter] = useState<"ALL" | "ACTIVE" | "INACTIVE">("ALL");
+  const [page,         setPage]         = useState(1);
+  const [pageSize,     setPageSize]     = useState(10);
 
   const filteredFranchises = useMemo(() => {
     const query = searchTerm.toLowerCase();
-
     return franchises.filter((f) => {
       const matchesSearch =
         !query ||
@@ -39,24 +38,23 @@ export default function FranchisePage() {
 
       const matchesStatus =
         statusFilter === "ALL" ||
-        (statusFilter === "ACTIVE"
-          ? f.status === "ACTIVE"
-          : f.status !== "ACTIVE");
+        (statusFilter === "ACTIVE" ? f.status === "ACTIVE" : f.status !== "ACTIVE");
 
       return matchesSearch && matchesStatus;
     });
   }, [franchises, searchTerm, statusFilter]);
 
+  // Reset to page 1 when filters change
+  const handleSearchChange = (v: string) => { setSearchTerm(v); setPage(1); };
+  const handleStatusChange = (v: "ALL" | "ACTIVE" | "INACTIVE") => { setStatusFilter(v); setPage(1); };
+
   return (
     <>
-      <div className="space-y-6">
+      <div className="space-y-5 max-w-[1400px]">
         <FranchiseHeader
           refreshing={refreshing}
           onRefresh={() => fetchFranchises(true)}
-          onNew={() => {
-            setEditing(null);
-            setModalOpen(true);
-          }}
+          onNew={() => { setEditing(null); setModalOpen(true); }}
         />
 
         <FranchiseStats
@@ -67,21 +65,18 @@ export default function FranchisePage() {
         <FranchiseFilters
           searchTerm={searchTerm}
           statusFilter={statusFilter}
-          onSearchChange={setSearchTerm}
-          onStatusChange={setStatusFilter}
+          onSearchChange={handleSearchChange}
+          onStatusChange={handleStatusChange}
         />
 
         <FranchiseTable
           franchises={filteredFranchises}
           loading={loading || refreshing}
-          page={1}
-          pageSize={10}
-          onPageChange={() => {}}
-          onPageSizeChange={() => {}}
-          onEdit={(f) => {
-            setEditing(f);
-            setModalOpen(true);
-          }}
+          page={page}
+          pageSize={pageSize}
+          onPageChange={setPage}
+          onPageSizeChange={(s) => { setPageSize(s); setPage(1); }}
+          onEdit={(f) => { setEditing(f); setModalOpen(true); }}
           onDelete={(f) => setDeleteTarget(f)}
         />
       </div>
@@ -89,30 +84,21 @@ export default function FranchisePage() {
       <FranchiseModal
         open={modalOpen}
         editing={editing}
-        onClose={() => {
-          setModalOpen(false);
-          setEditing(null);
-        }}
+        onClose={() => { setModalOpen(false); setEditing(null); }}
         onCreate={handleCreate}
         onUpdate={handleUpdate}
       />
 
       {deleteTarget && (
-  <DeleteModal
-    franchise={deleteTarget}
-    onConfirm={async () => {
-      await handleDelete(deleteTarget._id);
-      setDeleteTarget(null);   
-    }}
-    onCancel={() => setDeleteTarget(null)}
-  />
-)}
-
-      <style>{`
-        @keyframes scaleIn { from { opacity:0; transform:scale(0.93); } to { opacity:1; transform:scale(1); } }
-        @keyframes fadeDown { from { opacity:0; transform:translateY(-6px); } to { opacity:1; transform:translateY(0); } }
-        @keyframes shimmer { 0% { transform:translateX(-100%); } 100% { transform:translateX(250%); } }
-      `}</style>
+        <DeleteModal
+          franchise={deleteTarget}
+          onConfirm={async () => {
+            await handleDelete(deleteTarget._id);
+            setDeleteTarget(null);
+          }}
+          onCancel={() => setDeleteTarget(null)}
+        />
+      )}
     </>
   );
 }
