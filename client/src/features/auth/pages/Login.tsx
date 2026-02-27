@@ -24,7 +24,7 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [focused, setFocused] = useState<"email" | "password" | null>(null);
 
-  const { email, setEmail, password, setPassword, loading, error, submit } =
+  const { email, setEmail, password, setPassword, loading, error, fieldErrors, submit } =
     useLogin();
 
   return (
@@ -134,9 +134,8 @@ export default function Login() {
               </Label>
               <div className="relative">
                 <Mail
-                  className={`absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors duration-200 ${
-                    focused === "email" ? "text-orange-500" : "text-slate-400"
-                  }`}
+                  className={`absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors duration-200 ${focused === "email" ? "text-orange-500" : "text-slate-400"
+                    }`}
                 />
                 <Input
                   id="email"
@@ -146,10 +145,18 @@ export default function Login() {
                   onChange={(e) => setEmail(e.target.value)}
                   onFocus={() => setFocused("email")}
                   onBlur={() => setFocused(null)}
-                  className="pl-10 h-11 font-satoshi text-sm border-slate-200 bg-slate-50 rounded-xl focus-visible:ring-2 focus-visible:ring-orange-400/40 focus-visible:border-orange-400 transition-all"
-                  required
+                  className={`pl-10 h-11 font-satoshi text-sm rounded-xl focus-visible:ring-2 transition-all ${fieldErrors.email
+                      ? "border-red-400 bg-red-50 focus-visible:ring-red-400/40 focus-visible:border-red-400"
+                      : "border-slate-200 bg-slate-50 focus-visible:ring-orange-400/40 focus-visible:border-orange-400"
+                    }`}
                 />
               </div>
+              {fieldErrors.email && (
+                <p className="text-[12px] font-satoshi text-red-500 flex items-center gap-1.5 mt-1">
+                  <span className="inline-block h-1 w-1 rounded-full bg-red-500" />
+                  {fieldErrors.email}
+                </p>
+              )}
             </div>
 
             <div className="space-y-1.5">
@@ -161,11 +168,10 @@ export default function Login() {
               </Label>
               <div className="relative">
                 <LockKeyhole
-                  className={`absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors duration-200 ${
-                    focused === "password"
+                  className={`absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors duration-200 ${focused === "password"
                       ? "text-orange-500"
                       : "text-slate-400"
-                  }`}
+                    }`}
                 />
                 <Input
                   id="password"
@@ -175,8 +181,10 @@ export default function Login() {
                   onChange={(e) => setPassword(e.target.value)}
                   onFocus={() => setFocused("password")}
                   onBlur={() => setFocused(null)}
-                  className="pl-10 pr-10 h-11 font-satoshi text-sm border-slate-200 bg-slate-50 rounded-xl focus-visible:ring-2 focus-visible:ring-orange-400/40 focus-visible:border-orange-400 transition-all"
-                  required
+                  className={`pl-10 pr-10 h-11 font-satoshi text-sm rounded-xl focus-visible:ring-2 transition-all ${fieldErrors.password
+                      ? "border-red-400 bg-red-50 focus-visible:ring-red-400/40 focus-visible:border-red-400"
+                      : "border-slate-200 bg-slate-50 focus-visible:ring-orange-400/40 focus-visible:border-orange-400"
+                    }`}
                 />
                 <button
                   type="button"
@@ -191,6 +199,12 @@ export default function Login() {
                   )}
                 </button>
               </div>
+              {fieldErrors.password && (
+                <p className="text-[12px] font-satoshi text-red-500 flex items-center gap-1.5 mt-1">
+                  <span className="inline-block h-1 w-1 rounded-full bg-red-500" />
+                  {fieldErrors.password}
+                </p>
+              )}
             </div>
 
             {error && (
@@ -210,10 +224,9 @@ export default function Login() {
                 w-full h-11 rounded-xl text-sm font-clash-semibold text-white
                 flex items-center justify-center gap-2
                 transition-all duration-200 active:scale-[0.98]
-                ${
-                  loading || !email || !password
-                    ? "bg-orange-300 cursor-not-allowed"
-                    : "bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 shadow-lg shadow-orange-500/25 hover:shadow-orange-500/40"
+                ${loading || !email || !password
+                  ? "bg-orange-300 cursor-not-allowed"
+                  : "bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 shadow-lg shadow-orange-500/25 hover:shadow-orange-500/40"
                 }
               `}
             >

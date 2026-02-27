@@ -1,39 +1,53 @@
 import { useEffect, useState } from "react";
 import { X, CheckCircle2, Loader2 } from "lucide-react";
 import type { Franchise } from "../types/franchise.types";
-
-interface FranchiseForm {
-  name: string;
-  brandCode: string;
-  contactEmail: string;
-}
+import { franchiseSchema, type FranchiseFormValues } from "../validations/franchise.schemas";
+import { getZodFieldErrors } from "@/shared/utils/zod.utils";
 
 interface Props {
   open: boolean;
   editing: Franchise | null;
   onClose: () => void;
-  onCreate: (data: FranchiseForm) => Promise<void>;
-  onUpdate: (id: string, data: FranchiseForm) => Promise<void>;
+  onCreate: (data: FranchiseFormValues) => Promise<void>;
+  onUpdate: (id: string, data: FranchiseFormValues) => Promise<void>;
 }
 
+type FieldErrors = Partial<Record<keyof FranchiseFormValues, string>>;
+
 export function FranchiseModal({ open, editing, onClose, onCreate, onUpdate }: Props) {
-  const [form, setForm]           = useState<FranchiseForm>({ name: "", brandCode: "", contactEmail: "" });
+  const [form, setForm] = useState<FranchiseFormValues>({ name: "", brandCode: "", contactEmail: "" });
   const [submitting, setSubmitting] = useState(false);
-  const [done, setDone]           = useState(false);
+  const [done, setDone] = useState(false);
+  const [errors, setErrors] = useState<FieldErrors>({});
 
   useEffect(() => {
     if (open) {
       setDone(false);
+      setErrors({});
       setForm({
-        name:         editing?.name         || "",
-        brandCode:    editing?.brandCode    || "",
+        name: editing?.name || "",
+        brandCode: editing?.brandCode || "",
         contactEmail: editing?.contactEmail || "",
       });
     }
   }, [open, editing]);
 
+  function validate(): boolean {
+    const result = franchiseSchema.safeParse(form);
+    if (result.success) { setErrors({}); return true; }
+    setErrors(getZodFieldErrors<FranchiseFormValues>(result.error));
+    return false;
+  }
+
+  function handleChange(key: keyof FranchiseFormValues, raw: string) {
+    const value = key === "brandCode" ? raw.toUpperCase() : raw;
+    setForm((prev) => ({ ...prev, [key]: value }));
+    if (errors[key]) setErrors((prev) => ({ ...prev, [key]: undefined }));
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (!validate()) return;
     setSubmitting(true);
     try {
       editing ? await onUpdate(editing._id, form) : await onCreate(form);
@@ -47,14 +61,13 @@ export function FranchiseModal({ open, editing, onClose, onCreate, onUpdate }: P
   if (!open) return null;
 
   const fields = [
-    { key: "name"         as const, label: "Franchise Name",  placeholder: "e.g. Downtown Kiosk Group",  type: "text",  required: true,  hint: "" },
-    { key: "brandCode"    as const, label: "Brand Code",      placeholder: "e.g. DKG-01",                type: "text",  required: true,  hint: "Unique identifier used across the platform" },
-    { key: "contactEmail" as const, label: "Contact Email",   placeholder: "contact@franchise.com",      type: "email", required: false, hint: "" },
+    { key: "name" as const, label: "Franchise Name", placeholder: "e.g. Downtown Kiosk Group", type: "text", required: true, hint: "" },
+    { key: "brandCode" as const, label: "Brand Code", placeholder: "e.g. DKG-01", type: "text", required: true, hint: "Unique identifier used across the platform" },
+    { key: "contactEmail" as const, label: "Contact Email", placeholder: "contact@franchise.com", type: "email", required: false, hint: "" },
   ];
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
-      {/* Backdrop */}
       <div className="absolute inset-0 bg-black/50 dark:bg-black/70 backdrop-blur-sm" onClick={onClose} />
 
       <div className="
@@ -64,10 +77,8 @@ export function FranchiseModal({ open, editing, onClose, onCreate, onUpdate }: P
         rounded-2xl shadow-2xl shadow-slate-300/20 dark:shadow-black/40
         animate-scale-in
       ">
-        {/* Top accent */}
         <div className="h-0.5 bg-gradient-to-r from-indigo-400 via-indigo-500 to-violet-500" />
 
-        {/* ── Success state ── */}
         {done ? (
           <div className="px-8 py-14 flex flex-col items-center gap-4">
             <div className="h-14 w-14 rounded-2xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-100 dark:border-emerald-500/20 flex items-center justify-center">
@@ -79,7 +90,6 @@ export function FranchiseModal({ open, editing, onClose, onCreate, onUpdate }: P
           </div>
         ) : (
           <>
-            {/* Header */}
             <div className="flex items-start justify-between px-6 pt-5 pb-4 border-b border-slate-50 dark:border-white/[0.06]">
               <div>
                 <p className="text-[10.5px] font-semibold text-indigo-500 uppercase tracking-[0.15em] mb-1">
@@ -97,8 +107,7 @@ export function FranchiseModal({ open, editing, onClose, onCreate, onUpdate }: P
               </button>
             </div>
 
-            {/* Form */}
-            <form onSubmit={handleSubmit} className="px-6 py-5 space-y-4">
+            <form onSubmit={handleSubmit} className="px-6 py-5 space-y-4" noValidate>
               {fields.map(({ key, label, placeholder, type, required, hint }) => (
                 <div key={key} className="space-y-1.5">
                   <label className="block text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
@@ -109,35 +118,36 @@ export function FranchiseModal({ open, editing, onClose, onCreate, onUpdate }: P
                   <input
                     type={type}
                     value={form[key]}
-                    onChange={(e) =>
-                      setForm({
-                        ...form,
-                        [key]: key === "brandCode" ? e.target.value.toUpperCase() : e.target.value,
-                      })
-                    }
+                    onChange={(e) => handleChange(key, e.target.value)}
                     required={required}
                     placeholder={placeholder}
                     className={`
                       w-full h-10 px-3.5 rounded-xl text-[13px]
                       bg-slate-50 dark:bg-white/[0.04]
-                      border border-slate-200 dark:border-white/[0.08]
-                      text-slate-800 dark:text-white
+                      border text-slate-800 dark:text-white
                       placeholder:text-slate-400 dark:placeholder:text-slate-600
-                      focus:outline-none
-                      focus:border-indigo-400 dark:focus:border-indigo-500/60
-                      focus:ring-2 focus:ring-indigo-400/15 dark:focus:ring-indigo-500/10
-                      transition-all
+                      focus:outline-none focus:ring-2 transition-all
                       ${key === "brandCode" ? "font-mono uppercase tracking-wide" : ""}
+                      ${errors[key]
+                        ? "border-red-400 dark:border-red-500 focus:border-red-400 focus:ring-red-400/15"
+                        : "border-slate-200 dark:border-white/[0.08] focus:border-indigo-400 dark:focus:border-indigo-500/60 focus:ring-indigo-400/15"
+                      }
                     `}
                   />
 
-                  {hint && (
+                  {errors[key] && (
+                    <p className="text-[11px] text-red-500 dark:text-red-400 flex items-center gap-1">
+                      <span className="inline-block h-1 w-1 rounded-full bg-red-500 dark:bg-red-400" />
+                      {errors[key]}
+                    </p>
+                  )}
+
+                  {hint && !errors[key] && (
                     <p className="text-[11px] text-slate-400 dark:text-slate-500">{hint}</p>
                   )}
                 </div>
               ))}
 
-              {/* Buttons */}
               <div className="flex gap-2.5 pt-1">
                 <button
                   type="button"
@@ -146,13 +156,11 @@ export function FranchiseModal({ open, editing, onClose, onCreate, onUpdate }: P
                     flex-1 h-10 rounded-xl text-[13px] font-semibold
                     border border-slate-200 dark:border-white/[0.08]
                     text-slate-600 dark:text-slate-300
-                    hover:bg-slate-50 dark:hover:bg-white/[0.04]
-                    transition
+                    hover:bg-slate-50 dark:hover:bg-white/[0.04] transition
                   "
                 >
                   Cancel
                 </button>
-
                 <button
                   type="submit"
                   disabled={submitting}
@@ -160,8 +168,7 @@ export function FranchiseModal({ open, editing, onClose, onCreate, onUpdate }: P
                     flex-1 h-10 rounded-xl text-[13px] font-semibold
                     bg-indigo-600 hover:bg-indigo-700
                     text-white flex items-center justify-center gap-2
-                    shadow-lg shadow-indigo-500/20
-                    transition disabled:opacity-60
+                    shadow-lg shadow-indigo-500/20 transition disabled:opacity-60
                   "
                 >
                   {submitting
