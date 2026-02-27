@@ -9,6 +9,7 @@ import { StatusBadge } from "../components/StatusBadge";
 import { ShimmerCell } from "../components/ShimmerCell";
 import { CreateUserModal } from "../components/CreateUserModal";
 import { TempPasswordModal } from "../components/TempPasswordModal";
+import { UserRowMenu } from "../components/UserRowMenu";
 
 import { Users, Plus, Search, RefreshCcw } from "lucide-react";
 import { TablePagination } from "@/shared/components/ui/TablePagination";
@@ -26,6 +27,11 @@ export default function UserPage() {
     refreshing,
     fetchUsers,
     handleCreate,
+    handleUpdate,
+    handleDelete,
+    handleChangeRole,
+    handleChangeStatus,
+    handleResetPassword,
   } = useUsers();
 
   const [open, setOpen] = useState(false);
@@ -45,6 +51,8 @@ export default function UserPage() {
     "KITCHEN_STAFF",
     "PICKUP_STAFF",
   ];
+
+  const assignableRoles = allRoles.filter((r) => r !== "ALL") as any[];
 
   const filtered = useMemo(() => {
     return users.filter((u) => {
@@ -175,7 +183,7 @@ export default function UserPage() {
         <table className="w-full">
           <thead>
             <tr className="border-b border-slate-100 dark:border-white/[0.06] bg-slate-50/60 dark:bg-white/[0.02]">
-              {["User", "Email", "Role", "Status"].map((h) => (
+              {["User", "Email", "Role", "Status", ""].map((h) => (
                 <th
                   key={h}
                   className="px-5 py-3.5 text-left text-[11px] font-medium text-slate-500 dark:text-slate-500 uppercase tracking-wider"
@@ -194,11 +202,12 @@ export default function UserPage() {
                   <ShimmerCell w="w-40" />
                   <ShimmerCell w="w-28" />
                   <ShimmerCell w="w-16" />
+                  <td className="px-5 py-4 w-10" />
                 </tr>
               ))
             ) : filtered.length === 0 ? (
               <tr>
-                <td colSpan={4} className="py-16 text-center">
+                <td colSpan={5} className="py-16 text-center">
                   <div className="flex flex-col items-center gap-3">
                     <div className="h-12 w-12 rounded-2xl bg-slate-100 dark:bg-white/[0.06] flex items-center justify-center">
                       <Users className="w-5 h-5 text-slate-400 dark:text-slate-500" />
@@ -243,6 +252,23 @@ export default function UserPage() {
 
                   <td className="px-5 py-4">
                     <StatusBadge status={u.status} />
+                  </td>
+
+                  <td className="px-3 py-4 text-right">
+                    <UserRowMenu
+                      user={u}
+                      canEdit={hasPermission(PERMISSIONS.USERS_UPDATE)}
+                      canDelete={hasPermission(PERMISSIONS.USERS_DELETE)}
+                      canChangeRole={hasPermission(PERMISSIONS.USERS_CHANGE_ROLE)}
+                      canChangeStatus={hasPermission(PERMISSIONS.USERS_CHANGE_STATUS)}
+                      canResetPassword={hasPermission(PERMISSIONS.USERS_RESET_PASSWORD)}
+                      availableRoles={assignableRoles}
+                      onEdit={(payload) => handleUpdate(u._id, payload)}
+                      onDelete={() => handleDelete(u._id)}
+                      onChangeRole={(role) => handleChangeRole(u._id, role)}
+                      onToggleStatus={() => handleChangeStatus(u._id, u.status === "ACTIVE" ? "INACTIVE" : "ACTIVE")}
+                      onResetPassword={() => handleResetPassword(u._id)}
+                    />
                   </td>
                 </tr>
               ))
