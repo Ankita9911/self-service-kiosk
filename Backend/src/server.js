@@ -16,7 +16,7 @@ async function bootstrap() {
     console.log("MongoDB Connected");
     server = http.createServer(app);
     initSocket(server);
-    // startWorker();
+    startWorker();
     server.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);
     });
