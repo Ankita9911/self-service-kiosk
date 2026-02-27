@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import useAuth from "@/shared/hooks/useAuth";
 import type { Outlet } from "@/features/outlet/types/outlet.types";
@@ -6,12 +6,11 @@ import type { Franchise } from "@/features/franchise/types/franchise.types";
 import { getOutlets, createOutlet, updateOutlet, deleteOutlet } from "@/features/outlet/services/outlet.service";
 import { getFranchises } from "@/features/franchise/services/franchise.service";
 import { TablePagination } from "@/shared/components/ui/TablePagination";
-import { Input } from "@/shared/components/ui/input";
 import {
-  Store, Plus, Search, MapPin, 
-  RefreshCcw, Building, ShieldAlert,
+  Store, Plus, Search, MapPin,
+  RefreshCcw, Building2, ShieldAlert,
+  CheckCircle2, XCircle, X, UtensilsCrossed,
 } from "lucide-react";
-import { cn } from "@/shared/utils/commonFunction";
 import { PERMISSIONS } from "@/shared/lib/permissions";
 import { usePermission } from "@/shared/hooks/usePermissions";
 import { ShimmerCell } from "../components/ShimmerCell";
@@ -21,39 +20,79 @@ import { DeleteModal } from "../components/DeleteOutletModal";
 import { OutletModal } from "../components/OutletModal";
 import toast from "react-hot-toast";
 
+// ─── Stat Pill ────────────────────────────────────────────────────────────────
+function StatPill({
+  icon, label, value, iconBg, loading,
+}: {
+  icon: React.ReactNode; label: string; value: number; iconBg: string; loading: boolean;
+}) {
+  if (loading) {
+    return (
+      <div className="relative overflow-hidden bg-white dark:bg-[#161920] border border-slate-100 dark:border-white/[0.06] rounded-xl px-4 py-3 flex items-center gap-3 min-w-[120px]">
+        <div className="relative overflow-hidden h-8 w-8 rounded-lg bg-slate-100 dark:bg-white/[0.06] shrink-0">
+          <div className="absolute inset-0 -translate-x-full animate-shimmer bg-gradient-to-r from-transparent via-white/60 dark:via-white/10 to-transparent" />
+        </div>
+        <div className="space-y-1.5 flex-1">
+          <div className="relative overflow-hidden h-4 w-8 rounded bg-slate-100 dark:bg-white/[0.06]">
+            <div className="absolute inset-0 -translate-x-full animate-shimmer bg-gradient-to-r from-transparent via-white/60 dark:via-white/10 to-transparent" />
+          </div>
+          <div className="relative overflow-hidden h-3 w-12 rounded bg-slate-100 dark:bg-white/[0.06]">
+            <div className="absolute inset-0 -translate-x-full animate-shimmer bg-gradient-to-r from-transparent via-white/60 dark:via-white/10 to-transparent" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+  return (
+    <div className="bg-white dark:bg-[#161920] border border-slate-100 dark:border-white/[0.06] rounded-xl px-4 py-3 flex items-center gap-3">
+      <div className={`h-8 w-8 rounded-lg ${iconBg} flex items-center justify-center shrink-0`}>{icon}</div>
+      <div>
+        <p className="text-[15px] font-bold text-slate-800 dark:text-white leading-none">{value}</p>
+        <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">{label}</p>
+      </div>
+    </div>
+  );
+}
+
+// ─── Page ─────────────────────────────────────────────────────────────────────
 export default function OutletPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { hasPermission } = usePermission();
 
-  const canViewOutlet = hasPermission(PERMISSIONS.OUTLET_VIEW);
+  const canViewOutlet   = hasPermission(PERMISSIONS.OUTLET_VIEW);
   const canCreateOutlet = hasPermission(PERMISSIONS.OUTLET_CREATE);
   const canUpdateOutlet = hasPermission(PERMISSIONS.OUTLET_UPDATE);
   const canDeleteOutlet = hasPermission(PERMISSIONS.OUTLET_DELETE);
-  const canManageMenu = hasPermission(PERMISSIONS.MENU_MANAGE);
-  const isSuperAdmin = user?.role === "SUPER_ADMIN";
+  const canManageMenu   = hasPermission(PERMISSIONS.MENU_MANAGE);
+  const isSuperAdmin    = user?.role === "SUPER_ADMIN";
 
-  const [outlets, setOutlets] = useState<Outlet[]>([]);
-  const [franchises, setFranchises] = useState<Franchise[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [outlets,      setOutlets]      = useState<Outlet[]>([]);
+  const [franchises,   setFranchises]   = useState<Franchise[]>([]);
+  const [loading,      setLoading]      = useState(true);
+  const [refreshing,   setRefreshing]   = useState(false);
+  const [searchTerm,   setSearchTerm]   = useState("");
   const [statusFilter, setStatusFilter] = useState<"ALL" | "ACTIVE" | "INACTIVE">("ALL");
-  const [open, setOpen] = useState(false);
-  const [editing, setEditing] = useState<Outlet | null>(null);
+  const [open,         setOpen]         = useState(false);
+  const [editing,      setEditing]      = useState<Outlet | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Outlet | null>(null);
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(5);
+  const [page,         setPage]         = useState(1);
+  const [pageSize,     setPageSize]     = useState(10);
 
   async function fetchData(silent = false) {
     if (!canViewOutlet) return;
-    if (silent) setRefreshing(true);
-    else setLoading(true);
+    silent ? setRefreshing(true) : setLoading(true);
     try {
       const outletData = await getOutlets();
       setOutlets(outletData);
-      if (isSuperAdmin) { const franchiseData = await getFranchises(); setFranchises(franchiseData); }
-    } finally { setLoading(false); setRefreshing(false); }
+      if (isSuperAdmin) {
+        const franchiseData = await getFranchises();
+        setFranchises(franchiseData);
+      }
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
   }
 
   useEffect(() => { fetchData(); }, []);
@@ -61,187 +100,340 @@ export default function OutletPage() {
   async function handleSubmit(form: { franchiseId: string; name: string; outletCode: string; address: string }) {
     if (editing) await updateOutlet(editing._id, form);
     else await createOutlet(form);
-    setOpen(false); setEditing(null); fetchData(true);
+    setOpen(false);
+    setEditing(null);
+    fetchData(true);
   }
 
   async function handleDelete() {
     if (!deleteTarget) return;
-    try{
+    try {
       await deleteOutlet(deleteTarget._id);
-      setDeleteTarget(null); fetchData(true);
-      toast.success('Outlet Deleted successfully');
+      setDeleteTarget(null);
+      fetchData(true);
+      toast.success("Outlet deleted successfully");
+    } catch {
+      toast.error("Failed to delete outlet");
     }
-    catch(e){
-      toast.error('failed to delete outlet');
-    }
-    
   }
 
-  const filtered = outlets.filter(o => {
-    const matchSearch = o.name.toLowerCase().includes(searchTerm.toLowerCase()) || o.outletCode.toLowerCase().includes(searchTerm.toLowerCase()) || (o.address || "").toLowerCase().includes(searchTerm.toLowerCase());
-    const matchStatus = statusFilter === "ALL" || o.status === statusFilter;
-    return matchSearch && matchStatus;
-  });
-  const paginated = filtered.slice((page - 1) * pageSize, page * pageSize);
-  useEffect(() => { setPage(1); }, [searchTerm, statusFilter]);
+  const filtered = useMemo(() => {
+    const q = searchTerm.toLowerCase();
+    return outlets.filter((o) => {
+      const matchSearch =
+        !q ||
+        o.name.toLowerCase().includes(q) ||
+        o.outletCode.toLowerCase().includes(q) ||
+        (o.address || "").toLowerCase().includes(q);
+      const matchStatus = statusFilter === "ALL" || o.status === statusFilter;
+      return matchSearch && matchStatus;
+    });
+  }, [outlets, searchTerm, statusFilter]);
 
-  const activeCount = outlets.filter(o => o.status === "ACTIVE").length;
-  const showShimmer = loading || refreshing;
-  const colCount = isSuperAdmin ? 5 : 4;
+  const handleSearchChange = (v: string) => { setSearchTerm(v); setPage(1); };
+  const handleStatusChange = (v: "ALL" | "ACTIVE" | "INACTIVE") => { setStatusFilter(v); setPage(1); };
 
+  const activeCount   = outlets.filter((o) => o.status === "ACTIVE").length;
+  const inactiveCount = outlets.length - activeCount;
+  const showShimmer   = loading || refreshing;
+  const colCount      = isSuperAdmin ? 6 : 5;
+
+  // ── Access denied ──────────────────────────────────────────────────────────
   if (!canViewOutlet) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[40vh] gap-3 text-center">
-        <ShieldAlert className="w-10 h-10 text-slate-300" />
-        <p className="font-clash-semibold text-slate-600">Access Restricted</p>
-        <p className="font-satoshi text-slate-400 text-sm">You don't have permission to view outlets.</p>
+      <div className="flex flex-col items-center justify-center min-h-[40vh] gap-4 text-center">
+        <div className="h-14 w-14 rounded-2xl bg-slate-50 dark:bg-white/[0.04] border border-slate-100 dark:border-white/[0.06] flex items-center justify-center">
+          <ShieldAlert className="w-6 h-6 text-slate-300 dark:text-slate-600" />
+        </div>
+        <div>
+          <p className="text-[14px] font-bold text-slate-700 dark:text-slate-300">Access Restricted</p>
+          <p className="text-[12px] text-slate-400 dark:text-slate-500 mt-1">You don't have permission to view outlets.</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <Store className="w-3.5 h-3.5 text-orange-500" />
-            <span className="text-[11px] font-clash-semibold text-orange-500 uppercase tracking-widest">Operations</span>
+    <>
+      <div className="space-y-5 max-w-[1400px]">
+
+        {/* ── Header ──────────────────────────────────────────────────────── */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2 mb-1.5">
+              <div className="h-5 w-5 rounded-md bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center">
+                <Store className="w-3 h-3 text-indigo-500" />
+              </div>
+              <span className="text-[11px] font-semibold text-indigo-500 uppercase tracking-[0.15em]">
+                Outlet Directory
+              </span>
+            </div>
+            <h1 className="text-[26px] font-bold text-slate-800 dark:text-white tracking-tight leading-none">
+              Locations
+            </h1>
           </div>
-          <h1 className="text-[28px] font-clash-bold text-slate-900 tracking-tight">Outlet Management</h1>
-          <p className="text-sm font-satoshi text-slate-500 mt-0.5">Manage physical kiosk locations and their details.</p>
-        </div>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => fetchData(true)}
-            disabled={refreshing}
-            title="Refresh"
-            className="h-9 w-9 rounded-xl border border-slate-200 bg-white flex items-center justify-center text-slate-500 hover:text-orange-600 hover:border-orange-200 transition-all disabled:opacity-50"
-          >
-            <RefreshCcw className={cn("w-4 h-4", refreshing && "animate-spin")} />
-          </button>
-          {canCreateOutlet && (
-            <button onClick={() => { setEditing(null); setOpen(true); }} className="flex items-center gap-2 h-9 px-4 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white text-sm font-clash-semibold shadow-lg shadow-orange-500/20 transition-all">
-              <Plus className="w-4 h-4" /> Create Outlet
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => fetchData(true)}
+              disabled={refreshing}
+              title="Refresh"
+              className="
+                h-9 w-9 rounded-xl
+                bg-white dark:bg-[#161920]
+                border border-slate-100 dark:border-white/[0.08]
+                flex items-center justify-center
+                text-slate-400 dark:text-slate-500
+                hover:text-indigo-500 dark:hover:text-indigo-400
+                hover:border-indigo-200 dark:hover:border-indigo-500/30
+                transition-all disabled:opacity-50
+              "
+            >
+              <RefreshCcw className={`w-3.5 h-3.5 ${refreshing ? "animate-spin" : ""}`} />
             </button>
+
+            {canCreateOutlet && (
+              <button
+                onClick={() => { setEditing(null); setOpen(true); }}
+                className="
+                  flex items-center gap-2 h-9 px-4 rounded-xl
+                  bg-indigo-600 hover:bg-indigo-700
+                  text-white text-[13px] font-semibold
+                  shadow-lg shadow-indigo-500/20
+                  transition-all
+                "
+              >
+                <Plus className="w-3.5 h-3.5" />
+                New Outlet
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* ── Stats ───────────────────────────────────────────────────────── */}
+        <div className="flex flex-wrap gap-3">
+          <StatPill loading={showShimmer} value={outlets.length} label="Total"
+            iconBg="bg-slate-50 dark:bg-white/[0.05]"
+            icon={<Store className="w-3.5 h-3.5 text-slate-400" />} />
+          <StatPill loading={showShimmer} value={activeCount} label="Active"
+            iconBg="bg-emerald-50 dark:bg-emerald-500/10"
+            icon={<CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />} />
+          <StatPill loading={showShimmer} value={inactiveCount} label="Inactive"
+            iconBg="bg-slate-50 dark:bg-white/[0.05]"
+            icon={<XCircle className="w-3.5 h-3.5 text-slate-400" />} />
+        </div>
+
+        {/* ── Filters ─────────────────────────────────────────────────────── */}
+        <div className="flex flex-col sm:flex-row gap-3">
+          <div className="relative flex-1">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 dark:text-slate-500 pointer-events-none" />
+            <input
+              type="text"
+              placeholder="Search by name, code or address…"
+              value={searchTerm}
+              onChange={(e) => handleSearchChange(e.target.value)}
+              className="
+                w-full h-9 pl-9 pr-9 rounded-xl
+                bg-white dark:bg-[#161920]
+                border border-slate-100 dark:border-white/[0.08]
+                text-[13px] text-slate-700 dark:text-slate-200
+                placeholder:text-slate-400 dark:placeholder:text-slate-600
+                focus:outline-none
+                focus:border-indigo-400 dark:focus:border-indigo-500/60
+                focus:ring-2 focus:ring-indigo-400/15 dark:focus:ring-indigo-500/10
+                transition-all
+              "
+            />
+            {searchTerm && (
+              <button
+                onClick={() => handleSearchChange("")}
+                className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 rounded-full bg-slate-200 dark:bg-white/[0.1] hover:bg-slate-300 dark:hover:bg-white/[0.15] flex items-center justify-center transition-colors"
+              >
+                <X className="w-2.5 h-2.5 text-slate-500 dark:text-slate-400" />
+              </button>
+            )}
+          </div>
+
+          <div className="flex gap-1 bg-white dark:bg-[#161920] border border-slate-100 dark:border-white/[0.08] rounded-xl p-1">
+            {(["ALL", "ACTIVE", "INACTIVE"] as const).map((s) => (
+              <button
+                key={s}
+                onClick={() => handleStatusChange(s)}
+                className={`
+                  px-3 h-7 rounded-lg text-[12px] font-semibold transition-all
+                  ${statusFilter === s
+                    ? "bg-indigo-600 text-white shadow-sm"
+                    : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-white/[0.05]"
+                  }
+                `}
+              >
+                {s === "ALL" ? "All" : s === "ACTIVE" ? "Active" : "Inactive"}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* ── Table ───────────────────────────────────────────────────────── */}
+        <div className="bg-white dark:bg-[#161920] rounded-2xl border border-slate-100 dark:border-white/[0.06] overflow-hidden">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-slate-50 dark:border-white/[0.05] bg-slate-50/60 dark:bg-white/[0.02]">
+                {["Outlet", "Code", ...(isSuperAdmin ? ["Franchise"] : []), "Address", "Status", ""].map((h, i) => (
+                  <th key={i} className="px-5 py-3.5 text-left text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                    {h}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+
+            <tbody className="divide-y divide-slate-50 dark:divide-white/[0.04]">
+              {showShimmer ? (
+                Array.from({ length: 6 }).map((_, i) => (
+                  <tr key={i}>
+                    <ShimmerCell w="w-36" />
+                    <ShimmerCell w="w-20" />
+                    {isSuperAdmin && <ShimmerCell w="w-28" />}
+                    <ShimmerCell w="w-40" />
+                    <ShimmerCell w="w-16" />
+                    <ShimmerCell w="w-6" />
+                  </tr>
+                ))
+              ) : filtered.length === 0 ? (
+                <tr>
+                  <td colSpan={colCount} className="py-20 text-center">
+                    <div className="flex flex-col items-center gap-3">
+                      <div className="h-12 w-12 rounded-2xl bg-slate-50 dark:bg-white/[0.04] border border-slate-100 dark:border-white/[0.06] flex items-center justify-center">
+                        <Store className="w-5 h-5 text-slate-300 dark:text-slate-600" />
+                      </div>
+                      <div>
+                        <p className="text-[13.5px] font-semibold text-slate-600 dark:text-slate-400">
+                          {searchTerm ? "No outlets match your search" : "No outlets yet"}
+                        </p>
+                        <p className="text-[12px] text-slate-400 dark:text-slate-500 mt-0.5">
+                          {searchTerm ? "Try adjusting your search or filters" : "Create your first outlet to get started"}
+                        </p>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              ) : (
+                filtered.slice((page - 1) * pageSize, page * pageSize).map((o) => (
+                  <tr key={o._id} className="group hover:bg-indigo-50/30 dark:hover:bg-indigo-500/[0.04] transition-colors">
+                    {/* Name */}
+                    <td className="px-5 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="h-8 w-8 rounded-lg bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center shrink-0">
+                          <Store className="w-3.5 h-3.5 text-indigo-500 dark:text-indigo-400" />
+                        </div>
+                        <p className="text-[13px] font-semibold text-slate-800 dark:text-white">{o.name}</p>
+                      </div>
+                    </td>
+
+                    {/* Code */}
+                    <td className="px-5 py-4">
+                      <span className="font-mono text-[11.5px] font-medium text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-white/[0.07] px-2 py-1 rounded-lg border border-slate-200 dark:border-white/[0.08]">
+                        {o.outletCode}
+                      </span>
+                    </td>
+
+                    {/* Franchise (super admin only) */}
+                    {isSuperAdmin && (
+                      <td className="px-5 py-4">
+                        <div className="flex items-center gap-1.5">
+                          <Building2 className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 shrink-0" />
+                          <span className="text-[12.5px] text-slate-500 dark:text-slate-400">
+                            {franchises.find((f) => f._id === o.franchiseId)?.name ?? "—"}
+                          </span>
+                        </div>
+                      </td>
+                    )}
+
+                    {/* Address */}
+                    <td className="px-5 py-4">
+                      {o.address ? (
+                        <div className="flex items-center gap-1.5 text-[12.5px] text-slate-500 dark:text-slate-400">
+                          <MapPin className="w-3.5 h-3.5 shrink-0 text-slate-400 dark:text-slate-500" />
+                          <span className="truncate max-w-[180px]">{o.address}</span>
+                        </div>
+                      ) : (
+                        <span className="text-[12px] text-slate-300 dark:text-slate-600 italic">No address</span>
+                      )}
+                    </td>
+
+                    {/* Status */}
+                    <td className="px-5 py-4">
+                      <StatusBadge status={o.status} />
+                    </td>
+
+                    {/* Actions */}
+                    <td className="px-3 py-4">
+                      <div className="flex items-center gap-1.5">
+                        {canManageMenu && (
+                          <button
+                            onClick={() => navigate(`/outlets/${o._id}/menu`)}
+                            title="Manage Menu"
+                            className="
+                              opacity-0 group-hover:opacity-100
+                              h-7 px-2.5 rounded-lg flex items-center gap-1.5
+                              text-[11px] font-semibold
+                              text-indigo-600 dark:text-indigo-400
+                              bg-indigo-50 dark:bg-indigo-500/10
+                              hover:bg-indigo-100 dark:hover:bg-indigo-500/20
+                              border border-indigo-100 dark:border-indigo-500/20
+                              transition-all
+                            "
+                          >
+                            <UtensilsCrossed className="w-3 h-3" />
+                            Menu
+                          </button>
+                        )}
+                        <RowMenu
+                          showEdit={canUpdateOutlet}
+                          showDelete={canDeleteOutlet}
+                          showMenu={canManageMenu}
+                          onEdit={() => { setEditing(o); setOpen(true); }}
+                          onDelete={() => setDeleteTarget(o)}
+                          onMenu={() => navigate(`/outlets/${o._id}/menu`)}
+                        />
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+
+          {!showShimmer && filtered.length > 0 && (
+            <div className="border-t border-slate-50 dark:border-white/[0.05]">
+              <TablePagination
+                total={filtered.length}
+                page={page}
+                pageSize={pageSize}
+                onPageChange={setPage}
+                onPageSizeChange={(s) => { setPageSize(s); setPage(1); }}
+              />
+            </div>
           )}
         </div>
       </div>
 
-      <div className="flex flex-wrap gap-2">
-        {showShimmer ? (
-          [80, 72, 80].map((w, i) => (
-            <div key={i} className="relative overflow-hidden bg-slate-100 rounded-lg h-8" style={{ width: w }}>
-              <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.4s_ease-in-out_infinite] bg-gradient-to-r from-transparent via-white/70 to-transparent" />
-            </div>
-          ))
-        ) : (
-          [
-            { label: "Total", value: outlets.length, cls: "bg-slate-100 text-slate-700 border-slate-200" },
-            { label: "Active", value: activeCount, cls: "bg-emerald-50 text-emerald-700 border-emerald-200" },
-            { label: "Inactive", value: outlets.length - activeCount, cls: "bg-slate-50 text-slate-400 border-slate-200" },
-          ].map(s => (
-            <div key={s.label} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-clash-semibold border ${s.cls}`}>
-              {s.value} <span className="font-satoshi font-normal text-xs opacity-70">{s.label}</span>
-            </div>
-          ))
-        )}
-      </div>
+      {/* ── Modals ────────────────────────────────────────────────────────── */}
+      <OutletModal
+        open={open}
+        editing={editing}
+        franchises={franchises}
+        isSuperAdmin={isSuperAdmin}
+        onClose={() => { setOpen(false); setEditing(null); }}
+        onSubmit={handleSubmit}
+      />
 
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 flex flex-col sm:flex-row gap-3">
-        <div className="relative flex-1">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-          <Input placeholder="Search by name, code or address…" className="pl-10 h-10 rounded-xl border-slate-200 bg-slate-50 font-satoshi text-sm focus-visible:ring-orange-400/40 focus-visible:border-orange-400"
-            value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
-        </div>
-        <div className="flex gap-2">
-          {(["ALL", "ACTIVE", "INACTIVE"] as const).map(s => (
-            <button key={s} onClick={() => setStatusFilter(s)}
-              className={`px-3 h-10 rounded-xl text-xs font-clash-semibold transition-all ${statusFilter === s ? "bg-orange-500 text-white shadow-sm" : "bg-slate-100 text-slate-500 hover:bg-slate-200"}`}>
-              {s === "ALL" ? "All" : s}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm ">
-        <table className="w-full">
-          <thead>
-            <tr className="border-b border-slate-100 bg-slate-50/60">
-              {["Outlet", "Code", ...(isSuperAdmin ? ["Franchise"] : []), "Status", "Actions"].map((h, i) => (
-                <th key={i} className={cn("px-5 py-3.5 text-left text-[11px] font-clash-semibold text-slate-500 uppercase tracking-wider", (h === "" || h === "Actions") && "w-10")}>{h}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-50">
-            {showShimmer ? (
-              Array.from({ length: 5 }).map((_, i) => (
-                <tr key={i} className="border-b border-slate-50">
-                  <ShimmerCell w="w-36" />
-                  <ShimmerCell w="w-20" />
-                  {isSuperAdmin && <ShimmerCell w="w-28" />}
-                  <ShimmerCell w="w-16" />
-                  <ShimmerCell w="w-6" />
-                </tr>
-              ))
-            ) : filtered.length === 0 ? (
-              <tr>
-                <td colSpan={colCount} className="py-16 text-center">
-                  <div className="flex flex-col items-center gap-3">
-                    <div className="h-12 w-12 rounded-2xl bg-slate-100 flex items-center justify-center"><Store className="w-5 h-5 text-slate-400" /></div>
-                    <p className="font-clash-semibold text-slate-600">No outlets found</p>
-                    <p className="font-satoshi text-slate-400 text-sm">{searchTerm ? "Try adjusting your search" : "Create your first outlet to get started"}</p>
-                  </div>
-                </td>
-              </tr>
-            ) : (
-              paginated.map(o => (
-                <tr key={o._id} className="group hover:bg-orange-50/20 transition-colors">
-                  <td className="px-5 py-4">
-                    <p className="font-clash-semibold text-slate-800 text-sm">{o.name}</p>
-                    {o.address && (
-                      <p className="flex items-center gap-1 text-xs font-satoshi text-slate-400 mt-0.5">
-                        <MapPin className="w-3 h-3" />{o.address}
-                      </p>
-                    )}
-                  </td>
-                  <td className="px-5 py-4">
-                    <span className="font-mono text-[13px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-lg">{o.outletCode}</span>
-                  </td>
-                  {isSuperAdmin && (
-                    <td className="px-5 py-4">
-                      <div className="flex items-center gap-1.5">
-                        <Building className="w-3.5 h-3.5 text-slate-400" />
-                        <span className="font-satoshi text-sm text-slate-600">{franchises.find(f => f._id === o.franchiseId)?.name || "—"}</span>
-                      </div>
-                    </td>
-                  )}
-                  <td className="px-5 py-4"><StatusBadge status={o.status} /></td>
-                  <td className="px-3 py-4">
-                    <RowMenu
-                      showEdit={canUpdateOutlet} showDelete={canDeleteOutlet} showMenu={canManageMenu}
-                      onEdit={() => { setEditing(o); setOpen(true); }}
-                      onDelete={() => setDeleteTarget(o)}
-                      onMenu={() => navigate(`/outlets/${o._id}/menu`)}
-                    />
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-
-        {!showShimmer && filtered.length > 0 && (
-          <TablePagination total={filtered.length} page={page} pageSize={pageSize} onPageChange={setPage} onPageSizeChange={s => { setPageSize(s); setPage(1); }} />
-        )}
-      </div>
-
-      <OutletModal open={open} onClose={() => { setOpen(false); setEditing(null); }} editing={editing} franchises={franchises} isSuperAdmin={isSuperAdmin} onSubmit={handleSubmit} />
-      {deleteTarget && <DeleteModal outlet={deleteTarget} onConfirm={handleDelete} onCancel={() => setDeleteTarget(null)} />}
-
-      <style>{`
-        @keyframes fadeDown { from { opacity:0; transform:translateY(-6px); } to { opacity:1; transform:translateY(0); } }
-        @keyframes shimmer { 0% { transform:translateX(-100%); } 100% { transform:translateX(250%); } }
-      `}</style>
-    </div>
+      {deleteTarget && (
+        <DeleteModal
+          outlet={deleteTarget}
+          onConfirm={handleDelete}
+          onCancel={() => setDeleteTarget(null)}
+        />
+      )}
+    </>
   );
 }

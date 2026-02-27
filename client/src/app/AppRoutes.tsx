@@ -1,7 +1,6 @@
 import { Routes, Route } from "react-router-dom";
 import Login from "@/features/auth/pages/Login";
 import { ForceReset } from "@/features/auth/pages/ForceReset";
-//import DashboardPage from "@/features/dashboard/pages/DashboardPage";
 import FranchisePage from "@/features/franchise/pages/FranchisePage";
 import OutletPage from "@/features/outlet/pages/OutletPage";
 import OutletMenuPage from "@/features/outlet/pages/OutletMenuPage";

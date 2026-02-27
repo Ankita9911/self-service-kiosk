@@ -169,7 +169,7 @@ function VDivider() {
 export default function AppLayout() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-  // const { theme, toggleTheme, isDark } = useTheme();
+   const { theme, toggleTheme, isDark } = useTheme();
 
   const [logoutOpen, setLogoutOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -281,7 +281,7 @@ export default function AppLayout() {
                   </div>
 
                   <div className="py-1.5">
-                    {/* <button
+                    <button
                       onClick={toggleTheme}
                       className="w-full flex items-center gap-3 px-4 py-2.5 text-[12.5px] text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/[0.04] hover:text-slate-900 dark:hover:text-slate-200 transition group"
                     >
@@ -301,7 +301,7 @@ export default function AppLayout() {
                           ${isDark ? "translate-x-2" : "-translate-x-2"}
                         `} />
                       </span>
-                    </button> */}
+                    </button>
 
                 
                     <button

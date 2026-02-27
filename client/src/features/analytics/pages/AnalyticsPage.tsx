@@ -43,45 +43,45 @@ function getGreeting() {
 
 
 
-function RoleStatCard({ role, loading }: { role: string; loading: boolean }) {
-  if (loading) {
-    return (
-      <div className="bg-white dark:bg-[#161920] rounded-2xl border border-slate-100 dark:border-white/[0.06] p-5">
-        <div className="flex items-start justify-between mb-4">
-          <AnalyticsShimmer className="h-11 w-11 rounded-xl" />
-          <AnalyticsShimmer className="h-4 w-4 rounded" />
-        </div>
-        <AnalyticsShimmer className="h-7 w-28 mb-2" />
-        <AnalyticsShimmer className="h-3.5 w-20" />
-      </div>
-    );
-  }
+// function RoleStatCard({ role, loading }: { role: string; loading: boolean }) {
+//   if (loading) {
+//     return (
+//       <div className="bg-white dark:bg-[#161920] rounded-2xl border border-slate-100 dark:border-white/[0.06] p-5">
+//         <div className="flex items-start justify-between mb-4">
+//           <AnalyticsShimmer className="h-11 w-11 rounded-xl" />
+//           <AnalyticsShimmer className="h-4 w-4 rounded" />
+//         </div>
+//         <AnalyticsShimmer className="h-7 w-28 mb-2" />
+//         <AnalyticsShimmer className="h-3.5 w-20" />
+//       </div>
+//     );
+//   }
 
-  return (
-    <div className="bg-white dark:bg-[#161920] rounded-2xl border border-slate-100 dark:border-white/[0.06] p-5 hover:border-slate-200 dark:hover:border-white/[0.1] transition-colors group">
-      <div className="flex items-start justify-between mb-4">
-        <div className="h-11 w-11 rounded-xl bg-slate-50 dark:bg-white/[0.05] flex items-center justify-center shrink-0">
-          <ShieldCheck className="w-5 h-5 text-slate-400 dark:text-slate-500" />
-        </div>
-        <button className="text-slate-300 dark:text-slate-600 hover:text-slate-500 dark:hover:text-slate-400 transition opacity-0 group-hover:opacity-100">
-          <MoreHorizontal className="w-4 h-4" />
-        </button>
-      </div>
+//   return (
+//     <div className="bg-white dark:bg-[#161920] rounded-2xl border border-slate-100 dark:border-white/[0.06] p-5 hover:border-slate-200 dark:hover:border-white/[0.1] transition-colors group">
+//       <div className="flex items-start justify-between mb-4">
+//         <div className="h-11 w-11 rounded-xl bg-slate-50 dark:bg-white/[0.05] flex items-center justify-center shrink-0">
+//           <ShieldCheck className="w-5 h-5 text-slate-400 dark:text-slate-500" />
+//         </div>
+//         <button className="text-slate-300 dark:text-slate-600 hover:text-slate-500 dark:hover:text-slate-400 transition opacity-0 group-hover:opacity-100">
+//           <MoreHorizontal className="w-4 h-4" />
+//         </button>
+//       </div>
 
-      <p className="text-[22px] font-bold text-slate-800 dark:text-white tracking-tight leading-none mb-1.5">
-        {role.replace(/_/g, " ")}
-      </p>
+//       <p className="text-[22px] font-bold text-slate-800 dark:text-white tracking-tight leading-none mb-1.5">
+//         {role.replace(/_/g, " ")}
+//       </p>
 
-      <p className="text-[12.5px] text-slate-500 dark:text-slate-400 leading-none">
-        Your Role
-      </p>
+//       <p className="text-[12.5px] text-slate-500 dark:text-slate-400 leading-none">
+//         Your Role
+//       </p>
 
-      <div className="mt-3 pt-3 border-t border-slate-50 dark:border-white/[0.05] flex items-center gap-1.5">
-        <span className="text-[11px] text-slate-400 dark:text-slate-500">Active session</span>
-      </div>
-    </div>
-  );
-}
+//       <div className="mt-3 pt-3 border-t border-slate-50 dark:border-white/[0.05] flex items-center gap-1.5">
+//         <span className="text-[11px] text-slate-400 dark:text-slate-500">Active session</span>
+//       </div>
+//     </div>
+//   );
+// }
 
 function QuickCard({
   title, description, icon, badge, onClick, loading,
@@ -249,12 +249,8 @@ export default function AnalyticsPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 items-start">
-
-        <RoleStatCard role={role} loading={loading} />
-
-        <div></div>
         {visibleCards.length > 0 && (
-          <div className="lg:col-span-3 space-y-3">
+          <div className="lg:col-span-4 space-y-3">
             <div className="flex items-center gap-2">
               <Zap className="w-3.5 h-3.5 text-indigo-500" />
               <span className="text-[13px] font-semibold text-slate-700 dark:text-slate-300">Quick Access</span>
