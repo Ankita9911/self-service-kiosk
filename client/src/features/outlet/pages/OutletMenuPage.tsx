@@ -292,7 +292,7 @@ export default function OutletMenuPage() {
             <table className="w-full min-w-175 text-sm">
               <thead>
                 <tr className="border-b border-slate-100 dark:border-white/7 bg-slate-50/80 dark:bg-white/2">
-                  {["#", "Item", "Category", "Price", "Stock", "Status", "Actions"].map((h) => (
+                  {["#", "Item", "Category", "Price", "Stock", "Status", ""].map((h) => (
                     <th
                       key={h}
                       className={`px-4 py-3 text-left text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider ${

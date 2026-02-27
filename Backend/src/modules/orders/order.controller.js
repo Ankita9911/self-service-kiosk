@@ -11,8 +11,8 @@ export const createOrder = asyncHandler(async (req, res) => {
   );
 
   return sendSuccess(res, {
-    statusCode: 201,
-    message: "Order created successfully",
+    statusCode: 202,
+    message: "Order accepted and queued for processing",
     data: result,
   });
 });

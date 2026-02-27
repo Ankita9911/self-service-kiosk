@@ -140,7 +140,7 @@ export default function DevicePage() {
                 "Outlet",
                 "Status",
                 "Last Seen",
-                "Actions",
+                "",
               ].map((h) => (
                 <th
                   key={h}

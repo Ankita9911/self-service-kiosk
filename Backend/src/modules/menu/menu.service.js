@@ -3,6 +3,7 @@ import MenuItem from "./menuItem.model.js";
 import AppError from "../../shared/errors/AppError.js";
 import { getRedisClient } from "../../core/cache/redis.client.js";
 import { buildTenantKey } from "../../core/cache/cache.utils.js";
+import { enqueue } from "../../core/queue/queue.producer.js";
 
 export async function createCategory(data, tenant) {
   const redis = getRedisClient();
@@ -164,49 +165,13 @@ export async function updateMenuItem(id, data, tenant) {
 }
 
 export async function updateItemPrice(id, price, tenant) {
-  const redis = getRedisClient();
-  const cacheKey = buildTenantKey("menuItems", tenant);
-
-  const item = await MenuItem.findOneAndUpdate(
-    {
-      _id: id,
-      franchiseId: tenant.franchiseId,
-      outletId: tenant.outletId,
-      isDeleted: false,
-    },
-    { price },
-    { new: true }
-  );
-
-  if (!item) {
-    throw new AppError("Menu item not found", 404, "MENU_ITEM_NOT_FOUND");
-  }
-
-  await redis.del(cacheKey);
-  return item;
+  await enqueue("MENU_PRICE_UPDATE", { itemId: id, price, tenant });
+  return { itemId: id, queued: true };
 }
 
 export async function updateItemStock(id, stockQuantity, tenant) {
-  const redis = getRedisClient();
-  const cacheKey = buildTenantKey("menuItems", tenant);
-
-  const item = await MenuItem.findOneAndUpdate(
-    {
-      _id: id,
-      franchiseId: tenant.franchiseId,
-      outletId: tenant.outletId,
-      isDeleted: false,
-    },
-    { stockQuantity },
-    { new: true }
-  );
-
-  if (!item) {
-    throw new AppError("Menu item not found", 404, "MENU_ITEM_NOT_FOUND");
-  }
-
-  await redis.del(cacheKey);
-  return item;
+  await enqueue("MENU_STOCK_UPDATE", { itemId: id, stockQuantity, tenant });
+  return { itemId: id, queued: true };
 }
 
 export async function deleteMenuItem(id, tenant) {

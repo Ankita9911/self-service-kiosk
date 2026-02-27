@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import app from "./app.js";
 import connectMongo from "./shared/utils/mongo.js";
 import { initSocket } from "./realtime/realtime.manager.js";
+import { startWorker } from "./core/queue/queue.worker.js";
 
 dotenv.config();
 const PORT = process.env.PORT || 3000;
@@ -15,6 +16,7 @@ async function bootstrap() {
     console.log("MongoDB Connected");
     server = http.createServer(app);
     initSocket(server);
+    // startWorker();
     server.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);
     });

@@ -97,7 +97,8 @@ export const updateItemPrice = asyncHandler(async (req, res) => {
     req.tenant
   );
   return sendSuccess(res, {
-    message: "Price updated successfully",
+    statusCode: 202,
+    message: "Price update accepted and queued for processing",
     data: result,
   });
 });
@@ -110,7 +111,8 @@ export const updateItemStock = asyncHandler(async (req, res) => {
     req.tenant
   );
   return sendSuccess(res, {
-    message: "Stock quantity updated successfully",
+    statusCode: 202,
+    message: "Stock update accepted and queued for processing",
     data: result,
   });
 });
