@@ -1,16 +1,21 @@
-@import url("https://api.fontshare.com/v2/css?f[]=clash-display@300,400,500,600,700&f[]=satoshi@300,400,500,700&display=swap");
+@import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap');
 @import "tailwindcss";
 @plugin "tailwindcss-animate";
 
 @theme {
   --radius: 0.75rem;
 
-  --font-display: "Clash Display", sans-serif;
-  --font-body: "Satoshi", sans-serif;
-  --font-sans: "Satoshi", sans-serif;
-  --font-mono: "JetBrains Mono", monospace;
+  /* ── Geist: one font for everything ── */
+  --font-display: "Geist", sans-serif;
+  --font-body:    "Geist", sans-serif;
+  --font-sans:    "Geist", sans-serif;
+  --font-mono:    "Geist Mono", monospace;
 
-  --color-background: oklch(1 0 0);
+  /* ── Light mode tokens (default) ── */
+  --color-background: oklch(0.98 0.002 260);
   --color-foreground: oklch(0.145 0 0);
 
   --color-card: oklch(1 0 0);
@@ -19,7 +24,8 @@
   --color-popover: oklch(1 0 0);
   --color-popover-foreground: oklch(0.145 0 0);
 
-  --color-primary: oklch(0.72 0.19 60);
+  /* Brand: Indigo/Violet */
+  --color-primary: oklch(0.55 0.22 264);
   --color-primary-foreground: oklch(0.99 0 0);
 
   --color-secondary: oklch(0.97 0 0);
@@ -28,17 +34,51 @@
   --color-muted: oklch(0.97 0 0);
   --color-muted-foreground: oklch(0.556 0 0);
 
-  --color-accent: oklch(0.85 0.15 70);
-  --color-accent-foreground: oklch(0.25 0 0);
+  --color-accent: oklch(0.60 0.20 280);
+  --color-accent-foreground: oklch(0.99 0 0);
 
   --color-destructive: oklch(0.577 0.245 27.325);
 
   --color-border: oklch(0.922 0 0);
   --color-input: oklch(0.922 0 0);
-  --color-ring: oklch(0.708 0 0);
+  --color-ring: oklch(0.55 0.22 264);
+
+  --color-sidebar: oklch(1 0 0);
+  --color-sidebar-border: oklch(0.922 0 0);
+}
+
+/* ── Dark mode token overrides ── */
+/* Tailwind v4: redefine CSS vars directly on .dark selector */
+.dark {
+  --color-background: oklch(0.08 0.01 260);
+  --color-foreground: oklch(0.92 0 0);
+
+  --color-card: oklch(0.11 0.01 260);
+  --color-card-foreground: oklch(0.92 0 0);
+
+  --color-popover: oklch(0.11 0.01 260);
+  --color-popover-foreground: oklch(0.92 0 0);
+
+  --color-primary: oklch(0.62 0.22 264);
+  --color-primary-foreground: oklch(0.99 0 0);
+
+  --color-secondary: oklch(0.16 0.01 260);
+  --color-secondary-foreground: oklch(0.85 0 0);
+
+  --color-muted: oklch(0.16 0.01 260);
+  --color-muted-foreground: oklch(0.55 0 0);
+
+  --color-accent: oklch(0.62 0.20 280);
+  --color-accent-foreground: oklch(0.99 0 0);
+
+  --color-destructive: oklch(0.60 0.245 27.325);
+
+  --color-border: oklch(1 0 0 / 0.08);
+  --color-input: oklch(1 0 0 / 0.08);
+  --color-ring: oklch(0.62 0.22 264);
 
   --color-sidebar: oklch(0.11 0.01 260);
-  --color-sidebar-border: oklch(1 0 0 / 0.05);
+  --color-sidebar-border: oklch(1 0 0 / 0.06);
 }
 
 *,
@@ -55,67 +95,62 @@ html {
 
 body {
   font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.5;
+  letter-spacing: -0.01em;
   background-color: var(--color-background);
   color: var(--color-foreground);
+  transition: background-color 0.3s ease, color 0.3s ease;
+  /* Geist OpenType alternates: cleaner a, g, 0 */
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
 }
 
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
+h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-display);
   font-weight: 600;
-  letter-spacing: -0.025em;
+  letter-spacing: -0.03em;
 }
 
 @layer utilities {
+  /* ── Geist utility aliases ── */
+  /* Use these going forward. Old clash-* / satoshi-* aliases kept
+     for backward compat so existing components don't break. */
+
   .font-display {
     font-family: var(--font-display);
-    letter-spacing: -0.025em;
+    letter-spacing: -0.03em;
   }
   .font-body {
     font-family: var(--font-body);
+    letter-spacing: -0.01em;
+  }
+  .font-mono {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
   }
 
-  .font-clash-light {
-    font-family: var(--font-display);
-    font-weight: 300;
-  }
-  .font-clash {
-    font-family: var(--font-display);
-    font-weight: 400;
-  }
-  .font-clash-medium {
-    font-family: var(--font-display);
-    font-weight: 500;
-  }
-  .font-clash-semibold {
-    font-family: var(--font-display);
-    font-weight: 600;
-  }
-  .font-clash-bold {
-    font-family: var(--font-display);
-    font-weight: 700;
-  }
+  /* Weight shorthands */
+  .font-thin       { font-weight: 100; }
+  .font-extralight { font-weight: 200; }
+  .font-light      { font-weight: 300; }
+  .font-normal     { font-weight: 400; }
+  .font-medium     { font-weight: 500; }
+  .font-semibold   { font-weight: 600; }
+  .font-bold       { font-weight: 700; }
+  .font-extrabold  { font-weight: 800; }
+  .font-black      { font-weight: 900; }
 
-  .font-satoshi-light {
-    font-family: var(--font-body);
-    font-weight: 300;
-  }
-  .font-satoshi {
-    font-family: var(--font-body);
-    font-weight: 400;
-  }
-  .font-satoshi-medium {
-    font-family: var(--font-body);
-    font-weight: 500;
-  }
-  .font-satoshi-bold {
-    font-family: var(--font-body);
-    font-weight: 700;
-  }
+  /* ── Backward-compat aliases (maps old Clash/Satoshi classes → Geist) ── */
+  .font-clash-light    { font-family: var(--font-display); font-weight: 300; letter-spacing: -0.03em; }
+  .font-clash          { font-family: var(--font-display); font-weight: 400; letter-spacing: -0.03em; }
+  .font-clash-medium   { font-family: var(--font-display); font-weight: 500; letter-spacing: -0.03em; }
+  .font-clash-semibold { font-family: var(--font-display); font-weight: 600; letter-spacing: -0.03em; }
+  .font-clash-bold     { font-family: var(--font-display); font-weight: 700; letter-spacing: -0.03em; }
+
+  .font-satoshi-light  { font-family: var(--font-body); font-weight: 300; letter-spacing: -0.01em; }
+  .font-satoshi        { font-family: var(--font-body); font-weight: 400; letter-spacing: -0.01em; }
+  .font-satoshi-medium { font-family: var(--font-body); font-weight: 500; letter-spacing: -0.01em; }
+  .font-satoshi-bold   { font-family: var(--font-body); font-weight: 700; letter-spacing: -0.01em; }
 
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
@@ -129,66 +164,33 @@ h6 {
     animation: shimmer 1.5s infinite;
   }
 }
+
 @keyframes shimmer {
-  0% {
-    transform: translateX(-100%);
-  }
-  100% {
-    transform: translateX(250%);
-  }
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(250%); }
 }
 
 @keyframes scale-in {
-  from {
-    opacity: 0;
-    transform: scale(0.93);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
+  from { opacity: 0; transform: scale(0.93); }
+  to   { opacity: 1; transform: scale(1); }
 }
 
 @keyframes fade-down {
-  from {
-    opacity: 0;
-    transform: translateY(-8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes slide-up {
-  from {
-    opacity: 0;
-    transform: translateY(14px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes fade-in {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 
-.animate-scale-in {
-  animation: scale-in 0.18s ease-out forwards;
-}
-.animate-fade-down {
-  animation: fade-down 0.15s ease-out forwards;
-}
-.animate-slide-up {
-  animation: slide-up 0.2s ease-out forwards;
-}
-.animate-fade-in {
-  animation: fade-in 0.25s ease-out forwards;
-}
+.animate-scale-in  { animation: scale-in  0.18s ease-out forwards; }
+.animate-fade-down { animation: fade-down 0.15s ease-out forwards; }
+.animate-slide-up  { animation: slide-up  0.2s  ease-out forwards; }
+.animate-fade-in   { animation: fade-in   0.25s ease-out forwards; }

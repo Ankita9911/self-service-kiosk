@@ -5,14 +5,16 @@ import AppRoutes from "./AppRoutes";
 import { initDB } from "@/shared/lib/indexdb";
 import "@/styles/index.css";
 import { Toaster } from "react-hot-toast";
-
+import { ThemeProvider } from "@/shared/providers/ThemeProvider";
 async function bootstrap() {
   await initDB();
   createRoot(document.getElementById("root")!).render(
     <BrowserRouter>
       <AuthProvider>
+        <ThemeProvider>
         <AppRoutes />
         <Toaster position="top-right" reverseOrder={false} />
+        </ThemeProvider>
       </AuthProvider>
     </BrowserRouter>,
   );

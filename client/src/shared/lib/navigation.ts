@@ -58,11 +58,5 @@ export const NAV_ITEMS = [
     path: "/pickup",
     icon: ShoppingBag,
     permission: PERMISSIONS.ORDERS_PICKUP_VIEW,
-  },
-  {
-    label: "Analytics",
-    path: "/analytics",
-    icon: BarChart2,
-    permission: PERMISSIONS.ANALYTICS_VIEW,
-  },
+  }
 ];

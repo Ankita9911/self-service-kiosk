@@ -1,7 +1,7 @@
 import { Routes, Route } from "react-router-dom";
 import Login from "@/features/auth/pages/Login";
 import { ForceReset } from "@/features/auth/pages/ForceReset";
-import DashboardPage from "@/features/dashboard/pages/DashboardPage";
+//import DashboardPage from "@/features/dashboard/pages/DashboardPage";
 import FranchisePage from "@/features/franchise/pages/FranchisePage";
 import OutletPage from "@/features/outlet/pages/OutletPage";
 import OutletMenuPage from "@/features/outlet/pages/OutletMenuPage";
@@ -40,7 +40,7 @@ export default function AppRoutes() {
           </ProtectedRoute>
         }
       >
-        <Route path="/" element={<DashboardPage />} />
+        <Route path="/" element={<AnalyticsPage />} />
         <Route
           path="/reset-password"
           element={
@@ -57,14 +57,7 @@ export default function AppRoutes() {
             </ProtectedRoute>
           }
         />
-        <Route
-          path="/analytics"
-          element={
-            <ProtectedRoute requiredPermission={PERMISSIONS.ANALYTICS_VIEW}>
-              <AnalyticsPage />
-            </ProtectedRoute>
-          }
-        />
+
         <Route
           path="/super-admin/franchises"
           element={
