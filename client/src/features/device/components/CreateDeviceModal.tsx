@@ -88,9 +88,16 @@ export function CreateDeviceModal({ open, onClose, outlets, onCreate, onCreated 
                 <SelectValue placeholder="Select an outlet..." />
               </SelectTrigger>
               <SelectContent>
-                {outlets.map((o) => (
-                  <SelectItem key={o._id} value={o._id}>{o.name} ({o.outletCode})</SelectItem>
-                ))}
+                {outlets.length === 0 ? (
+                  <div className="px-3 py-4 text-center space-y-0.5">
+                    <p className="text-[12px] font-medium text-slate-500 dark:text-slate-400">No outlets found</p>
+                    <p className="text-[11px] text-slate-400 dark:text-slate-500">Please create an outlet first.</p>
+                  </div>
+                ) : (
+                  outlets.map((o) => (
+                    <SelectItem key={o._id} value={o._id}>{o.name} ({o.outletCode})</SelectItem>
+                  ))
+                )}
               </SelectContent>
             </Select>
             {errors.outletId && (

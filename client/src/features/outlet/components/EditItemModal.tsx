@@ -82,7 +82,14 @@ export function EditItemModal({ open, onClose, form, setForm, onSubmit, categori
                   <SelectValue placeholder="Select category…" />
                 </SelectTrigger>
                 <SelectContent className="rounded-xl border-slate-200 dark:border-white/8 bg-white dark:bg-[#1e2130] shadow-xl">
-                  {categories.map((c) => <SelectItem key={c._id} value={c._id} className="text-sm">{c.name}</SelectItem>)}
+                  {categories.length === 0 ? (
+                    <div className="px-3 py-4 text-center space-y-0.5">
+                      <p className="text-[12px] font-medium text-slate-500 dark:text-slate-400">No categories found</p>
+                      <p className="text-[11px] text-slate-400 dark:text-slate-500">Please add a category first.</p>
+                    </div>
+                  ) : (
+                    categories.map((c) => <SelectItem key={c._id} value={c._id} className="text-sm">{c.name}</SelectItem>)
+                  )}
                 </SelectContent>
               </Select>
             </div>

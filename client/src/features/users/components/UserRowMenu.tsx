@@ -202,9 +202,16 @@ export function UserRowMenu({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {availableRoles.map((r) => (
-                  <SelectItem key={r} value={r}>{r.replace(/_/g, " ")}</SelectItem>
-                ))}
+                {availableRoles.length === 0 ? (
+                  <div className="px-3 py-4 text-center space-y-0.5">
+                    <p className="text-[12px] font-medium text-slate-500 dark:text-slate-400">No roles available</p>
+                    <p className="text-[11px] text-slate-400 dark:text-slate-500">Contact your system administrator.</p>
+                  </div>
+                ) : (
+                  availableRoles.map((r) => (
+                    <SelectItem key={r} value={r}>{r.replace(/_/g, " ")}</SelectItem>
+                  ))
+                )}
               </SelectContent>
             </Select>
           </div>
