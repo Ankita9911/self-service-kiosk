@@ -2,7 +2,7 @@ import Outlet from "./outlet.model.js";
 import Franchise from "../franchises/franchise.model.js";
 import User from "../users/user.model.js";
 import Device from "../devices/device.model.js";
-import { forceLogout } from "../../realtime/realtime.manager.js";
+import { forceLogout, broadcastRefresh } from "../../realtime/realtime.manager.js";
 import AppError from "../../shared/errors/AppError.js";
 
 export async function createOutlet(payload, user) {
@@ -114,9 +114,27 @@ export async function updateOutlet(id, payload, user) {
 export async function deleteOutlet(id, user) {
   const outlet = await getOutletById(id, user);
 
+  // 1. Force-logout + soft-delete all users at this outlet
+  const affectedUsers = await User.find({ outletId: outlet._id, isDeleted: false }).select("_id");
+  for (const u of affectedUsers) {
+    forceLogout("user", u._id.toString());
+  }
+  if (affectedUsers.length > 0) {
+    await User.updateMany({ outletId: outlet._id }, { isDeleted: true, status: "INACTIVE" });
+  }
+
+  // 2. Force-logout + soft-delete all devices at this outlet
+  const affectedDevices = await Device.find({ outletId: outlet._id, isDeleted: false }).select("_id deviceId");
+  for (const d of affectedDevices) {
+    forceLogout("device", d.deviceId);
+  }
+  if (affectedDevices.length > 0) {
+    await Device.updateMany({ outletId: outlet._id }, { isDeleted: true, status: "INACTIVE" });
+  }
+
+  // 3. Soft-delete the outlet itself
   outlet.isDeleted = true;
   outlet.status = "INACTIVE";
-
   await outlet.save();
 
   return { message: "Outlet deleted successfully" };

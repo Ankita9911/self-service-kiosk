@@ -245,10 +245,72 @@ export async function deleteFranchise(id, user) {
 
   const franchise = await getFranchiseById(id, user);
 
+  // 1. Cascade: collect all outlet IDs under this franchise
+  const outlets = await Outlet.find({ franchiseId: franchise._id, isDeleted: false }).select("_id");
+  const outletIds = outlets.map((o) => o._id);
+
+  // 2. Soft-delete all outlets
+  if (outletIds.length > 0) {
+    await Outlet.updateMany(
+      { franchiseId: franchise._id },
+      { isDeleted: true, status: "INACTIVE" }
+    );
+  }
+
+  // 3. Force-logout + soft-delete all affected users
+  const affectedUsers = await User.find({
+    $or: [
+      { franchiseId: franchise._id },
+      { outletId: { $in: outletIds } },
+    ],
+    isDeleted: false,
+  }).select("_id");
+
+  for (const u of affectedUsers) {
+    forceLogout("user", u._id.toString());
+  }
+  if (affectedUsers.length > 0) {
+    await User.updateMany(
+      {
+        $or: [
+          { franchiseId: franchise._id },
+          { outletId: { $in: outletIds } },
+        ],
+      },
+      { isDeleted: true, status: "INACTIVE" }
+    );
+  }
+
+  // 4. Force-logout + soft-delete all affected devices
+  const affectedDevices = await Device.find({
+    $or: [
+      { franchiseId: franchise._id },
+      { outletId: { $in: outletIds } },
+    ],
+    isDeleted: false,
+  }).select("_id deviceId");
+
+  for (const d of affectedDevices) {
+    forceLogout("device", d.deviceId);
+  }
+  if (affectedDevices.length > 0) {
+    await Device.updateMany(
+      {
+        $or: [
+          { franchiseId: franchise._id },
+          { outletId: { $in: outletIds } },
+        ],
+      },
+      { isDeleted: true, status: "INACTIVE" }
+    );
+  }
+
+  // 5. Soft-delete the franchise itself
   franchise.isDeleted = true;
   franchise.status = "INACTIVE";
-
   await franchise.save();
+
+  broadcastRefresh("outlets:refreshNeeded");
 
   return { message: "Franchise deleted successfully" };
 }
