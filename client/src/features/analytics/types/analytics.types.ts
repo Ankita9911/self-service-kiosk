@@ -95,18 +95,18 @@ export interface FranchiseAdminAnalytics {
 
 export interface OutletManagerAnalytics {
     role: "OUTLET_MANAGER";
-    today: {
+    summary: {
         revenue: number;
         orders: number;
         avgOrderValue: number;
+        cancellationRate: number;
+        peakHour: number | null;
     };
     statusBreakdown: Record<string, number>;
     ordersPerHour: HourPoint[];
-    revenueLast7Days: TrendPoint[];
+    revenueTrend: TrendPoint[];
     topItems: TopItem[];
     categoryRevenue: CategoryRevenue[];
-    cancellationRate: number;
-    peakHour: number | null;
 }
 
 export interface KitchenStaffAnalytics {

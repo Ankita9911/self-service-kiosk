@@ -6,12 +6,13 @@ export function useAnalytics() {
     const [data, setData] = useState<AnalyticsData | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [period, setPeriodState] = useState<string>("");
 
-    const load = useCallback(async () => {
+    const load = useCallback(async (p?: string) => {
         setLoading(true);
         setError(null);
         try {
-            const result = await fetchAnalyticsOverview();
+            const result = await fetchAnalyticsOverview(p || undefined);
             setData(result);
         } catch (err: unknown) {
             const message =
@@ -22,9 +23,14 @@ export function useAnalytics() {
         }
     }, []);
 
+    const setPeriod = useCallback((p: string) => {
+        setPeriodState(p);
+        load(p);
+    }, [load]);
+
     useEffect(() => {
         load();
     }, [load]);
 
-    return { data, loading, error, refetch: load };
+    return { data, loading, error, period, setPeriod, refetch: () => load(period || undefined) };
 }

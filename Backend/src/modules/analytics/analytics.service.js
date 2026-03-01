@@ -35,12 +35,27 @@ async function withCache(key, ttl, fn) {
     return result;
 }
 
-async function getSuperAdminAnalytics() {
+function getPeriodStart(period) {
     const now = new Date();
-    const twelveMonthsAgo = new Date(now);
-    twelveMonthsAgo.setFullYear(now.getFullYear() - 1);
-    twelveMonthsAgo.setDate(1);
-    twelveMonthsAgo.setHours(0, 0, 0, 0);
+    switch (period) {
+        case "today": { const d = new Date(now); d.setHours(0, 0, 0, 0); return d; }
+        case "7d":    return new Date(now - 7  * 24 * 60 * 60 * 1000);
+        case "30d":   return new Date(now - 30 * 24 * 60 * 60 * 1000);
+        case "90d":   return new Date(now - 90 * 24 * 60 * 60 * 1000);
+        case "3m":    { const d = new Date(now); d.setMonth(d.getMonth() - 3); d.setDate(1); d.setHours(0, 0, 0, 0); return d; }
+        case "6m":    { const d = new Date(now); d.setMonth(d.getMonth() - 6); d.setDate(1); d.setHours(0, 0, 0, 0); return d; }
+        case "12m":
+        default:      { const d = new Date(now); d.setFullYear(d.getFullYear() - 1); d.setDate(1); d.setHours(0, 0, 0, 0); return d; }
+    }
+}
+
+function getTrendFormat(period) {
+    if (period === "12m" || period === "6m" || period === "3m") return "%Y-%m";
+    return "%Y-%m-%d"; // today, 7d, 30d, 90d — daily (today visualised via ordersPerHour)
+}
+
+async function getSuperAdminAnalytics(period = "12m") {
+    const periodStart = getPeriodStart(period);
 
     const [
         totalFranchises,
@@ -72,7 +87,7 @@ async function getSuperAdminAnalytics() {
 
         // New franchises registered per month over the last 12 months
         Franchise.aggregate([
-            { $match: { isDeleted: false, createdAt: { $gte: twelveMonthsAgo } } },
+            { $match: { isDeleted: false, createdAt: { $gte: periodStart } } },
             {
                 $group: {
                     _id: { $dateToString: { format: "%Y-%m", date: "$createdAt" } },
@@ -172,9 +187,10 @@ async function getSuperAdminAnalytics() {
     };
 }
 
-async function getFranchiseAdminAnalytics(tenant) {
+async function getFranchiseAdminAnalytics(tenant, period = "30d") {
     const franchiseId = new mongoose.Types.ObjectId(tenant.franchiseId);
-    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    const periodStart = getPeriodStart(period);
+    const trendFormat = getTrendFormat(period);
 
     const [
         totalOutlets,
@@ -190,7 +206,7 @@ async function getFranchiseAdminAnalytics(tenant) {
         User.countDocuments({ franchiseId, isDeleted: false }),
 
         Order.aggregate([
-            { $match: { franchiseId } },
+            { $match: { franchiseId, createdAt: { $gte: periodStart } } },
             {
                 $group: {
                     _id: null,
@@ -201,9 +217,9 @@ async function getFranchiseAdminAnalytics(tenant) {
             },
         ]),
 
-        // Revenue and orders per outlet
+        // Revenue and orders per outlet for period
         Order.aggregate([
-            { $match: { franchiseId } },
+            { $match: { franchiseId, createdAt: { $gte: periodStart } } },
             {
                 $group: {
                     _id: "$outletId",
@@ -232,12 +248,12 @@ async function getFranchiseAdminAnalytics(tenant) {
             { $sort: { revenue: -1 } },
         ]),
 
-        // Revenue trend last 30 days
+        // Revenue trend for period
         Order.aggregate([
-            { $match: { franchiseId, createdAt: { $gte: thirtyDaysAgo } } },
+            { $match: { franchiseId, createdAt: { $gte: periodStart } } },
             {
                 $group: {
-                    _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+                    _id: { $dateToString: { format: trendFormat, date: "$createdAt" } },
                     revenue: { $sum: "$totalAmount" },
                     orders: { $sum: 1 },
                 },
@@ -245,9 +261,9 @@ async function getFranchiseAdminAnalytics(tenant) {
             { $sort: { _id: 1 } },
         ]),
 
-        // Top 5 selling items in franchise
+        // Top 5 selling items for period
         Order.aggregate([
-            { $match: { franchiseId } },
+            { $match: { franchiseId, createdAt: { $gte: periodStart } } },
             { $unwind: "$items" },
             {
                 $group: {
@@ -261,9 +277,9 @@ async function getFranchiseAdminAnalytics(tenant) {
             { $limit: 5 },
         ]),
 
-        // Category-wise revenue (via items lookup)
+        // Category-wise revenue for period
         Order.aggregate([
-            { $match: { franchiseId } },
+            { $match: { franchiseId, createdAt: { $gte: periodStart } } },
             { $unwind: "$items" },
             {
                 $lookup: {
@@ -294,22 +310,16 @@ async function getFranchiseAdminAnalytics(tenant) {
             { $sort: { revenue: -1 } },
         ]),
 
-        // Cancellation rate (CREATED orders that never progressed — we'll use total vs completed)
+        // Status breakdown for period
         Order.aggregate([
-            { $match: { franchiseId } },
-            {
-                $group: {
-                    _id: "$status",
-                    count: { $sum: 1 },
-                },
-            },
+            { $match: { franchiseId, createdAt: { $gte: periodStart } } },
+            { $group: { _id: "$status", count: { $sum: 1 } } },
         ]),
     ]);
 
     const stats = overallStats[0] || { totalRevenue: 0, totalOrders: 0, avgOrderValue: 0 };
     const totalRev = stats.totalRevenue;
 
-    // Outlet revenue contribution %
     const outletContribution = revenuePerOutlet.map((o) => ({
         ...o,
         contributionPercent: totalRev > 0 ? parseFloat(((o.revenue / totalRev) * 100).toFixed(2)) : 0,
@@ -317,7 +327,7 @@ async function getFranchiseAdminAnalytics(tenant) {
 
     const statusMap = Object.fromEntries(cancellationData.map((s) => [s._id, s.count]));
     const totalOrders = stats.totalOrders;
-    const cancelledOrders = statusMap["CREATED"] || 0; // orders stuck at CREATED are stale/cancelled-equivalent
+    const cancelledOrders = statusMap["CREATED"] || 0;
     const cancellationRate = totalOrders > 0 ? parseFloat(((cancelledOrders / totalOrders) * 100).toFixed(2)) : 0;
 
     return {
@@ -338,25 +348,26 @@ async function getFranchiseAdminAnalytics(tenant) {
     };
 }
 
-async function getOutletManagerAnalytics(tenant) {
+async function getOutletManagerAnalytics(tenant, period = "7d") {
     const outletId = new mongoose.Types.ObjectId(tenant.outletId);
     const now = new Date();
     const todayStart = new Date(now);
     todayStart.setHours(0, 0, 0, 0);
-    const sevenDaysAgo = new Date(now - 7 * 24 * 60 * 60 * 1000);
+    const periodStart = getPeriodStart(period);
+    const trendFormat = getTrendFormat(period);
+    const isToday = period === "today";
 
     const [
-        todayStats,
+        periodStats,
         statusBreakdown,
         ordersPerHour,
-        revenueLast7Days,
+        revenueTrend,
         topItems,
         categoryRevenue,
-        allTimeStats,
     ] = await Promise.all([
-        // Today summary
+        // Summary for selected period
         Order.aggregate([
-            { $match: { outletId, createdAt: { $gte: todayStart } } },
+            { $match: { outletId, createdAt: { $gte: periodStart } } },
             {
                 $group: {
                     _id: null,
@@ -367,41 +378,45 @@ async function getOutletManagerAnalytics(tenant) {
             },
         ]),
 
-        // Status breakdown (all time for outlet)
+        // Status breakdown for period
         Order.aggregate([
-            { $match: { outletId } },
+            { $match: { outletId, createdAt: { $gte: periodStart } } },
             { $group: { _id: "$status", count: { $sum: 1 } } },
         ]),
 
-        // Orders per hour today
-        Order.aggregate([
-            { $match: { outletId, createdAt: { $gte: todayStart } } },
-            {
-                $group: {
-                    _id: { $hour: "$createdAt" },
-                    count: { $sum: 1 },
-                    revenue: { $sum: "$totalAmount" },
+        // Orders per hour — only meaningful for today
+        isToday
+            ? Order.aggregate([
+                { $match: { outletId, createdAt: { $gte: todayStart } } },
+                {
+                    $group: {
+                        _id: { $hour: "$createdAt" },
+                        count: { $sum: 1 },
+                        revenue: { $sum: "$totalAmount" },
+                    },
                 },
-            },
-            { $sort: { _id: 1 } },
-        ]),
+                { $sort: { _id: 1 } },
+            ])
+            : Promise.resolve([]),
 
-        // Revenue last 7 days
-        Order.aggregate([
-            { $match: { outletId, createdAt: { $gte: sevenDaysAgo } } },
-            {
-                $group: {
-                    _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
-                    revenue: { $sum: "$totalAmount" },
-                    orders: { $sum: 1 },
+        // Revenue trend for period (empty for today — ordersPerHour is used instead)
+        isToday
+            ? Promise.resolve([])
+            : Order.aggregate([
+                { $match: { outletId, createdAt: { $gte: periodStart } } },
+                {
+                    $group: {
+                        _id: { $dateToString: { format: trendFormat, date: "$createdAt" } },
+                        revenue: { $sum: "$totalAmount" },
+                        orders: { $sum: 1 },
+                    },
                 },
-            },
-            { $sort: { _id: 1 } },
-        ]),
+                { $sort: { _id: 1 } },
+            ]),
 
-        // Top 5 items
+        // Top 5 items for period
         Order.aggregate([
-            { $match: { outletId } },
+            { $match: { outletId, createdAt: { $gte: periodStart } } },
             { $unwind: "$items" },
             {
                 $group: {
@@ -415,9 +430,9 @@ async function getOutletManagerAnalytics(tenant) {
             { $limit: 5 },
         ]),
 
-        // Category revenue
+        // Category revenue for period
         Order.aggregate([
-            { $match: { outletId } },
+            { $match: { outletId, createdAt: { $gte: periodStart } } },
             { $unwind: "$items" },
             {
                 $lookup: {
@@ -447,41 +462,31 @@ async function getOutletManagerAnalytics(tenant) {
             },
             { $sort: { revenue: -1 } },
         ]),
-
-        // All-time stats for cancellation rate
-        Order.aggregate([
-            { $match: { outletId } },
-            { $group: { _id: "$status", count: { $sum: 1 } } },
-        ]),
     ]);
 
-    const today = todayStats[0] || { revenue: 0, orders: 0, avgOrderValue: 0 };
+    const stats = periodStats[0] || { revenue: 0, orders: 0, avgOrderValue: 0 };
     const statusMap = Object.fromEntries(statusBreakdown.map((s) => [s._id, s.count]));
-    const allTimeStatusMap = Object.fromEntries(allTimeStats.map((s) => [s._id, s.count]));
-    const totalAllTime = Object.values(allTimeStatusMap).reduce((a, b) => a + b, 0);
-    const cancelledCount = allTimeStatusMap["CREATED"] || 0;
-    const cancellationRate = totalAllTime > 0 ? parseFloat(((cancelledCount / totalAllTime) * 100).toFixed(2)) : 0;
-
-    // Peak hour today
-    const peakHour = ordersPerHour.reduce(
-        (peak, h) => (h.count > (peak?.count || 0) ? h : peak),
-        null
-    );
+    const totalOrders = stats.orders;
+    const cancelledOrders = statusMap["CREATED"] || 0;
+    const cancellationRate = totalOrders > 0 ? parseFloat(((cancelledOrders / totalOrders) * 100).toFixed(2)) : 0;
+    const peakHour = isToday
+        ? ordersPerHour.reduce((peak, h) => (h.count > (peak?.count || 0) ? h : peak), null)
+        : null;
 
     return {
         role: "OUTLET_MANAGER",
-        today: {
-            revenue: today.revenue,
-            orders: today.orders,
-            avgOrderValue: parseFloat((today.avgOrderValue || 0).toFixed(2)),
+        summary: {
+            revenue: stats.revenue,
+            orders: stats.orders,
+            avgOrderValue: parseFloat((stats.avgOrderValue || 0).toFixed(2)),
+            cancellationRate,
+            peakHour: peakHour ? peakHour._id : null,
         },
         statusBreakdown: statusMap,
         ordersPerHour,
-        revenueLast7Days,
+        revenueTrend,
         topItems,
         categoryRevenue,
-        cancellationRate,
-        peakHour: peakHour ? peakHour._id : null,
     };
 }
 
@@ -570,20 +575,20 @@ async function getPickupStaffAnalytics(tenant) {
     };
 }
 
-export async function getAnalyticsOverview(tenant) {
+export async function getAnalyticsOverview(tenant, period) {
     const { role, franchiseId, outletId } = tenant;
     const ttl = TTL[role] || 300;
 
-    const cacheKey = buildTenantKey(`analytics:overview:${role}`, { franchiseId, outletId });
+    const cacheKey = buildTenantKey(`analytics:overview:${role}:${period || "default"}`, { franchiseId, outletId });
 
     return withCache(cacheKey, ttl, async () => {
         switch (role) {
             case "SUPER_ADMIN":
-                return getSuperAdminAnalytics();
+                return getSuperAdminAnalytics(period);
             case "FRANCHISE_ADMIN":
-                return getFranchiseAdminAnalytics(tenant);
+                return getFranchiseAdminAnalytics(tenant, period);
             case "OUTLET_MANAGER":
-                return getOutletManagerAnalytics(tenant);
+                return getOutletManagerAnalytics(tenant, period);
             case "KITCHEN_STAFF":
                 return getKitchenStaffAnalytics(tenant);
             case "PICKUP_STAFF":

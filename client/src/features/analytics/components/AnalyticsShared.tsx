@@ -1,4 +1,11 @@
 import { MoreHorizontal } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/shared/components/ui/select";
 
 
 export function AnalyticsShimmer({ className = "" }: { className?: string }) {
@@ -269,6 +276,32 @@ const STATUS_BADGE_MAP: Record<string, string> = {
   COMPLETED:  "bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400",
   PICKED_UP:  "bg-violet-50 text-violet-600 dark:bg-violet-500/10 dark:text-violet-400",
 };
+
+export function PeriodSelector({
+  options,
+  value,
+  onChange,
+}: {
+  options: Array<{ value: string; label: string }>;
+  value: string;
+  onChange: (v: string) => void;
+}) {
+  const current = options.find((o) => o.value === value);
+  return (
+    <Select value={value} onValueChange={onChange}>
+      <SelectTrigger className="h-8 w-auto min-w-30 text-[12px] font-medium border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 text-slate-700 dark:text-slate-200 shadow-none focus:ring-1 focus:ring-indigo-400 rounded-lg px-3">
+        <SelectValue>{current?.label ?? value}</SelectValue>
+      </SelectTrigger>
+      <SelectContent className="text-[12px]">
+        {options.map((opt) => (
+          <SelectItem key={opt.value} value={opt.value} className="text-[12px] font-medium">
+            {opt.label}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+}
 
 export function StatusBadge({ status }: { status: string }) {
   return (

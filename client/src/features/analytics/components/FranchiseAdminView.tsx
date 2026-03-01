@@ -1,12 +1,27 @@
 import { TrendingUp, Store, Users, ShoppingCart, BarChart2, Star, Percent, Trophy } from "lucide-react";
-import { MetricCard, SectionTitle, WidgetCard, EmptyState, TopItemsList, OutletLeaderboard } from "./AnalyticsShared";
+import { MetricCard, SectionTitle, WidgetCard, EmptyState, TopItemsList, OutletLeaderboard, PeriodSelector } from "./AnalyticsShared";
 import { DualTrendChart, CategoryPieChart, StatusDonutChart } from "./AnalyticsCharts";
 import type { FranchiseAdminAnalytics } from "../types/analytics.types";
+
+const FA_PERIODS = [
+  { value: "7d",  label: "7D"  },
+  { value: "30d", label: "30D" },
+  { value: "90d", label: "90D" },
+  { value: "12m", label: "12M" },
+];
+const FA_PERIOD_LABELS: Record<string, string> = {
+  "7d":  "Last 7 Days",
+  "30d": "Last 30 Days",
+  "90d": "Last 90 Days",
+  "12m": "Last 12 Months",
+};
 
 interface Props {
   data: FranchiseAdminAnalytics;
   visibleIds: string[];
   loading?: boolean;
+  period: string;
+  onPeriodChange: (p: string) => void;
 }
 
 export const FRANCHISE_ADMIN_WIDGETS = {
@@ -18,7 +33,10 @@ export const FRANCHISE_ADMIN_WIDGETS = {
   "fa-status":        "Order Status",
 };
 
-export function FranchiseAdminView({ data, visibleIds, loading = false }: Props) {
+export function FranchiseAdminView({ data, visibleIds, loading = false, period, onPeriodChange }: Props) {
+  const activePeriod = period || "30d";
+  const periodLabel  = FA_PERIOD_LABELS[activePeriod] ?? activePeriod;
+
   // Defensive defaults — guards against stale cache / partial responses
   const summary = data?.summary ?? {
     totalRevenue: 0, totalOrders: 0, avgOrderValue: 0,
@@ -34,6 +52,14 @@ export function FranchiseAdminView({ data, visibleIds, loading = false }: Props)
 
   return (
     <div className="space-y-5">
+
+      {/* Period selector */}
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <p className="text-[12.5px] text-slate-500 dark:text-slate-400">
+          Showing data for: <span className="font-semibold text-slate-700 dark:text-slate-200">{periodLabel}</span>
+        </p>
+        <PeriodSelector options={FA_PERIODS} value={activePeriod} onChange={onPeriodChange} />
+      </div>
 
       {/* ── Franchise KPIs ─────────────────────────────────────────────── */}
       {show("fa-summary") && (
@@ -53,10 +79,10 @@ export function FranchiseAdminView({ data, visibleIds, loading = false }: Props)
       {/* ── Revenue & Orders Trend ─────────────────────────────────────── */}
       {show("fa-revenue-trend") && (
         <section>
-          <SectionTitle><TrendingUp className="w-3.5 h-3.5 text-indigo-500" />Revenue & Orders — Last 30 Days</SectionTitle>
+          <SectionTitle><TrendingUp className="w-3.5 h-3.5 text-indigo-500" />Revenue & Orders — {periodLabel}</SectionTitle>
           <WidgetCard
             title="Daily Performance"
-            subtitle="Revenue (left axis) and order volume (right axis) across all outlets"
+            subtitle={`Revenue (left axis) and order volume (right axis) — ${periodLabel.toLowerCase()}`}
             loading={loading} loadingHeight="h-[260px]"
           >
             {revenueTrend.length > 0

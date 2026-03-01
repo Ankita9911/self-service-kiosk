@@ -164,9 +164,9 @@ const EMPTY: Record<string, unknown> = {
   },
   OUTLET_MANAGER: {
     role: "OUTLET_MANAGER",
-    today: { revenue: 0, orders: 0, avgOrderValue: 0 },
-    statusBreakdown: {}, ordersPerHour: [], revenueLast7Days: [],
-    topItems: [], categoryRevenue: [], cancellationRate: 0, peakHour: null,
+    summary: { revenue: 0, orders: 0, avgOrderValue: 0, cancellationRate: 0, peakHour: null },
+    statusBreakdown: {}, ordersPerHour: [], revenueTrend: [],
+    topItems: [], categoryRevenue: [],
   },
   KITCHEN_STAFF: {
     role: "KITCHEN_STAFF",
@@ -185,7 +185,7 @@ export default function AnalyticsPage() {
   const { user } = useAuth();
   const { hasPermission } = usePermission();
   const navigate = useNavigate();
-  const { data, loading, error, refetch } = useAnalytics();
+  const { data, loading, error, period, setPeriod, refetch } = useAnalytics();
 
   const role      = user?.role || "";
   const widgetMap = getWidgetsForRole(role);
@@ -301,13 +301,13 @@ export default function AnalyticsPage() {
       {!error && resolvedData && (
         <div className={loading ? "" : "animate-fade-in"}>
           {role === "SUPER_ADMIN" && (
-            <SuperAdminView    data={resolvedData as SuperAdminAnalytics}    visibleIds={orderedVisibleIds} loading={loading} />
+            <SuperAdminView    data={resolvedData as SuperAdminAnalytics}    visibleIds={orderedVisibleIds} loading={loading} period={period} onPeriodChange={setPeriod} />
           )}
           {role === "FRANCHISE_ADMIN" && (
-            <FranchiseAdminView data={resolvedData as FranchiseAdminAnalytics} visibleIds={orderedVisibleIds} loading={loading} />
+            <FranchiseAdminView data={resolvedData as FranchiseAdminAnalytics} visibleIds={orderedVisibleIds} loading={loading} period={period} onPeriodChange={setPeriod} />
           )}
           {role === "OUTLET_MANAGER" && (
-            <OutletManagerView  data={resolvedData as OutletManagerAnalytics}  visibleIds={orderedVisibleIds} loading={loading} />
+            <OutletManagerView  data={resolvedData as OutletManagerAnalytics}  visibleIds={orderedVisibleIds} loading={loading} period={period} onPeriodChange={setPeriod} />
           )}
           {role === "KITCHEN_STAFF" && (
             <KitchenStaffView   data={resolvedData as KitchenStaffAnalytics}   visibleIds={orderedVisibleIds} loading={loading} />

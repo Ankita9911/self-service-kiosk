@@ -1,12 +1,25 @@
 import { Building2, Store, MonitorSmartphone, Users, CheckCircle2, TrendingUp, Clock } from "lucide-react";
-import { MetricCard, SectionTitle, WidgetCard, EmptyState, AnalyticsShimmer } from "./AnalyticsShared";
+import { MetricCard, SectionTitle, WidgetCard, EmptyState, AnalyticsShimmer, PeriodSelector } from "./AnalyticsShared";
 import { MonthlyCountChart, CountBarChart, DonutChart } from "./AnalyticsCharts";
 import type { SuperAdminAnalytics } from "../types/analytics.types";
+
+const SA_PERIODS = [
+  { value: "3m",  label: "3M"  },
+  { value: "6m",  label: "6M"  },
+  { value: "12m", label: "12M" },
+];
+const SA_PERIOD_LABELS: Record<string, string> = {
+  "3m":  "Last 3 Months",
+  "6m":  "Last 6 Months",
+  "12m": "Last 12 Months",
+};
 
 interface Props {
   data: SuperAdminAnalytics;
   visibleIds: string[];
   loading?: boolean;
+  period: string;
+  onPeriodChange: (p: string) => void;
 }
 
 export const SUPER_ADMIN_WIDGETS = {
@@ -87,7 +100,9 @@ function RecentRow({ name, code, status, createdAt }: {
   );
 }
 
-export function SuperAdminView({ data, visibleIds, loading = false }: Props) {
+export function SuperAdminView({ data, visibleIds, loading = false, period, onPeriodChange }: Props) {
+  const activePeriod = period || "12m";
+  const periodLabel  = SA_PERIOD_LABELS[activePeriod] ?? activePeriod;
   // Defensive defaults — guards against stale cache / partial API responses
   const summary = data?.summary ?? {
     totalFranchises: 0, activeFranchises: 0, inactiveFranchises: 0,
@@ -109,6 +124,14 @@ export function SuperAdminView({ data, visibleIds, loading = false }: Props) {
 
   return (
     <div className="space-y-5">
+
+      {/* Global period selector */}
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <p className="text-[12.5px] text-slate-500 dark:text-slate-400">
+          Showing data for: <span className="font-semibold text-slate-700 dark:text-slate-200">{periodLabel}</span>
+        </p>
+        <PeriodSelector options={SA_PERIODS} value={activePeriod} onChange={onPeriodChange} />
+      </div>
 
       {/* Platform KPIs */}
       {show("sa-platform") && (
@@ -138,11 +161,15 @@ export function SuperAdminView({ data, visibleIds, loading = false }: Props) {
       {/* Franchise Growth */}
       {show("sa-franchise-growth") && (
         <section>
-          <SectionTitle><TrendingUp className="w-3.5 h-3.5 text-indigo-500" />Franchise Growth — Last 12 Months</SectionTitle>
-          <WidgetCard title="New Franchises" subtitle="Monthly registrations over the last 12 months" loading={loading} loadingHeight="h-[220px]">
+          <SectionTitle><TrendingUp className="w-3.5 h-3.5 text-indigo-500" />Franchise Growth</SectionTitle>
+          <WidgetCard
+            title="New Franchises"
+            subtitle={`Monthly registrations — ${periodLabel.toLowerCase()}`}
+            loading={loading} loadingHeight="h-[220px]"
+          >
             {franchiseGrowth.length > 0
               ? <MonthlyCountChart data={franchiseGrowth} label="New Franchises" height={220} />
-              : <EmptyState message="No franchise registrations in the last 12 months." />}
+              : <EmptyState message="No franchise registrations in the selected period." />}
           </WidgetCard>
         </section>
       )}
