@@ -2,6 +2,15 @@ import AppError from "../../shared/errors/AppError.js";
 import { login, forceResetPassword } from "./auth.service.js";
 import { sendSuccess } from "../../shared/utils/response.js";
 import { asyncHandler } from "../../shared/utils/asyncHandler.js";
+import env from "../../config/env.js";
+
+const COOKIE_NAME = "auth_token";
+const COOKIE_OPTIONS = {
+  httpOnly: true,
+  secure: env.NODE_ENV === "production",
+  sameSite: env.NODE_ENV === "production" ? "none" : "lax",
+  maxAge: 12 * 60 * 60 * 1000, // 12 hours
+};
 
 export const loginController = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
@@ -16,12 +25,30 @@ export const loginController = asyncHandler(async (req, res) => {
 
   const result = await login({ email, password });
 
+  res.cookie(COOKIE_NAME, result.token, COOKIE_OPTIONS);
+
   return sendSuccess(res, {
     message: "Login successful",
-    data: result,
+    data: {
+      user: result.user,
+      mustChangePassword: result.mustChangePassword,
+    },
   });
 });
 
+export const logoutController = asyncHandler(async (req, res) => {
+  res.clearCookie(COOKIE_NAME, {
+    httpOnly: true,
+    secure: env.NODE_ENV === "production",
+    sameSite: env.NODE_ENV === "production" ? "none" : "lax",
+  });
+
+  return sendSuccess(res, { message: "Logged out successfully" });
+});
+
+export const meController = asyncHandler(async (req, res) => {
+  return sendSuccess(res, { data: { user: req.user } });
+});
 
 export const forceResetPasswordController = asyncHandler(async (req, res) => {
   const userId = req.user?.userId ?? req.user?.id;

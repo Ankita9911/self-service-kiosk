@@ -1,16 +1,24 @@
 import express from "express";
 import cors from "cors";
 import helmet from "helmet";
+import cookieParser from "cookie-parser";
 
 import routes from "./routes/index.js";
 import errorMiddleware from "./shared/errors/error.middleware.js";
 import AppError from "./shared/errors/AppError.js";
 import { sendSuccess } from "./shared/utils/response.js";
+import env from "./config/env.js";
 
 const app = express();
 
 app.use(helmet());
-app.use(cors());
+app.use(
+  cors({
+    origin: env.CLIENT_URL || "http://localhost:5173",
+    credentials: true,
+  })
+);
+app.use(cookieParser());
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

@@ -21,6 +21,16 @@ kioskAxios.interceptors.request.use(
   }
 );
 
+let kioskRedirecting = false;
+
+function redirectKioskToLogin(message: string) {
+  if (kioskRedirecting) return;
+  kioskRedirecting = true;
+  localStorage.removeItem("kiosk_token");
+  toast.error(message);
+  window.location.href = "/kiosk/login";
+}
+
 kioskAxios.interceptors.response.use(
   (response) => {
     const message = response.data?.message;
@@ -31,23 +41,27 @@ kioskAxios.interceptors.response.use(
     return response;
   },
   (error) => {
-    let errorMessage = "Something went wrong";
-
     if (error.response) {
-      errorMessage =
+      const status = error.response.status;
+
+      if (status === 401) {
+        redirectKioskToLogin("Kiosk session expired.");
+        return Promise.reject(error);
+      }
+
+      if (status === 403) {
+        redirectKioskToLogin("This device has been deactivated.");
+        return Promise.reject(error);
+      }
+
+      const errorMessage =
         error.response.data?.message ||
         error.response.statusText ||
-        errorMessage;
-      if (error.response.status === 401) {
-        localStorage.removeItem("kiosk_token");
-        toast.error("Kiosk session expired");
-        window.location.href = "/kiosk/login";
-      }
+        "Something went wrong";
+      toast.error(errorMessage, { id: errorMessage });
     } else if (error.request) {
-      errorMessage = "Kiosk offline. Check network.";
+      toast.error("Kiosk offline. Check network.", { id: "kiosk-offline" });
     }
-
-    toast.error(errorMessage, { id: errorMessage });
 
     return Promise.reject(error);
   }

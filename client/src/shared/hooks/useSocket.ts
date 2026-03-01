@@ -17,11 +17,9 @@ export function useSocket(onOrderNew: (order: any) => void, onOrderStatusUpdated
   const socketRef = useRef<Socket | null>(null);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) return;
-
+    // Auth is now cookie-based — withCredentials lets the browser send the cookie
     const socket = io(SOCKET_URL, {
-      auth: { token },
+      withCredentials: true,
       transports: ["websocket"],
     });
 

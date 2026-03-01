@@ -16,6 +16,7 @@ const env = {
   PORT: process.env.PORT || 3000,
   MONGO_URI: requireEnv("MONGO_URI"),
   JWT_SECRET: requireEnv("JWT_SECRET"),
+  CLIENT_URL: process.env.CLIENT_URL || "http://localhost:5173",
 
   // ── SMTP (optional — email is fire-and-forget, app runs without these) ──
   SMTP_HOST: process.env.SMTP_HOST || "",

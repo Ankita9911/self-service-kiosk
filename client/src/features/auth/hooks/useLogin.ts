@@ -36,12 +36,12 @@ export function useLogin() {
     setLoading(true);
 
     try {
-      const { token, user, mustChangePassword } = await loginRequest(
+      const { user, mustChangePassword } = await loginRequest(
         result.data.email,
         password
       );
       const enrichedUser = { ...user, mustChangePassword };
-      setSession(token, enrichedUser);
+      setSession(enrichedUser);
     } catch {
       setError("Invalid email or password. Please try again.");
     } finally {

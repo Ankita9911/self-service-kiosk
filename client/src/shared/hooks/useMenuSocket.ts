@@ -16,10 +16,10 @@ const SOCKET_URL = getSocketUrl();
 /**
  * Listens for `menu:updated` socket events emitted by the queue worker.
  *
- * - Kiosk devices have outletId in their JWT → auto-joined on connect.
- * - Admin users (FRANCHISE_ADMIN / SUPER_ADMIN) may have outletId: null in
- *   their JWT, so pass the explicit `outletId` they are currently viewing and
- *   this hook will emit `join:outlet` to subscribe to the right room.
+ * - Kiosk devices pass their device token explicitly via `auth` (device JWT
+ *   is stored in localStorage as `kiosk_token`).
+ * - Authenticated admin/staff users rely on the httpOnly cookie
+ *   (`withCredentials: true`) — no token in JS land.
  *
  * @param onRefresh  - callback to re-fetch menu data
  * @param outletId   - the outlet being viewed (required for admin users)
@@ -33,15 +33,14 @@ export function useMenuSocket(onRefresh: () => void, outletId?: string) {
   }, [onRefresh]);
 
   useEffect(() => {
-    const token =
-      localStorage.getItem("kiosk_token") || localStorage.getItem("token");
+    // Kiosk devices still carry their device JWT in localStorage
+    const kioskToken = localStorage.getItem("kiosk_token");
 
-    if (!token) return;
+    const socketOptions = kioskToken
+      ? { auth: { token: kioskToken }, transports: ["websocket"] }
+      : { withCredentials: true, transports: ["websocket"] };
 
-    const socket = io(SOCKET_URL, {
-      auth: { token },
-      transports: ["websocket"],
-    });
+    const socket = io(SOCKET_URL, socketOptions);
 
     socketRef.current = socket;
 

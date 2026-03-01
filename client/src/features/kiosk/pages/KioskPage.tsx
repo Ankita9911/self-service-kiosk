@@ -16,6 +16,7 @@ import SuccessDialouge from "../components/SuccessDialouge";
 import { useKioskMenu } from "../hooks/usekioskMenu";
 import { useKioskCart } from "../hooks/useKioskCart";
 import { useKioskCheckout } from "../hooks/useKioskCheckout";
+import { useKioskForceLogout } from "../hooks/useKioskForceLogout";
 
 function getKioskToken(): string | null {
   const token = localStorage.getItem("kiosk_token");
@@ -34,6 +35,9 @@ function getKioskToken(): string | null {
 export default function KioskPage() {
   const navigate = useNavigate();
   const [isCartOpen, setIsCartOpen] = useState(true);
+
+  // Redirect immediately if the device is deactivated by an admin
+  useKioskForceLogout();
 
   const {
     selectedCategory,

@@ -3,17 +3,15 @@ import toast from "react-hot-toast";
 
 const axiosInstance = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL,
+  withCredentials: true, // send httpOnly cookie on every request
 });
 
 axiosInstance.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token");
-
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-
   return config;
 });
+
+// Prevent multiple simultaneous 401/403 responses from spamming logout/toasts
+let isLoggingOut = false;
 
 axiosInstance.interceptors.response.use(
   (response) => {
@@ -26,17 +24,31 @@ axiosInstance.interceptors.response.use(
     return response;
   },
   (error) => {
-    let errorMessage = "Something went wrong";
-
     if (error.response) {
-      errorMessage =
+      const status = error.response.status;
+
+      if (status === 401) {
+        // Only 401 means the session is gone — trigger logout once
+        if (!isLoggingOut) {
+          isLoggingOut = true;
+          window.dispatchEvent(new Event("auth:logout"));
+          setTimeout(() => { isLoggingOut = false; }, 3000);
+        }
+        // Silently swallow — the redirect to /login is enough feedback
+        return Promise.reject(error);
+      }
+
+      const errorMessage =
         error.response.data?.message ||
         error.response.statusText ||
-        errorMessage;
+        "Something went wrong";
+      toast.error(errorMessage);
     } else if (error.request) {
-      errorMessage = "Server not reachable";
+      toast.error("Server not reachable");
+    } else {
+      toast.error("Something went wrong");
     }
-    toast.error(errorMessage);
+
     return Promise.reject(error);
   }
 );

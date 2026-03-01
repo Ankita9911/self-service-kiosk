@@ -2,6 +2,7 @@ import bcrypt from "bcrypt";
 import crypto from "crypto";
 import Device from "./device.model.js";
 import AppError from "../../shared/errors/AppError.js";
+import { forceLogout } from "../../realtime/realtime.manager.js";
 
 const SALT_ROUNDS = 10;
 const ID_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
@@ -220,5 +221,11 @@ export async function setDeviceStatus(currentUser, deviceId, status) {
   }
   device.status = status;
   await device.save();
+
+  // If the device is being deactivated, force it out immediately
+  if (status === "INACTIVE") {
+    forceLogout("device", deviceId);
+  }
+
   return device;
 }

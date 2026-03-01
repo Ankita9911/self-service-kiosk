@@ -4,6 +4,7 @@ import AppError from "../../shared/errors/AppError.js";
 import { ROLE_HIERARCHY } from "../../core/rbac/roleHierarchy.js";
 import crypto from "crypto";
 import { sendWelcomeEmail, sendPasswordResetEmail } from "../../core/email/email.service.js";
+import { forceLogout } from "../../realtime/realtime.manager.js";
 
 //helper
 
@@ -195,6 +196,11 @@ export async function changeUserStatus(currentUser, id, status) {
 
   user.status = status;
   await user.save();
+
+  // If the user is being deactivated, force them out immediately
+  if (status === "INACTIVE") {
+    forceLogout("user", id);
+  }
 
   return user;
 }
