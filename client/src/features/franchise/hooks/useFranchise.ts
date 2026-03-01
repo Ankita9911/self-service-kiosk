@@ -7,6 +7,7 @@ import {
   createFranchise,
   updateFranchise,
   deleteFranchise,
+  setFranchiseStatus,
 } from "../services/franchise.service";
 
 export function useFranchises() {
@@ -63,6 +64,16 @@ export function useFranchises() {
     }
   }
 
+  async function handleSetStatus(id: string, status: "ACTIVE" | "INACTIVE") {
+    try {
+      await setFranchiseStatus(id, status);
+      await fetchFranchises(true);
+    } catch (error) {
+      console.error("Failed to update franchise status:", error);
+      throw error;
+    }
+  }
+
   return {
     franchises,
     loading,
@@ -71,5 +82,6 @@ export function useFranchises() {
     handleCreate,
     handleUpdate,
     handleDelete,
+    handleSetStatus,
   };
 }

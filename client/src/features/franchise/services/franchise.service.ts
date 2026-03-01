@@ -37,3 +37,11 @@ export async function updateFranchise(
 export async function deleteFranchise(id: string): Promise<void> {
   await axiosInstance.delete(`/franchises/${id}`);
 }
+
+export async function setFranchiseStatus(
+  id: string,
+  status: "ACTIVE" | "INACTIVE"
+): Promise<Franchise> {
+  const response = await axiosInstance.patch(`/franchises/${id}/status`, { status });
+  return response.data.data;
+}

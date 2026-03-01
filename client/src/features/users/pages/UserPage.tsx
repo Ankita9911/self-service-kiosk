@@ -316,7 +316,7 @@ export default function UserPage() {
         open={open}
         onClose={() => setOpen(false)}
         currentUser={currentUser}
-        franchises={franchises}
+        franchises={franchises.filter((f) => f.status === "ACTIVE")}
         outlets={outlets}
         onCreated={(pw, email) => setCreatedUser({ password: pw, email })}
       />

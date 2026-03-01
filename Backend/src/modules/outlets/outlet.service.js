@@ -1,5 +1,8 @@
 import Outlet from "./outlet.model.js";
 import Franchise from "../franchises/franchise.model.js";
+import User from "../users/user.model.js";
+import Device from "../devices/device.model.js";
+import { forceLogout } from "../../realtime/realtime.manager.js";
 import AppError from "../../shared/errors/AppError.js";
 
 export async function createOutlet(payload, user) {
@@ -117,4 +120,61 @@ export async function deleteOutlet(id, user) {
   await outlet.save();
 
   return { message: "Outlet deleted successfully" };
+}
+
+export async function setOutletStatus(id, status, user) {
+  if (!["ACTIVE", "INACTIVE"].includes(status)) {
+    throw new AppError("Invalid status value", 400, "VALIDATION_ERROR");
+  }
+
+  const outlet = await getOutletById(id, user);
+
+  outlet.status = status;
+  await outlet.save();
+
+  if (status === "INACTIVE") {
+    // Deactivate all users assigned to this outlet
+    await User.updateMany(
+      { outletId: outlet._id, isDeleted: false },
+      { $set: { status: "INACTIVE" } }
+    );
+
+    // Deactivate all devices assigned to this outlet
+    await Device.updateMany(
+      { outletId: outlet._id, isDeleted: false },
+      { $set: { status: "INACTIVE" } }
+    );
+
+    // Force-kick affected users
+    const affectedUsers = await User.find(
+      { outletId: outlet._id, isDeleted: false },
+      "_id"
+    ).lean();
+    for (const u of affectedUsers) {
+      forceLogout("user", u._id.toString());
+    }
+
+    // Force-kick affected devices
+    const affectedDevices = await Device.find(
+      { outletId: outlet._id, isDeleted: false },
+      "deviceId"
+    ).lean();
+    for (const d of affectedDevices) {
+      forceLogout("device", d.deviceId);
+    }
+  } else {
+    // Re-activate users under this outlet
+    await User.updateMany(
+      { outletId: outlet._id, isDeleted: false },
+      { $set: { status: "ACTIVE" } }
+    );
+
+    // Re-activate devices under this outlet
+    await Device.updateMany(
+      { outletId: outlet._id, isDeleted: false },
+      { $set: { status: "ACTIVE" } }
+    );
+  }
+
+  return outlet;
 }

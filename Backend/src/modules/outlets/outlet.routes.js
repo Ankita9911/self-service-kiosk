@@ -9,6 +9,7 @@ import {
   updateOutletController,
   deleteOutletController,
   getOutletByIdController,
+  setOutletStatusController,
 } from "./outlet.controller.js";
 
 const router = express.Router();
@@ -43,6 +44,12 @@ router.delete(
   "/:id",
   authorize(PERMISSIONS.OUTLET_DELETE),
   deleteOutletController
+);
+
+router.patch(
+  "/:id/status",
+  authorize(PERMISSIONS.OUTLET_UPDATE),
+  setOutletStatusController
 );
 
 export default router;

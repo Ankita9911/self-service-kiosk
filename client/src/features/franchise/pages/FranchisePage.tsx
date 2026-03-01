@@ -17,6 +17,7 @@ export default function FranchisePage() {
     handleDelete,
     handleCreate,
     handleUpdate,
+    handleSetStatus,
   } = useFranchises();
 
   const [modalOpen,    setModalOpen]    = useState(false);
@@ -78,6 +79,7 @@ export default function FranchisePage() {
           onPageSizeChange={(s) => { setPageSize(s); setPage(1); }}
           onEdit={(f) => { setEditing(f); setModalOpen(true); }}
           onDelete={(f) => setDeleteTarget(f)}
+          onToggleStatus={(f) => handleSetStatus(f._id, f.status === "ACTIVE" ? "INACTIVE" : "ACTIVE")}
         />
       </div>
 

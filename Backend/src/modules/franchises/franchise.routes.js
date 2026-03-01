@@ -9,6 +9,7 @@ import {
   getFranchiseByIdController,
   updateFranchiseController,
   deleteFranchiseController,
+  setFranchiseStatusController,
 } from "./franchise.controller.js";
 
 const router = express.Router();
@@ -43,6 +44,12 @@ router.delete(
   "/:id",
   authorize(PERMISSIONS.FRANCHISE_DELETE),
   deleteFranchiseController
+);
+
+router.patch(
+  "/:id/status",
+  authorize(PERMISSIONS.FRANCHISE_UPDATE),
+  setFranchiseStatusController
 );
 
 export default router;

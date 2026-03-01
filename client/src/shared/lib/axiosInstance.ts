@@ -26,15 +26,15 @@ axiosInstance.interceptors.response.use(
   (error) => {
     if (error.response) {
       const status = error.response.status;
+      const errorCode = error.response.data?.code;
 
-      if (status === 401) {
-        // Only 401 means the session is gone — trigger logout once
+      if (status === 401 || (status === 403 && errorCode === "ACCOUNT_INACTIVE")) {
+        // Session is gone or account was deactivated — trigger logout once
         if (!isLoggingOut) {
           isLoggingOut = true;
           window.dispatchEvent(new Event("auth:logout"));
           setTimeout(() => { isLoggingOut = false; }, 3000);
         }
-        // Silently swallow — the redirect to /login is enough feedback
         return Promise.reject(error);
       }
 

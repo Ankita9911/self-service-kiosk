@@ -1,9 +1,16 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { io } from "socket.io-client";
 import useAuth from "@/shared/hooks/useAuth";
 import type { Outlet } from "@/features/outlet/types/outlet.types";
 import type { Franchise } from "@/features/franchise/types/franchise.types";
-import { getOutlets, createOutlet, updateOutlet, deleteOutlet } from "@/features/outlet/services/outlet.service";
+import { getOutlets, createOutlet, updateOutlet, deleteOutlet, setOutletStatus } from "@/features/outlet/services/outlet.service";
+import type { OutletAddress } from "@/features/outlet/types/outlet.types";
+
+function formatAddress(addr?: OutletAddress): string {
+  if (!addr) return "";
+  return [addr.line1, addr.city, addr.state, addr.pincode, addr.country].filter(Boolean).join(", ");
+}
 import { getFranchises } from "@/features/franchise/services/franchise.service";
 import { TablePagination } from "@/shared/components/ui/TablePagination";
 import {
@@ -97,7 +104,19 @@ export default function OutletPage() {
 
   useEffect(() => { fetchData(); }, []);
 
-  async function handleSubmit(form: { franchiseId: string; name: string; outletCode: string; address: string }) {
+  // Live-refresh when a franchise status cascade changes outlet statuses
+  useEffect(() => {
+    const socketUrl = (() => {
+      const apiUrl = import.meta.env.VITE_API_BASE_URL;
+      if (!apiUrl) return "http://localhost:3000";
+      try { return new URL(apiUrl).origin; } catch { return "http://localhost:3000"; }
+    })();
+    const socket = io(socketUrl, { withCredentials: true, transports: ["websocket"] });
+    socket.on("outlets:refreshNeeded", () => fetchData(true));
+    return () => { socket.disconnect(); };
+  }, []);
+
+  async function handleSubmit(form: { franchiseId: string; name: string; outletCode: string; address: OutletAddress }) {
     if (editing) await updateOutlet(editing._id, form);
     else await createOutlet(form);
     setOpen(false);
@@ -117,6 +136,16 @@ export default function OutletPage() {
     }
   }
 
+  async function handleToggleStatus(o: Outlet) {
+    const newStatus = o.status === "ACTIVE" ? "INACTIVE" : "ACTIVE";
+    try {
+      await setOutletStatus(o._id, newStatus);
+      fetchData(true);
+    } catch {
+      toast.error("Failed to update outlet status");
+    }
+  }
+
   const filtered = useMemo(() => {
     const q = searchTerm.toLowerCase();
     return outlets.filter((o) => {
@@ -124,7 +153,7 @@ export default function OutletPage() {
         !q ||
         o.name.toLowerCase().includes(q) ||
         o.outletCode.toLowerCase().includes(q) ||
-        (o.address || "").toLowerCase().includes(q);
+        formatAddress(o.address).toLowerCase().includes(q);
       const matchStatus = statusFilter === "ALL" || o.status === statusFilter;
       return matchSearch && matchStatus;
     });
@@ -142,7 +171,7 @@ export default function OutletPage() {
   if (!canViewOutlet) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[40vh] gap-4 text-center">
-        <div className="h-14 w-14 rounded-2xl bg-slate-50 dark:bg-white/[0.04] border border-slate-100 dark:border-white/[0.06] flex items-center justify-center">
+        <div className="h-14 w-14 rounded-2xl bg-slate-50 dark:bg-white/4 border border-slate-100 dark:border-white/6 flex items-center justify-center">
           <ShieldAlert className="w-6 h-6 text-slate-300 dark:text-slate-600" />
         </div>
         <div>
@@ -155,7 +184,7 @@ export default function OutletPage() {
 
   return (
     <>
-      <div className="space-y-5 max-w-[1400px]">
+      <div className="space-y-5 max-w-350">
 
         {/* ── Header ──────────────────────────────────────────────────────── */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -181,7 +210,7 @@ export default function OutletPage() {
               className="
                 h-9 w-9 rounded-xl
                 bg-white dark:bg-[#161920]
-                border border-slate-100 dark:border-white/[0.08]
+                border border-slate-100 dark:border-white/8
                 flex items-center justify-center
                 text-slate-400 dark:text-slate-500
                 hover:text-indigo-500 dark:hover:text-indigo-400
@@ -235,7 +264,7 @@ export default function OutletPage() {
               className="
                 w-full h-9 pl-9 pr-9 rounded-xl
                 bg-white dark:bg-[#161920]
-                border border-slate-100 dark:border-white/[0.08]
+                border border-slate-100 dark:border-white/8
                 text-[13px] text-slate-700 dark:text-slate-200
                 placeholder:text-slate-400 dark:placeholder:text-slate-600
                 focus:outline-none
@@ -247,14 +276,14 @@ export default function OutletPage() {
             {searchTerm && (
               <button
                 onClick={() => handleSearchChange("")}
-                className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 rounded-full bg-slate-200 dark:bg-white/[0.1] hover:bg-slate-300 dark:hover:bg-white/[0.15] flex items-center justify-center transition-colors"
+                className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 rounded-full bg-slate-200 dark:bg-white/10 hover:bg-slate-300 dark:hover:bg-white/15 flex items-center justify-center transition-colors"
               >
                 <X className="w-2.5 h-2.5 text-slate-500 dark:text-slate-400" />
               </button>
             )}
           </div>
 
-          <div className="flex gap-1 bg-white dark:bg-[#161920] border border-slate-100 dark:border-white/[0.08] rounded-xl p-1">
+          <div className="flex gap-1 bg-white dark:bg-[#161920] border border-slate-100 dark:border-white/8 rounded-xl p-1">
             {(["ALL", "ACTIVE", "INACTIVE"] as const).map((s) => (
               <button
                 key={s}
@@ -263,7 +292,7 @@ export default function OutletPage() {
                   px-3 h-7 rounded-lg text-[12px] font-semibold transition-all
                   ${statusFilter === s
                     ? "bg-indigo-600 text-white shadow-sm"
-                    : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-white/[0.05]"
+                    : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-white/5"
                   }
                 `}
               >
@@ -274,10 +303,10 @@ export default function OutletPage() {
         </div>
 
         {/* ── Table ───────────────────────────────────────────────────────── */}
-        <div className="bg-white dark:bg-[#161920] rounded-2xl border border-slate-100 dark:border-white/[0.06]">
+        <div className="bg-white dark:bg-[#161920] rounded-2xl border border-slate-100 dark:border-white/6">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-slate-50 dark:border-white/[0.05] bg-slate-50/60 dark:bg-white/[0.02]">
+              <tr className="border-b border-slate-50 dark:border-white/5 bg-slate-50/60 dark:bg-white/2">
                 {["Outlet", "Code", ...(isSuperAdmin ? ["Franchise"] : []), "Address", "Status", ""].map((h, i) => (
                   <th key={i} className="px-5 py-3.5 text-left text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
                     {h}
@@ -286,7 +315,7 @@ export default function OutletPage() {
               </tr>
             </thead>
 
-            <tbody className="divide-y divide-slate-50 dark:divide-white/[0.04]">
+            <tbody className="divide-y divide-slate-50 dark:divide-white/4">
               {showShimmer ? (
                 Array.from({ length: 6 }).map((_, i) => (
                   <tr key={i}>
@@ -302,7 +331,7 @@ export default function OutletPage() {
                 <tr>
                   <td colSpan={colCount} className="py-20 text-center">
                     <div className="flex flex-col items-center gap-3">
-                      <div className="h-12 w-12 rounded-2xl bg-slate-50 dark:bg-white/[0.04] border border-slate-100 dark:border-white/[0.06] flex items-center justify-center">
+                      <div className="h-12 w-12 rounded-2xl bg-slate-50 dark:bg-white/4 border border-slate-100 dark:border-white/6 flex items-center justify-center">
                         <Store className="w-5 h-5 text-slate-300 dark:text-slate-600" />
                       </div>
                       <div>
@@ -318,7 +347,7 @@ export default function OutletPage() {
                 </tr>
               ) : (
                 filtered.slice((page - 1) * pageSize, page * pageSize).map((o) => (
-                  <tr key={o._id} className="group hover:bg-indigo-50/30 dark:hover:bg-indigo-500/[0.04] transition-colors">
+                  <tr key={o._id} className="group hover:bg-indigo-50/30 dark:hover:bg-indigo-500/4 transition-colors">
                     {/* Name */}
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-3">
@@ -331,7 +360,7 @@ export default function OutletPage() {
 
                     {/* Code */}
                     <td className="px-5 py-4">
-                      <span className="font-mono text-[11.5px] font-medium text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-white/[0.07] px-2 py-1 rounded-lg border border-slate-200 dark:border-white/[0.08]">
+                      <span className="font-mono text-[11.5px] font-medium text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-white/7 px-2 py-1 rounded-lg border border-slate-200 dark:border-white/8">
                         {o.outletCode}
                       </span>
                     </td>
@@ -350,10 +379,10 @@ export default function OutletPage() {
 
                     {/* Address */}
                     <td className="px-5 py-4">
-                      {o.address ? (
+                      {o.address && formatAddress(o.address) ? (
                         <div className="flex items-center gap-1.5 text-[12.5px] text-slate-500 dark:text-slate-400">
                           <MapPin className="w-3.5 h-3.5 shrink-0 text-slate-400 dark:text-slate-500" />
-                          <span className="truncate max-w-[180px]">{o.address}</span>
+                          <span className="truncate max-w-45">{formatAddress(o.address)}</span>
                         </div>
                       ) : (
                         <span className="text-[12px] text-slate-300 dark:text-slate-600 italic">No address</span>
@@ -391,9 +420,12 @@ export default function OutletPage() {
                           showEdit={canUpdateOutlet}
                           showDelete={canDeleteOutlet}
                           showMenu={canManageMenu}
+                          showToggleStatus={canUpdateOutlet}
+                          status={o.status}
                           onEdit={() => { setEditing(o); setOpen(true); }}
                           onDelete={() => setDeleteTarget(o)}
                           onMenu={() => navigate(`/outlets/${o._id}/menu`)}
+                          onToggleStatus={() => handleToggleStatus(o)}
                         />
                       </div>
                     </td>
@@ -404,7 +436,7 @@ export default function OutletPage() {
           </table>
 
           {!showShimmer && filtered.length > 0 && (
-            <div className="border-t border-slate-50 dark:border-white/[0.05]">
+            <div className="border-t border-slate-50 dark:border-white/5">
               <TablePagination
                 total={filtered.length}
                 page={page}

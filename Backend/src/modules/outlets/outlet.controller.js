@@ -4,6 +4,7 @@ import {
   getOutletById,
   updateOutlet,
   deleteOutlet,
+  setOutletStatus,
 } from "./outlet.service.js";
 
 import { sendSuccess } from "../../shared/utils/response.js";
@@ -71,5 +72,21 @@ export const deleteOutletController = asyncHandler(async (req, res) => {
 
   return sendSuccess(res, {
     message: "Outlet deleted successfully",
+  });
+});
+
+export const setOutletStatusController = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const { status } = req.body;
+
+  if (!id) {
+    throw new AppError("Outlet ID is required", 400, "VALIDATION_ERROR");
+  }
+
+  const outlet = await setOutletStatus(id, status, req.user);
+
+  return sendSuccess(res, {
+    message: `Outlet marked as ${status.toLowerCase()} successfully`,
+    data: outlet,
   });
 });

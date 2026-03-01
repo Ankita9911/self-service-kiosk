@@ -22,12 +22,13 @@ export const outletSchema = z.object({
             /^[A-Z0-9][A-Z0-9\-]*[A-Z0-9]$|^[A-Z0-9]$/,
             "Outlet code can only contain uppercase letters, digits and hyphens"
         ),
-    address: z
-        .string()
-        .trim()
-        .max(300, "Address must be at most 300 characters")
-        .optional()
-        .or(z.literal("")),
+    address: z.object({
+        line1:   z.string().trim().max(200, "Too long").optional().or(z.literal("")),
+        city:    z.string().trim().max(100, "Too long").optional().or(z.literal("")),
+        state:   z.string().trim().max(100, "Too long").optional().or(z.literal("")),
+        pincode: z.string().trim().max(20,  "Too long").optional().or(z.literal("")),
+        country: z.string().trim().max(100, "Too long").optional().or(z.literal("")),
+    }).optional(),
 });
 
 export type OutletFormValues = z.infer<typeof outletSchema>;

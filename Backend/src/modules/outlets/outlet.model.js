@@ -25,8 +25,11 @@ const outletSchema = new Schema(
     },
 
     address: {
-      type: String,
-      trim: true,
+      line1:   { type: String, trim: true },
+      city:    { type: String, trim: true },
+      state:   { type: String, trim: true },
+      pincode: { type: String, trim: true },
+      country: { type: String, trim: true },
     },
 
     status: {

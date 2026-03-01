@@ -14,13 +14,14 @@ interface Props {
   onPageSizeChange: (size: number) => void;
   onEdit: (f: Franchise) => void;
   onDelete: (f: Franchise) => void;
+  onToggleStatus: (f: Franchise) => void;
 }
 
 export function FranchiseTable({
   franchises, loading,
   page, pageSize,
   onPageChange, onPageSizeChange,
-  onEdit, onDelete,
+  onEdit, onDelete, onToggleStatus,
 }: Props) {
   const paginated = franchises.slice((page - 1) * pageSize, page * pageSize);
 
@@ -112,7 +113,12 @@ export function FranchiseTable({
 
                 {/* Actions */}
                 <td className="px-3 py-4">
-                  <RowMenu onEdit={() => onEdit(f)} onDelete={() => onDelete(f)} />
+                  <RowMenu
+                    status={f.status}
+                    onEdit={() => onEdit(f)}
+                    onDelete={() => onDelete(f)}
+                    onToggleStatus={() => onToggleStatus(f)}
+                  />
                 </td>
               </tr>
             ))

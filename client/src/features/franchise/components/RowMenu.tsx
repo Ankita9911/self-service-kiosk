@@ -1,12 +1,14 @@
 import { useEffect, useRef, useState } from "react";
-import { MoreVertical, Pencil, Trash2 } from "lucide-react";
+import { MoreVertical, Pencil, Trash2, ToggleLeft, ToggleRight } from "lucide-react";
 
 interface Props {
+  status: string;
   onEdit: () => void;
   onDelete: () => void;
+  onToggleStatus: () => void;
 }
 
-export function RowMenu({ onEdit, onDelete }: Props) {
+export function RowMenu({ status, onEdit, onDelete, onToggleStatus }: Props) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -46,6 +48,20 @@ export function RowMenu({ onEdit, onDelete }: Props) {
           >
             <Pencil className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
             Edit details
+          </button>
+
+          <div className="h-px bg-slate-100 dark:bg-white/[0.06] mx-3" />
+
+          <button
+            onClick={() => { setOpen(false); onToggleStatus(); }}
+            className="w-full flex items-center gap-3 px-4 py-2.5 text-[12.5px] text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/[0.04] transition"
+          >
+            {status === "ACTIVE" ? (
+              <ToggleLeft className="w-3.5 h-3.5 text-amber-500" />
+            ) : (
+              <ToggleRight className="w-3.5 h-3.5 text-emerald-500" />
+            )}
+            {status === "ACTIVE" ? "Set as Inactive" : "Set as Active"}
           </button>
 
           <div className="h-px bg-slate-100 dark:bg-white/[0.06] mx-3" />

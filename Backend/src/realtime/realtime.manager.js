@@ -104,3 +104,11 @@ export function forceLogout(type, id) {
     io.in(room).disconnectSockets(true);
   }, 500);
 }
+
+/**
+ * Broadcast a named refresh event to all connected clients.
+ */
+export function broadcastRefresh(event) {
+  if (!io) return;
+  io.emit(event);
+}

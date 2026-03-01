@@ -1,20 +1,26 @@
 import { useState, useEffect, useRef } from "react";
-import { MoreVertical, UtensilsCrossed, Pencil, Trash2 } from "lucide-react";
+import { MoreVertical, UtensilsCrossed, Pencil, Trash2, ToggleLeft, ToggleRight } from "lucide-react";
 
 export function RowMenu({
   onEdit,
   onDelete,
   onMenu,
+  onToggleStatus,
   showEdit,
   showDelete,
   showMenu,
+  showToggleStatus,
+  status,
 }: {
   onEdit?: () => void;
   onDelete?: () => void;
   onMenu?: () => void;
+  onToggleStatus?: () => void;
   showEdit: boolean;
   showDelete: boolean;
   showMenu: boolean;
+  showToggleStatus?: boolean;
+  status?: string;
 }) {
   const [open, setOpen] = useState(false);
   const [openAbove, setOpenAbove] = useState(false);
@@ -28,7 +34,7 @@ export function RowMenu({
     document.addEventListener("mousedown", fn);
     return () => document.removeEventListener("mousedown", fn);
   }, []);
-  if (!showEdit && !showDelete && !showMenu) return null;
+  if (!showEdit && !showDelete && !showMenu && !showToggleStatus) return null;
   return (
     <div className="relative" ref={ref}>
       <button
@@ -77,7 +83,20 @@ export function RowMenu({
               Edit details
             </button>
           )}
-          {(showMenu || showEdit) && showDelete && (
+          {showToggleStatus && (
+            <button
+              onClick={() => { setOpen(false); onToggleStatus?.(); }}
+              className="w-full flex items-center gap-3 px-4 py-2.5 text-[12.5px] text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/[0.04] transition"
+            >
+              {status === "ACTIVE" ? (
+                <ToggleLeft className="w-3.5 h-3.5 text-amber-500" />
+              ) : (
+                <ToggleRight className="w-3.5 h-3.5 text-emerald-500" />
+              )}
+              {status === "ACTIVE" ? "Set as Inactive" : "Set as Active"}
+            </button>
+          )}
+          {(showMenu || showEdit || showToggleStatus) && showDelete && (
             <div className="h-px bg-slate-100 dark:bg-white/[0.06] mx-3" />
           )}
           {showDelete && (

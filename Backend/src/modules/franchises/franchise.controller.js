@@ -4,6 +4,7 @@ import {
   getFranchiseById,
   updateFranchise,
   deleteFranchise,
+  setFranchiseStatus,
 } from "./franchise.service.js";
 
 import { sendSuccess } from "../../shared/utils/response.js";
@@ -92,5 +93,21 @@ export const deleteFranchiseController = asyncHandler(async (req, res) => {
 
   return sendSuccess(res, {
     message: "Franchise deleted successfully",
+  });
+});
+
+export const setFranchiseStatusController = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const { status } = req.body;
+
+  if (!id) {
+    throw new AppError("Franchise ID is required", 400, "VALIDATION_ERROR");
+  }
+
+  const franchise = await setFranchiseStatus(id, status, req.user);
+
+  return sendSuccess(res, {
+    message: `Franchise marked as ${status.toLowerCase()} successfully`,
+    data: franchise,
   });
 });

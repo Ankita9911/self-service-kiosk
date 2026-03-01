@@ -1,5 +1,5 @@
 import axiosInstance from "@/shared/lib/axiosInstance";
-import type { Outlet } from "@/features/outlet/types/outlet.types";
+import type { Outlet, OutletAddress } from "@/features/outlet/types/outlet.types";
 
 export async function getOutlets(): Promise<Outlet[]> {
   const response = await axiosInstance.get("/outlets");
@@ -10,7 +10,7 @@ export async function createOutlet(payload: {
   franchiseId?: string;
   name: string;
   outletCode: string;
-  address?: string;
+  address?: OutletAddress;
 }) {
   const response = await axiosInstance.post("/outlets", payload);
   return response.data.data;
@@ -27,6 +27,14 @@ export async function updateOutlet(
 
 export async function deleteOutlet(id: string) {
   const response = await axiosInstance.delete(`/outlets/${id}`);
+  return response.data.data;
+}
+
+export async function setOutletStatus(
+  id: string,
+  status: "ACTIVE" | "INACTIVE"
+): Promise<Outlet> {
+  const response = await axiosInstance.patch(`/outlets/${id}/status`, { status });
   return response.data.data;
 }
 
