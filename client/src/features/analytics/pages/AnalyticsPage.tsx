@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { RefreshCw, AlertCircle, ShieldCheck, Zap, ArrowRight, MoreHorizontal } from "lucide-react";
+import { RefreshCw, AlertCircle, Zap, ArrowRight } from "lucide-react";
 import useAuth from "@/shared/hooks/useAuth";
 import { usePermission } from "@/shared/hooks/usePermissions";
 import { useAnalytics } from "../hooks/useAnalytics";
@@ -95,7 +95,7 @@ function QuickCard({
 }) {
   if (loading) {
     return (
-      <div className="bg-white dark:bg-[#161920] rounded-2xl border border-slate-100 dark:border-white/[0.06] p-6 space-y-4">
+      <div className="bg-white dark:bg-[#161920] rounded-2xl border border-slate-100 dark:border-white/6 p-6 space-y-4">
         <div className="flex items-center gap-3">
           <AnalyticsShimmer className="h-10 w-10 rounded-xl" />
           <AnalyticsShimmer className="h-5 w-36" />
@@ -112,7 +112,7 @@ function QuickCard({
       className="
         group w-full text-left
         bg-white dark:bg-[#161920]
-        border border-slate-100 dark:border-white/[0.06]
+        border border-slate-100 dark:border-white/6
         hover:border-indigo-200 dark:hover:border-indigo-500/30
         hover:shadow-sm hover:shadow-indigo-50 dark:hover:shadow-indigo-900/10
         rounded-2xl p-6 transition-all duration-200
@@ -134,7 +134,7 @@ function QuickCard({
             )}
           </div>
         </div>
-        <div className="h-7 w-7 rounded-lg bg-slate-50 dark:bg-white/[0.05] flex items-center justify-center group-hover:bg-indigo-500 transition-colors shrink-0">
+        <div className="h-7 w-7 rounded-lg bg-slate-50 dark:bg-white/5 flex items-center justify-center group-hover:bg-indigo-500 transition-colors shrink-0">
           <ArrowRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-white transition-colors" />
         </div>
       </div>
@@ -148,10 +148,14 @@ function QuickCard({
 const EMPTY: Record<string, unknown> = {
   SUPER_ADMIN: {
     role: "SUPER_ADMIN",
-    summary: { totalRevenue: 0, totalOrders: 0, avgOrderValue: 0, totalFranchises: 0, totalOutlets: 0, usersByRole: {} },
-    weekComparison: { thisWeek: { revenue: 0, orders: 0 }, lastWeek: { revenue: 0, orders: 0 }, revenueGrowth: 0, ordersGrowth: 0 },
-    trends: { revenueLast30Days: [], ordersLast30Days: [] },
-    topFranchises: [], topOutlets: [], topItems: [], monthlyGrowth: 0,
+    summary: {
+      totalFranchises: 0, activeFranchises: 0, inactiveFranchises: 0,
+      totalOutlets: 0, activeOutlets: 0, inactiveOutlets: 0,
+      totalDevices: 0, activeDevices: 0, inactiveDevices: 0,
+      totalUsers: 0, usersByRole: {},
+    },
+    franchiseGrowth: [], outletsByFranchise: [], devicesByOutlet: [],
+    recentFranchises: [], recentOutlets: [],
   },
   FRANCHISE_ADMIN: {
     role: "FRANCHISE_ADMIN",
@@ -199,7 +203,7 @@ export default function AnalyticsPage() {
   const resolvedData = data ?? (EMPTY[role] as unknown ?? null);
 
   return (
-    <div className="space-y-6 max-w-[1400px]">
+    <div className="space-y-6 max-w-350">
 
       <div className="flex items-start justify-between gap-4">
         <div>
@@ -213,7 +217,7 @@ export default function AnalyticsPage() {
 
         <div className="flex items-center gap-2 shrink-0">
        
-          <div className="hidden sm:flex items-center gap-2 px-3.5 py-2 bg-white dark:bg-[#161920] border border-slate-100 dark:border-white/[0.06] rounded-xl">
+          <div className="hidden sm:flex items-center gap-2 px-3.5 py-2 bg-white dark:bg-[#161920] border border-slate-100 dark:border-white/6 rounded-xl">
             <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
             <span className="text-[12px] font-medium text-slate-600 dark:text-slate-300">{todayLabel}</span>
           </div>
@@ -225,10 +229,10 @@ export default function AnalyticsPage() {
             className="
               flex items-center gap-2 px-3 py-2 rounded-xl
               bg-white dark:bg-[#161920]
-              border border-slate-100 dark:border-white/[0.08]
+              border border-slate-100 dark:border-white/8
               text-[12.5px] font-medium text-slate-500 dark:text-slate-400
               hover:text-slate-700 dark:hover:text-slate-200
-              hover:border-slate-200 dark:hover:border-white/[0.15]
+              hover:border-slate-200 dark:hover:border-white/15
               disabled:opacity-50 transition
             "
           >
@@ -277,7 +281,7 @@ export default function AnalyticsPage() {
       </div>
 
       {!loading && error && (
-        <div className="bg-red-50 dark:bg-red-500/[0.08] border border-red-200 dark:border-red-500/20 rounded-2xl p-6 flex items-center gap-4">
+        <div className="bg-red-50 dark:bg-red-500/8 border border-red-200 dark:border-red-500/20 rounded-2xl p-6 flex items-center gap-4">
           <div className="w-10 h-10 rounded-xl bg-red-100 dark:bg-red-500/15 flex items-center justify-center shrink-0">
             <AlertCircle className="w-5 h-5 text-red-500 dark:text-red-400" />
           </div>

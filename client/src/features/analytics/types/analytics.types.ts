@@ -29,37 +29,44 @@ export interface SuperAdminAnalytics {
     role: "SUPER_ADMIN";
     summary: {
         totalFranchises: number;
+        activeFranchises: number;
+        inactiveFranchises: number;
         totalOutlets: number;
+        activeOutlets: number;
+        inactiveOutlets: number;
+        totalDevices: number;
+        activeDevices: number;
+        inactiveDevices: number;
+        totalUsers: number;
         usersByRole: Record<string, number>;
-        totalRevenue: number;
-        totalOrders: number;
-        avgOrderValue: number;
     };
-    trends: {
-        revenueLast30Days: TrendPoint[];
-        ordersLast30Days: TrendPoint[];
-    };
-    weekComparison: {
-        thisWeek: { revenue: number; orders: number };
-        lastWeek: { revenue: number; orders: number };
-        revenueGrowth: number;
-    };
-    monthlyGrowth: number;
-    topFranchises: Array<{
+    franchiseGrowth: Array<{ _id: string; count: number }>;
+    outletsByFranchise: Array<{
         franchiseId: string;
         name: string;
         brandCode: string;
-        revenue: number;
-        orders: number;
+        outletCount: number;
     }>;
-    topOutlets: Array<{
+    devicesByOutlet: Array<{
         outletId: string;
         name: string;
         outletCode: string;
-        revenue: number;
-        orders: number;
+        deviceCount: number;
     }>;
-    topItems: TopItem[];
+    recentFranchises: Array<{
+        _id: string;
+        name: string;
+        brandCode: string;
+        status: string;
+        createdAt: string;
+    }>;
+    recentOutlets: Array<{
+        _id: string;
+        name: string;
+        outletCode: string;
+        status: string;
+        createdAt: string;
+    }>;
 }
 
 export interface FranchiseAdminAnalytics {

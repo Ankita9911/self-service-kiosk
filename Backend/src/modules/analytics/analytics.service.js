@@ -3,6 +3,7 @@ import Order from "../orders/order.model.js";
 import User from "../users/user.model.js";
 import Franchise from "../franchises/franchise.model.js";
 import Outlet from "../outlets/outlet.model.js";
+import Device from "../devices/device.model.js";
 import { getRedisClient } from "../../core/cache/redis.client.js";
 import { buildTenantKey } from "../../core/cache/cache.utils.js";
 
@@ -36,83 +37,56 @@ async function withCache(key, ttl, fn) {
 
 async function getSuperAdminAnalytics() {
     const now = new Date();
-    const thirtyDaysAgo = new Date(now - 30 * 24 * 60 * 60 * 1000);
-    const startOfWeek = new Date(now);
-    startOfWeek.setDate(now.getDate() - now.getDay());
-    startOfWeek.setHours(0, 0, 0, 0);
-    const startOfLastWeek = new Date(startOfWeek - 7 * 24 * 60 * 60 * 1000);
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-    const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
+    const twelveMonthsAgo = new Date(now);
+    twelveMonthsAgo.setFullYear(now.getFullYear() - 1);
+    twelveMonthsAgo.setDate(1);
+    twelveMonthsAgo.setHours(0, 0, 0, 0);
 
     const [
         totalFranchises,
+        activeFranchises,
         totalOutlets,
+        activeOutlets,
+        totalDevices,
+        activeDevices,
+        totalUsers,
         usersByRole,
-        overallStats,
-        revenueTrend,
-        ordersTrend,
-        topFranchises,
-        topOutlets,
-        topItems,
-        weekComparison,
-        thisMonthRevenue,
-        lastMonthRevenue,
+        franchiseGrowth,
+        outletsByFranchise,
+        devicesByOutlet,
+        recentFranchises,
+        recentOutlets,
     ] = await Promise.all([
         Franchise.countDocuments({ isDeleted: false }),
+        Franchise.countDocuments({ isDeleted: false, status: "ACTIVE" }),
         Outlet.countDocuments({ isDeleted: false }),
+        Outlet.countDocuments({ isDeleted: false, status: "ACTIVE" }),
+        Device.countDocuments({ isDeleted: false }),
+        Device.countDocuments({ isDeleted: false, status: "ACTIVE" }),
+        User.countDocuments({ isDeleted: false }),
 
         User.aggregate([
             { $match: { isDeleted: false } },
             { $group: { _id: "$role", count: { $sum: 1 } } },
         ]),
 
-        Order.aggregate([
+        // New franchises registered per month over the last 12 months
+        Franchise.aggregate([
+            { $match: { isDeleted: false, createdAt: { $gte: twelveMonthsAgo } } },
             {
                 $group: {
-                    _id: null,
-                    totalRevenue: { $sum: "$totalAmount" },
-                    totalOrders: { $sum: 1 },
-                    avgOrderValue: { $avg: "$totalAmount" },
-                },
-            },
-        ]),
-
-        // Revenue trend last 30 days
-        Order.aggregate([
-            { $match: { createdAt: { $gte: thirtyDaysAgo } } },
-            {
-                $group: {
-                    _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
-                    revenue: { $sum: "$totalAmount" },
-                    orders: { $sum: 1 },
-                },
-            },
-            { $sort: { _id: 1 } },
-        ]),
-
-        // Orders trend last 30 days (same as above, keeping semantic clarity)
-        Order.aggregate([
-            { $match: { createdAt: { $gte: thirtyDaysAgo } } },
-            {
-                $group: {
-                    _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+                    _id: { $dateToString: { format: "%Y-%m", date: "$createdAt" } },
                     count: { $sum: 1 },
                 },
             },
             { $sort: { _id: 1 } },
         ]),
 
-        // Top 5 franchises by revenue
-        Order.aggregate([
-            {
-                $group: {
-                    _id: "$franchiseId",
-                    revenue: { $sum: "$totalAmount" },
-                    orders: { $sum: 1 },
-                },
-            },
-            { $sort: { revenue: -1 } },
+        // Top 5 franchises by outlet count
+        Outlet.aggregate([
+            { $match: { isDeleted: false } },
+            { $group: { _id: "$franchiseId", outletCount: { $sum: 1 } } },
+            { $sort: { outletCount: -1 } },
             { $limit: 5 },
             {
                 $lookup: {
@@ -128,22 +102,16 @@ async function getSuperAdminAnalytics() {
                     franchiseId: "$_id",
                     name: "$franchise.name",
                     brandCode: "$franchise.brandCode",
-                    revenue: 1,
-                    orders: 1,
+                    outletCount: 1,
                 },
             },
         ]),
 
-        // Top 5 outlets by revenue
-        Order.aggregate([
-            {
-                $group: {
-                    _id: "$outletId",
-                    revenue: { $sum: "$totalAmount" },
-                    orders: { $sum: 1 },
-                },
-            },
-            { $sort: { revenue: -1 } },
+        // Top 5 outlets by device count
+        Device.aggregate([
+            { $match: { isDeleted: false } },
+            { $group: { _id: "$outletId", deviceCount: { $sum: 1 } } },
+            { $sort: { deviceCount: -1 } },
             { $limit: 5 },
             {
                 $lookup: {
@@ -159,100 +127,48 @@ async function getSuperAdminAnalytics() {
                     outletId: "$_id",
                     name: "$outlet.name",
                     outletCode: "$outlet.outletCode",
-                    revenue: 1,
-                    orders: 1,
+                    deviceCount: 1,
                 },
             },
         ]),
 
-        // Top 10 selling items (global)
-        Order.aggregate([
-            { $unwind: "$items" },
-            {
-                $group: {
-                    _id: "$items.itemId",
-                    name: { $first: "$items.nameSnapshot" },
-                    totalSold: { $sum: "$items.quantity" },
-                    totalRevenue: { $sum: "$items.lineTotal" },
-                },
-            },
-            { $sort: { totalSold: -1 } },
-            { $limit: 10 },
-        ]),
+        // Recently registered franchises
+        Franchise.find({ isDeleted: false })
+            .sort({ createdAt: -1 })
+            .limit(5)
+            .select("name brandCode status createdAt")
+            .lean(),
 
-        // This week vs last week revenue
-        Order.aggregate([
-            {
-                $match: {
-                    createdAt: { $gte: startOfLastWeek },
-                },
-            },
-            {
-                $group: {
-                    _id: {
-                        $cond: [
-                            { $gte: ["$createdAt", startOfWeek] },
-                            "thisWeek",
-                            "lastWeek",
-                        ],
-                    },
-                    revenue: { $sum: "$totalAmount" },
-                    orders: { $sum: 1 },
-                },
-            },
-        ]),
-
-        // This month revenue
-        Order.aggregate([
-            { $match: { createdAt: { $gte: startOfMonth } } },
-            { $group: { _id: null, revenue: { $sum: "$totalAmount" } } },
-        ]),
-
-        // Last month revenue
-        Order.aggregate([
-            { $match: { createdAt: { $gte: startOfLastMonth, $lte: endOfLastMonth } } },
-            { $group: { _id: null, revenue: { $sum: "$totalAmount" } } },
-        ]),
+        // Recently registered outlets
+        Outlet.find({ isDeleted: false })
+            .sort({ createdAt: -1 })
+            .limit(5)
+            .select("name outletCode status createdAt")
+            .lean(),
     ]);
 
-    const stats = overallStats[0] || { totalRevenue: 0, totalOrders: 0, avgOrderValue: 0 };
     const usersByRoleMap = Object.fromEntries(usersByRole.map((r) => [r._id, r.count]));
-
-    const thisWeekData = weekComparison.find((w) => w._id === "thisWeek") || { revenue: 0, orders: 0 };
-    const lastWeekData = weekComparison.find((w) => w._id === "lastWeek") || { revenue: 0, orders: 0 };
-
-    const thisMonthRev = thisMonthRevenue[0]?.revenue || 0;
-    const lastMonthRev = lastMonthRevenue[0]?.revenue || 0;
-    const monthlyGrowth = lastMonthRev === 0
-        ? 100
-        : parseFloat((((thisMonthRev - lastMonthRev) / lastMonthRev) * 100).toFixed(2));
 
     return {
         role: "SUPER_ADMIN",
         summary: {
             totalFranchises,
+            activeFranchises,
+            inactiveFranchises: totalFranchises - activeFranchises,
             totalOutlets,
+            activeOutlets,
+            inactiveOutlets: totalOutlets - activeOutlets,
+            totalDevices,
+            activeDevices,
+            inactiveDevices: totalDevices - activeDevices,
+            totalUsers,
             usersByRole: usersByRoleMap,
-            totalRevenue: stats.totalRevenue,
-            totalOrders: stats.totalOrders,
-            avgOrderValue: parseFloat((stats.avgOrderValue || 0).toFixed(2)),
         },
-        trends: {
-            revenueLast30Days: revenueTrend,
-            ordersLast30Days: ordersTrend,
-        },
-        weekComparison: {
-            thisWeek: thisWeekData,
-            lastWeek: lastWeekData,
-            revenueGrowth:
-                lastWeekData.revenue === 0
-                    ? 100
-                    : parseFloat((((thisWeekData.revenue - lastWeekData.revenue) / lastWeekData.revenue) * 100).toFixed(2)),
-        },
-        monthlyGrowth,
-        topFranchises,
-        topOutlets,
-        topItems,
+        franchiseGrowth,
+        outletsByFranchise,
+        devicesByOutlet,
+        recentFranchises,
+        recentOutlets,
     };
 }
 

@@ -207,6 +207,79 @@ const STATUS_COLORS: Record<string, string> = {
   PICKED_UP:  "#8b5cf6",
 };
 
+// ─── New chart components for Super Admin ────────────────────────────────────
+
+function formatMonth(m: string) {
+  const [year, month] = m.split("-");
+  const d = new Date(Number(year), Number(month) - 1, 1);
+  return d.toLocaleDateString("en-IN", { month: "short", year: "2-digit" });
+}
+
+export function MonthlyCountChart({
+  data,
+  label = "Count",
+  height = 220,
+}: {
+  data: Array<{ _id: string; count: number }>;
+  label?: string;
+  height?: number;
+}) {
+  const formatted = data.map((d) => ({ label: formatMonth(d._id), count: d.count }));
+  return (
+    <ResponsiveContainer width="100%" height={height}>
+      <BarChart data={formatted} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+        <CartesianGrid strokeDasharray="3 3" stroke={GRID_COLOR} vertical={false} />
+        <XAxis dataKey="label" tick={{ fontSize: 11, fill: AXIS_COLOR, fontFamily: "Geist, sans-serif" }} axisLine={false} tickLine={false} />
+        <YAxis tick={{ fontSize: 11, fill: AXIS_COLOR, fontFamily: "Geist, sans-serif" }} axisLine={false} tickLine={false} width={28} allowDecimals={false} />
+        <Tooltip contentStyle={TOOLTIP_STYLE} formatter={(value) => [value, label]} labelStyle={{ color: "#64748b", fontWeight: 600 }} />
+        <Bar dataKey="count" fill="#6366f1" radius={[4, 4, 0, 0]} maxBarSize={28} />
+      </BarChart>
+    </ResponsiveContainer>
+  );
+}
+
+export function CountBarChart({
+  data,
+  label = "Count",
+  height = 220,
+}: {
+  data: Array<{ name: string; count: number }>;
+  label?: string;
+  height?: number;
+}) {
+  return (
+    <ResponsiveContainer width="100%" height={height}>
+      <BarChart data={data} layout="vertical" margin={{ top: 8, right: 16, left: 0, bottom: 0 }}>
+        <CartesianGrid strokeDasharray="3 3" stroke={GRID_COLOR} horizontal={false} />
+        <XAxis type="number" tick={{ fontSize: 10, fill: AXIS_COLOR, fontFamily: "Geist, sans-serif" }} axisLine={false} tickLine={false} allowDecimals={false} />
+        <YAxis type="category" dataKey="name" tick={{ fontSize: 10, fill: "#64748b", fontFamily: "Geist, sans-serif" }} axisLine={false} tickLine={false} width={90} />
+        <Tooltip contentStyle={TOOLTIP_STYLE} formatter={(value) => [value, label]} labelStyle={{ color: "#64748b", fontWeight: 600 }} />
+        <Bar dataKey="count" fill="#6366f1" radius={[0, 4, 4, 0]} maxBarSize={16} />
+      </BarChart>
+    </ResponsiveContainer>
+  );
+}
+
+export function DonutChart({
+  data,
+  height = 220,
+}: {
+  data: Array<{ name: string; value: number }>;
+  height?: number;
+}) {
+  return (
+    <ResponsiveContainer width="100%" height={height}>
+      <PieChart>
+        <Pie data={data} cx="50%" cy="50%" innerRadius={58} outerRadius={88} paddingAngle={3} dataKey="value">
+          {data.map((_, i) => <Cell key={i} fill={PALETTE[i % PALETTE.length]} stroke="none" />)}
+        </Pie>
+        <Tooltip contentStyle={TOOLTIP_STYLE} formatter={(value, _name, props) => [value, props?.payload?.name ?? ""]} />
+        <Legend iconType="circle" iconSize={7} formatter={(v) => <span style={{ fontSize: 11, color: "#64748b", fontFamily: "Geist, sans-serif" }}>{v}</span>} />
+      </PieChart>
+    </ResponsiveContainer>
+  );
+}
+
 export function StatusDonutChart({ breakdown }: { breakdown: Record<string, number> }) {
   const data = Object.entries(breakdown).map(([status, count]) => ({
     name: status.replace(/_/g, " "),
