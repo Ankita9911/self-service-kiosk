@@ -89,14 +89,14 @@ export default function UserPage() {
       {/* ── Header ── */}
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2 mb-1">
-            <Users className="w-3.5 h-3.5 text-indigo-500" />
-            <span className="text-[11px] font-medium text-indigo-500 uppercase tracking-widest">
+          {/* <div className="flex items-center gap-2 mb-1"> */}
+            {/* <Users className="w-3.5 h-3.5 text-indigo-500" /> */}
+            {/* <span className="text-[11px] font-medium text-indigo-500 uppercase tracking-widest">
               Users Directory
-            </span>
-          </div>
+            </span> */}
+          {/* </div> */}
           <h1 className="text-[28px] font-semibold text-slate-900 dark:text-white tracking-tight">
-            Team
+            Users
           </h1>
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
             Manage platform users, roles, and access levels.

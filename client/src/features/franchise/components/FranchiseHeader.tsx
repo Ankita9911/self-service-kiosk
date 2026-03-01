@@ -10,16 +10,16 @@ export function FranchiseHeader({ refreshing, onRefresh, onNew }: Props) {
   return (
     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
       <div>
-        <div className="flex items-center gap-2 mb-1.5">
-          <div className="h-5 w-5 rounded-md bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center">
+        {/* <div className="flex items-center gap-2 mb-1.5"> */}
+          {/* <div className="h-5 w-5 rounded-md bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center">
             <Building2 className="w-3 h-3 text-indigo-500" />
-          </div>
-          <span className="text-[11px] font-semibold text-indigo-500 uppercase tracking-[0.15em]">
+          </div> */}
+          {/* <span className="text-[11px] font-semibold text-indigo-500 uppercase tracking-[0.15em]">
             Franchise Directory
-          </span>
-        </div>
+          </span> */}
+        {/* </div> */}
         <h1 className="text-[26px] font-bold text-slate-800 dark:text-white tracking-tight leading-none">
-          Partners
+          Your Partners
         </h1>
       </div>
 
