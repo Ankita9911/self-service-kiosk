@@ -1,5 +1,10 @@
 import { Store, ArrowRight, MapPin, Circle } from "lucide-react";
-import type { Outlet } from "@/features/outlet/types/outlet.types";
+import type { Outlet, OutletAddress } from "@/features/outlet/types/outlet.types";
+
+function formatAddress(addr?: OutletAddress): string {
+  if (!addr) return "";
+  return [addr.line1, addr.city, addr.state, addr.pincode, addr.country].filter(Boolean).join(", ");
+}
 
 interface Props {
   outlet: Outlet;
@@ -30,10 +35,10 @@ export function OutletSelectionCard({ outlet, onClick }: Props) {
           {outlet.outletCode}
         </p>
 
-        {outlet.address && (
+        {formatAddress(outlet.address) && (
           <p className="flex items-center gap-1 text-[11px] text-slate-400 dark:text-slate-500 mt-1.5 truncate">
             <MapPin className="w-3 h-3 shrink-0" />
-            {outlet.address}
+            {formatAddress(outlet.address)}
           </p>
         )}
 

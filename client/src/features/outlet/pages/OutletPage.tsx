@@ -14,6 +14,18 @@ function formatAddress(addr?: OutletAddress): string {
 import { getFranchises } from "@/features/franchise/services/franchise.service";
 import { TablePagination } from "@/shared/components/ui/TablePagination";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/shared/components/ui/select";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/shared/components/ui/popover";
+import {
   Store, Plus, Search, MapPin,
   RefreshCcw, Building2, ShieldAlert,
   CheckCircle2, XCircle, X, UtensilsCrossed,
@@ -85,6 +97,7 @@ export default function OutletPage() {
   const [deleteTarget, setDeleteTarget] = useState<Outlet | null>(null);
   const [page,         setPage]         = useState(1);
   const [pageSize,     setPageSize]     = useState(10);
+  const [franchiseFilter, setFranchiseFilter] = useState<string>("ALL");
 
   async function fetchData(silent = false) {
     if (!canViewOutlet) return;
@@ -154,13 +167,15 @@ export default function OutletPage() {
         o.name.toLowerCase().includes(q) ||
         o.outletCode.toLowerCase().includes(q) ||
         formatAddress(o.address).toLowerCase().includes(q);
-      const matchStatus = statusFilter === "ALL" || o.status === statusFilter;
-      return matchSearch && matchStatus;
+      const matchStatus    = statusFilter === "ALL" || o.status === statusFilter;
+      const matchFranchise = franchiseFilter === "ALL" || o.franchiseId === franchiseFilter;
+      return matchSearch && matchStatus && matchFranchise;
     });
-  }, [outlets, searchTerm, statusFilter]);
+  }, [outlets, searchTerm, statusFilter, franchiseFilter]);
 
-  const handleSearchChange = (v: string) => { setSearchTerm(v); setPage(1); };
-  const handleStatusChange = (v: "ALL" | "ACTIVE" | "INACTIVE") => { setStatusFilter(v); setPage(1); };
+  const handleSearchChange   = (v: string) => { setSearchTerm(v); setPage(1); };
+  const handleStatusChange   = (v: "ALL" | "ACTIVE" | "INACTIVE") => { setStatusFilter(v); setPage(1); };
+  const handleFranchiseChange = (v: string) => { setFranchiseFilter(v); setPage(1); };
 
   const activeCount   = outlets.filter((o) => o.status === "ACTIVE").length;
   const inactiveCount = outlets.length - activeCount;
@@ -283,6 +298,7 @@ export default function OutletPage() {
             )}
           </div>
 
+          {/* Status toggle */}
           <div className="flex gap-1 bg-white dark:bg-[#161920] border border-slate-100 dark:border-white/8 rounded-xl p-1">
             {(["ALL", "ACTIVE", "INACTIVE"] as const).map((s) => (
               <button
@@ -300,6 +316,28 @@ export default function OutletPage() {
               </button>
             ))}
           </div>
+
+          {/* Franchise filter — super admin only */}
+          {isSuperAdmin && franchises.length > 0 && (
+            <Select value={franchiseFilter} onValueChange={handleFranchiseChange}>
+              <SelectTrigger className="h-9 w-45 rounded-xl border-slate-100 dark:border-white/8 bg-white dark:bg-[#161920] text-[13px] text-slate-700 dark:text-slate-200 focus:ring-indigo-400/20">
+                <div className="flex items-center gap-2 min-w-0">
+                  <Building2 className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 shrink-0" />
+                  <SelectValue placeholder="All Franchises" />
+                </div>
+              </SelectTrigger>
+              <SelectContent className="rounded-xl border-slate-100 dark:border-white/8 bg-white dark:bg-[#1a1d26]">
+                <SelectItem value="ALL" className="text-[13px] rounded-lg">
+                  All Franchises
+                </SelectItem>
+                {franchises.map((f) => (
+                  <SelectItem key={f._id} value={f._id} className="text-[13px] rounded-lg">
+                    {f.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
         </div>
 
         {/* ── Table ───────────────────────────────────────────────────────── */}
@@ -380,9 +418,44 @@ export default function OutletPage() {
                     {/* Address */}
                     <td className="px-5 py-4">
                       {o.address && formatAddress(o.address) ? (
-                        <div className="flex items-center gap-1.5 text-[12.5px] text-slate-500 dark:text-slate-400">
-                          <MapPin className="w-3.5 h-3.5 shrink-0 text-slate-400 dark:text-slate-500" />
-                          <span className="truncate max-w-45">{formatAddress(o.address)}</span>
+                        <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-1.5 text-[12.5px] text-slate-500 dark:text-slate-400 min-w-0">
+                            <MapPin className="w-3.5 h-3.5 shrink-0 text-slate-400 dark:text-slate-500" />
+                            <span className="truncate max-w-32">{formatAddress(o.address)}</span>
+                          </div>
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <button className="shrink-0 h-5 px-1.5 rounded-md text-[10px] font-semibold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-500/10 hover:bg-indigo-100 dark:hover:bg-indigo-500/20 border border-indigo-100 dark:border-indigo-500/20 transition-colors">
+                                View
+                              </button>
+                            </PopoverTrigger>
+                            <PopoverContent
+                              side="top"
+                              align="start"
+                              className="w-64 p-0 rounded-xl border-slate-100 dark:border-white/8 bg-white dark:bg-[#1a1d26] shadow-xl"
+                            >
+                              <div className="px-4 py-3 border-b border-slate-50 dark:border-white/6 flex items-center gap-2">
+                                <MapPin className="w-3.5 h-3.5 text-indigo-500" />
+                                <p className="text-[12px] font-semibold text-slate-700 dark:text-slate-300">Full Address</p>
+                              </div>
+                              <div className="px-4 py-3 space-y-1.5">
+                                {o.address?.line1 && (
+                                  <p className="text-[12.5px] text-slate-700 dark:text-slate-200">{o.address.line1}</p>
+                                )}
+                                {(o.address?.city || o.address?.state) && (
+                                  <p className="text-[12px] text-slate-500 dark:text-slate-400">
+                                    {[o.address.city, o.address.state].filter(Boolean).join(", ")}
+                                  </p>
+                                )}
+                                {o.address?.pincode && (
+                                  <p className="text-[12px] font-mono text-slate-500 dark:text-slate-400">{o.address.pincode}</p>
+                                )}
+                                {o.address?.country && (
+                                  <p className="text-[12px] text-slate-400 dark:text-slate-500">{o.address.country}</p>
+                                )}
+                              </div>
+                            </PopoverContent>
+                          </Popover>
                         </div>
                       ) : (
                         <span className="text-[12px] text-slate-300 dark:text-slate-600 italic">No address</span>
