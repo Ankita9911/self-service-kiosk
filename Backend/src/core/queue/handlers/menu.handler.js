@@ -124,11 +124,21 @@ export async function handleMenuCategoryDelete(payload) {
 
   if (!category) throw new Error(`Category not found for delete: ${id}`);
 
+  // Cascade: soft-delete all items belonging to this category
+  await MenuItem.updateMany(
+    { categoryId: id, franchiseId: tenant.franchiseId, outletId: tenant.outletId, isDeleted: false },
+    { isDeleted: true }
+  );
+
   const redis = getRedisClient();
-  await redis.del(buildTenantKey("categories", tenant));
+  await Promise.all([
+    redis.del(buildTenantKey("categories", tenant)),
+    redis.del(buildTenantKey("menuItems", tenant)),
+    redis.del(buildTenantKey(`menuItems:${id}`, tenant)),
+  ]);
 
   emitMenuUpdated(tenant.outletId, "MENU_CATEGORY_DELETE");
-  console.log(`[queue] Category deleted — id=${id} outlet=${tenant.outletId}`);
+  console.log(`[queue] Category deleted (cascade) — id=${id} outlet=${tenant.outletId}`);
   return category;
 }
 
@@ -195,5 +205,34 @@ export async function handleMenuItemDelete(payload) {
 
   emitMenuUpdated(tenant.outletId, "MENU_ITEM_DELETE");
   console.log(`[queue] Menu item deleted — id=${id} outlet=${tenant.outletId}`);
+  return item;
+}
+
+export async function handleMenuItemStatusUpdate(payload) {
+  const { id, tenant } = payload;
+
+  const current = await MenuItem.findOne({
+    _id: id,
+    franchiseId: tenant.franchiseId,
+    outletId: tenant.outletId,
+    isDeleted: false,
+  });
+
+  if (!current) throw new Error(`Menu item not found for status toggle: ${id}`);
+
+  const item = await MenuItem.findByIdAndUpdate(
+    id,
+    { isActive: !current.isActive },
+    { new: true }
+  );
+
+  const redis = getRedisClient();
+  await redis.del(buildTenantKey("menuItems", tenant));
+  if (item.categoryId) {
+    await redis.del(buildTenantKey(`menuItems:${item.categoryId}`, tenant));
+  }
+
+  emitMenuUpdated(tenant.outletId, "MENU_ITEM_STATUS_UPDATE");
+  console.log(`[queue] Item status toggled — id=${id} isActive=${item.isActive} outlet=${tenant.outletId}`);
   return item;
 }

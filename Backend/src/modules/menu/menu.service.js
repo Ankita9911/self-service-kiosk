@@ -100,3 +100,8 @@ export async function deleteMenuItem(id, tenant) {
   await enqueue("MENU_ITEM_DELETE", { id, tenant });
   return { queued: true };
 }
+
+export async function toggleItemStatus(id, tenant) {
+  await enqueue("MENU_ITEM_STATUS_UPDATE", { id, tenant });
+  return { queued: true };
+}

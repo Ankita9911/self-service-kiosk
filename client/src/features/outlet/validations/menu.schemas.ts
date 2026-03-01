@@ -65,3 +65,19 @@ export const categorySchema = z.object({
 export type MenuItemFormValues = z.infer<typeof menuItemSchema>;
 export type EditMenuItemFormValues = z.infer<typeof editMenuItemSchema>;
 export type CategoryFormValues = z.infer<typeof categorySchema>;
+
+// For creating items, image is required
+export const createMenuItemSchema = menuItemSchema.extend({
+    imageFile: z
+        .instanceof(File, { message: "Please upload an image" })
+        .refine(
+            (file) => file.size <= 5 * 1024 * 1024,
+            "Image must be smaller than 5 MB"
+        )
+        .refine(
+            (file) => ["image/jpeg", "image/png", "image/webp", "image/gif"].includes(file.type),
+            "Only JPEG, PNG, WebP or GIF images are allowed"
+        ),
+});
+
+export type CreateMenuItemFormValues = z.infer<typeof createMenuItemSchema>;

@@ -1,4 +1,4 @@
-import { Store, ArrowRight, MapPin, Circle } from "lucide-react";
+import { Store, ArrowRight, MapPin } from "lucide-react";
 import type { Outlet, OutletAddress } from "@/features/outlet/types/outlet.types";
 
 function formatAddress(addr?: OutletAddress): string {
@@ -17,7 +17,7 @@ export function OutletSelectionCard({ outlet, onClick }: Props) {
   return (
     <button
       onClick={onClick}
-      className="group flex items-start gap-4 p-4 rounded-2xl border border-slate-100 dark:border-white/[0.07] bg-white dark:bg-[#1e2130] hover:border-indigo-200 dark:hover:border-indigo-500/30 hover:shadow-md hover:shadow-indigo-500/5 transition-all text-left w-full"
+      className="group flex items-start gap-4 p-4 rounded-2xl border border-slate-100 dark:border-white/8 bg-white dark:bg-[#1e2130] hover:border-indigo-200 dark:hover:border-indigo-500/30 hover:shadow-md hover:shadow-indigo-500/5 transition-all text-left w-full"
     >
       <div className="h-11 w-11 rounded-xl bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-100 dark:border-indigo-500/20 flex items-center justify-center shrink-0 group-hover:bg-indigo-100 dark:group-hover:bg-indigo-500/20 transition-colors">
         <Store className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
@@ -28,7 +28,9 @@ export function OutletSelectionCard({ outlet, onClick }: Props) {
           <p className="font-semibold text-slate-800 dark:text-white text-sm leading-snug">
             {outlet.name}
           </p>
-          <ArrowRight className="w-4 h-4 text-slate-300 dark:text-slate-600 group-hover:text-indigo-500 dark:group-hover:text-indigo-400 transition-colors shrink-0 mt-0.5" />
+          <div className="h-6 w-6 rounded-lg bg-slate-100 dark:bg-white/8 group-hover:bg-indigo-600 flex items-center justify-center shrink-0 transition-colors mt-0.5">
+            <ArrowRight className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 group-hover:text-white transition-colors" />
+          </div>
         </div>
 
         <p className="text-[11px] text-slate-400 dark:text-slate-500 font-mono mt-0.5">
@@ -42,15 +44,15 @@ export function OutletSelectionCard({ outlet, onClick }: Props) {
           </p>
         )}
 
-        <div className="flex items-center gap-1.5 mt-2">
-          <Circle
-            className={`w-2 h-2 ${
-              isActive ? "fill-emerald-500 text-emerald-500" : "fill-slate-400 text-slate-400"
-            }`}
-          />
-          <span className={`text-[11px] font-semibold ${
-            isActive ? "text-emerald-600 dark:text-emerald-400" : "text-slate-400"
+        <div className="mt-2">
+          <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${
+            isActive
+              ? "bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20"
+              : "bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-white/8"
           }`}>
+            <span className={`w-1.5 h-1.5 rounded-full ${
+              isActive ? "bg-emerald-500" : "bg-slate-400"
+            }`} />
             {outlet.status ?? "Active"}
           </span>
         </div>

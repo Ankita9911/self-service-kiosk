@@ -110,3 +110,11 @@ export async function updateMenuItemStock(
 export async function deleteMenuItem(id: string, outletId?: string): Promise<void> {
   await axiosInstance.delete(`/menu/items/${id}`, params(outletId));
 }
+
+export async function toggleMenuItemStatus(id: string, outletId?: string): Promise<{ queued: boolean }> {
+  const response = await axiosInstance.patch<{ data: { queued: boolean } }>(
+    `/menu/items/${id}/status`,
+    outletId ? { outletId } : {}
+  );
+  return response.data.data;
+}

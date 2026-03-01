@@ -5,7 +5,6 @@ import { usePermission } from "@/shared/hooks/usePermissions";
 import { PERMISSIONS } from "@/shared/lib/permissions";
 import {
   ArrowLeft,
-  UtensilsCrossed,
   Package,
   Search,
   LayoutGrid,
@@ -24,6 +23,7 @@ import { AddCategoryModal } from "../components/AddCategoryModal";
 import { AddItemModal } from "../components/AddItemModal";
 import { EditItemModal } from "../components/EditItemModal";
 import { DeleteItemModal } from "../components/DeleteItemModal";
+import { ItemViewModal } from "../components/ItemViewModal";
 
 import { Button } from "@/shared/components/ui/button";
 import { TablePagination } from "@/shared/components/ui/TablePagination";
@@ -51,6 +51,8 @@ export default function OutletMenuPage() {
     updatePrice,
     updateStock,
     removeItem,
+    removeCategory,
+    toggleItemStatus,
     catForm,
     setCatForm,
     itemForm,
@@ -68,6 +70,8 @@ export default function OutletMenuPage() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(12);
   const [search, setSearch] = useState("");
+  const [itemStatusFilter, setItemStatusFilter] = useState<"ALL" | "ACTIVE" | "INACTIVE">("ALL");
+  const [viewItem, setViewItem] = useState<any | null>(null);
   const [layout, setLayout] = useState<Layout>(
     () => (localStorage.getItem("menu-layout") as Layout) ?? "grid"
   );
@@ -85,18 +89,24 @@ export default function OutletMenuPage() {
     }
   }, [user?.role, user?.outletId, outletId, canManage]);
 
-  useEffect(() => { setPage(1); }, [selectedCategoryId, search]);
+  useEffect(() => { setPage(1); }, [selectedCategoryId, search, itemStatusFilter]);
 
   const categoryFiltered =
     selectedCategoryId === "ALL"
       ? items
       : items.filter((i) => i.categoryId === selectedCategoryId);
 
+  const statusFiltered = categoryFiltered.filter((i) => {
+    if (itemStatusFilter === "ACTIVE") return i.isActive !== false;
+    if (itemStatusFilter === "INACTIVE") return i.isActive === false;
+    return true;
+  });
+
   const filteredItems = search
-    ? categoryFiltered.filter((i) =>
+    ? statusFiltered.filter((i) =>
         i.name.toLowerCase().includes(search.toLowerCase())
       )
-    : categoryFiltered;
+    : statusFiltered;
 
   const paginatedItems = filteredItems.slice((page - 1) * pageSize, page * pageSize);
 
@@ -130,7 +140,7 @@ export default function OutletMenuPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <button
-            onClick={() => navigate(user?.role === "OUTLET_MANAGER" ? "/menu" : "/outlets")}
+            onClick={() => navigate(user?.role === "OUTLET_MANAGER" ? "/" : "/menu")}
             className="h-9 w-9 rounded-xl border border-slate-200 dark:border-white/8 bg-white dark:bg-[#1e2130] flex items-center justify-center text-slate-500 hover:text-indigo-600 hover:border-indigo-300 dark:hover:border-indigo-500/40 transition-all shadow-sm"
           >
             <ArrowLeft className="w-4 h-4" />
@@ -154,10 +164,9 @@ export default function OutletMenuPage() {
 
         <div className="flex items-center gap-2">
           <Button
-            variant="outline"
             size="sm"
             onClick={() => setAddCategoryOpen(true)}
-            className="rounded-xl h-9 text-xs border-slate-200 dark:border-white/8"
+            className="rounded-xl h-9 text-xs bg-violet-600 hover:bg-violet-700 text-white shadow-sm shadow-violet-500/20"
           >
             <Tag className="w-3.5 h-3.5 mr-1.5" />
             Add Category
@@ -202,16 +211,35 @@ export default function OutletMenuPage() {
       </div>
 
       {/* ── Toolbar: filter + search + layout toggle ── */}
-      <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-        <div className="flex-1">
-          <CategoryFilter
-            categories={categories}
-            selectedCategoryId={selectedCategoryId}
-            onSelect={setSelectedCategoryId}
-          />
-        </div>
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3 min-w-0">
+        <CategoryFilter
+          categories={categories}
+          selectedCategoryId={selectedCategoryId}
+          onSelect={setSelectedCategoryId}
+          onDeleteCategory={async (id) => {
+            await removeCategory(id);
+            if (selectedCategoryId === id) setSelectedCategoryId("ALL");
+          }}
+        />
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0">
+          {/* Status filter tabs */}
+          <div className="inline-flex items-center bg-white dark:bg-[#161920] border border-slate-200 dark:border-white/8 rounded-xl p-1 gap-0.5">
+            {(["ALL", "ACTIVE", "INACTIVE"] as const).map((s) => (
+              <button
+                key={s}
+                onClick={() => setItemStatusFilter(s)}
+                className={`h-7 px-2.5 rounded-lg text-[11px] font-semibold transition-all ${
+                  itemStatusFilter === s
+                    ? "bg-indigo-600 text-white shadow-sm"
+                    : "text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                }`}
+              >
+                {s === "ALL" ? "All" : s === "ACTIVE" ? "Active" : "Inactive"}
+              </button>
+            ))}
+          </div>
+
           {/* Search */}
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
@@ -275,6 +303,8 @@ export default function OutletMenuPage() {
                 item={item}
                 onEdit={() => openEdit(item)}
                 onDelete={() => setDeleteItem(item)}
+                onToggleStatus={() => toggleItemStatus(item._id)}
+                onView={() => setViewItem(item)}
               />
             ))}
           </div>
@@ -315,6 +345,8 @@ export default function OutletMenuPage() {
                     onDelete={() => setDeleteItem(item)}
                     onUpdatePrice={() => { setPriceItem(item); setPriceInput(String(item.price)); }}
                     onUpdateStock={() => { setStockItem(item); setStockInput(String(item.stockQuantity)); }}
+                    onToggleStatus={() => toggleItemStatus(item._id)}
+                    onView={() => setViewItem(item)}
                   />
                 ))}
               </tbody>
@@ -450,6 +482,13 @@ export default function OutletMenuPage() {
           item={deleteItem}
           onClose={() => setDeleteItem(null)}
           onConfirm={async () => { await removeItem(deleteItem._id); setDeleteItem(null); }}
+        />
+      )}
+      {viewItem && (
+        <ItemViewModal
+          item={viewItem}
+          categories={categories}
+          onClose={() => setViewItem(null)}
         />
       )}
     </div>

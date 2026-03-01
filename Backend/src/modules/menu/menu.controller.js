@@ -131,3 +131,15 @@ export const deleteMenuItem = asyncHandler(async (req, res) => {
     message: "Menu item deletion accepted and queued for processing",
   });
 });
+
+export const toggleItemStatus = asyncHandler(async (req, res) => {
+  const result = await menuService.toggleItemStatus(
+    req.params.id,
+    req.tenant
+  );
+  return sendSuccess(res, {
+    statusCode: 202,
+    message: "Item status toggle accepted and queued for processing",
+    data: result,
+  });
+});

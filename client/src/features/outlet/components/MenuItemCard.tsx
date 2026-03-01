@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Pencil, Trash2, ImageOff, Package, AlertTriangle } from "lucide-react";
+import { Pencil, Trash2, ImageOff, Package, AlertTriangle, Power, Eye } from "lucide-react";
 import type { MenuItem } from "@/features/kiosk/types/menu.types";
 import { ImagePreviewModal, ImageZoomButton } from "./ImagePreviewModal";
 
@@ -7,9 +7,11 @@ interface Props {
   item: MenuItem;
   onEdit: () => void;
   onDelete: () => void;
+  onToggleStatus: () => void;
+  onView: () => void;
 }
 
-export function MenuItemCard({ item, onEdit, onDelete }: Props) {
+export function MenuItemCard({ item, onEdit, onDelete, onToggleStatus, onView }: Props) {
   const isLowStock = item.stockQuantity > 0 && item.stockQuantity <= 5;
   const isOutOfStock = item.stockQuantity === 0;
   const [preview, setPreview] = useState(false);
@@ -46,10 +48,27 @@ export function MenuItemCard({ item, onEdit, onDelete }: Props) {
             <ImageZoomButton onClick={(e) => { e.stopPropagation(); setPreview(true); }} />
           )}
           <button
+            onClick={onView}
+            className="h-7 w-7 rounded-xl bg-white/90 dark:bg-[#1e2130]/90 backdrop-blur-sm border border-slate-200 dark:border-white/10 flex items-center justify-center text-slate-600 dark:text-slate-400 hover:text-violet-600 dark:hover:text-violet-400 shadow-sm transition-colors"
+          >
+            <Eye className="w-3 h-3" />
+          </button>
+          <button
             onClick={onEdit}
             className="h-7 w-7 rounded-xl bg-white/90 dark:bg-[#1e2130]/90 backdrop-blur-sm border border-slate-200 dark:border-white/10 flex items-center justify-center text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 shadow-sm transition-colors"
           >
             <Pencil className="w-3 h-3" />
+          </button>
+          <button
+            onClick={onToggleStatus}
+            className={`h-7 w-7 rounded-xl bg-white/90 dark:bg-[#1e2130]/90 backdrop-blur-sm border border-slate-200 dark:border-white/10 flex items-center justify-center shadow-sm transition-colors ${
+              item.isActive !== false
+                ? "text-slate-600 dark:text-slate-400 hover:text-amber-500 dark:hover:text-amber-400"
+                : "text-amber-500 dark:text-amber-400 hover:text-emerald-600 dark:hover:text-emerald-400"
+            }`}
+            title={item.isActive !== false ? "Deactivate" : "Activate"}
+          >
+            <Power className="w-3 h-3" />
           </button>
           <button
             onClick={onDelete}

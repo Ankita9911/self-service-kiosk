@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Pencil, Trash2, ImageOff, Package, AlertTriangle, MoreHorizontal, DollarSign, Archive, ZoomIn } from "lucide-react";
+import { Pencil, Trash2, ImageOff, Package, AlertTriangle, MoreVertical, DollarSign, Archive, ZoomIn, Power, Eye } from "lucide-react";
 import type { MenuItem, Category } from "@/features/kiosk/types/menu.types";
 import { ImagePreviewModal } from "./ImagePreviewModal";
 
@@ -11,9 +11,11 @@ interface Props {
   onDelete: () => void;
   onUpdatePrice: () => void;
   onUpdateStock: () => void;
+  onToggleStatus: () => void;
+  onView: () => void;
 }
 
-export function MenuItemTableRow({ item, categories, index, onEdit, onDelete, onUpdatePrice, onUpdateStock }: Props) {
+export function MenuItemTableRow({ item, categories, index, onEdit, onDelete, onUpdatePrice, onUpdateStock, onToggleStatus, onView }: Props) {
   const category = categories.find((c) => c._id === item.categoryId);
   const isLowStock = item.stockQuantity > 0 && item.stockQuantity <= 5;
   const isOutOfStock = item.stockQuantity === 0;
@@ -35,10 +37,12 @@ export function MenuItemTableRow({ item, categories, index, onEdit, onDelete, on
   }, [menuOpen]);
 
   const menuActions = [
+    { icon: Eye, label: "View details", onClick: onView, className: "text-slate-600 dark:text-slate-300 hover:text-violet-600 dark:hover:text-violet-400" },
     ...(item.imageUrl ? [{ icon: ZoomIn, label: "View image", onClick: () => setPreview(true), className: "text-slate-600 dark:text-slate-300 hover:text-violet-600 dark:hover:text-violet-400" }] : []),
     { icon: Pencil, label: "Edit item", onClick: onEdit, className: "text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400" },
     { icon: DollarSign, label: "Update price", onClick: onUpdatePrice, className: "text-slate-600 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400" },
     { icon: Archive, label: "Update stock", onClick: onUpdateStock, className: "text-slate-600 dark:text-slate-300 hover:text-violet-600 dark:hover:text-violet-400" },
+    { icon: Power, label: item.isActive !== false ? "Deactivate" : "Activate", onClick: onToggleStatus, className: item.isActive !== false ? "text-slate-600 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400" : "text-emerald-600 dark:text-emerald-400 hover:text-emerald-700" },
     { icon: Trash2, label: "Delete", onClick: onDelete, className: "text-red-500 dark:text-red-400 hover:text-red-600 dark:hover:text-red-300" },
   ];
 
@@ -153,7 +157,7 @@ export function MenuItemTableRow({ item, categories, index, onEdit, onDelete, on
             className="h-7 w-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/8 transition-all"
             title="Actions"
           >
-            <MoreHorizontal className="w-4 h-4" />
+            <MoreVertical className="w-4 h-4" />
           </button>
 
           {menuOpen && (

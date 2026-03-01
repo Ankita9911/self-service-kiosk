@@ -70,4 +70,10 @@ router.delete(
   controller.deleteMenuItem
 );
 
+router.patch(
+  "/items/:id/status",
+  authorize(PERMISSIONS.MENU_MANAGE),
+  controller.toggleItemStatus
+);
+
 export default router;

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Dialog, DialogContent } from "@/shared/components/ui/dialog";
 import { RefreshCcw, Plus, ImageIcon, X } from "lucide-react";
 import { toast } from "react-hot-toast";
-import { menuItemSchema, type MenuItemFormValues } from "../validations/menu.schemas";
+import { createMenuItemSchema, type CreateMenuItemFormValues } from "../validations/menu.schemas";
 import { getZodFieldErrors } from "@/shared/utils/zod.utils";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/components/ui/select";
 
@@ -15,7 +15,7 @@ interface Props {
   onSubmit: () => Promise<void>;
 }
 
-type FieldErrors = Partial<Record<keyof MenuItemFormValues, string>>;
+type FieldErrors = Partial<Record<keyof CreateMenuItemFormValues, string>>;
 
 const inputBase = "w-full px-3 h-10 rounded-xl border bg-slate-50 dark:bg-white/5 text-sm text-slate-800 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-600 focus:outline-none focus:ring-2 transition-all";
 const inputOk  = "border-slate-200 dark:border-white/8 focus:ring-indigo-500/30 focus:border-indigo-400";
@@ -34,13 +34,13 @@ export function AddItemModal({ open, onClose, categories, form, setForm, onSubmi
 
   function validate(): boolean {
     const payload = { categoryId: form.categoryId, name: form.name, description: form.description, price: form.price, stockQuantity: form.stockQuantity, imageFile: form.imageFile ?? undefined };
-    const result = menuItemSchema.safeParse(payload);
+    const result = createMenuItemSchema.safeParse(payload);
     if (result.success) { setErrors({}); return true; }
-    setErrors(getZodFieldErrors<MenuItemFormValues>(result.error));
+    setErrors(getZodFieldErrors<CreateMenuItemFormValues>(result.error));
     return false;
   }
 
-  function clearError(key: keyof MenuItemFormValues) {
+  function clearError(key: keyof CreateMenuItemFormValues) {
     if (errors[key]) setErrors((prev) => ({ ...prev, [key]: undefined }));
   }
 
@@ -117,7 +117,7 @@ export function AddItemModal({ open, onClose, categories, form, setForm, onSubmi
 
           {/* Image */}
           <div>
-            <LabelEl>Image <span className="text-slate-400 font-medium normal-case">(optional)</span></LabelEl>
+            <LabelEl>Image <span className="text-red-400 normal-case">*</span></LabelEl>
             <div className="flex gap-2 items-center">
               <input type="file" accept="image/jpeg,image/png,image/webp,image/gif"
                 onChange={(e) => { setForm((prev: any) => ({ ...prev, imageFile: e.target.files?.[0] || null })); clearError("imageFile"); }}

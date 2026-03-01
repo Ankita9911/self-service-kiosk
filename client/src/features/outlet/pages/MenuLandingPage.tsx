@@ -1,29 +1,43 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import useAuth from "@/shared/hooks/useAuth";
 import { usePermission } from "@/shared/hooks/usePermissions";
-import { UtensilsCrossed, Loader2, Search, Building2, Store } from "lucide-react";
+import { Loader2, Search, Building2, Store, XCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 import { useMenuLanding } from "../hooks/useMenuLanding";
 import { OutletSelectionCard } from "../components/OutletSelectionCard";
+import { GridPagination } from "@/shared/components/ui/GridPagination";
 
 export default function MenuLandingPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { hasPermission } = usePermission();
   const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"ALL" | "ACTIVE" | "INACTIVE">("ALL");
+  const [page, setPage] = useState(1);
+  const pageSize = 3;
 
   const { outlets, loading } = useMenuLanding(user, hasPermission);
 
-  const filtered = outlets.filter(
-    (o) =>
+  const filtered = outlets.filter((o) => {
+    const matchSearch =
       o.name.toLowerCase().includes(search.toLowerCase()) ||
-      o.outletCode.toLowerCase().includes(search.toLowerCase())
-  );
+      o.outletCode.toLowerCase().includes(search.toLowerCase());
+    const isActive = o.status?.toLowerCase() === "active";
+    const matchStatus =
+      statusFilter === "ALL" ||
+      (statusFilter === "ACTIVE" ? isActive : !isActive);
+    return matchSearch && matchStatus;
+  });
+
+  const paginatedOutlets = filtered.slice((page - 1) * pageSize, page * pageSize);
 
   const activeCount = outlets.filter(
     (o) => o.status?.toLowerCase() === "active"
   ).length;
+  const inactiveCount = outlets.length - activeCount;
+
+  useEffect(() => { setPage(1); }, [search, statusFilter]);
 
   if (loading) {
     return (
@@ -60,26 +74,15 @@ export default function MenuLandingPage() {
             Choose an outlet to manage its menu. Changes reflect on all kiosks in that outlet.
           </p>
         </div>
-
-        {outlets.length > 0 && (
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
-            <input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search outlets…"
-              className="pl-8 pr-3 h-9 text-sm rounded-xl border border-slate-200 dark:border-white/[0.08] bg-white dark:bg-[#161920] text-slate-700 dark:text-slate-300 placeholder:text-slate-400 dark:placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-400 transition-all w-56"
-            />
-          </div>
-        )}
       </div>
 
       {/* Stats row */}
       {outlets.length > 0 && (
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           {[
             { label: "Total Outlets", value: outlets.length, icon: Building2, color: "indigo" },
             { label: "Active", value: activeCount, icon: Store, color: "emerald" },
+            { label: "Inactive", value: inactiveCount, icon: XCircle, color: "slate" },
           ].map(({ label, value, icon: Icon, color }) => (
             <div
               key={label}
@@ -88,7 +91,9 @@ export default function MenuLandingPage() {
               <div className={`h-9 w-9 rounded-xl flex items-center justify-center ${
                 color === "indigo"
                   ? "bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400"
-                  : "bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                  : color === "emerald"
+                  ? "bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                  : "bg-slate-100 dark:bg-slate-500/10 text-slate-500 dark:text-slate-400"
               }`}>
                 <Icon className="w-4 h-4" />
               </div>
@@ -98,6 +103,36 @@ export default function MenuLandingPage() {
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Search + status filter tabs — right-aligned */}
+      {outlets.length > 0 && (
+        <div className="flex items-center justify-end gap-2">
+        <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search outlets…"
+              className="pl-8 pr-3 h-9 w-full text-sm rounded-xl border border-slate-200 dark:border-white/8 bg-white dark:bg-[#161920] text-slate-700 dark:text-slate-300 placeholder:text-slate-400 dark:placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-400 transition-all"
+            />
+          </div>
+          <div className="inline-flex items-center bg-white dark:bg-[#161920] border border-slate-200 dark:border-white/8 rounded-xl p-1 gap-0.5">
+            {(["ALL", "ACTIVE", "INACTIVE"] as const).map((s) => (
+              <button
+                key={s}
+                onClick={() => setStatusFilter(s)}
+                className={`h-7 px-2.5 rounded-lg text-[11px] font-semibold transition-all ${
+                  statusFilter === s
+                    ? "bg-indigo-600 text-white shadow-sm"
+                    : "text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                }`}
+              >
+                {s === "ALL" ? `All (${outlets.length})` : s === "ACTIVE" ? `Active (${activeCount})` : `Inactive (${inactiveCount})`}
+              </button>
+            ))}
+          </div>
         </div>
       )}
 
@@ -112,22 +147,30 @@ export default function MenuLandingPage() {
             Create outlets first to manage their menus.
           </p>
         </div>
-      ) : filtered.length === 0 ? (
+      ) : (filtered.length === 0 && outlets.length > 0) ? (
         <div className="flex flex-col items-center justify-center py-16 bg-white dark:bg-[#1e2130] rounded-2xl border border-slate-100 dark:border-white/[0.07]">
           <Search className="w-8 h-8 text-slate-300 dark:text-slate-600 mb-3" />
           <p className="font-semibold text-slate-600 dark:text-white">No matches</p>
-          <p className="text-slate-400 text-sm mt-1">Try a different search term.</p>
+          <p className="text-slate-400 text-sm mt-1">Try a different search term or filter.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filtered.map((o) => (
-            <OutletSelectionCard
-              key={o._id}
-              outlet={o}
-              onClick={() => navigate(`/outlets/${o._id}/menu`)}
-            />
-          ))}
-        </div>
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {paginatedOutlets.map((o) => (
+              <OutletSelectionCard
+                key={o._id}
+                outlet={o}
+                onClick={() => navigate(`/outlets/${o._id}/menu`)}
+              />
+            ))}
+          </div>
+          <GridPagination
+            total={filtered.length}
+            page={page}
+            pageSize={pageSize}
+            onPageChange={setPage}
+          />
+        </>
       )}
     </div>
   );

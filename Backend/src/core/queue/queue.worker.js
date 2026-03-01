@@ -14,6 +14,7 @@ import {
   handleMenuItemCreate,
   handleMenuItemUpdate,
   handleMenuItemDelete,
+  handleMenuItemStatusUpdate,
 } from "./handlers/menu.handler.js";
 
 const MESSAGE_HANDLERS = {
@@ -26,6 +27,7 @@ const MESSAGE_HANDLERS = {
   MENU_ITEM_CREATE: handleMenuItemCreate,
   MENU_ITEM_UPDATE: handleMenuItemUpdate,
   MENU_ITEM_DELETE: handleMenuItemDelete,
+  MENU_ITEM_STATUS_UPDATE: handleMenuItemStatusUpdate,
 };
 
 let running = false;
