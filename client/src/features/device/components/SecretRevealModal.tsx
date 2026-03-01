@@ -55,7 +55,7 @@ export function SecretRevealModal({
 
           <button
             onClick={onClose}
-            className="w-full h-10 rounded-xl bg-slate-900 dark:bg-white/[0.08] hover:bg-slate-800 dark:hover:bg-white/[0.12] text-white text-sm font-medium transition-colors"
+            className="w-full h-10 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium transition-colors shadow-lg shadow-emerald-500/20"
           >
             I've saved the secret
           </button>

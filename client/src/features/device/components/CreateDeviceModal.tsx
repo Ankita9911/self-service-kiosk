@@ -9,7 +9,7 @@ interface Props {
   open: boolean;
   onClose: () => void;
   outlets: Outlet[];
-  onCreate: (data: { outletId: string; name?: string }) => Promise<string>;
+  onCreate: (data: { outletId: string; name: string }) => Promise<string>;
   onCreated: (secret: string) => void;
 }
 
@@ -40,7 +40,7 @@ export function CreateDeviceModal({ open, onClose, outlets, onCreate, onCreated 
     if (!validate()) return;
     setSubmitting(true);
     try {
-      const secret = await onCreate({ outletId: form.outletId, name: form.name.trim() || undefined });
+      const secret = await onCreate({ outletId: form.outletId, name: form.name.trim() });
       setForm({ outletId: "", name: "" });
       setErrors({});
       onClose();
@@ -109,7 +109,7 @@ export function CreateDeviceModal({ open, onClose, outlets, onCreate, onCreated 
 
           <div className="space-y-1.5">
             <label className="text-[11px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide">
-              Device Name <span className="text-slate-400 normal-case font-normal">(optional)</span>
+              Device Name <span className="text-red-400">*</span>
             </label>
             <input
               value={form.name}
