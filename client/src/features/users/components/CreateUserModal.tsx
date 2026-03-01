@@ -30,7 +30,7 @@ export function CreateUserModal({
 
   const availableRoles: UserRole[] =
     currentUser?.role === "SUPER_ADMIN"
-      ? ["SUPER_ADMIN", "FRANCHISE_ADMIN", "OUTLET_MANAGER", "KITCHEN_STAFF", "PICKUP_STAFF"]
+      ? ["SUPER_ADMIN", "FRANCHISE_ADMIN"]
       : currentUser?.role === "FRANCHISE_ADMIN"
         ? ["OUTLET_MANAGER", "KITCHEN_STAFF", "PICKUP_STAFF"]
         : ["KITCHEN_STAFF", "PICKUP_STAFF"];

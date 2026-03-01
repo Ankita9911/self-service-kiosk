@@ -297,27 +297,6 @@ export default function OutletPage() {
               </button>
             )}
           </div>
-
-          {/* Status toggle */}
-          <div className="flex gap-1 bg-white dark:bg-[#161920] border border-slate-100 dark:border-white/8 rounded-xl p-1">
-            {(["ALL", "ACTIVE", "INACTIVE"] as const).map((s) => (
-              <button
-                key={s}
-                onClick={() => handleStatusChange(s)}
-                className={`
-                  px-3 h-7 rounded-lg text-[12px] font-semibold transition-all
-                  ${statusFilter === s
-                    ? "bg-indigo-600 text-white shadow-sm"
-                    : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-white/5"
-                  }
-                `}
-              >
-                {s === "ALL" ? "All" : s === "ACTIVE" ? "Active" : "Inactive"}
-              </button>
-            ))}
-          </div>
-
-          {/* Franchise filter — super admin only */}
           {isSuperAdmin && franchises.length > 0 && (
             <Select value={franchiseFilter} onValueChange={handleFranchiseChange}>
               <SelectTrigger className="h-9 w-45 rounded-xl border-slate-100 dark:border-white/8 bg-white dark:bg-[#161920] text-[13px] text-slate-700 dark:text-slate-200 focus:ring-indigo-400/20">
@@ -338,6 +317,27 @@ export default function OutletPage() {
               </SelectContent>
             </Select>
           )}
+          {/* Status toggle */}
+          <div className="flex gap-1 bg-white dark:bg-[#161920] border border-slate-100 dark:border-white/8 rounded-xl p-1">
+            {(["ALL", "ACTIVE", "INACTIVE"] as const).map((s) => (
+              <button
+                key={s}
+                onClick={() => handleStatusChange(s)}
+                className={`
+                  px-3 h-7 rounded-lg text-[12px] font-semibold transition-all
+                  ${statusFilter === s
+                    ? "bg-indigo-600 text-white shadow-sm"
+                    : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-white/5"
+                  }
+                `}
+              >
+                {s === "ALL" ? "All" : s === "ACTIVE" ? "Active" : "Inactive"}
+              </button>
+            ))}
+          </div>
+
+          {/* Franchise filter — super admin only */}
+         
         </div>
 
         {/* ── Table ───────────────────────────────────────────────────────── */}
