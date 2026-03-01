@@ -222,9 +222,20 @@ export default function OutletMenuPage() {
           }}
         />
 
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-2 flex-1 min-w-0">
+          {/* Search */}
+          <div className="relative flex-1 min-w-0">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search items…"
+              className="pl-8 pr-3 h-9 w-full text-sm rounded-xl border border-slate-200 dark:border-white/8 bg-white dark:bg-[#161920] text-slate-700 dark:text-slate-300 placeholder:text-slate-400 dark:placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-400 transition-all"
+            />
+          </div>
+
           {/* Status filter tabs */}
-          <div className="inline-flex items-center bg-white dark:bg-[#161920] border border-slate-200 dark:border-white/8 rounded-xl p-1 gap-0.5">
+          <div className="inline-flex shrink-0 items-center bg-white dark:bg-[#161920] border border-slate-200 dark:border-white/8 rounded-xl p-1 gap-0.5">
             {(["ALL", "ACTIVE", "INACTIVE"] as const).map((s) => (
               <button
                 key={s}
@@ -240,19 +251,8 @@ export default function OutletMenuPage() {
             ))}
           </div>
 
-          {/* Search */}
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
-            <input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search items…"
-              className="pl-8 pr-3 h-9 text-sm rounded-xl border border-slate-200 dark:border-white/8 bg-white dark:bg-[#161920] text-slate-700 dark:text-slate-300 placeholder:text-slate-400 dark:placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-400 transition-all w-44"
-            />
-          </div>
-
           {/* Layout toggle */}
-          <div className="inline-flex items-center bg-white dark:bg-[#161920] border border-slate-200 dark:border-white/8 rounded-xl p-1 gap-0.5">
+          <div className="inline-flex shrink-0 items-center bg-white dark:bg-[#161920] border border-slate-200 dark:border-white/8 rounded-xl p-1 gap-0.5">
             <button
               onClick={() => saveLayout("grid")}
               className={`h-7 w-7 rounded-lg flex items-center justify-center transition-all ${
