@@ -40,5 +40,10 @@ export async function deviceLogin({ deviceId, password }) {
     { expiresIn: "6h" }
   );
 
-  return { token };
+  return {
+    token,
+    landingImage: device.landingImage || null,
+    landingTitle: device.landingTitle || null,
+    landingSubtitle: device.landingSubtitle || null,
+  };
 }

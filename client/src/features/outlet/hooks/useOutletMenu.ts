@@ -43,6 +43,7 @@ export function useOutletMenu(
     imageFile: null,
     price: "",
     stockQuantity: "",
+    serviceType: "BOTH",
   });
 
   const needsOutletId =
@@ -110,6 +111,7 @@ export function useOutletMenu(
         imageUrl,
         price: parseFloat(itemForm.price),
         stockQuantity: parseInt(itemForm.stockQuantity, 10) || 0,
+        serviceType: itemForm.serviceType ?? "BOTH",
       },
       oidForApi,
     );
@@ -121,6 +123,7 @@ export function useOutletMenu(
       imageFile: null,
       price: "",
       stockQuantity: "",
+      serviceType: "BOTH",
     });
 
     await fetchData();
@@ -132,6 +135,8 @@ export function useOutletMenu(
       description: itemForm.description || undefined,
       price: parseFloat(itemForm.price),
       stockQuantity: parseInt(itemForm.stockQuantity, 10) || 0,
+      serviceType: itemForm.serviceType ?? "BOTH",
+      ...(itemForm.categoryId && { categoryId: itemForm.categoryId }),
     };
 
     if (itemForm.imageFile) {

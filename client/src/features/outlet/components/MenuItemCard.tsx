@@ -97,6 +97,17 @@ export function MenuItemCard({ item, onEdit, onDelete, onToggleStatus, onView }:
           </p>
         )}
 
+        {/* Service type badge */}
+        {item.serviceType && item.serviceType !== "BOTH" && (
+          <span className={`inline-block mt-1.5 text-[10px] font-bold px-1.5 py-0.5 rounded-md ${
+            item.serviceType === "DINE_IN"
+              ? "bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400"
+              : "bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400"
+          }`}>
+            {item.serviceType === "DINE_IN" ? "Dine In" : "Take Away"}
+          </span>
+        )}
+
         <div className="flex items-center justify-between mt-2.5">
           <span className="text-base font-black text-indigo-600 dark:text-indigo-400">
             ₹{item.price.toFixed(0)}

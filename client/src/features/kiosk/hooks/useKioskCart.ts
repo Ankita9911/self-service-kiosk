@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { toast } from "react-hot-toast";
 import type { CartItem } from "../types/cartItem.types";
 
 export function useKioskCart() {
@@ -11,13 +10,8 @@ export function useKioskCart() {
 
       if (existing) {
         if (existing.quantity >= item.stockQuantity) {
-          toast.error("Maximum quantity reached");
           return prev;
         }
-
-        toast.success(`${item.name} quantity updated`, {
-          duration: 1500,
-        });
 
         return prev.map((c) =>
           c.itemId === item._id
@@ -25,10 +19,6 @@ export function useKioskCart() {
             : c
         );
       }
-
-      toast.success(`${item.name} added to cart!`, {
-        duration: 1500,
-      });
 
       return [
         ...prev,
@@ -60,10 +50,13 @@ export function useKioskCart() {
     0
   );
 
-  const totalPrice = cart.reduce(
+  const subtotal = cart.reduce(
     (acc, i) => acc + i.price * i.quantity,
     0
   );
+
+  const tax = subtotal * 0.05;
+  const totalPrice = subtotal + tax;
 
   return {
     cart,

@@ -129,17 +129,28 @@ export function MenuItemTableRow({ item, categories, index, onEdit, onDelete, on
 
       {/* Status */}
       <td className="px-4 py-3">
-        {item.isActive !== false ? (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 dark:bg-emerald-400/10 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-400/20">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-            Active
-          </span>
-        ) : (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-white/[0.07]">
-            <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
-            Inactive
-          </span>
-        )}
+        <div className="flex flex-col gap-1">
+          {item.isActive !== false ? (
+            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 dark:bg-emerald-400/10 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-400/20">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+              Active
+            </span>
+          ) : (
+            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-white/[0.07]">
+              <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
+              Inactive
+            </span>
+          )}
+          {item.serviceType && item.serviceType !== "BOTH" && (
+            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+              item.serviceType === "DINE_IN"
+                ? "bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-400/20"
+                : "bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-400/20"
+            }`}>
+              {item.serviceType === "DINE_IN" ? "Dine In" : "Take Away"}
+            </span>
+          )}
+        </div>
       </td>
 
       {/* Actions — three dots dropdown */}

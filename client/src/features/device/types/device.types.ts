@@ -9,4 +9,7 @@ export interface Device {
   lastSeenAt?: string;
   createdAt: string;
   updatedAt: string;
+  landingImage?: string;
+  landingTitle?: string;
+  landingSubtitle?: string;
 }

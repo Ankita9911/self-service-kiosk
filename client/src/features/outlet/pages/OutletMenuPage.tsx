@@ -122,6 +122,7 @@ export default function OutletMenuPage() {
       imageFile: null,
       price: String(item.price),
       stockQuantity: String(item.stockQuantity),
+      serviceType: item.serviceType ?? "BOTH",
     });
   };
 
@@ -174,7 +175,7 @@ export default function OutletMenuPage() {
           <Button
             size="sm"
             onClick={() => {
-              setItemForm({ categoryId: categories[0]?._id ?? "", name: "", description: "", imageFile: null, price: "", stockQuantity: "0" });
+              setItemForm({ categoryId: categories[0]?._id ?? "", name: "", description: "", imageFile: null, price: "", stockQuantity: "0", serviceType: "BOTH" });
               setAddItemOpen(true);
             }}
             className="rounded-xl h-9 text-xs bg-indigo-600 hover:bg-indigo-700 text-white"

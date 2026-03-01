@@ -9,6 +9,9 @@ export async function getDevices(): Promise<Device[]> {
 export async function createDevice(payload: {
   outletId: string;
   name?: string;
+  landingImage?: string;
+  landingTitle?: string;
+  landingSubtitle?: string;
 }): Promise<{ device: Device; secret: string }> {
   const response = await axiosInstance.post<{
     data: { device: Device; secret: string };
@@ -45,8 +48,8 @@ export async function changeDeviceStatus(
 export async function kioskLogin(
   deviceId: string,
   password: string
-): Promise<{ token: string }> {
-  const response = await axiosInstance.post<{ data: { token: string } }>(
+): Promise<{ token: string; landingImage: string | null; landingTitle: string | null; landingSubtitle: string | null }> {
+  const response = await axiosInstance.post<{ data: { token: string; landingImage: string | null; landingTitle: string | null; landingSubtitle: string | null } }>(
     "/devices/login",
     { deviceId, password }
   );

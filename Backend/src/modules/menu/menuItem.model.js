@@ -46,6 +46,12 @@ const menuItemSchema = new Schema(
       min: 0,
     },
 
+    serviceType: {
+      type: String,
+      enum: ["DINE_IN", "TAKE_AWAY", "BOTH"],
+      default: "BOTH",
+    },
+
     isActive: {
       type: Boolean,
       default: true,

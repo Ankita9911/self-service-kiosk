@@ -50,6 +50,10 @@ const deviceSchema = new Schema(
     osVersion: String,
     ipAddress: String,
 
+    landingImage: { type: String },
+    landingTitle: { type: String },
+    landingSubtitle: { type: String },
+
     isDeleted: {
       type: Boolean,
       default: false,

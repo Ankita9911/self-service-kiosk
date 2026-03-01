@@ -31,7 +31,7 @@ export async function createDevice(currentUser, payload) {
     );
   }
 
-  const { outletId, name } = payload;
+  const { outletId, name, landingImage, landingTitle, landingSubtitle } = payload;
 
   if (!outletId) {
     throw new AppError("Outlet is required when creating a device", 400);
@@ -75,6 +75,9 @@ export async function createDevice(currentUser, payload) {
     deviceSecretHash,
     name: name || null,
     createdBy: currentUser.userId,
+    ...(landingImage && { landingImage }),
+    ...(landingTitle && { landingTitle }),
+    ...(landingSubtitle && { landingSubtitle }),
   });
 
   return {

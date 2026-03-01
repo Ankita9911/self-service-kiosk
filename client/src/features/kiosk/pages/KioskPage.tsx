@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { ArrowLeft } from "lucide-react";
 import { processQueue } from "@/shared/lib/syncEngine";
 
 import CategoryTabs from "../components/CategoryTabs";
@@ -8,7 +9,6 @@ import {
   CategoryTabsSkeleton,
   MenuGridSkeleton,
 } from "../components/LoadingSkeleton";
-import KioskHeader from "../components/KioskHeader";
 import CartSidebar from "../components/CartSideBar";
 import PaymentDialouge from "../components/PaymentDialouge";
 import SuccessDialouge from "../components/SuccessDialouge";
@@ -83,25 +83,27 @@ export default function KioskPage() {
   }, [navigate]);
 
   return (
-    <div className="h-screen flex flex-row bg-gradient-to-br from-gray-50 via-white to-orange-50/30 overflow-hidden">
+    <div className="h-screen flex flex-row bg-white overflow-hidden">
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        <KioskHeader
-          totalItems={totalItems}
-          totalPrice={totalPrice}
-          isCartOpen={isCartOpen}
-          onToggleCart={() => setIsCartOpen(!isCartOpen)}
-        />
-
-        <div className="bg-white shadow-md z-10">
-          {isLoading ? (
-            <CategoryTabsSkeleton />
-          ) : (
-            <CategoryTabs
-              categories={categoriesWithAll}
-              selectedCategory={selectedCategory}
-              onCategoryChange={setSelectedCategory}
-            />
-          )}
+        <div className="bg-white border-b border-slate-100 z-10 flex items-center gap-2">
+          <button
+            onClick={() => navigate("/kiosk/order-type")}
+            className="shrink-0 flex items-center gap-1.5 ml-3 px-3 py-2 rounded-xl bg-orange-50 hover:bg-orange-100 text-orange-600 font-bold text-sm transition-all active:scale-95"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>Order Type</span>
+          </button>
+          <div className="flex-1 min-w-0">
+            {isLoading ? (
+              <CategoryTabsSkeleton />
+            ) : (
+              <CategoryTabs
+                categories={categoriesWithAll}
+                selectedCategory={selectedCategory}
+                onCategoryChange={setSelectedCategory}
+              />
+            )}
+          </div>
         </div>
 
         <main className="flex-1 overflow-y-auto p-6 scrollbar-thin scrollbar-thumb-orange-200 scrollbar-track-transparent">
@@ -116,6 +118,25 @@ export default function KioskPage() {
             />
           )}
         </main>
+
+        {/* Floating cart button — only visible when cart is closed */}
+        {!isCartOpen && totalItems > 0 && (
+          <button
+            onClick={() => setIsCartOpen(true)}
+            className="fixed bottom-6 right-6 z-30 flex items-center gap-3 bg-orange-500 hover:bg-orange-600 text-white pl-4 pr-5 py-3.5 rounded-2xl shadow-2xl shadow-orange-400/40 transition-all active:scale-95"
+          >
+            <div className="relative">
+              <span className="text-2xl">🛒</span>
+              <span className="absolute -top-2 -right-2 bg-white text-orange-600 text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center border-2 border-orange-500">
+                {totalItems}
+              </span>
+            </div>
+            <div className="text-left">
+              <p className="text-sm font-black leading-none">View Cart</p>
+              <p className="text-xs font-semibold opacity-80 mt-0.5">₹{totalPrice.toFixed(2)}</p>
+            </div>
+          </button>
+        )}
       </div>
 
       <CartSidebar

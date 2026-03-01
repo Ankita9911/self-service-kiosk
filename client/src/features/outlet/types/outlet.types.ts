@@ -17,6 +17,8 @@ export interface Outlet {
   updatedAt: string;
 }
 
+export type ServiceType = "DINE_IN" | "TAKE_AWAY" | "BOTH";
+
 export type ItemFormState = {
   categoryId: string;
   name: string;
@@ -24,4 +26,5 @@ export type ItemFormState = {
   imageFile: File | null;
   price: string;
   stockQuantity: string;
+  serviceType: ServiceType;
 };

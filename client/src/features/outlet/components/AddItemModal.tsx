@@ -6,11 +6,19 @@ import { createMenuItemSchema, type CreateMenuItemFormValues } from "../validati
 import { getZodFieldErrors } from "@/shared/utils/zod.utils";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/components/ui/select";
 
+import type { ServiceType } from "@/features/outlet/types/outlet.types";
+
+const SERVICE_OPTIONS: { value: ServiceType; label: string }[] = [
+  { value: "DINE_IN",   label: "Dine In"   },
+  { value: "TAKE_AWAY", label: "Take Away" },
+  { value: "BOTH",      label: "Both"      },
+];
+
 interface Props {
   open: boolean;
   onClose: () => void;
   categories: { _id: string; name: string }[];
-  form: { categoryId: string; name: string; description: string; imageFile: File | null; price: string; stockQuantity: string };
+  form: { categoryId: string; name: string; description: string; imageFile: File | null; price: string; stockQuantity: string; serviceType?: ServiceType };
   setForm: React.Dispatch<React.SetStateAction<any>>;
   onSubmit: () => Promise<void>;
 }
@@ -129,6 +137,27 @@ export function AddItemModal({ open, onClose, categories, form, setForm, onSubmi
               </div>
             </div>
             <ErrTxt msg={errors.imageFile} />
+          </div>
+
+          {/* Service Type */}
+          <div>
+            <LabelEl>Available For <span className="text-red-400 normal-case">*</span></LabelEl>
+            <div className="flex gap-2">
+              {SERVICE_OPTIONS.map((opt) => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => setForm((prev: any) => ({ ...prev, serviceType: opt.value }))}
+                  className={`flex-1 h-9 rounded-xl border text-xs font-semibold transition-all ${
+                    (form.serviceType ?? "BOTH") === opt.value
+                      ? "bg-indigo-600 border-indigo-600 text-white shadow-sm"
+                      : "border-slate-200 dark:border-white/8 text-slate-500 dark:text-slate-400 hover:border-indigo-400 hover:text-indigo-600"
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* Price & Stock */}

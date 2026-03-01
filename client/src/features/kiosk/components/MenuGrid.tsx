@@ -1,7 +1,31 @@
-import { Plus, ImageOff, Minus, AlertCircle, Package } from "lucide-react";
+import { Plus, ImageOff, Minus, AlertCircle, ChevronDown } from "lucide-react";
 import { motion } from "framer-motion";
+import { useState } from "react";
 import type { MenuItem } from "../../../shared/lib/menuCache";
 import type { CartItem } from "../types/cartItem.types";
+
+const DESC_LIMIT = 70;
+
+function DescriptionText({ text }: { text: string }) {
+  const [expanded, setExpanded] = useState(false);
+  if (text.length <= DESC_LIMIT) {
+    return <p className="text-sm text-gray-500" style={{ fontFamily: "var(--font-body)" }}>{text}</p>;
+  }
+  return (
+    <div>
+      <p className="text-sm text-gray-500" style={{ fontFamily: "var(--font-body)" }}>
+        {expanded ? text : `${text.slice(0, DESC_LIMIT)}…`}
+      </p>
+      <button
+        onClick={(e) => { e.stopPropagation(); setExpanded((v) => !v); }}
+        className="mt-0.5 inline-flex items-center gap-0.5 text-[11px] font-bold text-orange-500 hover:text-orange-600 transition-colors"
+      >
+        {expanded ? "Show less" : "Read more"}
+        <ChevronDown className={`w-3 h-3 transition-transform ${expanded ? "rotate-180" : ""}`} />
+      </button>
+    </div>
+  );
+}
 
 interface MenuGridProps {
   items: MenuItem[];
@@ -21,7 +45,7 @@ export default function MenuGrid({
   if (availableItems.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-96 text-gray-400">
-        <div className="w-32 h-32 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center mb-6">
+        <div className="w-32 h-32 bg-linear-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center mb-6">
           <ImageOff className="w-16 h-16 text-gray-300" strokeWidth={1.5} />
         </div>
         <p
@@ -62,7 +86,7 @@ export default function MenuGrid({
                 : "border-white hover:border-orange-200"
             }`}
           >
-            <div className="relative h-48 bg-gradient-to-br from-orange-50 via-amber-50 to-orange-50 overflow-hidden group">
+            <div className="relative h-48 bg-linear-to-br from-orange-50 via-amber-50 to-orange-50 overflow-hidden group">
               {item.imageUrl ? (
                 <>
                   <img
@@ -70,7 +94,7 @@ export default function MenuGrid({
                     alt={item.name}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  <div className="absolute inset-0 bg-linear-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 </>
               ) : (
                 <div className="w-full h-full flex items-center justify-center">
@@ -82,13 +106,13 @@ export default function MenuGrid({
               )}
 
               {isLowStock && (
-                <div className="absolute top-3 right-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white px-3 py-1.5 rounded-full shadow-lg flex items-center gap-1.5">
+                <div className="absolute top-3 right-3 bg-linear-to-r from-amber-500 to-orange-500 text-white px-3 py-1.5 rounded-full shadow-lg flex items-center gap-1.5">
                   <AlertCircle className="w-3.5 h-3.5" strokeWidth={2.5} />
                   <span
                     className="text-xs font-black"
                     style={{ fontFamily: "var(--font-body)" }}
                   >
-                    ONLY {remainingStock} LEFT
+                    LOW STOCK
                   </span>
                 </div>
               )}
@@ -109,21 +133,15 @@ export default function MenuGrid({
 
             <div className="p-5 flex flex-col flex-1">
               <h3
-                className="text-lg font-black text-gray-900 leading-tight mb-2 line-clamp-2"
+                className="text-lg font-black text-gray-900 leading-tight mb-1"
                 style={{ fontFamily: "var(--font-display)" }}
               >
                 {item.name}
               </h3>
 
-              {!isOutOfStock && (
-                <div className="flex items-center gap-1.5 mb-3">
-                  <Package className="w-3.5 h-3.5 text-gray-400" />
-                  <span
-                    className="text-xs font-semibold text-gray-500"
-                    style={{ fontFamily: "var(--font-body)" }}
-                  >
-                    {remainingStock} available
-                  </span>
+              {item.description && (
+                <div className="mb-2">
+                  <DescriptionText text={item.description} />
                 </div>
               )}
 
@@ -138,7 +156,7 @@ export default function MenuGrid({
                     PRICE
                   </span>
                   <span
-                    className="text-2xl font-black bg-gradient-to-r from-orange-600 to-orange-500 bg-clip-text text-transparent"
+                    className="text-2xl font-black bg-linear-to-r from-orange-600 to-orange-500 bg-clip-text text-transparent"
                     style={{ fontFamily: "var(--font-display)" }}
                   >
                     ₹{item.price.toFixed(2)}
@@ -154,7 +172,7 @@ export default function MenuGrid({
                     className={`p-4 rounded-2xl font-black flex items-center justify-center shadow-lg transition-all ${
                       isOutOfStock
                         ? "bg-gray-100 text-gray-300 cursor-not-allowed"
-                        : "bg-gradient-to-br from-orange-500 via-orange-600 to-orange-500 hover:from-orange-600 hover:via-orange-700 hover:to-orange-600 text-white shadow-orange-300"
+                        : "bg-linear-to-br from-orange-500 via-orange-600 to-orange-500 hover:from-orange-600 hover:via-orange-700 hover:to-orange-600 text-white shadow-orange-300"
                     }`}
                   >
                     <Plus className="w-6 h-6" strokeWidth={3} />
@@ -185,7 +203,7 @@ export default function MenuGrid({
                       className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all ${
                         isAtMaxStock
                           ? "bg-gray-100 text-gray-300 cursor-not-allowed"
-                          : "bg-gradient-to-br from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-md"
+                          : "bg-linear-to-br from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-md"
                       }`}
                     >
                       <Plus className="w-4 h-4" strokeWidth={2.5} />

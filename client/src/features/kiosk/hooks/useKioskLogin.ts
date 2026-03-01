@@ -21,13 +21,17 @@ export function useKioskLogin() {
     setLoading(true);
 
     try {
-      const { token } = await kioskLogin(
+      const { token, landingImage, landingTitle, landingSubtitle } = await kioskLogin(
         deviceId.trim().toUpperCase(),
         secret.trim()
       );
 
       localStorage.setItem("kiosk_token", token);
-      navigate("/kiosk", { replace: true });
+      localStorage.setItem(
+        "kiosk_landing",
+        JSON.stringify({ landingImage, landingTitle, landingSubtitle })
+      );
+      navigate("/kiosk/landing", { replace: true });
     } catch (err: any) {
       const msg =
         err?.response?.data?.message ||

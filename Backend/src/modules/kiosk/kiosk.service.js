@@ -38,6 +38,7 @@ export async function getKioskMenu(tenant) {
         imageUrl: item.imageUrl,
         price: item.price,
         stockQuantity: item.stockQuantity,
+        serviceType: item.serviceType ?? "BOTH",
       });
     }
   });

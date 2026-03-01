@@ -42,7 +42,7 @@ export function useDevices(canView: boolean) {
     fetchData();
   }, [fetchData]);
 
-  async function handleCreate(payload: { outletId: string; name?: string }) {
+  async function handleCreate(payload: { outletId: string; name?: string; landingImage?: string; landingTitle?: string; landingSubtitle?: string }) {
     const result = await createDevice(payload);
     return result.secret;
   }

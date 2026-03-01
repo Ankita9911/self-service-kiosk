@@ -8,6 +8,8 @@ import MenuLandingPage from "@/features/outlet/pages/MenuLandingPage";
 import DevicePage from "@/features/device/pages/Devicepage";
 import KioskPage from "@/features/kiosk/pages/KioskPage";
 import KioskLoginPage from "@/features/kiosk/pages/KioskLoginPage";
+import KioskOrderTypePage from "@/features/kiosk/pages/KioskOrderTypePage";
+import KioskLandingPage from "@/features/kiosk/pages/KioskLandingPage";
 import KitchenPage from "@/features/kitchen/pages/Kitchenpage";
 import PickupPage from "@/features/pickup/pages/PickupPage";
 import ProtectedRoute from "./ProtectedRoute";
@@ -23,6 +25,8 @@ export default function AppRoutes() {
     <Routes>
       <Route path="/login" element={<Login />} />
       <Route path="/kiosk/login" element={<KioskLoginPage />} />
+      <Route path="/kiosk/landing" element={<KioskLandingPage />} />
+      <Route path="/kiosk/order-type" element={<KioskOrderTypePage />} />
       <Route
         path="/force-reset"
         element={

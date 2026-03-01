@@ -15,6 +15,7 @@ export interface MenuItem {
   price: number;
   stockQuantity: number;
   isActive: boolean;
+  serviceType?: "DINE_IN" | "TAKE_AWAY" | "BOTH";
 }
 
 export interface MenuCategory {
