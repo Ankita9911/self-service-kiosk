@@ -1,6 +1,7 @@
-import { Minus, Plus, Trash2, ShoppingCart, Package } from "lucide-react";
+import { Minus, Plus, Trash2, ShoppingCart, Package, Tag } from "lucide-react";
 import { Button } from "../../../shared/components/ui/button";
 import type { CartItem } from "../types/cartItem.types";
+import { effectiveLineTotal } from "../hooks/useKioskCart";
 
 
 interface CartPanelProps {
@@ -18,7 +19,7 @@ export default function CartPanel({
   onPlaceOrder,
   isProcessing
 }: CartPanelProps) {
-  const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const subtotal = cart.reduce((sum, item) => sum + effectiveLineTotal(item), 0);
   const tax = subtotal * 0.05; 
   const total = subtotal + tax;
 
@@ -63,10 +64,26 @@ export default function CartPanel({
                     style={{ fontFamily: 'var(--font-display)' }}
                   >
                     {item.name}
+                    {item.isCombo && (
+                      <span className="ml-1.5 text-[10px] font-black bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded-full">COMBO</span>
+                    )}
                   </h4>
-                  <p className="text-sm font-semibold text-gray-500" style={{ fontFamily: 'var(--font-body)' }}>
-                    ₹{item.price.toFixed(2)} each
-                  </p>
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    {item.offerType === "DISCOUNT" && item.discountPercent ? (
+                      <>
+                        <p className="text-xs line-through text-gray-400"style={{ fontFamily: 'var(--font-body)' }}>₹{item.price.toFixed(2)}</p>
+                        <p className="text-xs font-bold text-red-500">₹{(item.price * (1 - item.discountPercent / 100)).toFixed(2)} each</p>
+                        <span className="text-[9px] font-black bg-red-100 text-red-600 px-1.5 py-0.5 rounded-full">{item.discountPercent}% OFF</span>
+                      </>
+                    ) : item.offerType === "BOGO" ? (
+                      <>
+                        <p className="text-sm font-semibold text-gray-500" style={{ fontFamily: 'var(--font-body)' }}>₹{item.price.toFixed(2)} each</p>
+                        <span className="text-[9px] font-black bg-emerald-100 text-emerald-600 px-1.5 py-0.5 rounded-full">BUY 1 GET 1</span>
+                      </>
+                    ) : (
+                      <p className="text-sm font-semibold text-gray-500" style={{ fontFamily: 'var(--font-body)' }}>₹{item.price.toFixed(2)} each</p>
+                    )}
+                  </div>
                   {isLowStock && (
                     <div className="flex items-center gap-1 mt-1">
                       <Package className="w-3 h-3 text-amber-600" />
@@ -119,7 +136,7 @@ export default function CartPanel({
                     className="text-xl font-black bg-gradient-to-r from-orange-600 to-orange-500 bg-clip-text text-transparent" 
                     style={{ fontFamily: 'var(--font-display)' }}
                   >
-                    ₹{(item.price * item.quantity).toFixed(2)}
+                    ₹{effectiveLineTotal(item).toFixed(2)}
                   </p>
                 </div>
               </div>

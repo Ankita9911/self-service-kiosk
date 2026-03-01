@@ -15,6 +15,9 @@ import {
   handleMenuItemUpdate,
   handleMenuItemDelete,
   handleMenuItemStatusUpdate,
+  handleComboCreate,
+  handleComboUpdate,
+  handleComboDelete,
 } from "./handlers/menu.handler.js";
 
 const MESSAGE_HANDLERS = {
@@ -28,6 +31,9 @@ const MESSAGE_HANDLERS = {
   MENU_ITEM_UPDATE: handleMenuItemUpdate,
   MENU_ITEM_DELETE: handleMenuItemDelete,
   MENU_ITEM_STATUS_UPDATE: handleMenuItemStatusUpdate,
+  COMBO_CREATE: handleComboCreate,
+  COMBO_UPDATE: handleComboUpdate,
+  COMBO_DELETE: handleComboDelete,
 };
 
 let running = false;

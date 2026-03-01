@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Pencil, Trash2, ImageOff, Package, AlertTriangle, Power, Eye } from "lucide-react";
 import type { MenuItem } from "@/features/kiosk/types/menu.types";
 import { ImagePreviewModal, ImageZoomButton } from "./ImagePreviewModal";
+import { AdminOfferBadge } from "@/features/kiosk/components/OfferBadge";
 
 interface Props {
   item: MenuItem;
@@ -106,6 +107,15 @@ export function MenuItemCard({ item, onEdit, onDelete, onToggleStatus, onView }:
           }`}>
             {item.serviceType === "DINE_IN" ? "Dine In" : "Take Away"}
           </span>
+        )}
+
+        {/* Offer badges */}
+        {item.offers && item.offers.length > 0 && (
+          <div className="flex flex-wrap gap-1 mt-1.5">
+            {item.offers.map((offer, i) => (
+              <AdminOfferBadge key={i} offer={offer} />
+            ))}
+          </div>
         )}
 
         <div className="flex items-center justify-between mt-2.5">

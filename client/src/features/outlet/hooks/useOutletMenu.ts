@@ -10,9 +10,13 @@ import {
   deleteMenuItem,
   deleteCategory,
   toggleMenuItemStatus,
+  getCombos,
+  createCombo,
+  updateCombo,
+  deleteCombo,
 } from "@/features/kiosk/services/menu.service";
 import { getOutlets } from "@/features/outlet/services/outlet.service";
-import type { Category, MenuItem } from "@/features/kiosk/types/menu.types";
+import type { Category, MenuItem, Combo } from "@/features/kiosk/types/menu.types";
 import type {
   Outlet,
   ItemFormState,
@@ -31,6 +35,7 @@ export function useOutletMenu(
   const [outlets, setOutlets] = useState<Outlet[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [items, setItems] = useState<MenuItem[]>([]);
+  const [combos, setCombos] = useState<Combo[]>([]);
   const [loading, setLoading] = useState(true);
 
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>("ALL");
@@ -44,6 +49,7 @@ export function useOutletMenu(
     price: "",
     stockQuantity: "",
     serviceType: "BOTH",
+    offers: [],
   });
 
   const needsOutletId =
@@ -56,15 +62,17 @@ export function useOutletMenu(
 
     setLoading(true);
     try {
-      const [catList, itemList, outletList] = await Promise.all([
+      const [catList, itemList, outletList, comboList] = await Promise.all([
         getCategories(oidForApi),
         getMenuItems(oidForApi),
         needsOutletId ? getOutlets() : Promise.resolve([]),
+        getCombos(oidForApi),
       ]);
 
       setCategories(catList);
       setItems(itemList);
       setOutlets(outletList);
+      setCombos(comboList);
     } finally {
       setLoading(false);
     }
@@ -112,6 +120,7 @@ export function useOutletMenu(
         price: parseFloat(itemForm.price),
         stockQuantity: parseInt(itemForm.stockQuantity, 10) || 0,
         serviceType: itemForm.serviceType ?? "BOTH",
+        offers: itemForm.offers ?? [],
       },
       oidForApi,
     );
@@ -124,6 +133,7 @@ export function useOutletMenu(
       price: "",
       stockQuantity: "",
       serviceType: "BOTH",
+      offers: [],
     });
 
     await fetchData();
@@ -136,6 +146,7 @@ export function useOutletMenu(
       price: parseFloat(itemForm.price),
       stockQuantity: parseInt(itemForm.stockQuantity, 10) || 0,
       serviceType: itemForm.serviceType ?? "BOTH",
+      offers: itemForm.offers ?? [],
       ...(itemForm.categoryId && { categoryId: itemForm.categoryId }),
     };
 
@@ -181,10 +192,36 @@ export function useOutletMenu(
     await fetchData();
   }
 
+  // ─── Combos ────────────────────────────────────────────────────────────────
+
+  async function addCombo(data: {
+    name: string;
+    description?: string;
+    imageUrl?: string;
+    items: { menuItemId: string; name: string; quantity: number }[];
+    originalPrice?: number;
+    comboPrice: number;
+    serviceType?: "DINE_IN" | "TAKE_AWAY" | "BOTH";
+  }) {
+    await createCombo(data, oidForApi);
+    await fetchData();
+  }
+
+  async function editCombo(id: string, data: any) {
+    await updateCombo(id, data, oidForApi);
+    await fetchData();
+  }
+
+  async function removeCombo(id: string) {
+    await deleteCombo(id, oidForApi);
+    await fetchData();
+  }
+
   return {
     outlets,
     categories,
     items,
+    combos,
     loading,
     selectedCategoryId,
     setSelectedCategoryId,
@@ -200,5 +237,8 @@ export function useOutletMenu(
     removeItem,
     removeCategory,
     toggleItemStatus,
+    addCombo,
+    editCombo,
+    removeCombo,
   };
 }

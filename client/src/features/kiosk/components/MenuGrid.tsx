@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { useState } from "react";
 import type { MenuItem } from "../../../shared/lib/menuCache";
 import type { CartItem } from "../types/cartItem.types";
+import { OfferBadge } from "./OfferBadge";
 
 const DESC_LIMIT = 70;
 
@@ -117,6 +118,15 @@ export default function MenuGrid({
                 </div>
               )}
 
+              {/* Offer badges – top left */}
+              {(item as any).offers && (item as any).offers.length > 0 && (
+                <div className="absolute top-3 left-3 flex flex-col gap-1">
+                  {(item as any).offers.map((offer: any, idx: number) => (
+                    <OfferBadge key={idx} offer={offer} />
+                  ))}
+                </div>
+              )}
+
               {isOutOfStock && (
                 <div className="absolute inset-0 bg-black/60 flex items-center justify-center backdrop-blur-sm">
                   <div className="bg-white text-gray-900 px-6 py-3 rounded-full shadow-xl">
@@ -155,12 +165,23 @@ export default function MenuGrid({
                   >
                     PRICE
                   </span>
-                  <span
-                    className="text-2xl font-black bg-linear-to-r from-orange-600 to-orange-500 bg-clip-text text-transparent"
-                    style={{ fontFamily: "var(--font-display)" }}
-                  >
-                    ₹{item.price.toFixed(2)}
-                  </span>
+                  {(item as any).offers?.find((o: any) => o.type === "DISCOUNT" && o.discountPercent) ? (
+                    <div className="flex flex-col">
+                      <span className="text-sm line-through text-gray-400" style={{ fontFamily: "var(--font-display)" }}>
+                        ₹{item.price.toFixed(2)}
+                      </span>
+                      <span className="text-2xl font-black text-red-500" style={{ fontFamily: "var(--font-display)" }}>
+                        ₹{(item.price * (1 - (item as any).offers.find((o: any) => o.type === "DISCOUNT").discountPercent / 100)).toFixed(2)}
+                      </span>
+                    </div>
+                  ) : (
+                    <span
+                      className="text-2xl font-black bg-linear-to-r from-orange-600 to-orange-500 bg-clip-text text-transparent"
+                      style={{ fontFamily: "var(--font-display)" }}
+                    >
+                      ₹{item.price.toFixed(2)}
+                    </span>
+                  )}
                 </div>
 
                 {quantity === 0 ? (

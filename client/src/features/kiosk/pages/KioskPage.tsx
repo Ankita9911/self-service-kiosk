@@ -5,6 +5,8 @@ import { processQueue } from "@/shared/lib/syncEngine";
 
 import CategoryTabs from "../components/CategoryTabs";
 import MenuGrid from "../components/MenuGrid";
+import ComboGrid from "../components/ComboGrid";
+import KioskFilterStrip from "../components/KioskFilterStrip";
 import {
   CategoryTabsSkeleton,
   MenuGridSkeleton,
@@ -43,9 +45,14 @@ export default function KioskPage() {
     selectedCategory,
     setSelectedCategory,
     categoriesWithAll,
+    combos,
     selectedItems,
+    offerFilter,
+    setOfferFilter,
+    offerCounts,
     isLoading,
     loadMenu,
+    COMBOS_CATEGORY_ID,
   } = useKioskMenu();
 
   const {
@@ -106,17 +113,34 @@ export default function KioskPage() {
           </div>
         </div>
 
-        <main className="flex-1 overflow-y-auto p-6 scrollbar-thin scrollbar-thumb-orange-200 scrollbar-track-transparent">
-          {isLoading ? (
-            <MenuGridSkeleton />
-          ) : (
-            <MenuGrid
-              items={selectedItems}
-              cart={cart}
-              onAddToCart={handleAddToCart}
-              onUpdateQuantity={handleUpdateQuantity}
+        <main className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-orange-200 scrollbar-track-transparent">
+          {/* Offer filter strip — only when NOT on combos tab */}
+          {selectedCategory !== COMBOS_CATEGORY_ID && (
+            <KioskFilterStrip
+              active={offerFilter}
+              onChange={setOfferFilter}
+              counts={offerCounts}
             />
           )}
+          <div className="p-6">
+            {isLoading ? (
+              <MenuGridSkeleton />
+            ) : selectedCategory === COMBOS_CATEGORY_ID ? (
+              <ComboGrid
+                combos={combos}
+                cart={cart}
+                onAddToCart={handleAddToCart}
+                onUpdateQuantity={handleUpdateQuantity}
+              />
+            ) : (
+              <MenuGrid
+                items={selectedItems}
+                cart={cart}
+                onAddToCart={handleAddToCart}
+                onUpdateQuantity={handleUpdateQuantity}
+              />
+            )}
+          </div>
         </main>
 
         {/* Floating cart button — only visible when cart is closed */}

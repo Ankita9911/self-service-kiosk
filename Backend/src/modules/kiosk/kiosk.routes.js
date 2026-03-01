@@ -14,4 +14,5 @@ router.use(
 );
 
 router.get("/menu", controller.getMenu);
+router.get("/combos", controller.getCombos);
 export default router;

@@ -10,9 +10,11 @@ import {
   LayoutGrid,
   Table2,
   Tag,
-  AlertTriangle,
   CheckCircle2,
   Plus,
+  Layers,
+  Pencil,
+  Trash2,
 } from "lucide-react";
 
 import { useOutletMenu } from "../hooks/useOutletMenu";
@@ -24,12 +26,15 @@ import { AddItemModal } from "../components/AddItemModal";
 import { EditItemModal } from "../components/EditItemModal";
 import { DeleteItemModal } from "../components/DeleteItemModal";
 import { ItemViewModal } from "../components/ItemViewModal";
+import { CreateComboModal } from "../components/CreateComboModal";
+import { EditComboModal } from "../components/EditComboModal";
 
 import { Button } from "@/shared/components/ui/button";
 import { TablePagination } from "@/shared/components/ui/TablePagination";
 import { GridPagination } from "@/shared/components/ui/GridPagination";
 
 type Layout = "grid" | "table";
+type ActiveTab = "items" | "combos";
 
 export default function OutletMenuPage() {
   const { outletId } = useParams<{ outletId: string }>();
@@ -42,6 +47,7 @@ export default function OutletMenuPage() {
   const {
     categories,
     items,
+    combos,
     loading,
     selectedCategoryId,
     setSelectedCategoryId,
@@ -57,6 +63,9 @@ export default function OutletMenuPage() {
     setCatForm,
     itemForm,
     setItemForm,
+    addCombo,
+    editCombo,
+    removeCombo,
   } = useOutletMenu(outletId, user?.role, canManage);
 
   const [addCategoryOpen, setAddCategoryOpen] = useState(false);
@@ -75,6 +84,9 @@ export default function OutletMenuPage() {
   const [layout, setLayout] = useState<Layout>(
     () => (localStorage.getItem("menu-layout") as Layout) ?? "grid"
   );
+  const [activeTab, setActiveTab] = useState<ActiveTab>("items");
+  const [addComboOpen, setAddComboOpen] = useState(false);
+  const [editComboData, setEditComboData] = useState<any | null>(null);
 
   const saveLayout = (l: Layout) => {
     setLayout(l);
@@ -111,7 +123,6 @@ export default function OutletMenuPage() {
   const paginatedItems = filteredItems.slice((page - 1) * pageSize, page * pageSize);
 
   const activeCount = items.filter((i) => i.isActive !== false).length;
-  const outOfStockCount = items.filter((i) => i.stockQuantity === 0).length;
 
   const openEdit = (item: any) => {
     setEditItem(item);
@@ -123,6 +134,7 @@ export default function OutletMenuPage() {
       price: String(item.price),
       stockQuantity: String(item.stockQuantity),
       serviceType: item.serviceType ?? "BOTH",
+      offers: item.offers ?? [],
     });
   };
 
@@ -164,25 +176,68 @@ export default function OutletMenuPage() {
         </div>
 
         <div className="flex items-center gap-2">
-          <Button
-            size="sm"
-            onClick={() => setAddCategoryOpen(true)}
-            className="rounded-xl h-9 text-xs bg-violet-600 hover:bg-violet-700 text-white shadow-sm shadow-violet-500/20"
-          >
-            <Tag className="w-3.5 h-3.5 mr-1.5" />
-            Add Category
-          </Button>
-          <Button
-            size="sm"
-            onClick={() => {
-              setItemForm({ categoryId: categories[0]?._id ?? "", name: "", description: "", imageFile: null, price: "", stockQuantity: "0", serviceType: "BOTH" });
-              setAddItemOpen(true);
-            }}
-            className="rounded-xl h-9 text-xs bg-indigo-600 hover:bg-indigo-700 text-white"
-          >
-            <Plus className="w-3.5 h-3.5 mr-1.5" />
-            Add Item
-          </Button>
+          {/* Tab switcher */}
+          <div className="inline-flex items-center bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/8 rounded-xl p-1 gap-0.5">
+            <button
+              onClick={() => setActiveTab("items")}
+              className={`h-7 px-3 rounded-lg text-[11px] font-semibold transition-all ${
+                activeTab === "items"
+                  ? "bg-white dark:bg-[#1e2130] text-indigo-600 dark:text-indigo-400 shadow-sm"
+                  : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
+              }`}
+            >
+              Menu Items
+            </button>
+            <button
+              onClick={() => setActiveTab("combos")}
+              className={`h-7 px-3 rounded-lg text-[11px] font-semibold transition-all flex items-center gap-1 ${
+                activeTab === "combos"
+                  ? "bg-white dark:bg-[#1e2130] text-orange-600 dark:text-orange-400 shadow-sm"
+                  : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
+              }`}
+            >
+              <Layers className="w-3 h-3" />
+              Combos
+              {combos.length > 0 && (
+                <span className="ml-0.5 inline-flex items-center justify-center w-4 h-4 rounded-full bg-orange-100 dark:bg-orange-500/20 text-orange-600 dark:text-orange-400 text-[9px] font-bold">
+                  {combos.length}
+                </span>
+              )}
+            </button>
+          </div>
+
+          {activeTab === "items" ? (
+            <>
+              <Button
+                size="sm"
+                onClick={() => setAddCategoryOpen(true)}
+                className="rounded-xl h-9 text-xs bg-violet-600 hover:bg-violet-700 text-white shadow-sm shadow-violet-500/20"
+              >
+                <Tag className="w-3.5 h-3.5 mr-1.5" />
+                Add Category
+              </Button>
+              <Button
+                size="sm"
+                onClick={() => {
+                  setItemForm({ categoryId: categories[0]?._id ?? "", name: "", description: "", imageFile: null, price: "", stockQuantity: "0", serviceType: "BOTH", offers: [] });
+                  setAddItemOpen(true);
+                }}
+                className="rounded-xl h-9 text-xs bg-indigo-600 hover:bg-indigo-700 text-white"
+              >
+                <Plus className="w-3.5 h-3.5 mr-1.5" />
+                Add Item
+              </Button>
+            </>
+          ) : (
+            <Button
+              size="sm"
+              onClick={() => setAddComboOpen(true)}
+              className="rounded-xl h-9 text-xs bg-orange-500 hover:bg-orange-600 text-white shadow-sm shadow-orange-500/20"
+            >
+              <Plus className="w-3.5 h-3.5 mr-1.5" />
+              Add Combo
+            </Button>
+          )}
         </div>
       </div>
 
@@ -192,13 +247,14 @@ export default function OutletMenuPage() {
           { label: "Total Items", value: items.length, icon: Package, color: "indigo" },
           { label: "Active", value: activeCount, icon: CheckCircle2, color: "emerald" },
           { label: "Categories", value: categories.length, icon: Tag, color: "violet" },
-          { label: "Out of Stock", value: outOfStockCount, icon: AlertTriangle, color: "red" },
+          { label: "Combos", value: combos.length, icon: Layers, color: "orange" },
         ].map(({ label, value, icon: Icon, color }) => (
           <div key={label} className="flex items-center gap-3 p-3.5 rounded-2xl bg-white dark:bg-[#1e2130] border border-slate-100 dark:border-white/[0.07] shadow-sm">
             <div className={`h-9 w-9 rounded-xl flex items-center justify-center ${
               color === "indigo" ? "bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400"
               : color === "emerald" ? "bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
               : color === "violet" ? "bg-violet-50 dark:bg-violet-500/10 text-violet-600 dark:text-violet-400"
+              : color === "orange" ? "bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400"
               : "bg-red-50 dark:bg-red-500/10 text-red-500 dark:text-red-400"
             }`}>
               <Icon className="w-4 h-4" />
@@ -211,8 +267,116 @@ export default function OutletMenuPage() {
         ))}
       </div>
 
+      {/* ── Combos Tab Content ── */}
+      {activeTab === "combos" && (
+        <div>
+          {loading ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="bg-slate-100 dark:bg-white/4 rounded-2xl h-40 animate-pulse" />
+              ))}
+            </div>
+          ) : combos.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-16 bg-white dark:bg-[#1e2130] rounded-2xl border border-slate-100 dark:border-white/[0.07]">
+              <Layers className="w-12 h-12 text-slate-300 dark:text-slate-600 mb-3" />
+              <p className="font-semibold text-slate-600 dark:text-white">No combos yet</p>
+              <p className="text-slate-400 text-sm mt-1">Create a combo to bundle items at a special price</p>
+              <button
+                onClick={() => setAddComboOpen(true)}
+                className="mt-4 h-9 px-4 rounded-xl bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold flex items-center gap-2 transition-colors"
+              >
+                <Plus className="w-4 h-4" /> Create First Combo
+              </button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {combos.map((combo) => (
+                <div
+                  key={combo._id}
+                  className="bg-white dark:bg-[#1e2130] rounded-2xl border border-slate-100 dark:border-white/[0.07] shadow-sm overflow-hidden"
+                >
+                  {/* Image / header */}
+                  <div className="relative aspect-video bg-linear-to-br from-orange-50 to-amber-50 dark:from-orange-900/20 dark:to-amber-900/20 flex items-center justify-center">
+                    {combo.imageUrl ? (
+                      <img src={combo.imageUrl} alt={combo.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <Layers className="w-10 h-10 text-orange-300 dark:text-orange-600" />
+                    )}
+                    <span className="absolute top-2 left-2 text-[10px] font-bold px-2 py-0.5 rounded-full bg-orange-500 text-white">
+                      COMBO
+                    </span>
+                    {combo.originalPrice > combo.comboPrice && (
+                      <span className="absolute top-2 right-2 text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500 text-white">
+                        SAVE ₹{(combo.originalPrice - combo.comboPrice).toFixed(0)}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Body */}
+                  <div className="p-4">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <p className="font-bold text-sm text-slate-800 dark:text-white truncate">{combo.name}</p>
+                        {combo.description && (
+                          <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5 line-clamp-1">{combo.description}</p>
+                        )}
+                      </div>
+                      <div className="text-right shrink-0">
+                        {combo.originalPrice > combo.comboPrice && (
+                          <p className="text-[10px] text-slate-400 line-through">₹{combo.originalPrice.toFixed(0)}</p>
+                        )}
+                        <p className="text-base font-black text-orange-600 dark:text-orange-400">₹{combo.comboPrice.toFixed(0)}</p>
+                      </div>
+                    </div>
+
+                    {/* Items list */}
+                    <div className="mt-2.5 flex flex-wrap gap-1">
+                      {combo.items.map((ci, idx) => (
+                        <span key={idx} className="text-[10px] font-semibold px-2 py-0.5 rounded-lg bg-slate-100 dark:bg-white/8 text-slate-600 dark:text-slate-400">
+                          {ci.quantity}× {ci.name}
+                        </span>
+                      ))}
+                    </div>
+
+                    {/* Service type + actions */}
+                    <div className="mt-3 flex items-center justify-between">
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${
+                        combo.serviceType === "DINE_IN"
+                          ? "bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400"
+                          : combo.serviceType === "TAKE_AWAY"
+                            ? "bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400"
+                            : "bg-slate-100 text-slate-500 dark:bg-white/6 dark:text-slate-400"
+                      }`}>
+                        {combo.serviceType === "DINE_IN" ? "Dine In" : combo.serviceType === "TAKE_AWAY" ? "Take Away" : "Both"}
+                      </span>
+                      <div className="flex gap-1.5">
+                        <button
+                          onClick={() => setEditComboData(combo)}
+                          className="h-7 w-7 rounded-lg bg-slate-100 dark:bg-white/6 flex items-center justify-center text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 transition-colors"
+                          title="Edit combo"
+                        >
+                          <Pencil className="w-3 h-3" />
+                        </button>
+                        <button
+                          onClick={async () => { await removeCombo(combo._id); }}
+                          className="h-7 w-7 rounded-lg bg-slate-100 dark:bg-white/6 flex items-center justify-center text-slate-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-400/10 transition-colors"
+                          title="Delete combo"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
       {/* ── Toolbar: filter + search + layout toggle ── */}
-      <div className="flex flex-col sm:flex-row sm:items-center gap-3 min-w-0">
+      {activeTab === "items" && (
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 min-w-0">
         <CategoryFilter
           categories={categories}
           selectedCategoryId={selectedCategoryId}
@@ -278,10 +442,11 @@ export default function OutletMenuPage() {
             </button>
           </div>
         </div>
-      </div>
+        </div>
+      )}
 
       {/* ── Content ── */}
-      {loading ? (
+      {activeTab === "items" && (loading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {Array.from({ length: 8 }).map((_, i) => (
             <div key={i} className="bg-slate-100 dark:bg-white/4 rounded-2xl h-48 animate-pulse" />
@@ -361,7 +526,7 @@ export default function OutletMenuPage() {
             onPageSizeChange={(s) => { setPageSize(s); setPage(1); }}
           />
         </div>
-      )}
+      ))}
 
       {/* ── Quick price update ── */}
       {priceItem && (
@@ -490,6 +655,21 @@ export default function OutletMenuPage() {
           item={viewItem}
           categories={categories}
           onClose={() => setViewItem(null)}
+        />
+      )}
+      <CreateComboModal
+        open={addComboOpen}
+        onClose={() => setAddComboOpen(false)}
+        items={items}
+        onSubmit={async (data) => { await addCombo(data); setAddComboOpen(false); }}
+      />
+      {editComboData && (
+        <EditComboModal
+          open={!!editComboData}
+          onClose={() => setEditComboData(null)}
+          combo={editComboData}
+          items={items}
+          onSubmit={async (data: any) => { await editCombo(editComboData._id, data); setEditComboData(null); }}
         />
       )}
     </div>

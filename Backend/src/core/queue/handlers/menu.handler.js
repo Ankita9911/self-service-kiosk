@@ -1,5 +1,6 @@
 import Category from "../../../modules/menu/category.model.js";
 import MenuItem from "../../../modules/menu/menuItem.model.js";
+import Combo from "../../../modules/menu/combo.model.js";
 import AppError from "../../../shared/errors/AppError.js";
 import { getRedisClient } from "../../cache/redis.client.js";
 import { buildTenantKey } from "../../cache/cache.utils.js";
@@ -235,4 +236,52 @@ export async function handleMenuItemStatusUpdate(payload) {
   emitMenuUpdated(tenant.outletId, "MENU_ITEM_STATUS_UPDATE");
   console.log(`[queue] Item status toggled — id=${id} isActive=${item.isActive} outlet=${tenant.outletId}`);
   return item;
+}
+
+// ─── Combo handlers ───────────────────────────────────────────────────────────
+
+export async function handleComboCreate(payload) {
+  const { data, tenant } = payload;
+
+  const combo = await Combo.create({
+    ...data,
+    franchiseId: tenant.franchiseId,
+    outletId: tenant.outletId,
+  });
+
+  emitMenuUpdated(tenant.outletId, "COMBO_CREATE");
+  console.log(`[queue] Combo created — id=${combo._id} outlet=${tenant.outletId}`);
+  return combo;
+}
+
+export async function handleComboUpdate(payload) {
+  const { id, data, tenant } = payload;
+
+  const combo = await Combo.findOneAndUpdate(
+    { _id: id, franchiseId: tenant.franchiseId, outletId: tenant.outletId, isDeleted: false },
+    data,
+    { new: true }
+  );
+
+  if (!combo) throw new Error(`Combo not found for update: ${id}`);
+
+  emitMenuUpdated(tenant.outletId, "COMBO_UPDATE");
+  console.log(`[queue] Combo updated — id=${id} outlet=${tenant.outletId}`);
+  return combo;
+}
+
+export async function handleComboDelete(payload) {
+  const { id, tenant } = payload;
+
+  const combo = await Combo.findOneAndUpdate(
+    { _id: id, franchiseId: tenant.franchiseId, outletId: tenant.outletId, isDeleted: false },
+    { isDeleted: true },
+    { new: true }
+  );
+
+  if (!combo) throw new Error(`Combo not found for delete: ${id}`);
+
+  emitMenuUpdated(tenant.outletId, "COMBO_DELETE");
+  console.log(`[queue] Combo deleted — id=${id} outlet=${tenant.outletId}`);
+  return combo;
 }

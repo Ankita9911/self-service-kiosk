@@ -1,5 +1,5 @@
 import axiosInstance from "@/shared/lib/axiosInstance";
-import type { Category, MenuItem } from "@/features/kiosk/types/menu.types";
+import type { Category, MenuItem, Combo } from "@/features/kiosk/types/menu.types";
 
 function params(outletId?: string) {
   return outletId ? { params: { outletId } } : {};
@@ -118,4 +118,46 @@ export async function toggleMenuItemStatus(id: string, outletId?: string): Promi
     outletId ? { outletId } : {}
   );
   return response.data.data;
+}
+
+// ─── Combos ───────────────────────────────────────────────────────────────────
+
+export async function getCombos(outletId?: string): Promise<Combo[]> {
+  const response = await axiosInstance.get<{ data: Combo[] }>("/combos", params(outletId));
+  return response.data.data;
+}
+
+export async function createCombo(
+  data: {
+    name: string;
+    description?: string;
+    imageUrl?: string;
+    items: { menuItemId: string; name: string; quantity: number }[];
+    originalPrice?: number;
+    comboPrice: number;
+    serviceType?: "DINE_IN" | "TAKE_AWAY" | "BOTH";
+  },
+  outletId?: string
+): Promise<{ queued: boolean }> {
+  const response = await axiosInstance.post<{ data: { queued: boolean } }>(
+    "/combos",
+    { ...data, ...(outletId && { outletId }) }
+  );
+  return response.data.data;
+}
+
+export async function updateCombo(
+  id: string,
+  data: Partial<Combo>,
+  outletId?: string
+): Promise<{ queued: boolean }> {
+  const response = await axiosInstance.put<{ data: { queued: boolean } }>(
+    `/combos/${id}`,
+    { ...data, ...(outletId && { outletId }) }
+  );
+  return response.data.data;
+}
+
+export async function deleteCombo(id: string, outletId?: string): Promise<void> {
+  await axiosInstance.delete(`/combos/${id}`, params(outletId));
 }

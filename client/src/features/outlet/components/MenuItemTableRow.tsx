@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { Pencil, Trash2, ImageOff, Package, AlertTriangle, MoreVertical, DollarSign, Archive, ZoomIn, Power, Eye } from "lucide-react";
 import type { MenuItem, Category } from "@/features/kiosk/types/menu.types";
 import { ImagePreviewModal } from "./ImagePreviewModal";
+import { AdminOfferBadge } from "@/features/kiosk/components/OfferBadge";
 
 interface Props {
   item: MenuItem;
@@ -82,6 +83,13 @@ export function MenuItemTableRow({ item, categories, index, onEdit, onDelete, on
               <p className="text-[11px] text-slate-400 dark:text-slate-500 truncate max-w-40 mt-0.5">
                 {item.description}
               </p>
+            )}
+            {item.offers && item.offers.length > 0 && (
+              <div className="flex flex-wrap gap-1 mt-1">
+                {item.offers.map((offer, i) => (
+                  <AdminOfferBadge key={i} offer={offer} />
+                ))}
+              </div>
             )}
           </div>
         </div>

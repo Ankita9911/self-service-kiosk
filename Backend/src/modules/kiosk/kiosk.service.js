@@ -1,5 +1,6 @@
 import Category from "../menu/category.model.js";
 import MenuItem from "../menu/menuItem.model.js";
+import Combo from "../menu/combo.model.js";
 
 export async function getKioskMenu(tenant) {
   const categories = await Category.find({
@@ -39,9 +40,30 @@ export async function getKioskMenu(tenant) {
         price: item.price,
         stockQuantity: item.stockQuantity,
         serviceType: item.serviceType ?? "BOTH",
+        offers: item.offers ?? [],
       });
     }
   });
 
   return Object.values(categoryMap);
+}
+
+export async function getKioskCombos(tenant) {
+  const combos = await Combo.find({
+    franchiseId: tenant.franchiseId,
+    outletId: tenant.outletId,
+    isDeleted: false,
+    isActive: true,
+  }).lean();
+
+  return combos.map((c) => ({
+    _id: c._id,
+    name: c.name,
+    description: c.description,
+    imageUrl: c.imageUrl,
+    items: c.items,
+    originalPrice: c.originalPrice ?? 0,
+    comboPrice: c.comboPrice,
+    serviceType: c.serviceType ?? "BOTH",
+  }));
 }

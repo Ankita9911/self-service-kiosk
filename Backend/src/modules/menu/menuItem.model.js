@@ -52,6 +52,19 @@ const menuItemSchema = new Schema(
       default: "BOTH",
     },
 
+    offers: [
+      {
+        type: {
+          type: String,
+          enum: ["DISCOUNT", "BOGO", "NEW", "BESTSELLER", "LIMITED"],
+          required: true,
+        },
+        discountPercent: { type: Number, min: 0, max: 100 },
+        label: { type: String, trim: true },
+        _id: false,
+      },
+    ],
+
     isActive: {
       type: Boolean,
       default: true,

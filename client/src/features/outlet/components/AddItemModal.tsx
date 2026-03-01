@@ -5,6 +5,7 @@ import { toast } from "react-hot-toast";
 import { createMenuItemSchema, type CreateMenuItemFormValues } from "../validations/menu.schemas";
 import { getZodFieldErrors } from "@/shared/utils/zod.utils";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/components/ui/select";
+import { OfferEditor } from "./OfferEditor";
 
 import type { ServiceType } from "@/features/outlet/types/outlet.types";
 
@@ -158,6 +159,15 @@ export function AddItemModal({ open, onClose, categories, form, setForm, onSubmi
                 </button>
               ))}
             </div>
+          </div>
+
+          {/* Offers */}
+          <div>
+            <LabelEl>Offers & Tags <span className="text-slate-400 font-medium normal-case">(optional)</span></LabelEl>
+            <OfferEditor
+              offers={form.offers ?? []}
+              onChange={(offers) => setForm((prev: any) => ({ ...prev, offers }))}
+            />
           </div>
 
           {/* Price & Stock */}

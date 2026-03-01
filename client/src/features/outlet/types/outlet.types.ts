@@ -19,6 +19,14 @@ export interface Outlet {
 
 export type ServiceType = "DINE_IN" | "TAKE_AWAY" | "BOTH";
 
+export type OfferType = "DISCOUNT" | "BOGO" | "NEW" | "BESTSELLER" | "LIMITED";
+
+export interface ItemOfferForm {
+  type: OfferType;
+  discountPercent?: number;
+  label?: string;
+}
+
 export type ItemFormState = {
   categoryId: string;
   name: string;
@@ -27,4 +35,5 @@ export type ItemFormState = {
   price: string;
   stockQuantity: string;
   serviceType: ServiceType;
+  offers: ItemOfferForm[];
 };

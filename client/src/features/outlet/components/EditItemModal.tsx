@@ -4,6 +4,7 @@ import { getZodFieldErrors } from "@/shared/utils/zod.utils";
 import { useState } from "react";
 import { Pencil, X, ImageIcon, RefreshCcw } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/components/ui/select";
+import { OfferEditor } from "./OfferEditor";
 
 import type { ServiceType } from "@/features/outlet/types/outlet.types";
 
@@ -166,6 +167,15 @@ export function EditItemModal({ open, onClose, form, setForm, onSubmit, categori
               <input type="number" min="0" step="1" value={form.stockQuantity} onChange={(e) => { setForm((prev: any) => ({ ...prev, stockQuantity: e.target.value })); clearError("stockQuantity"); }} placeholder="0" className={`${inputBase} ${errors.stockQuantity ? inputErr : inputOk}`} />
               <ErrTxt msg={errors.stockQuantity} />
             </div>
+          </div>
+
+          {/* Offers */}
+          <div>
+            <LabelEl>Offers & Tags <span className="text-slate-400 font-medium normal-case">(optional)</span></LabelEl>
+            <OfferEditor
+              offers={(form as any).offers ?? []}
+              onChange={(offers) => setForm((prev: any) => ({ ...prev, offers }))}
+            />
           </div>
 
           {/* Actions */}
