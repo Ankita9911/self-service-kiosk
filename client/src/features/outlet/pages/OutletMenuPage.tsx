@@ -137,14 +137,14 @@ export default function OutletMenuPage() {
           </button>
 
           <div>
-            <div className="flex items-center gap-2 mb-0.5">
+            {/* <div className="flex items-center gap-2 mb-0.5">
               <div className="h-5 w-5 rounded-md bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center">
                 <UtensilsCrossed className="w-3 h-3 text-indigo-600 dark:text-indigo-400" />
               </div>
               <span className="text-[11px] font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-widest">
                 Menu Management
               </span>
-            </div>
+            </div> */}
             <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Outlet Menu</h1>
             <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">
               Manage items — changes reflect on all kiosks in this outlet.

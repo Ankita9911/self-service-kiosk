@@ -211,7 +211,7 @@ export default function AnalyticsPage() {
             {greeting}, <span className="text-indigo-500">{firstName}</span> 👋
           </h1>
           <p className="text-[13px] text-slate-400 dark:text-slate-500 mt-1.5">
-            {role.replace(/_/g, " ")} · Real-time insights for smarter decisions
+            Real-time insights for smarter decisions
           </p>
         </div>
 

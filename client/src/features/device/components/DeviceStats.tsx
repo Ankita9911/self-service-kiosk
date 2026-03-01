@@ -1,32 +1,44 @@
+import { Cpu, CheckCircle2, WifiOff } from "lucide-react";
 import type { Device } from "../types/device.types";
 
 function StatPill({
+  icon,
   label,
   value,
+  iconBg,
   loading,
-  color = "slate",
 }: {
+  icon: React.ReactNode;
   label: string;
   value: number;
+  iconBg: string;
   loading: boolean;
-  color?: "slate" | "emerald" | "red";
 }) {
-  const colorMap = {
-    slate: "bg-slate-100 dark:bg-white/[0.06] text-slate-700 dark:text-slate-300 border-slate-200 dark:border-white/[0.08]",
-    emerald: "bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/20",
-    red: "bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 border-red-200 dark:border-red-500/20",
-  };
-
   if (loading) {
     return (
-      <div className="h-8 w-20 rounded-lg bg-gradient-to-r from-slate-100 via-slate-200 to-slate-100 dark:from-white/[0.04] dark:via-white/10 dark:to-white/[0.04] animate-shimmer bg-[length:400%_100%]" />
+      <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-white dark:bg-[#1e2130] border border-slate-100 dark:border-white/[0.07] shadow-sm">
+        <div className="relative overflow-hidden h-9 w-9 rounded-xl bg-slate-100 dark:bg-white/[0.06] shrink-0">
+          <div className="absolute inset-0 -translate-x-full animate-shimmer bg-linear-to-r from-transparent via-white/60 dark:via-white/10 to-transparent" />
+        </div>
+        <div className="space-y-1.5 flex-1">
+          <div className="relative overflow-hidden h-5 w-8 rounded bg-slate-100 dark:bg-white/[0.06]">
+            <div className="absolute inset-0 -translate-x-full animate-shimmer bg-linear-to-r from-transparent via-white/60 dark:via-white/10 to-transparent" />
+          </div>
+          <div className="relative overflow-hidden h-3 w-14 rounded bg-slate-100 dark:bg-white/[0.06]">
+            <div className="absolute inset-0 -translate-x-full animate-shimmer bg-linear-to-r from-transparent via-white/60 dark:via-white/10 to-transparent" />
+          </div>
+        </div>
+      </div>
     );
   }
 
   return (
-    <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium border ${colorMap[color]}`}>
-      <span className="tabular-nums font-semibold">{value}</span>
-      <span className="text-xs opacity-70 font-normal">{label}</span>
+    <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-white dark:bg-[#1e2130] border border-slate-100 dark:border-white/[0.07] shadow-sm">
+      <div className={`h-9 w-9 rounded-xl ${iconBg} flex items-center justify-center shrink-0`}>{icon}</div>
+      <div>
+        <p className="text-xl font-black text-slate-800 dark:text-white leading-none">{value}</p>
+        <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5 font-medium">{label}</p>
+      </div>
     </div>
   );
 }
@@ -41,10 +53,10 @@ export function DeviceStats({
   const activeCount = devices.filter(d => d.status === "ACTIVE").length;
 
   return (
-    <div className="flex flex-wrap gap-2">
-      <StatPill label="Total" value={devices.length} loading={loading} color="slate" />
-      <StatPill label="Online" value={activeCount} loading={loading} color="emerald" />
-      <StatPill label="Offline" value={devices.length - activeCount} loading={loading} color="red" />
+    <div className="grid grid-cols-3 gap-3">
+      <StatPill loading={loading} value={devices.length}              label="Total Devices" iconBg="bg-indigo-50 dark:bg-indigo-500/10"   icon={<Cpu        className="w-4 h-4 text-indigo-500"   />} />
+      <StatPill loading={loading} value={activeCount}                 label="Online"        iconBg="bg-emerald-50 dark:bg-emerald-500/10" icon={<CheckCircle2 className="w-4 h-4 text-emerald-500" />} />
+      <StatPill loading={loading} value={devices.length - activeCount} label="Offline"      iconBg="bg-red-50 dark:bg-red-500/10"         icon={<WifiOff    className="w-4 h-4 text-red-400"      />} />
     </div>
   );
 }
