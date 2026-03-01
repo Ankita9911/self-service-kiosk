@@ -21,14 +21,14 @@ export default function PasswordStrength({ password }: Props) {
 
   const colors = [
     "bg-red-400",
-    "bg-orange-400",
+    "bg-amber-400",
     "bg-yellow-400",
     "bg-emerald-500",
   ];
 
   const textColors = [
     "text-red-500",
-    "text-orange-500",
+    "text-amber-500",
     "text-yellow-600",
     "text-emerald-600",
   ];

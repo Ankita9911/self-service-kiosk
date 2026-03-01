@@ -38,8 +38,8 @@ export function ResetPassword() {
     <div className="space-y-6 max-w-lg">
       <div>
         <div className="flex items-center gap-2 mb-1">
-          <LockKeyhole className="w-3.5 h-3.5 text-orange-500" />
-          <span className="text-[11px] font-clash-semibold text-orange-500 uppercase tracking-widest">
+          <LockKeyhole className="w-3.5 h-3.5 text-indigo-500" />
+          <span className="text-[11px] font-clash-semibold text-indigo-500 uppercase tracking-widest">
             Security
           </span>
         </div>
@@ -67,7 +67,7 @@ export function ResetPassword() {
         </div>
       ) : (
         <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-          <div className="h-1 w-full bg-gradient-to-r from-orange-400 to-orange-600" />
+          <div className="h-1 w-full bg-linear-to-r from-indigo-500 to-violet-600" />
           <div className="p-7 space-y-5">
             <form
               onSubmit={(e) => {
@@ -88,7 +88,7 @@ export function ResetPassword() {
                     onChange={(e) => setCurrentPassword(e.target.value)}
                     placeholder="Enter your current password"
                     required
-                    className="w-full h-11 pl-10 pr-10 rounded-xl border border-slate-200 bg-slate-50 text-sm font-satoshi text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-400/40 focus:border-orange-400 transition-all"
+                    className="w-full h-11 pl-10 pr-10 rounded-xl border border-slate-200 bg-slate-50 text-sm font-satoshi text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-400/40 focus:border-indigo-400 transition-all"
                   />
                   <button
                     type="button"
@@ -118,7 +118,7 @@ export function ResetPassword() {
                     placeholder="Create a strong password"
                     required
                     minLength={8}
-                    className="w-full h-11 pl-10 pr-10 rounded-xl border border-slate-200 bg-slate-50 text-sm font-satoshi text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-400/40 focus:border-orange-400 transition-all"
+                    className="w-full h-11 pl-10 pr-10 rounded-xl border border-slate-200 bg-slate-50 text-sm font-satoshi text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-400/40 focus:border-indigo-400 transition-all"
                   />
                   <button
                     type="button"
@@ -151,7 +151,7 @@ export function ResetPassword() {
                     className={`w-full h-11 pl-10 pr-10 rounded-xl border bg-slate-50 text-sm font-satoshi text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 transition-all ${
                       mismatch
                         ? "border-red-300 focus:ring-red-400/40 focus:border-red-400"
-                        : "border-slate-200 focus:ring-orange-400/40 focus:border-orange-400"
+                        : "border-slate-200 focus:ring-indigo-400/40 focus:border-indigo-400"
                     }`}
                   />
                   <button
@@ -177,7 +177,7 @@ export function ResetPassword() {
 
               {error && (
                 <div className="flex items-center gap-2.5 bg-red-50 border border-red-100 rounded-xl px-4 py-3">
-                  <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0" />
+                  <AlertCircle className="w-4 h-4 text-red-500 shrink-0" />
                   <p className="text-sm font-satoshi text-red-600">{error}</p>
                 </div>
               )}
@@ -193,7 +193,7 @@ export function ResetPassword() {
                 <button
                   type="submit"
                   disabled={loading || !isValid}
-                  className="flex-1 h-11 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white text-sm font-clash-semibold shadow-lg shadow-orange-500/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 active:scale-[0.98]"
+                  className="flex-1 h-11 rounded-xl bg-linear-to-r from-indigo-500 to-indigo-600 hover:from-indigo-600 hover:to-indigo-700 text-white text-sm font-clash-semibold shadow-lg shadow-indigo-500/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 active:scale-[0.98]"
                 >
                   {loading ? (
                     <>
