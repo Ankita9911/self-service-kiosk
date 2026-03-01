@@ -1,6 +1,7 @@
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell, Legend,
+  ComposedChart, Line,
 } from "recharts";
 import type { TrendPoint, HourPoint, CategoryRevenue } from "../types/analytics.types";
 
@@ -140,12 +141,12 @@ export function CategoryPieChart({ data }: { data: CategoryRevenue[] }) {
   }));
 
   return (
-    <ResponsiveContainer width="100%" height={220}>
+    <ResponsiveContainer width="100%" height={238}>
       <PieChart>
         <Pie
           data={formatted}
-          cx="50%" cy="50%"
-          innerRadius={58} outerRadius={88}
+          cx="38%" cy="50%"
+          innerRadius={64} outerRadius={96}
           paddingAngle={3}
           dataKey="value"
         >
@@ -158,8 +159,11 @@ export function CategoryPieChart({ data }: { data: CategoryRevenue[] }) {
           formatter={(value) => [`₹${Number(value ?? 0).toLocaleString("en-IN")}`, "Revenue"]}
         />
         <Legend
-          iconType="circle" iconSize={7}
-          formatter={(v) => <span style={{ fontSize: 11, color: "#64748b", fontFamily: "Geist, sans-serif" }}>{v}</span>}
+          layout="vertical" align="right" verticalAlign="middle"
+          iconType="circle" iconSize={8}
+          formatter={(v) => (
+            <span style={{ fontSize: 11, color: "#64748b", fontFamily: "Geist, sans-serif" }}>{v}</span>
+          )}
         />
       </PieChart>
     </ResponsiveContainer>
@@ -195,6 +199,78 @@ export function OutletRevenueChart({
         />
         <Bar dataKey="revenue" fill="#6366f1" radius={[0, 4, 4, 0]} maxBarSize={16} />
       </BarChart>
+    </ResponsiveContainer>
+  );
+}
+
+export function DualTrendChart({
+  data,
+  height = 260,
+}: {
+  data: Array<{ _id: string; revenue?: number; orders?: number }>;
+  height?: number;
+}) {
+  const formatted = data.map((d) => ({
+    label: formatDate(d._id),
+    revenue: d.revenue ?? 0,
+    orders:  d.orders  ?? 0,
+  }));
+
+  return (
+    <ResponsiveContainer width="100%" height={height}>
+      <ComposedChart data={formatted} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+        <defs>
+          <linearGradient id="gradDualRev" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="5%"  stopColor="#6366f1" stopOpacity={0.12} />
+            <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
+          </linearGradient>
+        </defs>
+        <CartesianGrid strokeDasharray="3 3" stroke={GRID_COLOR} vertical={false} />
+        <XAxis
+          dataKey="label"
+          tick={{ fontSize: 11, fill: AXIS_COLOR, fontFamily: "Geist, sans-serif" }}
+          axisLine={false} tickLine={false} interval="preserveStartEnd"
+        />
+        <YAxis
+          yAxisId="rev" orientation="left"
+          tick={{ fontSize: 11, fill: AXIS_COLOR, fontFamily: "Geist, sans-serif" }}
+          axisLine={false} tickLine={false} width={52}
+          tickFormatter={formatCurrency}
+        />
+        <YAxis
+          yAxisId="ord" orientation="right"
+          tick={{ fontSize: 11, fill: AXIS_COLOR, fontFamily: "Geist, sans-serif" }}
+          axisLine={false} tickLine={false} width={36}
+          allowDecimals={false}
+        />
+        <Tooltip
+          contentStyle={TOOLTIP_STYLE}
+          formatter={(value, name) =>
+            name === "revenue"
+              ? [`₹${Number(value).toLocaleString("en-IN")}`, "Revenue"]
+              : [Number(value ?? 0), "Orders"]
+          }
+          labelStyle={{ color: "#64748b", fontWeight: 600, marginBottom: 4 }}
+        />
+        <Legend
+          iconType="circle" iconSize={7}
+          formatter={(v: string) => (
+            <span style={{ fontSize: 11, color: "#64748b", fontFamily: "Geist, sans-serif" }}>
+              {v === "revenue" ? "Revenue" : "Orders"}
+            </span>
+          )}
+        />
+        <Area
+          yAxisId="rev" type="monotone" dataKey="revenue"
+          stroke="#6366f1" strokeWidth={2} fill="url(#gradDualRev)"
+          dot={false} activeDot={{ r: 4, fill: "#6366f1", strokeWidth: 0 }}
+        />
+        <Line
+          yAxisId="ord" type="monotone" dataKey="orders"
+          stroke="#10b981" strokeWidth={2} dot={false}
+          activeDot={{ r: 4, fill: "#10b981", strokeWidth: 0 }}
+        />
+      </ComposedChart>
     </ResponsiveContainer>
   );
 }
