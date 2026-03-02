@@ -113,12 +113,25 @@ export async function createUser(currentUser, payload) {
 }
 
 export async function listUsers(currentUser) {
-  const filter = { isDeleted: false };
+  const currentLevel = ROLE_HIERARCHY[currentUser.role] ?? 0;
 
+  // Only show roles strictly below the caller's hierarchy level
+  const subordinateRoles = Object.entries(ROLE_HIERARCHY)
+    .filter(([, level]) => level < currentLevel)
+    .map(([role]) => role);
+
+  const filter = {
+    isDeleted: false,
+    _id: { $ne: currentUser._id },
+    role: { $in: subordinateRoles },
+  };
+
+  // Scope to the caller's franchise (except SUPER_ADMIN who sees all)
   if (currentUser.role !== "SUPER_ADMIN") {
     filter.franchiseId = currentUser.franchiseId;
   }
 
+  // Scope to the caller's outlet
   if (currentUser.role === "OUTLET_MANAGER") {
     filter.outletId = currentUser.outletId;
   }
