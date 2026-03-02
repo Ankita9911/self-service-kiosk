@@ -35,6 +35,26 @@ export const menuItemSchema = z.object({
       (val) => /^\d+$/.test(val) && parseInt(val, 10) >= 0 && parseInt(val, 10) <= 1000,
       "Stock quantity must be a whole number between 0 and 1000",
     ),
+  offers: z
+    .array(
+      z.object({
+        type: z.enum(["DISCOUNT", "BOGO", "NEW", "BESTSELLER", "LIMITED"]),
+        discountPercent: z.number().optional(),
+      })
+    )
+    .superRefine((offers, ctx) => {
+      const discount = offers.find((o) => o.type === "DISCOUNT");
+      if (discount) {
+        const pct = discount.discountPercent ?? 0;
+        if (pct < 1 || pct > 100) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "Discount must be between 1% and 100%",
+          });
+        }
+      }
+    })
+    .optional(),
   imageFile: z
     .instanceof(Blob)
     .optional()

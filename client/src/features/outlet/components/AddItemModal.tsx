@@ -42,20 +42,11 @@ export function AddItemModal({ open, onClose, categories, form, setForm, onSubmi
   const [errors, setErrors] = useState<FieldErrors>({});
 
   function validate(): boolean {
-    const payload = { categoryId: form.categoryId, name: form.name, description: form.description, price: form.price, stockQuantity: form.stockQuantity, imageFile: form.imageFile ?? undefined };
+    const payload = { categoryId: form.categoryId, name: form.name, description: form.description, price: form.price, stockQuantity: form.stockQuantity, imageFile: form.imageFile ?? undefined, offers: form.offers };
     const result = createMenuItemSchema.safeParse(payload);
     if (!result.success) {
       setErrors(getZodFieldErrors<CreateMenuItemFormValues>(result.error));
       return false;
-    }
-    // Validate discount percent
-    const discountOffer = (form.offers ?? []).find((o) => o.type === "DISCOUNT");
-    if (discountOffer) {
-      const pct = discountOffer.discountPercent ?? 0;
-      if (pct < 1 || pct > 100) {
-        toast.error("Discount must be between 1% and 100%.");
-        return false;
-      }
     }
     setErrors({});
     return true;
@@ -180,6 +171,7 @@ export function AddItemModal({ open, onClose, categories, form, setForm, onSubmi
               offers={form.offers ?? []}
               onChange={(offers) => setForm((prev: any) => ({ ...prev, offers }))}
             />
+            <ErrTxt msg={errors.offers as string | undefined} />
           </div>
 
           {/* Price & Stock */}
