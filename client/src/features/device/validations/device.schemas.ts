@@ -9,8 +9,8 @@ export const createDeviceSchema = z.object({
         .min(2, "Device name must be at least 2 characters")
         .max(60, "Device name must be at most 60 characters")
         .regex(
-            /^[a-zA-Z0-9\s\-]+$/,
-            "Device name can only contain letters, numbers, spaces and hyphens"
+            /^[a-zA-Z][a-zA-Z0-9\s\-]*$/,
+            "Device name must start with a letter and can only contain letters, numbers, spaces and hyphens"
         ),
 });
 
@@ -21,8 +21,8 @@ export const editDeviceSchema = z.object({
         .min(2, "Device name must be at least 2 characters")
         .max(60, "Device name must be at most 60 characters")
         .regex(
-            /^[a-zA-Z0-9\s\-]+$/,
-            "Device name can only contain letters, numbers, spaces and hyphens"
+            /^[a-zA-Z][a-zA-Z0-9\s\-]*$/,
+            "Device name must start with a letter and can only contain letters, numbers, spaces and hyphens"
         ),
 });
 

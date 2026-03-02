@@ -24,8 +24,8 @@ export const createUserSchema = z.object({
         .min(2, "Full name must be at least 2 characters")
         .max(80, "Full name must be at most 80 characters")
         .regex(
-            /^[a-zA-Z\s'\-]+$/,
-            "Name can only contain letters, spaces, hyphens and apostrophes"
+            /^[a-zA-Z][a-zA-Z\s]*$/,
+            "Name can only contain letters"
         ),
 
     email: z

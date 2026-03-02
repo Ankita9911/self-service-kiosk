@@ -1,10 +1,5 @@
 import { z } from "zod";
 
-/* ─────────────────────────────────────────────
-   Shared helpers
-───────────────────────────────────────────── */
-
-/** Trims and collapses inner whitespace, then checks min length */
 const trimmedString = (label: string, min = 1, max = 255) =>
     z
         .string()
@@ -12,7 +7,7 @@ const trimmedString = (label: string, min = 1, max = 255) =>
         .min(min, `${label} is required`)
         .max(max, `${label} must be at most ${max} characters`);
 
-/** E-mail: trim → lower-case → RFC 5322-ish check */
+
 const emailField = z
     .string()
     .trim()
@@ -21,7 +16,6 @@ const emailField = z
     .email("Enter a valid email address")
     .max(254, "Email is too long");
 
-/** Password: min 8 chars, at least 1 uppercase, 1 lowercase, 1 digit */
 const passwordField = (label = "Password") =>
     z
         .string()
@@ -31,9 +25,6 @@ const passwordField = (label = "Password") =>
         .regex(/[a-z]/, `${label} must contain at least one lowercase letter`)
         .regex(/[0-9]/, `${label} must contain at least one number`);
 
-/* ─────────────────────────────────────────────
-   Login form
-───────────────────────────────────────────── */
 export const loginSchema = z.object({
     email: emailField,
     password: z.string().min(1, "Password is required"),
@@ -41,10 +32,6 @@ export const loginSchema = z.object({
 
 export type LoginFormValues = z.infer<typeof loginSchema>;
 
-/* ─────────────────────────────────────────────
-   Reset / Force-Reset password forms
-   (same shape – reused for both pages)
-───────────────────────────────────────────── */
 export const resetPasswordSchema = z
     .object({
         currentPassword: z.string().min(1, "Current password is required"),
@@ -62,7 +49,4 @@ export const resetPasswordSchema = z
 
 export type ResetPasswordFormValues = z.infer<typeof resetPasswordSchema>;
 
-/* ─────────────────────────────────────────────
-   Exported helpers for inline field validation
-───────────────────────────────────────────── */
 export { emailField, passwordField, trimmedString };
