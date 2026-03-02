@@ -51,7 +51,7 @@ export default function FranchisePage() {
 
   return (
     <>
-      <div className="space-y-5 max-w-[1400px]">
+      <div className="space-y-5">
         <FranchiseHeader
           refreshing={refreshing}
           onRefresh={() => fetchFranchises(true)}

@@ -203,7 +203,7 @@ export default function AnalyticsPage() {
   const resolvedData = data ?? (EMPTY[role] as unknown ?? null);
 
   return (
-    <div className="space-y-6 max-w-350">
+    <div className="space-y-6">
 
       <div className="flex items-start justify-between gap-4">
         <div>

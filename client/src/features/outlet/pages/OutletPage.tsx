@@ -199,7 +199,7 @@ export default function OutletPage() {
 
   return (
     <>
-      <div className="space-y-5 max-w-350">
+      <div className="space-y-5">
 
         {/* ── Header ──────────────────────────────────────────────────────── */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
