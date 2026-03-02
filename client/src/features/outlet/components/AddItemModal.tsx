@@ -7,7 +7,7 @@ import { getZodFieldErrors } from "@/shared/utils/zod.utils";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/components/ui/select";
 import { OfferEditor } from "./OfferEditor";
 
-import type { ServiceType } from "@/features/outlet/types/outlet.types";
+import type { ServiceType, ItemOfferForm } from "@/features/outlet/types/outlet.types";
 
 const SERVICE_OPTIONS: { value: ServiceType; label: string }[] = [
   { value: "DINE_IN",   label: "Dine In"   },
@@ -19,7 +19,7 @@ interface Props {
   open: boolean;
   onClose: () => void;
   categories: { _id: string; name: string }[];
-  form: { categoryId: string; name: string; description: string; imageFile: File | null; price: string; stockQuantity: string; serviceType?: ServiceType };
+  form: { categoryId: string; name: string; description: string; imageFile: File | null; price: string; stockQuantity: string; serviceType?: ServiceType; offers?: ItemOfferForm[] };
   setForm: React.Dispatch<React.SetStateAction<any>>;
   onSubmit: () => Promise<void>;
 }

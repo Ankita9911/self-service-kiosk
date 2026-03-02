@@ -62,6 +62,7 @@ export async function createMenuItem(
     price: number;
     stockQuantity: number;
     serviceType?: "DINE_IN" | "TAKE_AWAY" | "BOTH";
+    offers?: MenuItem["offers"];
   },
   outletId?: string
 ): Promise<MenuItem> {
