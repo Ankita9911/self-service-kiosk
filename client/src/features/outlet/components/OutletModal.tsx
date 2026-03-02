@@ -1,14 +1,13 @@
 import type { Franchise } from "@/features/franchise/types/franchise.types";
 import type { Outlet, OutletAddress } from "@/features/outlet/types/outlet.types";
 import { useState, useEffect } from "react";
-import { X, CheckCircle2, Loader2, MapPin, Sparkles } from "lucide-react";
+import { X, CheckCircle2, Loader2, MapPin } from "lucide-react";
 import toast from "react-hot-toast";
 import { outletSchema } from "../validations/outlet.schemas";
 import { getZodFieldErrors } from "@/shared/utils/zod.utils";
 
 const COUNTRIES_API = "https://restcountries.com/v3.1/all?fields=name,cca2";
 const STATES_API    = "https://countriesnow.space/api/v0.1/countries/states";
-const PINCODE_API   = "https://api.zippopotam.us";
 
 type Country = { name: string; cca2: string };
 
@@ -47,8 +46,6 @@ export function OutletModal({
   const [states,           setStates]           = useState<string[]>([]);
   const [loadingCountries, setLoadingCountries] = useState(false);
   const [loadingStates,    setLoadingStates]    = useState(false);
-  const [loadingPincode,   setLoadingPincode]   = useState(false);
-  const [pincodeAutoFilled, setPincodeAutoFilled] = useState(false);
   const [submitting,       setSubmitting]       = useState(false);
   const [done,             setDone]             = useState(false);
   const [errors,           setErrors]           = useState<FieldErrors>({});
@@ -85,9 +82,6 @@ export function OutletModal({
       .finally(() => setLoadingCountries(false));
   }, []);
 
-  // Derive cca2 code for selected country (used by pincode API)
-  const selectedCca2 = countries.find((c) => c.name === form.address.country)?.cca2 ?? "";
-
   // Fetch states whenever country changes
   useEffect(() => {
     const country = form.address.country;
@@ -106,48 +100,6 @@ export function OutletModal({
       .finally(() => setLoadingStates(false));
   }, [form.address.country]);
 
-  // Debounced pincode lookup
-  useEffect(() => {
-    const pincode = form.address.pincode?.trim();
-    if (!pincode || pincode.length < 3 || !selectedCca2) {
-      setPincodeAutoFilled(false);
-      return;
-    }
-    setPincodeAutoFilled(false);
-    setLoadingPincode(true);
-    const timer = setTimeout(() => {
-      fetch(`${PINCODE_API}/${selectedCca2.toLowerCase()}/${pincode}`)
-        .then((r) => { if (!r.ok) throw new Error(); return r.json(); })
-        .then((data: { places?: Array<{ "place name": string; state: string }> }) => {
-          const place = data.places?.[0];
-          if (!place) return;
-
-          // Normalize a string: lowercase + strip diacritics for fuzzy matching
-          const norm = (s: string) =>
-            s.toLowerCase().normalize("NFD").replace(/\p{Diacritic}/gu, "").trim();
-
-          // Try to find the best matching state in the loaded dropdown options
-          const rawState = place.state ?? "";
-          const matchedState =
-            states.find((s) => norm(s) === norm(rawState)) ?? rawState;
-
-          setForm((prev) => ({
-            ...prev,
-            address: {
-              ...prev.address,
-              city:  prev.address.city  || place["place name"],
-              state: prev.address.state || matchedState,
-            },
-          }));
-          setPincodeAutoFilled(true);
-        })
-        .catch(() => {})
-        .finally(() => setLoadingPincode(false));
-    }, 600);
-    return () => { clearTimeout(timer); setLoadingPincode(false); };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [form.address.pincode, selectedCca2]);
-
   function handleChange(key: "franchiseId" | "name" | "outletCode", raw: string) {
     const value = key === "outletCode" ? raw.toUpperCase() : raw;
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -156,12 +108,7 @@ export function OutletModal({
 
   function handleAddressChange(key: keyof OutletAddress, value: string) {
     if (key === "country") {
-      // clear state + pincode autofill indicator when country changes
-      setPincodeAutoFilled(false);
       setForm((prev) => ({ ...prev, address: { ...prev.address, country: value, state: "" } }));
-    } else if (key === "pincode") {
-      setPincodeAutoFilled(false);
-      setForm((prev) => ({ ...prev, address: { ...prev.address, pincode: value } }));
     } else {
       setForm((prev) => ({ ...prev, address: { ...prev.address, [key]: value } }));
     }
@@ -408,28 +355,13 @@ export function OutletModal({
                   </div>
                   <div className="space-y-1.5">
                     <label className={LabelCls}>PIN / ZIP Code</label>
-                    <div className="relative">
-                      <input
-                        type="text"
-                        value={form.address.pincode || ""}
-                        onChange={(e) => handleAddressChange("pincode", e.target.value)}
-                        placeholder={selectedCca2 ? "e.g. 400001" : "Select country first"}
-                        disabled={!selectedCca2 && !form.address.pincode}
-                        className={`${inputCls("address.pincode")} pr-8`}
-                      />
-                      {loadingPincode && (
-                        <Loader2 className="w-3.5 h-3.5 text-slate-400 animate-spin absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-                      )}
-                      {pincodeAutoFilled && !loadingPincode && (
-                        <Sparkles className="w-3.5 h-3.5 text-indigo-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-                      )}
-                    </div>
-                    {pincodeAutoFilled && !loadingPincode && (
-                      <p className="text-[11px] text-indigo-500 dark:text-indigo-400 flex items-center gap-1">
-                        <span className="inline-block h-1 w-1 rounded-full bg-current" />
-                        City auto-filled from pincode
-                      </p>
-                    )}
+                    <input
+                      type="text"
+                      value={form.address.pincode || ""}
+                      onChange={(e) => handleAddressChange("pincode", e.target.value)}
+                      placeholder="e.g. 400001"
+                      className={inputCls("address.pincode")}
+                    />
                     <ErrMsg field="address.pincode" />
                   </div>
                 </div>
