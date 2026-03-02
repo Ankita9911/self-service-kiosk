@@ -21,6 +21,7 @@ const franchiseSchema = new Schema(
 
     contactEmail: {
       type: String,
+      required:true,
       trim: true,
       lowercase: true,
       sparse: true,

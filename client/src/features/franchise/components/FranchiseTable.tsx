@@ -96,10 +96,11 @@ export function FranchiseTable({
                   {f.contactEmail ? (
                     <a
                       href={`mailto:${f.contactEmail}`}
-                      className="flex items-center gap-1.5 text-[12.5px] text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors w-fit"
+                      title={f.contactEmail}
+                      className="flex items-center gap-1.5 text-[12.5px] text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors max-w-[180px]"
                     >
                       <Mail className="w-3.5 h-3.5 shrink-0" />
-                      {f.contactEmail}
+                      <span className="truncate">{f.contactEmail}</span>
                     </a>
                   ) : (
                     <span className="text-[12px] text-slate-300 dark:text-slate-600 italic">No email</span>

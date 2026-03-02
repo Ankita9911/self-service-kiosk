@@ -304,12 +304,12 @@ export function UserRowMenu({
           <div className="h-0.5 bg-gradient-to-r from-indigo-400 via-indigo-500 to-violet-500 text-left" />
           <div className="px-5 py-5 space-y-4">
             <div>
-              <h3 className="font-semibold text-slate-900 dark:text-white text-sm">Temporary Password</h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+              <h3 className="font-semibold text-slate-900 dark:text-white text-sm text-left">Temporary Password</h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 text-left">
                 Share this with <span className="font-medium">{user.name}</span> securely. It won't be shown again.
               </p>
             </div>
-            <div className="bg-amber-50 dark:bg-amber-500/[0.08] border border-amber-200 dark:border-amber-500/20 rounded-xl px-4 py-3 flex items-center justify-between gap-3">
+            <div className="bg-amber-50 dark:bg-amber-500/[0.08] border border-amber-200 dark:border-amber-500/20 rounded-xl px-4 py-3 flex items-center justify-between gap-3 text-left">
               <code className={`text-sm font-mono text-amber-800 dark:text-amber-300 tracking-wider flex-1 transition-all ${showPw ? "" : "blur-sm select-none"}`}>
                 {tempPw}
               </code>
@@ -317,7 +317,7 @@ export function UserRowMenu({
                 {showPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
             </div>
-            <p className="text-[11px] text-amber-700 dark:text-amber-400/80 bg-amber-50 dark:bg-amber-500/[0.06] border border-amber-200 dark:border-amber-500/20 rounded-lg px-3 py-2">
+            <p className="text-[11px] text-amber-700 dark:text-amber-400/80 bg-amber-50 dark:bg-amber-500/[0.06] border border-amber-200 dark:border-amber-500/20 rounded-lg px-3 py-2 text-center">
               User will be prompted to change this password on next login.
             </p>
           </div>
@@ -362,7 +362,7 @@ function Modal({ children, onClose }: { children: React.ReactNode; onClose?: () 
   return (
     <div className="fixed inset-0 z-[200] flex items-center justify-center px-4">
       <div className="absolute inset-0 bg-black/40 dark:bg-black/60 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-white dark:bg-[#1a1d26] rounded-2xl shadow-2xl w-full max-w-sm overflow-visible animate-in fade-in zoom-in-95 duration-200">
+      <div className="relative bg-white dark:bg-[#1a1d26] rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden animate-in fade-in zoom-in-95 duration-200">
         {children}
       </div>
     </div>

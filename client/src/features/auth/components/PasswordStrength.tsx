@@ -27,10 +27,10 @@ export default function PasswordStrength({ password }: Props) {
   ];
 
   const textColors = [
-    "text-red-500",
-    "text-amber-500",
-    "text-yellow-600",
-    "text-emerald-600",
+    "text-red-500 dark:text-red-400",
+    "text-amber-500 dark:text-amber-400",
+    "text-yellow-600 dark:text-yellow-400",
+    "text-emerald-600 dark:text-emerald-400",
   ];
 
   if (!password) return null;
@@ -42,7 +42,7 @@ export default function PasswordStrength({ password }: Props) {
           <div
             key={i}
             className={`h-1 flex-1 rounded-full ${
-              i < score ? colors[score - 1] : "bg-slate-200"
+              i < score ? colors[score - 1] : "bg-slate-200 dark:bg-white/10"
             }`}
           />
         ))}
@@ -54,7 +54,7 @@ export default function PasswordStrength({ password }: Props) {
             <span
               key={c.label}
               className={`flex items-center gap-1 text-[11px] ${
-                c.pass ? "text-emerald-600" : "text-slate-400"
+                c.pass ? "text-emerald-600 dark:text-emerald-400" : "text-slate-400 dark:text-slate-500"
               }`}
             >
               <CheckCircle2 className="w-3 h-3" />

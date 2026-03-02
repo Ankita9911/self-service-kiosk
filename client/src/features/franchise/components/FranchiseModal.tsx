@@ -63,7 +63,7 @@ export function FranchiseModal({ open, editing, onClose, onCreate, onUpdate }: P
   const fields = [
     { key: "name" as const, label: "Franchise Name", placeholder: "e.g. Downtown Kiosk Group", type: "text", required: true, hint: "" },
     { key: "brandCode" as const, label: "Brand Code", placeholder: "e.g. DKG-01", type: "text", required: true, hint: "Unique identifier used across the platform" },
-    { key: "contactEmail" as const, label: "Contact Email", placeholder: "contact@franchise.com", type: "email", required: false, hint: "" },
+    { key: "contactEmail" as const, label: "Contact Email", placeholder: "contact@franchise.com", type: "email", required: true, hint: "" },
   ];
 
   return (

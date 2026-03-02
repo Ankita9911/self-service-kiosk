@@ -25,9 +25,9 @@ export const franchiseSchema = z.object({
         .string()
         .trim()
         .toLowerCase()
+        .min(2, "Contact email must be at least 2 characters")
+        .max(100, "Contact email must be at most 100 characters")
         .email("Enter a valid email address")
-        .optional()
-        .or(z.literal("")),
 });
 
 export type FranchiseFormValues = z.infer<typeof franchiseSchema>;

@@ -43,30 +43,30 @@ export function ResetPassword() {
             Security
           </span>
         </div>
-        <h1 className="text-[28px] font-clash-bold text-slate-900 tracking-tight">
+        <h1 className="text-[28px] font-clash-bold text-slate-900 dark:text-white tracking-tight">
           Change Password
         </h1>
-        <p className="text-sm font-satoshi text-slate-500 mt-0.5">
+        <p className="text-sm font-satoshi text-slate-500 dark:text-slate-400 mt-0.5">
           Update your account password.
         </p>
       </div>
 
       {success ? (
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-8 text-center space-y-4 animate-scale-in">
-          <div className="h-14 w-14 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-center mx-auto">
+        <div className="bg-white dark:bg-[#1a1d26] rounded-2xl border border-slate-200 dark:border-white/8 shadow-sm p-8 text-center space-y-4 animate-scale-in">
+          <div className="h-14 w-14 rounded-2xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 flex items-center justify-center mx-auto">
             <CheckCircle2 className="w-7 h-7 text-emerald-500" />
           </div>
           <div>
-            <p className="font-clash-bold text-slate-900 text-lg">
+            <p className="font-clash-bold text-slate-900 dark:text-white text-lg">
               Password Updated!
             </p>
-            <p className="font-satoshi text-slate-500 text-sm mt-1">
+            <p className="font-satoshi text-slate-500 dark:text-slate-400 text-sm mt-1">
               Redirecting you back to the dashboard…
             </p>
           </div>
         </div>
       ) : (
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div className="bg-white dark:bg-[#1a1d26] rounded-2xl border border-slate-200 dark:border-white/8 shadow-sm overflow-hidden">
           <div className="h-1 w-full bg-linear-to-r from-indigo-500 to-violet-600" />
           <div className="p-7 space-y-5">
             <form
@@ -77,7 +77,7 @@ export function ResetPassword() {
               className="space-y-5"
             >
               <div className="space-y-1.5">
-                <label className="text-[12px] font-clash-semibold text-slate-600 uppercase tracking-wide">
+                <label className="text-[12px] font-clash-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wide">
                   Current Password
                 </label>
                 <div className="relative">
@@ -88,13 +88,13 @@ export function ResetPassword() {
                     onChange={(e) => setCurrentPassword(e.target.value)}
                     placeholder="Enter your current password"
                     required
-                    className="w-full h-11 pl-10 pr-10 rounded-xl border border-slate-200 bg-slate-50 text-sm font-satoshi text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-400/40 focus:border-indigo-400 transition-all"
+                    className="w-full h-11 pl-10 pr-10 rounded-xl border border-slate-200 dark:border-white/8 bg-slate-50 dark:bg-white/4 text-sm font-satoshi text-slate-800 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-400/40 focus:border-indigo-400 dark:focus:border-indigo-500/60 transition-all"
                   />
                   <button
                     type="button"
                     onClick={() => setShowCurrent((v) => !v)}
                     tabIndex={-1}
-                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
                   >
                     {showCurrent ? (
                       <EyeOff className="w-4 h-4" />
@@ -106,7 +106,7 @@ export function ResetPassword() {
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-[12px] font-clash-semibold text-slate-600 uppercase tracking-wide">
+                <label className="text-[12px] font-clash-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wide">
                   New Password
                 </label>
                 <div className="relative">
@@ -118,13 +118,13 @@ export function ResetPassword() {
                     placeholder="Create a strong password"
                     required
                     minLength={8}
-                    className="w-full h-11 pl-10 pr-10 rounded-xl border border-slate-200 bg-slate-50 text-sm font-satoshi text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-400/40 focus:border-indigo-400 transition-all"
+                    className="w-full h-11 pl-10 pr-10 rounded-xl border border-slate-200 dark:border-white/8 bg-slate-50 dark:bg-white/4 text-sm font-satoshi text-slate-800 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-400/40 focus:border-indigo-400 dark:focus:border-indigo-500/60 transition-all"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPw((v) => !v)}
                     tabIndex={-1}
-                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
                   >
                     {showPw ? (
                       <EyeOff className="w-4 h-4" />
@@ -137,7 +137,7 @@ export function ResetPassword() {
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-[12px] font-clash-semibold text-slate-600 uppercase tracking-wide">
+                <label className="text-[12px] font-clash-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wide">
                   Confirm Password
                 </label>
                 <div className="relative">
@@ -148,17 +148,17 @@ export function ResetPassword() {
                     onChange={(e) => setConfirm(e.target.value)}
                     placeholder="Repeat your new password"
                     required
-                    className={`w-full h-11 pl-10 pr-10 rounded-xl border bg-slate-50 text-sm font-satoshi text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 transition-all ${
+                    className={`w-full h-11 pl-10 pr-10 rounded-xl border bg-slate-50 dark:bg-white/4 text-sm font-satoshi text-slate-800 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-600 focus:outline-none focus:ring-2 transition-all ${
                       mismatch
-                        ? "border-red-300 focus:ring-red-400/40 focus:border-red-400"
-                        : "border-slate-200 focus:ring-indigo-400/40 focus:border-indigo-400"
+                        ? "border-red-300 dark:border-red-500/60 focus:ring-red-400/40 focus:border-red-400"
+                        : "border-slate-200 dark:border-white/8 focus:ring-indigo-400/40 focus:border-indigo-400 dark:focus:border-indigo-500/60"
                     }`}
                   />
                   <button
                     type="button"
                     onClick={() => setShowConfirm((v) => !v)}
                     tabIndex={-1}
-                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
                   >
                     {showConfirm ? (
                       <EyeOff className="w-4 h-4" />
@@ -176,9 +176,9 @@ export function ResetPassword() {
               </div>
 
               {error && (
-                <div className="flex items-center gap-2.5 bg-red-50 border border-red-100 rounded-xl px-4 py-3">
+                <div className="flex items-center gap-2.5 bg-red-50 dark:bg-red-500/10 border border-red-100 dark:border-red-500/20 rounded-xl px-4 py-3">
                   <AlertCircle className="w-4 h-4 text-red-500 shrink-0" />
-                  <p className="text-sm font-satoshi text-red-600">{error}</p>
+                  <p className="text-sm font-satoshi text-red-600 dark:text-red-400">{error}</p>
                 </div>
               )}
 
@@ -186,7 +186,7 @@ export function ResetPassword() {
                 <button
                   type="button"
                   onClick={() => navigate(-1)}
-                  className="flex-1 h-11 rounded-xl border border-slate-200 text-sm font-clash-semibold text-slate-600 hover:bg-slate-50 transition-colors"
+                  className="flex-1 h-11 rounded-xl border border-slate-200 dark:border-white/8 text-sm font-clash-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/4 transition-colors"
                 >
                   Cancel
                 </button>
