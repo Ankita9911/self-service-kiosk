@@ -6,7 +6,6 @@ import { processQueue } from "@/shared/lib/syncEngine";
 import CategoryTabs from "../components/CategoryTabs";
 import MenuGrid from "../components/MenuGrid";
 import ComboGrid from "../components/ComboGrid";
-import KioskFilterStrip from "../components/KioskFilterStrip";
 import {
   CategoryTabsSkeleton,
   MenuGridSkeleton,
@@ -19,6 +18,16 @@ import { useKioskMenu } from "../hooks/usekioskMenu";
 import { useKioskCart } from "../hooks/useKioskCart";
 import { useKioskCheckout } from "../hooks/useKioskCheckout";
 import { useKioskForceLogout } from "../hooks/useKioskForceLogout";
+import type { OfferType } from "../types/menu.types";
+
+const OFFER_CHIPS: { value: OfferType | null; label: string; emoji: string }[] = [
+  { value: null,         label: "All",         emoji: "🍽️" },
+  { value: "DISCOUNT",   label: "Deals",       emoji: "🏷️" },
+  { value: "BOGO",       label: "Buy 1 Get 1", emoji: "🎁" },
+  { value: "BESTSELLER", label: "Best Seller", emoji: "⭐" },
+  { value: "NEW",        label: "New",         emoji: "✨" },
+  { value: "LIMITED",    label: "Limited",     emoji: "⏳" },
+];
 
 function getKioskToken(): string | null {
   const token = localStorage.getItem("kiosk_token");
@@ -89,43 +98,110 @@ export default function KioskPage() {
     }
   }, [navigate]);
 
+  const isOnCombos = selectedCategory === COMBOS_CATEGORY_ID;
+
   return (
-    <div className="h-screen flex flex-row bg-white overflow-hidden">
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        <div className="bg-white border-b border-slate-100 z-10 flex items-center gap-2">
-          <button
-            onClick={() => navigate("/kiosk/order-type")}
-            className="shrink-0 flex items-center gap-1.5 ml-3 px-3 py-2 rounded-xl bg-orange-50 hover:bg-orange-100 text-orange-600 font-bold text-sm transition-all active:scale-95"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span>Order Type</span>
-          </button>
-          <div className="flex-1 min-w-0">
-            {isLoading ? (
-              <CategoryTabsSkeleton />
-            ) : (
-              <CategoryTabs
-                categories={categoriesWithAll}
-                selectedCategory={selectedCategory}
-                onCategoryChange={setSelectedCategory}
-              />
-            )}
-          </div>
+    <div className="h-screen flex flex-row bg-gray-50 overflow-hidden">
+
+      {/* ══════════ LEFT — permanent offer filter sidebar ══════════ */}
+      <div className="w-[104px] shrink-0 flex flex-col bg-white border-r border-gray-100 shadow-sm overflow-y-auto scrollbar-none">
+
+        {/* Back */}
+        <button
+          onClick={() => navigate("/kiosk/order-type")}
+          className="flex flex-col items-center gap-1 py-4 px-2 border-b border-gray-100 text-gray-400 hover:text-orange-500 hover:bg-orange-50 transition-all active:scale-95"
+          style={{ fontFamily: "var(--font-body)" }}
+        >
+          <ArrowLeft className="w-5 h-5" />
+          <span className="text-[10px] font-bold">Back</span>
+        </button>
+
+        {/* Section label */}
+        <p
+          className="text-[9px] font-black text-gray-400 uppercase tracking-widest text-center pt-4 pb-2 px-2"
+          style={{ fontFamily: "var(--font-body)" }}
+        >
+          Filters
+        </p>
+
+        {/* Offer chips — always all visible (hidden only on combos tab) */}
+        <div className="flex flex-col gap-1 px-2">
+          {OFFER_CHIPS.map(({ value, label, emoji }) => {
+            // on combos tab hide offer-type chips, keep "All"
+            if (isOnCombos && value !== null) return null;
+
+            const count = value === null ? undefined : offerCounts[value];
+            const isActive = offerFilter === value;
+
+            return (
+              <button
+                key={String(value)}
+                onClick={() => setOfferFilter(value)}
+                className={`flex flex-col items-center gap-1 w-full py-3 px-1 rounded-2xl transition-all active:scale-95 ${
+                  isActive
+                    ? "bg-gradient-to-b from-orange-500 to-orange-600 text-white shadow-md shadow-orange-300/50"
+                    : "bg-gray-50 text-gray-500 hover:bg-orange-50 hover:text-orange-500"
+                }`}
+                style={{ fontFamily: "var(--font-body)" }}
+              >
+                <span className="text-xl leading-none">{emoji}</span>
+                <span className="text-[10px] font-bold leading-tight text-center">{label}</span>
+                {count !== undefined && count > 0 && (
+                  <span
+                    className={`text-[9px] font-black px-1.5 py-0.5 rounded-full ${
+                      isActive ? "bg-white/30 text-white" : "bg-gray-200 text-gray-500"
+                    }`}
+                  >
+                    {count}
+                  </span>
+                )}
+              </button>
+            );
+          })}
         </div>
 
-        <main className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-orange-200 scrollbar-track-transparent">
-          {/* Offer filter strip — only when NOT on combos tab */}
-          {selectedCategory !== COMBOS_CATEGORY_ID && (
-            <KioskFilterStrip
-              active={offerFilter}
-              onChange={setOfferFilter}
-              counts={offerCounts}
+        {/* Clear filter — only when an offer filter is active */}
+        {offerFilter !== null && !isOnCombos && (
+          <div className="px-2 pt-1 pb-4">
+            <div className="h-px bg-gray-100 mb-2" />
+            <button
+              onClick={() => setOfferFilter(null)}
+              className="flex flex-col items-center gap-1 w-full py-2.5 px-1 rounded-2xl bg-red-50 text-red-400 hover:bg-red-100 transition-all active:scale-95"
+              style={{ fontFamily: "var(--font-body)" }}
+            >
+              <span className="text-base leading-none font-black">✕</span>
+              <span className="text-[10px] font-bold">Clear</span>
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* ══════════ CENTER — category tabs + scrollable menu ══════════ */}
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+
+        {/* Horizontal category tabs at the top */}
+        <div className="bg-white border-b border-gray-100 z-10 shadow-sm">
+          {isLoading ? (
+            <CategoryTabsSkeleton />
+          ) : (
+            <CategoryTabs
+              categories={categoriesWithAll}
+              selectedCategory={selectedCategory}
+              onCategoryChange={(id) => {
+                setSelectedCategory(id);
+                // clear offer filter when switching to combos
+                if (id === COMBOS_CATEGORY_ID) setOfferFilter(null);
+              }}
             />
           )}
+        </div>
+
+        {/* Menu grid */}
+        <main className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-orange-200 scrollbar-track-transparent">
           <div className="p-6">
             {isLoading ? (
               <MenuGridSkeleton />
-            ) : selectedCategory === COMBOS_CATEGORY_ID ? (
+            ) : isOnCombos ? (
               <ComboGrid
                 combos={combos}
                 cart={cart}
@@ -143,7 +219,7 @@ export default function KioskPage() {
           </div>
         </main>
 
-        {/* Floating cart button — only visible when cart is closed */}
+        {/* Floating cart button — only when cart is closed */}
         {!isCartOpen && totalItems > 0 && (
           <button
             onClick={() => setIsCartOpen(true)}
