@@ -3,10 +3,11 @@ import { editMenuItemSchema, type EditMenuItemFormValues } from "../validations/
 import { getZodFieldErrors } from "@/shared/utils/zod.utils";
 import { useState } from "react";
 import { Pencil, X, ImageIcon, RefreshCcw } from "lucide-react";
+import { toast } from "react-hot-toast";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/components/ui/select";
 import { OfferEditor } from "./OfferEditor";
 
-import type { ServiceType } from "@/features/outlet/types/outlet.types";
+import type { ServiceType, ItemOfferForm } from "@/features/outlet/types/outlet.types";
 
 const SERVICE_OPTIONS: { value: ServiceType; label: string }[] = [
   { value: "DINE_IN",   label: "Dine In"   },
@@ -17,7 +18,7 @@ const SERVICE_OPTIONS: { value: ServiceType; label: string }[] = [
 interface Props {
   open: boolean;
   onClose: () => void;
-  form: { name: string; description: string; imageUrl?: string; imageFile: File | null; price: string; stockQuantity: string; categoryId?: string; serviceType?: ServiceType };
+  form: { name: string; description: string; imageUrl?: string; imageFile: File | null; price: string; stockQuantity: string; categoryId?: string; serviceType?: ServiceType; offers?: ItemOfferForm[] };
   setForm: React.Dispatch<React.SetStateAction<any>>;
   onSubmit: () => Promise<void>;
   categories?: { _id: string; name: string }[];
@@ -43,9 +44,20 @@ export function EditItemModal({ open, onClose, form, setForm, onSubmit, categori
   function validate(): boolean {
     const payload = { name: form.name, description: form.description, price: form.price, stockQuantity: form.stockQuantity, imageFile: form.imageFile ?? undefined };
     const result = editMenuItemSchema.safeParse(payload);
-    if (result.success) { setErrors({}); return true; }
-    setErrors(getZodFieldErrors<EditMenuItemFormValues>(result.error));
-    return false;
+    if (!result.success) {
+      setErrors(getZodFieldErrors<EditMenuItemFormValues>(result.error));
+      return false;
+    }
+    const discountOffer = (form.offers ?? []).find((o) => o.type === "DISCOUNT");
+    if (discountOffer) {
+      const pct = discountOffer.discountPercent ?? 0;
+      if (pct < 1 || pct > 100) {
+        toast.error("Discount must be between 1% and 100%.");
+        return false;
+      }
+    }
+    setErrors({});
+    return true;
   }
 
   function clearError(key: keyof EditMenuItemFormValues) {
@@ -56,8 +68,16 @@ export function EditItemModal({ open, onClose, form, setForm, onSubmit, categori
     e.preventDefault();
     if (!validate()) return;
     setIsSubmitting(true);
-    try { await onSubmit(); setErrors({}); }
-    finally { setIsSubmitting(false); }
+    try {
+      await onSubmit();
+      setErrors({});
+      toast.success("Item updated successfully!");
+      onClose();
+    } catch {
+      toast.error("Failed to update item. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   const previewSrc = form.imageFile ? URL.createObjectURL(form.imageFile) : form.imageUrl;

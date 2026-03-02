@@ -33,7 +33,9 @@ export function OfferEditor({ offers, onChange }: OfferEditorProps) {
   }
 
   function updateDiscount(type: OfferType, val: string) {
-    onChange(offers.map((o) => o.type === type ? { ...o, discountPercent: parseFloat(val) || 0 } : o));
+    const raw = parseFloat(val);
+    const clamped = isNaN(raw) ? 1 : Math.min(100, Math.max(1, Math.round(raw)));
+    onChange(offers.map((o) => o.type === type ? { ...o, discountPercent: clamped } : o));
   }
 
   const activeTypes = offers.map((o) => o.type);

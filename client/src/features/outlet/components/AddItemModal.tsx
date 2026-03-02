@@ -44,9 +44,21 @@ export function AddItemModal({ open, onClose, categories, form, setForm, onSubmi
   function validate(): boolean {
     const payload = { categoryId: form.categoryId, name: form.name, description: form.description, price: form.price, stockQuantity: form.stockQuantity, imageFile: form.imageFile ?? undefined };
     const result = createMenuItemSchema.safeParse(payload);
-    if (result.success) { setErrors({}); return true; }
-    setErrors(getZodFieldErrors<CreateMenuItemFormValues>(result.error));
-    return false;
+    if (!result.success) {
+      setErrors(getZodFieldErrors<CreateMenuItemFormValues>(result.error));
+      return false;
+    }
+    // Validate discount percent
+    const discountOffer = (form.offers ?? []).find((o) => o.type === "DISCOUNT");
+    if (discountOffer) {
+      const pct = discountOffer.discountPercent ?? 0;
+      if (pct < 1 || pct > 100) {
+        toast.error("Discount must be between 1% and 100%.");
+        return false;
+      }
+    }
+    setErrors({});
+    return true;
   }
 
   function clearError(key: keyof CreateMenuItemFormValues) {
