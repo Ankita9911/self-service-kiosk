@@ -177,6 +177,18 @@ export default function OutletPage() {
   const handleStatusChange   = (v: "ALL" | "ACTIVE" | "INACTIVE") => { setStatusFilter(v); setPage(1); };
   const handleFranchiseChange = (v: string) => { setFranchiseFilter(v); setPage(1); };
 
+  const isFiltered =
+    searchTerm !== "" ||
+    statusFilter !== "ALL" ||
+    (isSuperAdmin && franchiseFilter !== "ALL");
+
+  const clearFilters = () => {
+    setSearchTerm("");
+    setStatusFilter("ALL");
+    setFranchiseFilter("ALL");
+    setPage(1);
+  };
+
   const activeCount   = outlets.filter((o) => o.status === "ACTIVE").length;
   const inactiveCount = outlets.length - activeCount;
   const showShimmer   = loading || refreshing;
@@ -299,19 +311,21 @@ export default function OutletPage() {
           </div>
           {isSuperAdmin && franchises.length > 0 && (
             <Select value={franchiseFilter} onValueChange={handleFranchiseChange}>
-              <SelectTrigger className="h-9 w-45 rounded-xl border-slate-100 dark:border-white/8 bg-white dark:bg-[#161920] text-[13px] text-slate-700 dark:text-slate-200 focus:ring-indigo-400/20">
-                <div className="flex items-center gap-2 min-w-0">
+              <SelectTrigger className="h-9 w-45 rounded-xl border-slate-100 dark:border-white/8 bg-white dark:bg-[#161920] text-[13px] text-slate-700 dark:text-slate-200 focus:ring-indigo-400/20 overflow-hidden">
+                <div className="flex items-center gap-1.5 min-w-0 overflow-hidden">
                   <Building2 className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 shrink-0" />
-                  <SelectValue placeholder="All Franchises" />
+                  <span className="truncate min-w-0 flex-1">
+                    <SelectValue placeholder="All Franchises" />
+                  </span>
                 </div>
               </SelectTrigger>
-              <SelectContent className="rounded-xl border-slate-100 dark:border-white/8 bg-white dark:bg-[#1a1d26]">
-                <SelectItem value="ALL" className="text-[13px] rounded-lg">
+              <SelectContent className="rounded-xl border-slate-100 dark:border-white/8 bg-white dark:bg-[#1a1d26] max-w-50">
+                <SelectItem value="ALL" className="text-[13px] rounded-lg px-2 py-1.5">
                   All Franchises
                 </SelectItem>
                 {franchises.map((f) => (
-                  <SelectItem key={f._id} value={f._id} className="text-[13px] rounded-lg">
-                    {f.name}
+                  <SelectItem key={f._id} value={f._id} className="text-[13px] rounded-lg px-2 py-1.5">
+                    <span className="truncate block max-w-40">{f.name}</span>
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -336,8 +350,16 @@ export default function OutletPage() {
             ))}
           </div>
 
-          {/* Franchise filter — super admin only */}
-         
+          {/* Clear filters */}
+          {isFiltered && (
+            <button
+              onClick={clearFilters}
+              className="flex items-center gap-1.5 h-9 px-3 rounded-xl border border-slate-200 dark:border-white/8 bg-white dark:bg-[#161920] text-[12px] font-medium text-slate-500 dark:text-slate-400 hover:text-red-500 dark:hover:text-red-400 hover:border-red-200 dark:hover:border-red-500/30 transition-all shrink-0"
+            >
+              <X className="w-3 h-3" />
+              Clear
+            </button>
+          )}
         </div>
 
         {/* ── Table ───────────────────────────────────────────────────────── */}

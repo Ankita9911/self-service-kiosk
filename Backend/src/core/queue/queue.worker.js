@@ -58,7 +58,7 @@ async function poll() {
         new ReceiveMessageCommand({
           QueueUrl: env.SQS_QUEUE_URL,
           MaxNumberOfMessages: 10,
-          WaitTimeSeconds: 20,         // long polling — reduces empty receives
+          WaitTimeSeconds: 20,         
           MessageAttributeNames: ["All"],
         })
       );
@@ -66,14 +66,13 @@ async function poll() {
       const messages = response.Messages || [];
 
       if (messages.length > 0) {
-        // Process in parallel; failures don't remove the message (retry via visibility timeout)
         await Promise.allSettled(
           messages.map((msg) => processMessage(client, msg))
         );
       }
     } catch (err) {
       console.error("[queue] Poll error:", err.message);
-      await sleep(5000); // back off before retrying
+      await sleep(5000); 
     }
   }
 
@@ -96,7 +95,6 @@ async function processMessage(client, message) {
       console.log(`[queue] Processed: ${type} (${message.MessageId})`);
     }
 
-    // Delete from queue after successful processing (or unknown type)
     await client.send(
       new DeleteMessageCommand({
         QueueUrl: env.SQS_QUEUE_URL,
@@ -108,8 +106,6 @@ async function processMessage(client, message) {
       `[queue] Failed to process ${type || "unknown"} (${message.MessageId}):`,
       err.message
     );
-    // Do NOT delete — message becomes visible again after visibility timeout
-    // Configure a DLQ on the SQS queue for messages that repeatedly fail
   }
 }
 

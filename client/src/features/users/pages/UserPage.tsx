@@ -11,7 +11,7 @@ import { CreateUserModal } from "../components/CreateUserModal";
 import { TempPasswordModal } from "../components/TempPasswordModal";
 import { UserRowMenu } from "../components/UserRowMenu";
 
-import { Users, Plus, Search, RefreshCcw, CheckCircle2, XCircle, Building2, Store } from "lucide-react";
+import { Users, Plus, Search, RefreshCcw, CheckCircle2, XCircle, Building2, Store, X } from "lucide-react";
 import { TablePagination } from "@/shared/components/ui/TablePagination";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/components/ui/select";
 
@@ -50,7 +50,6 @@ export default function UserPage() {
 
   const allRoles = [
     "ALL",
-    "SUPER_ADMIN",
     "FRANCHISE_ADMIN",
     "OUTLET_MANAGER",
     "KITCHEN_STAFF",
@@ -101,6 +100,24 @@ export default function UserPage() {
   const activeCount = users.filter(
     (u) => u.status === "ACTIVE"
   ).length;
+
+  const handleStatusChange = (v: "ALL" | "ACTIVE" | "INACTIVE") => { setStatusFilter(v); setPage(1); };
+
+  const isFiltered =
+    searchTerm !== "" ||
+    roleFilter !== "ALL" ||
+    (isSuperAdmin && franchiseFilter !== "ALL") ||
+    ((isSuperAdmin || isFranchiseAdmin) && outletFilter !== "ALL") ||
+    statusFilter !== "ALL";
+
+  const clearFilters = () => {
+    setSearchTerm("");
+    setRoleFilter("ALL");
+    setFranchiseFilter("ALL");
+    setOutletFilter("ALL");
+    setStatusFilter("ALL");
+    setPage(1);
+  };
 
   const showShimmer = loading || refreshing;
 
@@ -194,16 +211,20 @@ export default function UserPage() {
         {/* Franchise filter — super admin only */}
         {isSuperAdmin && (
           <Select value={franchiseFilter} onValueChange={(v) => { setFranchiseFilter(v); setOutletFilter("ALL"); }}>
-            <SelectTrigger className="h-9 w-44 rounded-xl border-slate-100 dark:border-white/8 bg-white dark:bg-[#161920] text-[13px] text-slate-700 dark:text-slate-200 focus:ring-indigo-400/20">
-              <div className="flex items-center gap-2 min-w-0">
+            <SelectTrigger className="h-9 w-44 rounded-xl border-slate-100 dark:border-white/8 bg-white dark:bg-[#161920] text-[13px] text-slate-700 dark:text-slate-200 focus:ring-indigo-400/20 overflow-hidden">
+              <div className="flex items-center gap-1.5 min-w-0 overflow-hidden">
                 <Building2 className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 shrink-0" />
-                <SelectValue placeholder="All Franchises" />
+                <span className="truncate min-w-0 flex-1">
+                  <SelectValue placeholder="All Franchises" />
+                </span>
               </div>
             </SelectTrigger>
-            <SelectContent className="rounded-xl border-slate-100 dark:border-white/8 bg-white dark:bg-[#1a1d26]">
-              <SelectItem value="ALL" className="text-[13px] rounded-lg">All Franchises</SelectItem>
+            <SelectContent className="rounded-xl border-slate-100 dark:border-white/8 bg-white dark:bg-[#1a1d26] max-w-50">
+              <SelectItem value="ALL" className="text-[13px] rounded-lg px-2 py-1.5">All Franchises</SelectItem>
               {franchises.map((f) => (
-                <SelectItem key={f._id} value={f._id} className="text-[13px] rounded-lg">{f.name}</SelectItem>
+                <SelectItem key={f._id} value={f._id} className="text-[13px] rounded-lg px-2 py-1.5 max-w-full">
+                  <span className="truncate block max-w-40">{f.name}</span>
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -212,16 +233,20 @@ export default function UserPage() {
         {/* Outlet filter — super admin + franchise admin */}
         {(isSuperAdmin || isFranchiseAdmin) && (
           <Select value={outletFilter} onValueChange={setOutletFilter}>
-            <SelectTrigger className="h-9 w-44 rounded-xl border-slate-100 dark:border-white/8 bg-white dark:bg-[#161920] text-[13px] text-slate-700 dark:text-slate-200 focus:ring-indigo-400/20">
-              <div className="flex items-center gap-2 min-w-0">
+            <SelectTrigger className="h-9 w-44 rounded-xl border-slate-100 dark:border-white/8 bg-white dark:bg-[#161920] text-[13px] text-slate-700 dark:text-slate-200 focus:ring-indigo-400/20 overflow-hidden">
+              <div className="flex items-center gap-1.5 min-w-0 overflow-hidden">
                 <Store className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 shrink-0" />
-                <SelectValue placeholder="All Outlets" />
+                <span className="truncate min-w-0 flex-1">
+                  <SelectValue placeholder="All Outlets" />
+                </span>
               </div>
             </SelectTrigger>
-            <SelectContent className="rounded-xl border-slate-100 dark:border-white/8 bg-white dark:bg-[#1a1d26]">
-              <SelectItem value="ALL" className="text-[13px] rounded-lg">All Outlets</SelectItem>
+            <SelectContent className="rounded-xl border-slate-100 dark:border-white/8 bg-white dark:bg-[#1a1d26] max-w-50">
+              <SelectItem value="ALL" className="text-[13px] rounded-lg px-2 py-1.5">All Outlets</SelectItem>
               {filterableOutlets.map((o) => (
-                <SelectItem key={o._id} value={o._id} className="text-[13px] rounded-lg">{o.name}</SelectItem>
+                <SelectItem key={o._id} value={o._id} className="text-[13px] rounded-lg px-2 py-1.5 max-w-full">
+                  <span className="truncate block max-w-40">{o.name}</span>
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -246,7 +271,7 @@ export default function UserPage() {
           {(["ALL", "ACTIVE", "INACTIVE"] as const).map((s) => (
             <button
               key={s}
-              onClick={() => setStatusFilter(s)}
+              onClick={() => handleStatusChange(s)}
               className={`px-3 h-7 rounded-lg text-[12px] font-semibold transition-all ${
                 statusFilter === s
                   ? "bg-indigo-600 text-white shadow-sm"
@@ -257,6 +282,17 @@ export default function UserPage() {
             </button>
           ))}
         </div>
+
+        {/* Clear filters */}
+        {isFiltered && (
+          <button
+            onClick={clearFilters}
+            className="flex items-center gap-1.5 h-9 px-3 rounded-xl border border-slate-200 dark:border-white/8 bg-white dark:bg-[#161920] text-[12px] font-medium text-slate-500 dark:text-slate-400 hover:text-red-500 dark:hover:text-red-400 hover:border-red-200 dark:hover:border-red-500/30 transition-all shrink-0"
+          >
+            <X className="w-3 h-3" />
+            Clear
+          </button>
+        )}
       </div>
 
       {/* ── Table ── */}

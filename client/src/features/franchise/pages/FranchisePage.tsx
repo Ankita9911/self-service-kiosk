@@ -59,7 +59,7 @@ export default function FranchisePage() {
         />
 
         <FranchiseStats
-          franchises={filteredFranchises}
+          franchises={franchises}
           loading={loading || refreshing}
         />
 

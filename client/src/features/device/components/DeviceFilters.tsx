@@ -23,6 +23,9 @@ interface Props {
   filterableOutlets?: Outlet[];
   outletFilter?: string;
   onOutletChange?: (v: string) => void;
+  // clear all
+  hasActiveFilters?: boolean;
+  onClearFilters?: () => void;
 }
 
 export function DeviceFilters({
@@ -37,6 +40,8 @@ export function DeviceFilters({
   filterableOutlets,
   outletFilter,
   onOutletChange,
+  hasActiveFilters,
+  onClearFilters,
 }: Props) {
   return (
     <div className="flex flex-col sm:flex-row gap-3 flex-wrap">
@@ -62,16 +67,20 @@ export function DeviceFilters({
       {/* Franchise filter — super admin only */}
       {isSuperAdmin && franchises && onFranchiseChange && (
         <Select value={franchiseFilter ?? "ALL"} onValueChange={onFranchiseChange}>
-          <SelectTrigger className="h-9 w-44 rounded-xl border-slate-100 dark:border-white/8 bg-white dark:bg-[#161920] text-[13px] text-slate-700 dark:text-slate-200 focus:ring-indigo-400/20">
-            <div className="flex items-center gap-2 min-w-0">
+          <SelectTrigger className="h-9 w-44 rounded-xl border-slate-100 dark:border-white/8 bg-white dark:bg-[#161920] text-[13px] text-slate-700 dark:text-slate-200 focus:ring-indigo-400/20 overflow-hidden">
+            <div className="flex items-center gap-1.5 min-w-0 overflow-hidden">
               <Building2 className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 shrink-0" />
-              <SelectValue placeholder="All Franchises" />
+              <span className="truncate min-w-0 flex-1">
+                <SelectValue placeholder="All Franchises" />
+              </span>
             </div>
           </SelectTrigger>
-          <SelectContent className="rounded-xl border-slate-100 dark:border-white/8 bg-white dark:bg-[#1a1d26]">
-            <SelectItem value="ALL" className="text-[13px] rounded-lg">All Franchises</SelectItem>
+          <SelectContent className="rounded-xl border-slate-100 dark:border-white/8 bg-white dark:bg-[#1a1d26] max-w-50">
+            <SelectItem value="ALL" className="text-[13px] rounded-lg px-2 py-1.5">All Franchises</SelectItem>
             {franchises.map((f) => (
-              <SelectItem key={f._id} value={f._id} className="text-[13px] rounded-lg">{f.name}</SelectItem>
+              <SelectItem key={f._id} value={f._id} className="text-[13px] rounded-lg px-2 py-1.5">
+                <span className="truncate block max-w-40">{f.name}</span>
+              </SelectItem>
             ))}
           </SelectContent>
         </Select>
@@ -111,6 +120,17 @@ export function DeviceFilters({
           </button>
         ))}
       </div>
+
+      {/* Clear filters */}
+      {hasActiveFilters && onClearFilters && (
+        <button
+          onClick={onClearFilters}
+          className="flex items-center gap-1.5 h-9 px-3 rounded-xl border border-slate-200 dark:border-white/8 bg-white dark:bg-[#161920] text-[12px] font-medium text-slate-500 dark:text-slate-400 hover:text-red-500 dark:hover:text-red-400 hover:border-red-200 dark:hover:border-red-500/30 transition-all shrink-0"
+        >
+          <X className="w-3 h-3" />
+          Clear
+        </button>
+      )}
     </div>
   );
 }

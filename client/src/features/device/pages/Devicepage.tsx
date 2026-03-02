@@ -94,6 +94,20 @@ export default function DevicePage() {
     setPage(1);
   }, [searchTerm, statusFilter, franchiseFilter, outletFilter]);
 
+  const hasActiveFilters =
+    searchTerm !== "" ||
+    statusFilter !== "ALL" ||
+    franchiseFilter !== "ALL" ||
+    outletFilter !== "ALL";
+
+  const clearFilters = () => {
+    setSearchTerm("");
+    setStatusFilter("ALL");
+    setFranchiseFilter("ALL");
+    setOutletFilter("ALL");
+    setPage(1);
+  };
+
   function getOutletName(d: Device): string {
     if ((d as any).outlet?.name) return (d as any).outlet.name;
     const found = outlets.find(
@@ -156,6 +170,8 @@ export default function DevicePage() {
         filterableOutlets={(isSuperAdmin || isFranchiseAdmin) ? filterableOutlets : undefined}
         outletFilter={outletFilter}
         onOutletChange={setOutletFilter}
+        hasActiveFilters={hasActiveFilters}
+        onClearFilters={clearFilters}
       />
 
       <div className="bg-white dark:bg-[#161920] rounded-2xl border border-slate-100 dark:border-white/6 shadow-sm">

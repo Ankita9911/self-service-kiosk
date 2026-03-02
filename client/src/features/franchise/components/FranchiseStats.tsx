@@ -39,24 +39,50 @@ function StatPill({
 
   return (
     <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-white dark:bg-[#1e2130] border border-slate-100 dark:border-white/7 shadow-sm">
-      <div className={`h-9 w-9 rounded-xl ${iconBg} flex items-center justify-center shrink-0`}>{icon}</div>
+      <div
+        className={`h-9 w-9 rounded-xl ${iconBg} flex items-center justify-center shrink-0`}
+      >
+        {icon}
+      </div>
       <div>
-        <p className="text-xl font-black text-slate-800 dark:text-white leading-none">{value}</p>
-        <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5 font-medium">{label}</p>
+        <p className="text-xl font-black text-slate-800 dark:text-white leading-none">
+          {value}
+        </p>
+        <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5 font-medium">
+          {label}
+        </p>
       </div>
     </div>
   );
 }
 
 export function FranchiseStats({ franchises, loading }: Props) {
-  const activeCount   = franchises.filter(f => f.status === "ACTIVE").length;
+  const activeCount = franchises.filter((f) => f.status === "ACTIVE").length;
   const inactiveCount = franchises.length - activeCount;
 
   return (
     <div className="grid grid-cols-3 gap-3">
-      <StatPill loading={loading} value={franchises.length} label="Total Franchises" iconBg="bg-indigo-50 dark:bg-indigo-500/10"   icon={<Building2    className="w-4 h-4 text-indigo-500"   />} />
-      <StatPill loading={loading} value={activeCount}       label="Active"           iconBg="bg-emerald-50 dark:bg-emerald-500/10" icon={<CheckCircle2 className="w-4 h-4 text-emerald-500" />} />
-      <StatPill loading={loading} value={inactiveCount}     label="Inactive"         iconBg="bg-slate-50 dark:bg-white/[0.05]"    icon={<XCircle      className="w-4 h-4 text-slate-400"   />} />
+      <StatPill
+        loading={loading}
+        value={franchises.length}
+        label="Total Franchises"
+        iconBg="bg-indigo-50 dark:bg-indigo-500/10"
+        icon={<Building2 className="w-4 h-4 text-indigo-500" />}
+      />
+      <StatPill
+        loading={loading}
+        value={activeCount}
+        label="Active"
+        iconBg="bg-emerald-50 dark:bg-emerald-500/10"
+        icon={<CheckCircle2 className="w-4 h-4 text-emerald-500" />}
+      />
+      <StatPill
+        loading={loading}
+        value={inactiveCount}
+        label="Inactive"
+        iconBg="bg-slate-50 dark:bg-white/[0.05]"
+        icon={<XCircle className="w-4 h-4 text-slate-400" />}
+      />
     </div>
   );
 }
