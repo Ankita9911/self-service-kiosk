@@ -92,7 +92,7 @@ export function CreateUserModal({
       </p>
     ) : null;
 
-  const LabelCls = "text-[11px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide";
+  const LabelCls = "text-[11px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide ";
 
   if (!open) return null;
 
@@ -122,12 +122,12 @@ export function CreateUserModal({
 
         <form onSubmit={handleSubmit} className="px-6 pb-6 pt-5 space-y-4 overflow-y-auto max-h-[calc(100vh-180px)]" noValidate>
           <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5">
+            <div>
               <label className={LabelCls}>Full Name <span className="text-red-400">*</span></label>
               <input value={form.name} onChange={(e) => handleChange("name", e.target.value)} placeholder="Jane Smith" type="text" className={inputCls("name")} />
               <ErrMsg field="name" />
             </div>
-            <div className="space-y-1.5">
+            <div className="space-y-1.5 mb-1.5">
               <label className={LabelCls}>Email <span className="text-red-400">*</span></label>
               <input value={form.email} onChange={(e) => handleChange("email", e.target.value)} placeholder="jane@example.com" type="email" className={inputCls("email")} />
               <ErrMsg field="email" />
