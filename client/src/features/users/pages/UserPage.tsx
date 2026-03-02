@@ -393,7 +393,10 @@ export default function UserPage() {
         currentUser={currentUser}
         franchises={franchises.filter((f) => f.status === "ACTIVE")}
         outlets={outlets}
-        onCreated={(pw, email) => setCreatedUser({ password: pw, email })}
+        onCreated={(pw, email) => {
+            fetchUsers(true);
+            setCreatedUser({ password: pw, email });
+          }}
       />
 
       {createdUser && (

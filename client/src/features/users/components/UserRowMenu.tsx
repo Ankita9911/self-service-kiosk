@@ -153,7 +153,7 @@ export function UserRowMenu({
             </p>
           </div>
           <div className="px-5 py-4 space-y-3">
-            <div className="space-y-1.5">
+            <div className="space-y-1.5 text-left">
               <label className="text-[11px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide">Full Name</label>
               <input
                 value={editName}
@@ -161,7 +161,7 @@ export function UserRowMenu({
                 className="w-full h-10 px-3.5 rounded-xl border border-slate-200 dark:border-white/[0.08] bg-white dark:bg-white/[0.04] text-sm text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-400/20 focus:border-indigo-300 dark:focus:border-indigo-500/40 transition-all"
               />
             </div>
-            <div className="space-y-1.5">
+            <div className="space-y-1.5 text-left">
               <label className="text-[11px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide">Email</label>
               <input
                 type="email"

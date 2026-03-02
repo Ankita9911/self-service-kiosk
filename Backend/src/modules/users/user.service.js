@@ -37,7 +37,7 @@ const OUTLET_SCOPED_ROLES = [
   "KIOSK_DEVICE",
 ];
 
-const SUPER_ADMIN_CREATABLE_ROLES = ["SUPER_ADMIN", "FRANCHISE_ADMIN"];
+const SUPER_ADMIN_CREATABLE_ROLES = ["FRANCHISE_ADMIN"];
 
 export async function createUser(currentUser, payload) {
   const {
@@ -54,10 +54,7 @@ export async function createUser(currentUser, payload) {
     currentUser.role === "SUPER_ADMIN" &&
     !SUPER_ADMIN_CREATABLE_ROLES.includes(role)
   ) {
-    throw new AppError(
-      "Super admins can only create Super Admin or Franchise Admin accounts",
-      403
-    );
+    throw new AppError("Super admins can only create Franchise Admin accounts", 403);
   }
 
   const existing = await User.findOne({ email });
