@@ -2,6 +2,7 @@ import bcrypt from "bcrypt";
 import User from "../../modules/users/user.model.js";
 import AppError from "../../shared/errors/AppError.js";
 import { generateToken } from "./jwt.service.js";
+import { sendPasswordChangedEmail } from "../email/email.service.js";
 
 const SALT_ROUNDS = 10;
 export async function login({ email, password }) {
@@ -55,6 +56,9 @@ export async function forceResetPassword(userId, currentPassword, newPassword) {
   user.mustChangePassword = false;
 
   await user.save();
+
+  // Fire-and-forget confirmation email
+  sendPasswordChangedEmail({ name: user.name, email: user.email }).catch(() => {});
 
   return true;
 }
