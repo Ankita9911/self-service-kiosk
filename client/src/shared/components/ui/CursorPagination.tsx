@@ -1,4 +1,11 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/shared/components/ui/select";
 
 type Props = {
   total: number;
@@ -35,17 +42,21 @@ export function CursorPagination({
         {showPageSize && (
           <div className="flex items-center gap-1.5">
             <span>Rows:</span>
-            <select
+            <Select
               value={String(pageSize)}
-              onChange={(e) => onPageSizeChange(Number(e.target.value))}
-              className="h-7 rounded-lg border border-slate-200 dark:border-white/8 bg-white dark:bg-[#161920] px-2 text-xs"
+              onValueChange={(v) => onPageSizeChange(Number(v))}
             >
-              {[6, 12, 24, 48].map((size) => (
-                <option key={size} value={size}>
-                  {size}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger className="h-7 w-16 rounded-lg border-slate-200 dark:border-white/8 bg-white dark:bg-[#161920] px-2 text-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="rounded-lg border-slate-200 dark:border-white/8 bg-white dark:bg-[#161920]">
+                {[10, 20, 40, 50].map((size) => (
+                  <SelectItem key={size} value={String(size)} className="text-xs">
+                    {size}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         )}
       </div>
