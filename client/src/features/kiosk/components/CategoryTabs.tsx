@@ -8,8 +8,9 @@ interface CategoryTabsProps {
 }
 
 export default function CategoryTabs({ categories, selectedCategory, onCategoryChange }: CategoryTabsProps) {
-  const availableCategories = categories.filter(cat => cat.items && cat.items.length > 0);
-
+  const availableCategories = categories.filter(cat => 
+    cat._id === "__COMBOS__" ? true : cat.items && cat.items.length > 0
+  );
   if (availableCategories.length === 0) {
     return null;
   }

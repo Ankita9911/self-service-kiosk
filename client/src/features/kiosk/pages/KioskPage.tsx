@@ -20,14 +20,15 @@ import { useKioskCheckout } from "../hooks/useKioskCheckout";
 import { useKioskForceLogout } from "../hooks/useKioskForceLogout";
 import type { OfferType } from "../types/menu.types";
 
-const OFFER_CHIPS: { value: OfferType | null; label: string; emoji: string }[] = [
-  { value: null,         label: "All",         emoji: "🍽️" },
-  { value: "DISCOUNT",   label: "Deals",       emoji: "🏷️" },
-  { value: "BOGO",       label: "Buy 1 Get 1", emoji: "🎁" },
-  { value: "BESTSELLER", label: "Best Seller", emoji: "⭐" },
-  { value: "NEW",        label: "New",         emoji: "✨" },
-  { value: "LIMITED",    label: "Limited",     emoji: "⏳" },
-];
+const OFFER_CHIPS: { value: OfferType | null; label: string; emoji: string }[] =
+  [
+    { value: null, label: "All", emoji: "🍽️" },
+    { value: "DISCOUNT", label: "Deals", emoji: "🏷️" },
+    { value: "BOGO", label: "Buy 1 Get 1", emoji: "🎁" },
+    { value: "BESTSELLER", label: "Best Seller", emoji: "⭐" },
+    { value: "NEW", label: "New", emoji: "✨" },
+    { value: "LIMITED", label: "Limited", emoji: "⏳" },
+  ];
 
 function getKioskToken(): string | null {
   const token = localStorage.getItem("kiosk_token");
@@ -102,32 +103,18 @@ export default function KioskPage() {
 
   return (
     <div className="h-screen flex flex-row bg-gray-50 overflow-hidden">
+      <div className="w-[104px] min-w-20 shrink-0 flex flex-col bg-white border-r border-gray-100 shadow-sm overflow-y-auto scrollbar-none">
+        <div className="px-10 py-9.5 flex flex-col bg-white border-r border-gray-100 shadow-sm overflow-y-auto scrollbar-none ">
+          <button 
+          className="text-gray-400 hover:text-orange-500 hover:bg-orange-50 transition-all active:scale-95"
+          onClick={() => navigate("/kiosk/order-type")}>
+            <ArrowLeft className="w-5 h-5" />
+            <span className="text-[10px] font-bold">Back</span>
+          </button>
+        </div>
 
-      {/* ══════════ LEFT — permanent offer filter sidebar ══════════ */}
-      <div className="w-[104px] shrink-0 flex flex-col bg-white border-r border-gray-100 shadow-sm overflow-y-auto scrollbar-none">
-
-        {/* Back */}
-        <button
-          onClick={() => navigate("/kiosk/order-type")}
-          className="flex flex-col items-center gap-1 py-4 px-2 border-b border-gray-100 text-gray-400 hover:text-orange-500 hover:bg-orange-50 transition-all active:scale-95"
-          style={{ fontFamily: "var(--font-body)" }}
-        >
-          <ArrowLeft className="w-5 h-5" />
-          <span className="text-[10px] font-bold">Back</span>
-        </button>
-
-        {/* Section label */}
-        <p
-          className="text-[9px] font-black text-gray-400 uppercase tracking-widest text-center pt-4 pb-2 px-2"
-          style={{ fontFamily: "var(--font-body)" }}
-        >
-          Filters
-        </p>
-
-        {/* Offer chips — always all visible (hidden only on combos tab) */}
-        <div className="flex flex-col gap-1 px-2">
+        <div className="flex flex-col gap-1 px-2 pt-2">
           {OFFER_CHIPS.map(({ value, label, emoji }) => {
-            // on combos tab hide offer-type chips, keep "All"
             if (isOnCombos && value !== null) return null;
 
             const count = value === null ? undefined : offerCounts[value];
@@ -145,11 +132,15 @@ export default function KioskPage() {
                 style={{ fontFamily: "var(--font-body)" }}
               >
                 <span className="text-xl leading-none">{emoji}</span>
-                <span className="text-[10px] font-bold leading-tight text-center">{label}</span>
+                <span className="text-[10px] font-bold leading-tight text-center">
+                  {label}
+                </span>
                 {count !== undefined && count > 0 && (
                   <span
                     className={`text-[9px] font-black px-1.5 py-0.5 rounded-full ${
-                      isActive ? "bg-white/30 text-white" : "bg-gray-200 text-gray-500"
+                      isActive
+                        ? "bg-white/30 text-white"
+                        : "bg-gray-200 text-gray-500"
                     }`}
                   >
                     {count}
@@ -175,10 +166,7 @@ export default function KioskPage() {
           </div>
         )}
       </div>
-
-      {/* ══════════ CENTER — category tabs + scrollable menu ══════════ */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-
         {/* Horizontal category tabs at the top */}
         <div className="bg-white border-b border-gray-100 z-10 shadow-sm">
           {isLoading ? (
@@ -220,7 +208,7 @@ export default function KioskPage() {
         </main>
 
         {/* Floating cart button — only when cart is closed */}
-        {!isCartOpen && totalItems > 0 && (
+        {!isCartOpen && totalItems >= 0 && (
           <button
             onClick={() => setIsCartOpen(true)}
             className="fixed bottom-6 right-6 z-30 flex items-center gap-3 bg-orange-500 hover:bg-orange-600 text-white pl-4 pr-5 py-3.5 rounded-2xl shadow-2xl shadow-orange-400/40 transition-all active:scale-95"
@@ -233,7 +221,9 @@ export default function KioskPage() {
             </div>
             <div className="text-left">
               <p className="text-sm font-black leading-none">View Cart</p>
-              <p className="text-xs font-semibold opacity-80 mt-0.5">₹{totalPrice.toFixed(2)}</p>
+              <p className="text-xs font-semibold opacity-80 mt-0.5">
+                ₹{totalPrice.toFixed(2)}
+              </p>
             </div>
           </button>
         )}

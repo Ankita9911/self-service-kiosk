@@ -92,7 +92,7 @@ export function useKioskMenu() {
 
   const categoriesWithAll: MenuCategory[] = [
     ...(hasActiveCombos
-      ? [{ _id: COMBOS_CATEGORY_ID, name: "Combos", items: [] } as MenuCategory]
+      ? [{ _id: COMBOS_CATEGORY_ID, name: "Combos", items: visibleCombos as any } as MenuCategory]
       : []),
     {
       _id: ALL_CATEGORY_ID,
