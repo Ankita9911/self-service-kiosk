@@ -60,6 +60,12 @@ export function useUsers(filters: UserFilters) {
 
   useEffect(() => { fetchAll(); }, [fetchAll]);
 
+  // ── Re-fetch outlets from backend whenever franchiseId filter changes ────────
+  useEffect(() => {
+    getOutlets({ franchiseId: filters.franchiseId }).catch(() => []).then(setOutlets);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filters.franchiseId]);
+
   // ── Filtered fetch (table) — runs on mount + whenever a filter changes ─────
   const isMounted = useRef(false);
 

@@ -59,13 +59,6 @@ export default function UserPage() {
 
   const assignableRoles = allRoles.filter((r) => r !== "ALL") as any[];
 
-  const filterableOutlets = useMemo(() => {
-    if (isSuperAdmin && franchiseFilter !== "ALL") {
-      return outlets.filter((o) => (o as any).franchiseId === franchiseFilter);
-    }
-    return outlets;
-  }, [isSuperAdmin, franchiseFilter, outlets]);
-
   const paginated = useMemo(() => {
     return users.slice((page - 1) * pageSize, page * pageSize);
   }, [users, page, pageSize]);
@@ -214,7 +207,7 @@ export default function UserPage() {
             </SelectTrigger>
             <SelectContent className="rounded-xl border-slate-100 dark:border-white/8 bg-white dark:bg-[#1a1d26] max-w-50">
               <SelectItem value="ALL" className="text-[13px] rounded-lg px-2 py-1.5">All Outlets</SelectItem>
-              {filterableOutlets.map((o) => (
+              {outlets.map((o) => (
                 <SelectItem key={o._id} value={o._id} className="text-[13px] rounded-lg px-2 py-1.5 max-w-full">
                   <span className="truncate block max-w-40">{o.name}</span>
                 </SelectItem>
