@@ -42,11 +42,15 @@ export async function deleteCategory(id: string, outletId?: string): Promise<voi
 
 export async function getMenuItems(
   outletId?: string,
-  categoryId?: string
+  categoryId?: string,
+  search?: string,
+  status?: "ALL" | "ACTIVE" | "INACTIVE"
 ): Promise<MenuItem[]> {
   const p: Record<string, string> = {};
   if (outletId) p.outletId = outletId;
   if (categoryId) p.categoryId = categoryId;
+  if (search?.trim()) p.search = search.trim();
+  if (status && status !== "ALL") p.status = status;
   const response = await axiosInstance.get<{ data: MenuItem[] }>("/menu/items", {
     params: Object.keys(p).length ? p : undefined,
   });

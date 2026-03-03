@@ -17,7 +17,7 @@ export default function MenuLandingPage() {
   const [page, setPage] = useState(1);
   const pageSize = 3;
 
-  const { outlets, allOutlets, loading } = useMenuLanding(user, hasPermission, {
+  const { outlets, allOutlets, loading, searching } = useMenuLanding(user, hasPermission, {
     search,
     status: statusFilter,
   });
@@ -102,7 +102,10 @@ export default function MenuLandingPage() {
       {allOutlets.length > 0 && (
         <div className="flex items-center justify-end gap-2">
         <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
+            {searching
+              ? <Loader2 className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-indigo-400 animate-spin" />
+              : <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
+            }
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}

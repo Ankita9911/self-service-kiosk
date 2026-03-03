@@ -13,6 +13,8 @@ import {
   CheckCircle2,
   Plus,
   Layers,
+  Loader2,
+  X,
   Pencil,
   Trash2,
 } from "lucide-react";
@@ -44,11 +46,17 @@ export default function OutletMenuPage() {
 
   const canManage = hasPermission(PERMISSIONS.MENU_MANAGE);
 
+  // Declare filter state first so they can be passed into the hook
+  const [search, setSearch] = useState("");
+  const [itemStatusFilter, setItemStatusFilter] = useState<"ALL" | "ACTIVE" | "INACTIVE">("ALL");
+
   const {
     categories,
+    allItems,
     items,
     combos,
     loading,
+    filterLoading,
     selectedCategoryId,
     setSelectedCategoryId,
     addCategory,
@@ -66,7 +74,7 @@ export default function OutletMenuPage() {
     addCombo,
     editCombo,
     removeCombo,
-  } = useOutletMenu(outletId, user?.role, canManage);
+  } = useOutletMenu(outletId, user?.role, canManage, { search, status: itemStatusFilter });
 
   const [addCategoryOpen, setAddCategoryOpen] = useState(false);
   const [addItemOpen, setAddItemOpen] = useState(false);
@@ -78,8 +86,6 @@ export default function OutletMenuPage() {
   const [stockInput, setStockInput] = useState("");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(12);
-  const [search, setSearch] = useState("");
-  const [itemStatusFilter, setItemStatusFilter] = useState<"ALL" | "ACTIVE" | "INACTIVE">("ALL");
   const [viewItem, setViewItem] = useState<any | null>(null);
   const [layout, setLayout] = useState<Layout>(
     () => (localStorage.getItem("menu-layout") as Layout) ?? "grid"
@@ -101,28 +107,15 @@ export default function OutletMenuPage() {
     }
   }, [user?.role, user?.outletId, outletId, canManage]);
 
-  useEffect(() => { setPage(1); }, [selectedCategoryId, search, itemStatusFilter]);
+  const paginatedItems = items.slice((page - 1) * pageSize, page * pageSize);
 
-  const categoryFiltered =
-    selectedCategoryId === "ALL"
-      ? items
-      : items.filter((i) => i.categoryId === selectedCategoryId);
+  const activeCount = allItems.filter((i) => i.isActive !== false).length;
 
-  const statusFiltered = categoryFiltered.filter((i) => {
-    if (itemStatusFilter === "ACTIVE") return i.isActive !== false;
-    if (itemStatusFilter === "INACTIVE") return i.isActive === false;
-    return true;
-  });
+  const isFiltered = search !== "" || itemStatusFilter !== "ALL" || selectedCategoryId !== "ALL";
 
-  const filteredItems = search
-    ? statusFiltered.filter((i) =>
-        i.name.toLowerCase().includes(search.toLowerCase())
-      )
-    : statusFiltered;
-
-  const paginatedItems = filteredItems.slice((page - 1) * pageSize, page * pageSize);
-
-  const activeCount = items.filter((i) => i.isActive !== false).length;
+  const handleSearchChange = (v: string) => { setSearch(v); setPage(1); };
+  const handleStatusChange = (v: "ALL" | "ACTIVE" | "INACTIVE") => { setItemStatusFilter(v); setPage(1); };
+  const clearFilters = () => { setSearch(""); setItemStatusFilter("ALL"); setSelectedCategoryId("ALL"); setPage(1); };
 
   const openEdit = (item: any) => {
     setEditItem(item);
@@ -244,7 +237,7 @@ export default function OutletMenuPage() {
       {/* ── Stats bar ── */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[
-          { label: "Total Items", value: items.length, icon: Package, color: "indigo" },
+          { label: "Total Items", value: allItems.length, icon: Package, color: "indigo" },
           { label: "Active", value: activeCount, icon: CheckCircle2, color: "emerald" },
           { label: "Categories", value: categories.length, icon: Tag, color: "violet" },
           { label: "Combos", value: combos.length, icon: Layers, color: "orange" },
@@ -380,7 +373,7 @@ export default function OutletMenuPage() {
         <CategoryFilter
           categories={categories}
           selectedCategoryId={selectedCategoryId}
-          onSelect={setSelectedCategoryId}
+          onSelect={(id) => { setSelectedCategoryId(id); setPage(1); }}
           onDeleteCategory={async (id) => {
             await removeCategory(id);
             if (selectedCategoryId === id) setSelectedCategoryId("ALL");
@@ -390,21 +383,30 @@ export default function OutletMenuPage() {
         <div className="flex items-center gap-2 flex-1 min-w-0">
           {/* Search */}
           <div className="relative flex-1 min-w-0">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
+            {filterLoading
+              ? <Loader2 className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-indigo-400 animate-spin pointer-events-none" />
+              : <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
+            }
             <input
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => handleSearchChange(e.target.value)}
               placeholder="Search items…"
-              className="pl-8 pr-3 h-9 w-full text-sm rounded-xl border border-slate-200 dark:border-white/8 bg-white dark:bg-[#161920] text-slate-700 dark:text-slate-300 placeholder:text-slate-400 dark:placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-400 transition-all"
+              className="pl-8 pr-8 h-9 w-full text-sm rounded-xl border border-slate-200 dark:border-white/8 bg-white dark:bg-[#161920] text-slate-700 dark:text-slate-300 placeholder:text-slate-400 dark:placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-400 transition-all"
             />
+            {search && (
+              <button
+                onClick={() => handleSearchChange("")}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 h-4 w-4 rounded-full bg-slate-200 dark:bg-white/10 hover:bg-slate-300 dark:hover:bg-white/15 flex items-center justify-center transition-colors"
+              >
+                <X className="w-2.5 h-2.5 text-slate-500 dark:text-slate-400" />
+              </button>
+            )}
           </div>
-
-          {/* Status filter tabs */}
           <div className="inline-flex shrink-0 items-center bg-white dark:bg-[#161920] border border-slate-200 dark:border-white/8 rounded-xl p-1 gap-0.5">
             {(["ALL", "ACTIVE", "INACTIVE"] as const).map((s) => (
               <button
                 key={s}
-                onClick={() => setItemStatusFilter(s)}
+                onClick={() => handleStatusChange(s)}
                 className={`h-7 px-2.5 rounded-lg text-[11px] font-semibold transition-all ${
                   itemStatusFilter === s
                     ? "bg-indigo-600 text-white shadow-sm"
@@ -415,6 +417,17 @@ export default function OutletMenuPage() {
               </button>
             ))}
           </div>
+
+          {/* Clear filters */}
+          {isFiltered && (
+            <button
+              onClick={clearFilters}
+              className="inline-flex shrink-0 items-center gap-1 h-9 px-3 rounded-xl border border-slate-200 dark:border-white/8 bg-white dark:bg-[#161920] text-[12px] font-medium text-slate-500 dark:text-slate-400 hover:text-red-500 dark:hover:text-red-400 hover:border-red-200 dark:hover:border-red-500/30 transition-all"
+            >
+              <X className="w-3 h-3" />
+              Clear
+            </button>
+          )}
 
           {/* Layout toggle */}
           <div className="inline-flex shrink-0 items-center bg-white dark:bg-[#161920] border border-slate-200 dark:border-white/8 rounded-xl p-1 gap-0.5">
@@ -452,12 +465,12 @@ export default function OutletMenuPage() {
             <div key={i} className="bg-slate-100 dark:bg-white/4 rounded-2xl h-48 animate-pulse" />
           ))}
         </div>
-      ) : filteredItems.length === 0 ? (
+      ) : items.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 bg-white dark:bg-[#1e2130] rounded-2xl border border-slate-100 dark:border-white/[0.07]">
           <Package className="w-12 h-12 text-slate-300 dark:text-slate-600 mb-3" />
           <p className="font-semibold text-slate-600 dark:text-white">No items found</p>
           <p className="text-slate-400 text-sm mt-1">
-            {search ? "Try a different search term" : selectedCategoryId === "ALL" ? "Add your first item" : "No items in this category"}
+            {isFiltered ? "Try a different search term or filter" : "Add your first item"}
           </p>
         </div>
       ) : layout === "grid" ? (
@@ -475,7 +488,7 @@ export default function OutletMenuPage() {
             ))}
           </div>
           <GridPagination
-            total={filteredItems.length}
+            total={items.length}
             page={page}
             pageSize={pageSize}
             onPageChange={setPage}
@@ -519,7 +532,7 @@ export default function OutletMenuPage() {
             </table>
           </div>
           <TablePagination
-            total={filteredItems.length}
+            total={items.length}
             page={page}
             pageSize={pageSize}
             onPageChange={setPage}

@@ -12,7 +12,6 @@ export async function createCategory(data, tenant) {
 export async function getCategories(tenant) {
   const redis = getRedisClient();
   const cacheKey = buildTenantKey("categories", tenant);
-  console.log(1);
   const cached = await redis.get(cacheKey);
   if (cached) {
     console.log(2);
@@ -47,19 +46,18 @@ export async function createMenuItem(data, tenant) {
   return { queued: true };
 }
 
-export async function getMenuItems(tenant, categoryId) {
+export async function getMenuItems(tenant, { categoryId, search, status } = {}) {
   const redis = getRedisClient();
 
-  const baseKey = categoryId
-    ? `menuItems:${categoryId}`
-    : "menuItems";
+  // Skip cache when search or status filters are active — results are dynamic
+  const useCache = !search?.trim() && (!status || status === "ALL");
 
+  const baseKey = categoryId ? `menuItems:${categoryId}` : "menuItems";
   const cacheKey = buildTenantKey(baseKey, tenant);
-  console.log(1);
-  const cached = await redis.get(cacheKey);
-  if (cached) {
-    console.log(1);
-    return JSON.parse(cached);
+
+  if (useCache) {
+    const cached = await redis.get(cacheKey);
+    if (cached) return JSON.parse(cached);
   }
 
   const filter = {
@@ -68,15 +66,22 @@ export async function getMenuItems(tenant, categoryId) {
     isDeleted: false,
   };
 
-  if (categoryId) {
-    filter.categoryId = categoryId;
+  if (categoryId) filter.categoryId = categoryId;
+
+  if (search?.trim()) {
+    filter.name = { $regex: search.trim(), $options: "i" };
   }
+
+  if (status === "ACTIVE") filter.isActive = { $ne: false };
+  if (status === "INACTIVE") filter.isActive = false;
 
   const items = await MenuItem.find(filter)
     .sort({ createdAt: -1 })
     .lean();
 
-  await redis.set(cacheKey, JSON.stringify(items), "EX", 300);
+  if (useCache) {
+    await redis.set(cacheKey, JSON.stringify(items), "EX", 300);
+  }
 
   return items;
 }

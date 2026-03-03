@@ -1,4 +1,5 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
+import { useDebounce } from "@/shared/hooks/useDebounce";
 import {
   getCategories,
   getMenuItems,
@@ -27,16 +28,24 @@ import {
 } from "@/features/upload/service/upload.service";
 import { useMenuSocket } from "@/shared/hooks/useMenuSocket";
 
+export interface OutletMenuFilters {
+  search: string;
+  status: "ALL" | "ACTIVE" | "INACTIVE";
+}
+
 export function useOutletMenu(
   outletId: string | undefined,
   userRole?: string,
   canManage?: boolean,
+  filters?: OutletMenuFilters,
 ) {
   const [outlets, setOutlets] = useState<Outlet[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
-  const [items, setItems] = useState<MenuItem[]>([]);
+  const [allItems, setAllItems] = useState<MenuItem[]>([]); // unfiltered — for stats
+  const [items, setItems] = useState<MenuItem[]>([]);       // filtered by backend
   const [combos, setCombos] = useState<Combo[]>([]);
   const [loading, setLoading] = useState(true);
+  const [filterLoading, setFilterLoading] = useState(false);
 
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>("ALL");
 
@@ -57,6 +66,10 @@ export function useOutletMenu(
 
   const oidForApi = needsOutletId ? outletId : undefined;
 
+  // Debounce search — backend only called 400ms after user stops typing
+  const debouncedSearch = useDebounce(filters?.search ?? "", 400);
+
+  // ── Stats fetch (no filters) — runs on mount + after every mutation ────────
   const fetchData = useCallback(async () => {
     if (!canManage || !outletId) return;
 
@@ -64,13 +77,14 @@ export function useOutletMenu(
     try {
       const [catList, itemList, outletList, comboList] = await Promise.all([
         getCategories(oidForApi),
-        getMenuItems(oidForApi),
+        getMenuItems(oidForApi),          // no search/status — full list for stats
         needsOutletId ? getOutlets() : Promise.resolve([]),
         getCombos(oidForApi),
       ]);
 
       setCategories(catList);
-      setItems(itemList);
+      setAllItems(itemList);
+      setItems(itemList);               // populate display list on initial load
       setOutlets(outletList);
       setCombos(comboList);
     } finally {
@@ -81,6 +95,36 @@ export function useOutletMenu(
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+
+  // ── Filtered fetch — re-runs whenever search/status/category changes ───────
+  const isMounted = useRef(false);
+
+  useEffect(() => {
+    if (!canManage || !outletId) return;
+    let cancelled = false;
+
+    async function fetchFiltered() {
+      if (isMounted.current) setFilterLoading(true);
+      else isMounted.current = true;
+
+      try {
+        const result = await getMenuItems(
+          oidForApi,
+          selectedCategoryId !== "ALL" ? selectedCategoryId : undefined,
+          debouncedSearch,
+          filters?.status,
+        );
+        if (!cancelled) setItems(result);
+      } catch {}
+      finally {
+        if (!cancelled) setFilterLoading(false);
+      }
+    }
+
+    fetchFiltered();
+    return () => { cancelled = true; };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [canManage, outletId, oidForApi, selectedCategoryId, debouncedSearch, filters?.status]);
 
   // Silently reload whenever the queue worker finishes a menu change.
   // Pass outletId so admin users (who have no outletId in their JWT) can
@@ -220,9 +264,11 @@ export function useOutletMenu(
   return {
     outlets,
     categories,
+    allItems,
     items,
     combos,
     loading,
+    filterLoading,
     selectedCategoryId,
     setSelectedCategoryId,
     catForm,
