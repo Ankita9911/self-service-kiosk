@@ -1,5 +1,6 @@
 import axios from "axios";
 import toast from "react-hot-toast";
+import { clearKioskSession, getKioskToken } from "@/shared/lib/kioskSession";
 
 const kioskAxios = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL
@@ -9,7 +10,7 @@ const kioskAxios = axios.create({
 
 kioskAxios.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("kiosk_token");
+    const token = getKioskToken();
 
     if (!token) {
       toast.error("Kiosk not authenticated");
@@ -26,7 +27,7 @@ let kioskRedirecting = false;
 function redirectKioskToLogin(message: string) {
   if (kioskRedirecting) return;
   kioskRedirecting = true;
-  localStorage.removeItem("kiosk_token");
+  clearKioskSession();
   toast.error(message);
   window.location.href = "/kiosk/login";
 }

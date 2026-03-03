@@ -1,4 +1,5 @@
 import axiosInstance from "@/shared/lib/axiosInstance";
+import axios from "axios";
 import type { Device } from "@/features/device/types/device.types";
 
 export interface DeviceFilterParams {
@@ -130,8 +131,10 @@ export async function kioskLogin(
   deviceId: string,
   password: string
 ): Promise<{ token: string; landingImage: string | null; landingTitle: string | null; landingSubtitle: string | null }> {
-  const response = await axiosInstance.post<{ data: { token: string; landingImage: string | null; landingTitle: string | null; landingSubtitle: string | null } }>(
-    "/devices/login",
+  // Use a plain client to keep kiosk login independent from admin auth interceptors/session.
+  const baseURL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000/api";
+  const response = await axios.post<{ data: { token: string; landingImage: string | null; landingTitle: string | null; landingSubtitle: string | null } }>(
+    `${baseURL}/devices/login`,
     { deviceId, password }
   );
   return response.data.data;

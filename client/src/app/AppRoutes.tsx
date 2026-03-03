@@ -1,6 +1,7 @@
 import { lazy, Suspense } from "react";
 import { Routes, Route } from "react-router-dom";
 import ProtectedRoute from "./ProtectedRoute";
+import KioskProtectedRoute from "./KioskProtectedRoute";
 import AppLayout from "@/shared/components/layout/AppLayout";
 import { PERMISSIONS } from "@/shared/lib/permissions";
 
@@ -35,8 +36,22 @@ export default function AppRoutes() {
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/kiosk/login" element={<KioskLoginPage />} />
-        <Route path="/kiosk/landing" element={<KioskLandingPage />} />
-        <Route path="/kiosk/order-type" element={<KioskOrderTypePage />} />
+        <Route
+          path="/kiosk/landing"
+          element={
+            <KioskProtectedRoute>
+              <KioskLandingPage />
+            </KioskProtectedRoute>
+          }
+        />
+        <Route
+          path="/kiosk/order-type"
+          element={
+            <KioskProtectedRoute>
+              <KioskOrderTypePage />
+            </KioskProtectedRoute>
+          }
+        />
         <Route
           path="/force-reset"
           element={
@@ -45,7 +60,14 @@ export default function AppRoutes() {
             </ProtectedRoute>
           }
         />
-        <Route path="/kiosk" element={<KioskPage />} />
+        <Route
+          path="/kiosk"
+          element={
+            <KioskProtectedRoute>
+              <KioskPage />
+            </KioskProtectedRoute>
+          }
+        />
         <Route
           element={
             <ProtectedRoute>

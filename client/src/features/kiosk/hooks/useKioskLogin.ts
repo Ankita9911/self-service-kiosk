@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { kioskLogin } from "@/features/device/services/device.service";
+import { setKioskToken, setKioskLandingConfig } from "@/shared/lib/kioskSession";
 
 export function useKioskLogin() {
   const navigate = useNavigate();
@@ -26,11 +27,8 @@ export function useKioskLogin() {
         secret.trim()
       );
 
-      localStorage.setItem("kiosk_token", token);
-      localStorage.setItem(
-        "kiosk_landing",
-        JSON.stringify({ landingImage, landingTitle, landingSubtitle })
-      );
+      setKioskToken(token);
+      setKioskLandingConfig({ landingImage, landingTitle, landingSubtitle });
       navigate("/kiosk/landing", { replace: true });
     } catch (err: any) {
       const msg =

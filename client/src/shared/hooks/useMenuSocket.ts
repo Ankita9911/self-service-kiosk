@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { io, Socket } from "socket.io-client";
+import { getKioskToken } from "@/shared/lib/kioskSession";
 
 function getSocketUrl(): string {
   const apiUrl = import.meta.env.VITE_API_BASE_URL;
@@ -17,7 +18,7 @@ const SOCKET_URL = getSocketUrl();
  * Listens for `menu:updated` socket events emitted by the queue worker.
  *
  * - Kiosk devices pass their device token explicitly via `auth` (device JWT
- *   is stored in localStorage as `kiosk_token`).
+ *   is stored in the `kiosk_token` cookie).
  * - Authenticated admin/staff users rely on the httpOnly cookie
  *   (`withCredentials: true`) — no token in JS land.
  *
@@ -33,8 +34,8 @@ export function useMenuSocket(onRefresh: () => void, outletId?: string) {
   }, [onRefresh]);
 
   useEffect(() => {
-    // Kiosk devices still carry their device JWT in localStorage
-    const kioskToken = localStorage.getItem("kiosk_token");
+    // Kiosk devices carry their device JWT in cookie
+    const kioskToken = getKioskToken();
 
     const socketOptions = kioskToken
       ? { auth: { token: kioskToken }, transports: ["websocket"] }
@@ -70,4 +71,3 @@ export function useMenuSocket(onRefresh: () => void, outletId?: string) {
 
   return socketRef;
 }
-

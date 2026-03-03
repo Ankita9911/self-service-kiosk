@@ -1,18 +1,6 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-
-function getKioskToken(): string | null {
-  const token = localStorage.getItem("kiosk_token");
-  if (!token) return null;
-  try {
-    const payload = JSON.parse(atob(token.split(".")[1]));
-    if (payload.role !== "KIOSK_DEVICE") return null;
-    if (payload.exp && payload.exp * 1000 < Date.now()) return null;
-    return token;
-  } catch {
-    return null;
-  }
-}
+import { getKioskToken } from "@/shared/lib/kioskSession";
 
 export default function KioskOrderTypePage() {
   const navigate = useNavigate();

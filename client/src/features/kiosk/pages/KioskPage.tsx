@@ -19,6 +19,7 @@ import { useKioskCart } from "../hooks/useKioskCart";
 import { useKioskCheckout } from "../hooks/useKioskCheckout";
 import { useKioskForceLogout } from "../hooks/useKioskForceLogout";
 import type { OfferType } from "../types/menu.types";
+import { getKioskToken } from "@/shared/lib/kioskSession";
 
 const OFFER_CHIPS: { value: OfferType | null; label: string; emoji: string }[] =
   [
@@ -29,20 +30,6 @@ const OFFER_CHIPS: { value: OfferType | null; label: string; emoji: string }[] =
     { value: "NEW", label: "New", emoji: "✨" },
     { value: "LIMITED", label: "Limited", emoji: "⏳" },
   ];
-
-function getKioskToken(): string | null {
-  const token = localStorage.getItem("kiosk_token");
-  if (!token) return null;
-
-  try {
-    const payload = JSON.parse(atob(token.split(".")[1]));
-    if (payload.role !== "KIOSK_DEVICE") return null;
-    if (payload.exp && payload.exp * 1000 < Date.now()) return null;
-    return token;
-  } catch {
-    return null;
-  }
-}
 
 export default function KioskPage() {
   const navigate = useNavigate();

@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { io } from "socket.io-client";
 import toast from "react-hot-toast";
+import { clearKioskSession, getKioskToken } from "@/shared/lib/kioskSession";
 
 function getSocketUrl(): string {
   const apiUrl = import.meta.env.VITE_API_BASE_URL;
@@ -22,7 +23,7 @@ export function useKioskForceLogout() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const token = localStorage.getItem("kiosk_token");
+    const token = getKioskToken();
     if (!token) return;
 
     const socket = io(getSocketUrl(), {
@@ -31,7 +32,7 @@ export function useKioskForceLogout() {
     });
 
     socket.on("force:logout", () => {
-      localStorage.removeItem("kiosk_token");
+      clearKioskSession();
       toast.error("This device has been deactivated.");
       navigate("/kiosk/login", { replace: true });
     });

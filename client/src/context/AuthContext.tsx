@@ -33,6 +33,7 @@ function getSocketUrl(): string {
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const navigate = useNavigate();
+  const isKioskRoute = window.location.pathname.startsWith("/kiosk");
 
   const [user, setUser] = useState<
     (User & { mustChangePassword?: boolean }) | null
@@ -50,7 +51,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(null);
     socketRef.current?.disconnect();
     socketRef.current = null;
-    if (redirect) navigate("/login");
+    if (redirect && !window.location.pathname.startsWith("/kiosk")) {
+      navigate("/login");
+    }
   };
 
   // Subscribe to force:logout from the server (user/device deactivated)
@@ -72,6 +75,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
+    if (isKioskRoute) {
+      // Kiosk routes are independent from admin session auth checks.
+      setLoading(false);
+      return;
+    }
+
     // Restore user state from localStorage (just profile, not token)
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
@@ -97,14 +106,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setLoading(false);
 
     // Listen for 401/403 from axiosInstance interceptor
-    const handleAxiosLogout = () => doLogout(true);
+    const handleAxiosLogout = () => {
+      if (window.location.pathname.startsWith("/kiosk")) {
+        doLogout(false);
+        return;
+      }
+      doLogout(true);
+    };
     window.addEventListener("auth:logout", handleAxiosLogout);
 
     return () => {
       window.removeEventListener("auth:logout", handleAxiosLogout);
       socketRef.current?.disconnect();
     };
-  }, []);
+  }, [isKioskRoute]);
 
   const setSession = (userData: any) => {
     localStorage.setItem("user", JSON.stringify(userData));

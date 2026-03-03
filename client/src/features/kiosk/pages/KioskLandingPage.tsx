@@ -1,38 +1,10 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-
-function getKioskToken(): string | null {
-  const token = localStorage.getItem("kiosk_token");
-  if (!token) return null;
-  try {
-    const payload = JSON.parse(atob(token.split(".")[1]));
-    if (payload.role !== "KIOSK_DEVICE") return null;
-    if (payload.exp && payload.exp * 1000 < Date.now()) return null;
-    return token;
-  } catch {
-    return null;
-  }
-}
-
-interface LandingConfig {
-  landingImage: string | null;
-  landingTitle: string | null;
-  landingSubtitle: string | null;
-}
-
-function getLandingConfig(): LandingConfig {
-  try {
-    const raw = localStorage.getItem("kiosk_landing");
-    if (!raw) return { landingImage: null, landingTitle: null, landingSubtitle: null };
-    return JSON.parse(raw) as LandingConfig;
-  } catch {
-    return { landingImage: null, landingTitle: null, landingSubtitle: null };
-  }
-}
+import { getKioskLandingConfig, getKioskToken } from "@/shared/lib/kioskSession";
 
 export default function KioskLandingPage() {
   const navigate = useNavigate();
-  const { landingImage, landingTitle, landingSubtitle } = getLandingConfig();
+  const { landingImage, landingTitle, landingSubtitle } = getKioskLandingConfig();
 
   useEffect(() => {
     if (!getKioskToken()) {
