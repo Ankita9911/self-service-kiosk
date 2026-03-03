@@ -137,7 +137,7 @@ export function MenuItemTableRow({ item, categories, index, onEdit, onDelete, on
 
       {/* Status */}
       <td className="px-4 py-3">
-        <div className="flex flex-col gap-1">
+        <div className="flex flex-col items-start gap-1">
           {item.isActive !== false ? (
             <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 dark:bg-emerald-400/10 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-400/20">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />

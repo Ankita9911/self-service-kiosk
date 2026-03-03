@@ -49,7 +49,7 @@ export function CursorPagination({
               <SelectTrigger className="h-7 w-16 rounded-lg border-slate-200 dark:border-white/8 bg-white dark:bg-[#161920] px-2 text-xs">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent className="rounded-lg border-slate-200 dark:border-white/8 bg-white dark:bg-[#161920]">
+              <SelectContent className="rounded-lg border-slate-200 dark:border-white/8 bg-white dark:bg-[#161920] min-w-8">
                 {[10, 20, 40, 50].map((size) => (
                   <SelectItem key={size} value={String(size)} className="text-xs">
                     {size}
