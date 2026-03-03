@@ -1,125 +1,133 @@
+import { lazy, Suspense } from "react";
 import { Routes, Route } from "react-router-dom";
-import Login from "@/features/auth/pages/Login";
-import { ForceReset } from "@/features/auth/pages/ForceReset";
-import FranchisePage from "@/features/franchise/pages/FranchisePage";
-import OutletPage from "@/features/outlet/pages/OutletPage";
-import OutletMenuPage from "@/features/outlet/pages/OutletMenuPage";
-import MenuLandingPage from "@/features/outlet/pages/MenuLandingPage";
-import DevicePage from "@/features/device/pages/Devicepage";
-import KioskPage from "@/features/kiosk/pages/KioskPage";
-import KioskLoginPage from "@/features/kiosk/pages/KioskLoginPage";
-import KioskOrderTypePage from "@/features/kiosk/pages/KioskOrderTypePage";
-import KioskLandingPage from "@/features/kiosk/pages/KioskLandingPage";
-import KitchenPage from "@/features/kitchen/pages/Kitchenpage";
-import PickupPage from "@/features/pickup/pages/PickupPage";
 import ProtectedRoute from "./ProtectedRoute";
 import AppLayout from "@/shared/components/layout/AppLayout";
 import { PERMISSIONS } from "@/shared/lib/permissions";
-import { ResetPassword } from "@/features/auth/pages/ResetPassword";
-import UserPage from "@/features/users/pages/UserPage";
-import AnalyticsPage from "@/features/analytics/pages/AnalyticsPage";
 
+const Login = lazy(() => import("@/features/auth/pages/Login"));
+const ForceReset = lazy(() => import("@/features/auth/pages/ForceReset").then(m => ({ default: m.ForceReset })));
+const ResetPassword = lazy(() => import("@/features/auth/pages/ResetPassword").then(m => ({ default: m.ResetPassword })));
+const FranchisePage = lazy(() => import("@/features/franchise/pages/FranchisePage"));
+const OutletPage = lazy(() => import("@/features/outlet/pages/OutletPage"));
+const OutletMenuPage = lazy(() => import("@/features/outlet/pages/OutletMenuPage"));
+const MenuLandingPage = lazy(() => import("@/features/outlet/pages/MenuLandingPage"));
+const DevicePage = lazy(() => import("@/features/device/pages/Devicepage"));
+const KioskPage = lazy(() => import("@/features/kiosk/pages/KioskPage"));
+const KioskLoginPage = lazy(() => import("@/features/kiosk/pages/KioskLoginPage"));
+const KioskOrderTypePage = lazy(() => import("@/features/kiosk/pages/KioskOrderTypePage"));
+const KioskLandingPage = lazy(() => import("@/features/kiosk/pages/KioskLandingPage"));
+const KitchenPage = lazy(() => import("@/features/kitchen/pages/Kitchenpage"));
+const PickupPage = lazy(() => import("@/features/pickup/pages/PickupPage"));
+const UserPage = lazy(() => import("@/features/users/pages/UserPage"));
+const AnalyticsPage = lazy(() => import("@/features/analytics/pages/AnalyticsPage"));
+
+function PageLoader() {
+  return (
+    <div className="flex items-center justify-center h-screen w-full">
+      <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary" />
+    </div>
+  );
+}
 
 export default function AppRoutes() {
   return (
-    <Routes>
-      <Route path="/login" element={<Login />} />
-      <Route path="/kiosk/login" element={<KioskLoginPage />} />
-      <Route path="/kiosk/landing" element={<KioskLandingPage />} />
-      <Route path="/kiosk/order-type" element={<KioskOrderTypePage />} />
-      <Route
-        path="/force-reset"
-        element={
-          <ProtectedRoute>
-            <ForceReset />
-          </ProtectedRoute>
-        }
-      />
-      <Route path="/kiosk" element={<KioskPage />} />
-      <Route
-        element={
-          <ProtectedRoute>
-            <AppLayout />
-          </ProtectedRoute>
-        }
-      >
-        <Route path="/" element={<AnalyticsPage />} />
+    <Suspense fallback={<PageLoader />}>
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route path="/kiosk/login" element={<KioskLoginPage />} />
+        <Route path="/kiosk/landing" element={<KioskLandingPage />} />
+        <Route path="/kiosk/order-type" element={<KioskOrderTypePage />} />
         <Route
-          path="/reset-password"
+          path="/force-reset"
           element={
             <ProtectedRoute>
-              <ResetPassword />
+              <ForceReset />
             </ProtectedRoute>
           }
         />
+        <Route path="/kiosk" element={<KioskPage />} />
         <Route
-          path="/users"
           element={
             <ProtectedRoute>
-              <UserPage />
+              <AppLayout />
             </ProtectedRoute>
           }
-        />
-
-        <Route
-          path="/super-admin/franchises"
-          element={
-            <ProtectedRoute requiredPermission={PERMISSIONS.FRANCHISE_VIEW}>
-              <FranchisePage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/outlets"
-          element={
-            <ProtectedRoute requiredPermission={PERMISSIONS.OUTLET_VIEW}>
-              <OutletPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/menu"
-          element={
-            <ProtectedRoute requiredPermission={PERMISSIONS.MENU_MANAGE}>
-              <MenuLandingPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/outlets/:outletId/menu"
-          element={
-            <ProtectedRoute requiredPermission={PERMISSIONS.MENU_MANAGE}>
-              <OutletMenuPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/devices"
-          element={
-            <ProtectedRoute requiredPermission={PERMISSIONS.DEVICE_VIEW}>
-              <DevicePage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/kitchen"
-          element={
-            <ProtectedRoute
-              requiredPermission={PERMISSIONS.ORDERS_KITCHEN_VIEW}
-            >
-              <KitchenPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/pickup"
-          element={
-            <ProtectedRoute requiredPermission={PERMISSIONS.ORDERS_PICKUP_VIEW}>
-              <PickupPage />
-            </ProtectedRoute>
-          }
-        />
-      </Route>
-    </Routes>
+        >
+          <Route path="/" element={<AnalyticsPage />} />
+          <Route
+            path="/reset-password"
+            element={
+              <ProtectedRoute>
+                <ResetPassword />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/users"
+            element={
+              <ProtectedRoute>
+                <UserPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/super-admin/franchises"
+            element={
+              <ProtectedRoute requiredPermission={PERMISSIONS.FRANCHISE_VIEW}>
+                <FranchisePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/outlets"
+            element={
+              <ProtectedRoute requiredPermission={PERMISSIONS.OUTLET_VIEW}>
+                <OutletPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/menu"
+            element={
+              <ProtectedRoute requiredPermission={PERMISSIONS.MENU_MANAGE}>
+                <MenuLandingPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/outlets/:outletId/menu"
+            element={
+              <ProtectedRoute requiredPermission={PERMISSIONS.MENU_MANAGE}>
+                <OutletMenuPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/devices"
+            element={
+              <ProtectedRoute requiredPermission={PERMISSIONS.DEVICE_VIEW}>
+                <DevicePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/kitchen"
+            element={
+              <ProtectedRoute requiredPermission={PERMISSIONS.ORDERS_KITCHEN_VIEW}>
+                <KitchenPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/pickup"
+            element={
+              <ProtectedRoute requiredPermission={PERMISSIONS.ORDERS_PICKUP_VIEW}>
+                <PickupPage />
+              </ProtectedRoute>
+            }
+          />
+        </Route>
+      </Routes>
+    </Suspense>
   );
 }
