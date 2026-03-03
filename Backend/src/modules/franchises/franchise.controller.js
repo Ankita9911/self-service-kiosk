@@ -26,11 +26,12 @@ export const createFranchiseController = asyncHandler(async (req, res) => {
 });
 
 export const getFranchisesController = asyncHandler(async (req, res) => {
-  const franchises = await getFranchises(req.user, req.query);
+  const result = await getFranchises(req.user, req.query);
 
   return sendSuccess(res, {
     message: "Franchises fetched successfully",
-    data: franchises,
+    data: result.items,
+    meta: result.meta,
   });
 });
 

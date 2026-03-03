@@ -17,21 +17,29 @@ export default function FranchisePage() {
 
   const {
     franchises,
-    allFranchises,
     loading,
     refreshing,
+    totalFranchises,
+    activeFranchises,
+    totalMatching,
+    page,
+    pageSize,
+    hasPrevPage,
+    hasNextPage,
+    goToNextPage,
+    goToPrevPage,
+    setPageSize,
+    resetToFirstPage,
     fetchFranchises,
     handleDelete,
     handleCreate,
     handleUpdate,
     handleSetStatus,
   } = useFranchises({ search: searchTerm, status: statusFilter });
-  const [page,         setPage]         = useState(1);
-  const [pageSize,     setPageSize]     = useState(10);
 
   // Reset to page 1 when filters change
-  const handleSearchChange = (v: string) => { setSearchTerm(v); setPage(1); };
-  const handleStatusChange = (v: "ALL" | "ACTIVE" | "INACTIVE") => { setStatusFilter(v); setPage(1); };
+  const handleSearchChange = (v: string) => { setSearchTerm(v); resetToFirstPage(); };
+  const handleStatusChange = (v: "ALL" | "ACTIVE" | "INACTIVE") => { setStatusFilter(v); resetToFirstPage(); };
 
   return (
     <>
@@ -43,8 +51,10 @@ export default function FranchisePage() {
         />
 
         <FranchiseStats
-          franchises={allFranchises}
+          franchises={[]}
           loading={loading || refreshing}
+          totalFranchises={totalFranchises}
+          activeFranchises={activeFranchises}
         />
 
         <FranchiseFilters
@@ -59,8 +69,12 @@ export default function FranchisePage() {
           loading={loading || refreshing}
           page={page}
           pageSize={pageSize}
-          onPageChange={setPage}
-          onPageSizeChange={(s) => { setPageSize(s); setPage(1); }}
+          total={totalMatching}
+          hasPrevPage={hasPrevPage}
+          hasNextPage={hasNextPage}
+          onPrevPage={goToPrevPage}
+          onNextPage={goToNextPage}
+          onPageSizeChange={setPageSize}
           onEdit={(f) => { setEditing(f); setModalOpen(true); }}
           onDelete={(f) => setDeleteTarget(f)}
           onToggleStatus={(f) => handleSetStatus(f._id, f.status === "ACTIVE" ? "INACTIVE" : "ACTIVE")}

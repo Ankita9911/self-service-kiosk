@@ -5,6 +5,38 @@ import Device from "../devices/device.model.js";
 import { forceLogout, broadcastRefresh } from "../../realtime/realtime.manager.js";
 import AppError from "../../shared/errors/AppError.js";
 
+const DEFAULT_LIMIT = 10;
+const MAX_LIMIT = 100;
+
+function toBoundedLimit(value) {
+  const parsed = Number.parseInt(String(value ?? DEFAULT_LIMIT), 10);
+  if (Number.isNaN(parsed)) return DEFAULT_LIMIT;
+  return Math.min(Math.max(parsed, 1), MAX_LIMIT);
+}
+
+function encodeCursor(payload) {
+  return Buffer.from(JSON.stringify(payload)).toString("base64url");
+}
+
+function decodeCursor(cursor) {
+  if (!cursor) return null;
+
+  try {
+    const decoded = JSON.parse(Buffer.from(cursor, "base64url").toString("utf-8"));
+    if (!decoded?.createdAt || !decoded?._id) return null;
+
+    const createdAt = new Date(decoded.createdAt);
+    if (Number.isNaN(createdAt.getTime())) return null;
+
+    return {
+      createdAt,
+      _id: decoded._id,
+    };
+  } catch {
+    return null;
+  }
+}
+
 export async function createFranchise(payload, user) {
   if (user.role !== "SUPER_ADMIN") {
     throw new AppError("Forbidden", 403, "FORBIDDEN");
@@ -61,12 +93,13 @@ export async function getFranchises(user, query = {}) {
     throw new AppError("Forbidden", 403, "FORBIDDEN");
   }
 
-  const { search, status } = query;
-  const filter = { isDeleted: false };
+  const { search, status, cursor, limit } = query;
+  const pageLimit = toBoundedLimit(limit);
+  const baseFilter = { isDeleted: false };
 
   // Full-text search on name, brandCode and contactEmail
   if (search && search.trim()) {
-    filter.$or = [
+    baseFilter.$or = [
       { name: { $regex: search.trim(), $options: "i" } },
       { brandCode: { $regex: search.trim(), $options: "i" } },
       { contactEmail: { $regex: search.trim(), $options: "i" } },
@@ -74,9 +107,54 @@ export async function getFranchises(user, query = {}) {
   }
 
   // Status filter
-  if (status && status !== "ALL") filter.status = status;
+  if (status && status !== "ALL") baseFilter.status = status;
 
-  return Franchise.find(filter).sort({ createdAt: -1 });
+  const decodedCursor = decodeCursor(cursor);
+  const cursorFilter = decodedCursor
+    ? {
+        $or: [
+          { createdAt: { $lt: decodedCursor.createdAt } },
+          { createdAt: decodedCursor.createdAt, _id: { $lt: decodedCursor._id } },
+        ],
+      }
+    : null;
+
+  const queryFilter = cursorFilter
+    ? { $and: [baseFilter, cursorFilter] }
+    : baseFilter;
+
+  const [franchisesPlusOne, totalMatching, totalFranchises, activeFranchises] = await Promise.all([
+    Franchise.find(queryFilter)
+      .sort({ createdAt: -1, _id: -1 })
+      .limit(pageLimit + 1),
+    Franchise.countDocuments(baseFilter),
+    Franchise.countDocuments({ isDeleted: false }),
+    Franchise.countDocuments({ isDeleted: false, status: "ACTIVE" }),
+  ]);
+
+  const hasNext = franchisesPlusOne.length > pageLimit;
+  const franchises = hasNext ? franchisesPlusOne.slice(0, pageLimit) : franchisesPlusOne;
+
+  const lastFranchise = franchises[franchises.length - 1];
+  const nextCursor = hasNext && lastFranchise
+    ? encodeCursor({ createdAt: lastFranchise.createdAt, _id: lastFranchise._id })
+    : null;
+
+  return {
+    items: franchises,
+    meta: {
+      pagination: {
+        limit: pageLimit,
+        hasNext,
+        nextCursor,
+        totalMatching,
+      },
+      stats: {
+        totalItems: totalFranchises,
+        activeItems: activeFranchises,
+      },
+    },
+  };
 }
 
 export async function getFranchiseById(id, user) {

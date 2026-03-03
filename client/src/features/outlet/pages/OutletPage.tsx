@@ -4,7 +4,7 @@ import { io } from "socket.io-client";
 import useAuth from "@/shared/hooks/useAuth";
 import type { Outlet } from "@/features/outlet/types/outlet.types";
 import type { Franchise } from "@/features/franchise/types/franchise.types";
-import { getOutlets, createOutlet, updateOutlet, deleteOutlet, setOutletStatus } from "@/features/outlet/services/outlet.service";
+import { getOutletsPage, createOutlet, updateOutlet, deleteOutlet, setOutletStatus } from "@/features/outlet/services/outlet.service";
 import { useDebounce } from "@/shared/hooks/useDebounce";
 import type { OutletAddress } from "@/features/outlet/types/outlet.types";
 
@@ -13,7 +13,7 @@ function formatAddress(addr?: OutletAddress): string {
   return [addr.line1, addr.city, addr.state, addr.pincode, addr.country].filter(Boolean).join(", ");
 }
 import { getFranchises } from "@/features/franchise/services/franchise.service";
-import { TablePagination } from "@/shared/components/ui/TablePagination";
+import { CursorPagination } from "@/shared/components/ui/CursorPagination";
 import {
   Select,
   SelectContent,
@@ -87,34 +87,43 @@ export default function OutletPage() {
   const canManageMenu   = hasPermission(PERMISSIONS.MENU_MANAGE);
   const isSuperAdmin    = user?.role === "SUPER_ADMIN";
 
-  const [outlets,      setOutlets]      = useState<Outlet[]>([]);   // full list — for stats
-  const [filteredOutlets, setFilteredOutlets] = useState<Outlet[]>([]); // filtered — for table
+  const [outlets,      setOutlets]      = useState<Outlet[]>([]);
   const [franchises,   setFranchises]   = useState<Franchise[]>([]);
   const [loading,      setLoading]      = useState(true);
   const [refreshing,   setRefreshing]   = useState(false);
+  const [filterLoading, setFilterLoading] = useState(false);
   const [searchTerm,   setSearchTerm]   = useState("");
   const [statusFilter, setStatusFilter] = useState<"ALL" | "ACTIVE" | "INACTIVE">("ALL");
   const [open,         setOpen]         = useState(false);
   const [editing,      setEditing]      = useState<Outlet | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Outlet | null>(null);
-  const [page,         setPage]         = useState(1);
   const [pageSize,     setPageSize]     = useState(10);
   const [franchiseFilter, setFranchiseFilter] = useState<string>("ALL");
+  const [totalOutlets, setTotalOutlets] = useState(0);
+  const [activeOutlets, setActiveOutlets] = useState(0);
+  const [totalMatching, setTotalMatching] = useState(0);
+  const [cursorStack, setCursorStack] = useState<(string | null)[]>([null]);
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
+  const [hasNextPage, setHasNextPage] = useState(false);
+  const [refreshTick, setRefreshTick] = useState(0);
+  const hasLoadedPageRef = useRef(false);
 
   // Debounce search — other filters apply immediately
   const debouncedSearch = useDebounce(searchTerm, 400);
+  const page = cursorStack.length;
+  const hasPrevPage = page > 1;
+  const currentCursor = cursorStack[cursorStack.length - 1] ?? undefined;
 
   // ── Stats fetch (full list, no filters) — runs on mount + after mutations ──
   const fetchData = useCallback(async (silent = false) => {
     if (!canViewOutlet) return;
     silent ? setRefreshing(true) : setLoading(true);
     try {
-      const outletData = await getOutlets();
-      setOutlets(outletData);
       if (isSuperAdmin) {
         const franchiseData = await getFranchises();
         setFranchises(franchiseData);
       }
+      setRefreshTick((n) => n + 1);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -123,32 +132,50 @@ export default function OutletPage() {
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
-  // ── Filtered fetch (table) — re-runs whenever filters change ────────────
-  const isMounted = useRef(false);
-  const filtersRef = useRef({ search: searchTerm, status: statusFilter, franchiseId: franchiseFilter });
-  useEffect(() => { filtersRef.current = { search: searchTerm, status: statusFilter, franchiseId: franchiseFilter }; });
-
+  // ── Filtered fetch (table) — re-runs whenever filters/cursor change ─────
   useEffect(() => {
     if (!canViewOutlet) return;
     let cancelled = false;
 
     async function fetchFiltered() {
-      if (!isMounted.current) { isMounted.current = true; }
+      const firstLoad = !hasLoadedPageRef.current;
+      if (!firstLoad) setFilterLoading(true);
 
       try {
-        const result = await getOutlets({
-          search: debouncedSearch,
-          status: statusFilter,
-          franchiseId: franchiseFilter,
-        });
-        if (!cancelled) { setFilteredOutlets(result); setPage(1); }
+        const result = await getOutletsPage(
+          {
+            search: debouncedSearch,
+            status: statusFilter,
+            franchiseId: franchiseFilter,
+          },
+          {
+            cursor: currentCursor ?? undefined,
+            limit: pageSize,
+          },
+        );
+
+        if (cancelled) return;
+
+        setOutlets(result.items);
+        setHasNextPage(result.pagination.hasNext);
+        setNextCursor(result.pagination.nextCursor);
+        setTotalMatching(result.pagination.totalMatching);
+        setTotalOutlets(result.stats.totalItems);
+        setActiveOutlets(result.stats.activeItems);
       } catch {}
+      finally {
+        if (cancelled) return;
+        hasLoadedPageRef.current = true;
+        setFilterLoading(false);
+        setLoading(false);
+        setRefreshing(false);
+      }
     }
 
     fetchFiltered();
     return () => { cancelled = true; };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [canViewOutlet, debouncedSearch, statusFilter, franchiseFilter]);
+  }, [canViewOutlet, debouncedSearch, statusFilter, franchiseFilter, currentCursor, pageSize, refreshTick]);
 
   // Live-refresh when a franchise status cascade changes outlet statuses
   useEffect(() => {
@@ -167,14 +194,10 @@ export default function OutletPage() {
     else await createOutlet(form);
     setOpen(false);
     setEditing(null);
-    // Refresh both the stats list and the filtered table
-    const f = filtersRef.current;
-    const [allData, filteredData] = await Promise.all([
-      getOutlets(),
-      getOutlets({ search: f.search, status: f.status, franchiseId: f.franchiseId }),
-    ]);
-    setOutlets(allData);
-    setFilteredOutlets(filteredData);
+    setCursorStack([null]);
+    setNextCursor(null);
+    setHasNextPage(false);
+    setRefreshTick((n) => n + 1);
     if (isSuperAdmin) getFranchises().then(setFranchises).catch(() => {});
   }
 
@@ -184,13 +207,10 @@ export default function OutletPage() {
       await deleteOutlet(deleteTarget._id);
       setDeleteTarget(null);
       toast.success("Outlet deleted successfully");
-      const f = filtersRef.current;
-      const [allData, filteredData] = await Promise.all([
-        getOutlets(),
-        getOutlets({ search: f.search, status: f.status, franchiseId: f.franchiseId }),
-      ]);
-      setOutlets(allData);
-      setFilteredOutlets(filteredData);
+      setCursorStack([null]);
+      setNextCursor(null);
+      setHasNextPage(false);
+      setRefreshTick((n) => n + 1);
     } catch {
       toast.error("Failed to delete outlet");
     }
@@ -200,21 +220,26 @@ export default function OutletPage() {
     const newStatus = o.status === "ACTIVE" ? "INACTIVE" : "ACTIVE";
     try {
       await setOutletStatus(o._id, newStatus);
-      const f = filtersRef.current;
-      const [allData, filteredData] = await Promise.all([
-        getOutlets(),
-        getOutlets({ search: f.search, status: f.status, franchiseId: f.franchiseId }),
-      ]);
-      setOutlets(allData);
-      setFilteredOutlets(filteredData);
+      setRefreshTick((n) => n + 1);
     } catch {
       toast.error("Failed to update outlet status");
     }
   }
 
-  const handleSearchChange   = (v: string) => { setSearchTerm(v); };
-  const handleStatusChange   = (v: "ALL" | "ACTIVE" | "INACTIVE") => { setStatusFilter(v); setPage(1); };
-  const handleFranchiseChange = (v: string) => { setFranchiseFilter(v); setPage(1); };
+  const resetToFirstPage = () => {
+    setCursorStack([null]);
+    setNextCursor(null);
+    setHasNextPage(false);
+  };
+  const goToPrevPage = () => setCursorStack((prev) => (prev.length > 1 ? prev.slice(0, -1) : prev));
+  const goToNextPage = () => {
+    if (!hasNextPage || !nextCursor) return;
+    setCursorStack((prev) => [...prev, nextCursor]);
+  };
+
+  const handleSearchChange   = (v: string) => { setSearchTerm(v); resetToFirstPage(); };
+  const handleStatusChange   = (v: "ALL" | "ACTIVE" | "INACTIVE") => { setStatusFilter(v); resetToFirstPage(); };
+  const handleFranchiseChange = (v: string) => { setFranchiseFilter(v); resetToFirstPage(); };
 
   const isFiltered =
     searchTerm !== "" ||
@@ -225,12 +250,12 @@ export default function OutletPage() {
     setSearchTerm("");
     setStatusFilter("ALL");
     setFranchiseFilter("ALL");
-    setPage(1);
+    resetToFirstPage();
   };
 
-  const activeCount   = outlets.filter((o) => o.status === "ACTIVE").length;
-  const inactiveCount = outlets.length - activeCount;
-  const showShimmer   = loading || refreshing;
+  const activeCount   = activeOutlets;
+  const inactiveCount = totalOutlets - activeCount;
+  const showShimmer   = loading || refreshing || filterLoading;
   const colCount      = isSuperAdmin ? 6 : 5;
 
   // ── Access denied ──────────────────────────────────────────────────────────
@@ -422,7 +447,7 @@ export default function OutletPage() {
                     <ShimmerCell w="w-6" />
                   </tr>
                 ))
-              ) : filteredOutlets.length === 0 ? (
+              ) : outlets.length === 0 ? (
                 <tr>
                   <td colSpan={colCount} className="py-20 text-center">
                     <div className="flex flex-col items-center gap-3">
@@ -441,7 +466,7 @@ export default function OutletPage() {
                   </td>
                 </tr>
               ) : (
-                filteredOutlets.slice((page - 1) * pageSize, page * pageSize).map((o) => (
+                outlets.map((o) => (
                   <tr key={o._id} className="group hover:bg-indigo-50/30 dark:hover:bg-indigo-500/4 transition-colors">
                     {/* Name */}
                     <td className="px-5 py-4">
@@ -565,14 +590,17 @@ export default function OutletPage() {
             </tbody>
           </table>
 
-          {!showShimmer && filteredOutlets.length > 0 && (
+          {!showShimmer && outlets.length > 0 && (
             <div className="border-t border-slate-50 dark:border-white/5">
-              <TablePagination
-                total={filteredOutlets.length}
+              <CursorPagination
+                total={totalMatching}
                 page={page}
                 pageSize={pageSize}
-                onPageChange={setPage}
-                onPageSizeChange={(s) => { setPageSize(s); setPage(1); }}
+                hasPrevPage={hasPrevPage}
+                hasNextPage={hasNextPage}
+                onPrevPage={goToPrevPage}
+                onNextPage={goToNextPage}
+                onPageSizeChange={setPageSize}
               />
             </div>
           )}

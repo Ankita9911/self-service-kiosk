@@ -2,7 +2,7 @@ import { Building2, Mail } from "lucide-react";
 import { StatusBadge } from "./StatusBadge";
 import { RowMenu } from "./RowMenu";
 import { ShimmerCell } from "./ShimmerCell";
-import { TablePagination } from "@/shared/components/ui/TablePagination";
+import { CursorPagination } from "@/shared/components/ui/CursorPagination";
 import type { Franchise } from "../types/franchise.types";
 import {
   Tooltip,
@@ -14,9 +14,13 @@ import {
 interface Props {
   franchises: Franchise[];
   loading: boolean;
+  total: number;
   page: number;
   pageSize: number;
-  onPageChange: (page: number) => void;
+  hasPrevPage: boolean;
+  hasNextPage: boolean;
+  onPrevPage: () => void;
+  onNextPage: () => void;
   onPageSizeChange: (size: number) => void;
   onEdit: (f: Franchise) => void;
   onDelete: (f: Franchise) => void;
@@ -26,16 +30,18 @@ interface Props {
 export function FranchiseTable({
   franchises,
   loading,
+  total,
   page,
   pageSize,
-  onPageChange,
+  hasPrevPage,
+  hasNextPage,
+  onPrevPage,
+  onNextPage,
   onPageSizeChange,
   onEdit,
   onDelete,
   onToggleStatus,
 }: Props) {
-  const paginated = franchises.slice((page - 1) * pageSize, page * pageSize);
-
   return (
     <div className="bg-white dark:bg-[#161920] rounded-2xl border border-slate-100 dark:border-white/[0.06]">
       <table className="w-full">
@@ -65,7 +71,7 @@ export function FranchiseTable({
                 <ShimmerCell w="w-6" />
               </tr>
             ))
-          ) : paginated.length === 0 ? (
+          ) : franchises.length === 0 ? (
             <tr>
               <td colSpan={5} className="py-20 text-center">
                 <div className="flex flex-col items-center gap-3">
@@ -84,7 +90,7 @@ export function FranchiseTable({
               </td>
             </tr>
           ) : (
-            paginated.map((f) => (
+            franchises.map((f) => (
               <tr
                 key={f._id}
                 className="group hover:bg-indigo-50/30 dark:hover:bg-indigo-500/[0.04] transition-colors"
@@ -159,11 +165,14 @@ export function FranchiseTable({
 
       {!loading && franchises.length > 0 && (
         <div className="border-t border-slate-50 dark:border-white/[0.05]">
-          <TablePagination
-            total={franchises.length}
+          <CursorPagination
+            total={total}
             page={page}
             pageSize={pageSize}
-            onPageChange={onPageChange}
+            hasPrevPage={hasPrevPage}
+            hasNextPage={hasNextPage}
+            onPrevPage={onPrevPage}
+            onNextPage={onNextPage}
             onPageSizeChange={onPageSizeChange}
           />
         </div>

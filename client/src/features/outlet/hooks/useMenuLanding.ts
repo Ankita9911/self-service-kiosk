@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getOutlets } from "@/features/outlet/services/outlet.service";
+import { getOutletsPage } from "@/features/outlet/services/outlet.service";
 import type { Outlet } from "@/features/outlet/types/outlet.types";
 import { PERMISSIONS } from "@/shared/lib/permissions";
 import { useDebounce } from "@/shared/hooks/useDebounce";
+
+const PAGE_SIZE = 3;
 
 export interface MenuLandingFilters {
   search: string;
@@ -16,22 +18,28 @@ export function useMenuLanding(
   filters: MenuLandingFilters
 ) {
   const navigate = useNavigate();
-  const [allOutlets, setAllOutlets] = useState<Outlet[]>([]);
   const [outlets, setOutlets] = useState<Outlet[]>([]);
   const [loading, setLoading] = useState(true);
   const [searching, setSearching] = useState(false);
+
+  const [totalOutlets, setTotalOutlets] = useState(0);
+  const [activeOutlets, setActiveOutlets] = useState(0);
+  const [totalMatching, setTotalMatching] = useState(0);
+
+  const [cursorStack, setCursorStack] = useState<(string | null)[]>([null]);
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
+  const [hasNextPage, setHasNextPage] = useState(false);
 
   const canFetch =
     (user?.role === "FRANCHISE_ADMIN" || user?.role === "SUPER_ADMIN") &&
     hasPermission(PERMISSIONS.MENU_MANAGE);
 
-  // Debounce the search term so backend is only queried after the user stops typing
   const debouncedSearch = useDebounce(filters.search, 400);
+  const hasLoadedPageRef = useRef(false);
+  const currentCursor = cursorStack[cursorStack.length - 1] ?? undefined;
+  const page = cursorStack.length;
+  const hasPrevPage = page > 1;
 
-  // Track whether the initial load has completed so the search effect can skip it
-  const initialLoadDone = useRef(false);
-
-  // Auth / redirect gate
   useEffect(() => {
     if (!hasPermission(PERMISSIONS.MENU_MANAGE)) {
       navigate("/");
@@ -42,43 +50,80 @@ export function useMenuLanding(
     }
   }, [user?.role, user?.outletId, hasPermission, navigate]);
 
-  // Initial load — fetch all outlets (no filters) once to populate stats + default list
-  const fetchAll = useCallback(async () => {
-    if (!canFetch) return;
-    try {
-      const list = await getOutlets();
-      setAllOutlets(list);
-      setOutlets(list);
-    } finally {
-      initialLoadDone.current = true;
-      setLoading(false);
-    }
-  }, [canFetch]);
-
   useEffect(() => {
-    if (canFetch) {
-      fetchAll();
-    } else {
+    if (!canFetch) {
       setLoading(false);
+      return;
     }
-  }, [canFetch, fetchAll]);
-
-  // Backend search — fires whenever debounced search term or status filter changes.
-  // Skipped on the very first render so fetchAll handles the initial list.
-  useEffect(() => {
-    if (!canFetch || !initialLoadDone.current) return;
 
     let cancelled = false;
-    setSearching(true);
 
-    getOutlets({ search: debouncedSearch, status: filters.status })
-      .then((result) => { if (!cancelled) setOutlets(result); })
-      .catch(() => {})
-      .finally(() => { if (!cancelled) setSearching(false); });
+    async function fetchPage() {
+      const firstLoad = !hasLoadedPageRef.current;
+      if (!firstLoad) setSearching(true);
 
-    return () => { cancelled = true; };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [canFetch, debouncedSearch, filters.status]);
+      try {
+        const result = await getOutletsPage(
+          {
+            search: debouncedSearch,
+            status: filters.status,
+          },
+          {
+            cursor: currentCursor ?? undefined,
+            limit: PAGE_SIZE,
+          }
+        );
 
-  return { outlets, allOutlets, loading, searching };
+        if (cancelled) return;
+
+        setOutlets(result.items);
+        setHasNextPage(result.pagination.hasNext);
+        setNextCursor(result.pagination.nextCursor);
+        setTotalMatching(result.pagination.totalMatching);
+        setTotalOutlets(result.stats.totalItems);
+        setActiveOutlets(result.stats.activeItems);
+      } finally {
+        if (cancelled) return;
+        hasLoadedPageRef.current = true;
+        setLoading(false);
+        setSearching(false);
+      }
+    }
+
+    fetchPage();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [canFetch, debouncedSearch, filters.status, currentCursor]);
+
+  const resetToFirstPage = useCallback(() => {
+    setCursorStack([null]);
+    setNextCursor(null);
+    setHasNextPage(false);
+  }, []);
+
+  function goToNextPage() {
+    if (!hasNextPage || !nextCursor) return;
+    setCursorStack((prev) => [...prev, nextCursor]);
+  }
+
+  function goToPrevPage() {
+    setCursorStack((prev) => (prev.length > 1 ? prev.slice(0, -1) : prev));
+  }
+
+  return {
+    outlets,
+    loading,
+    searching,
+    totalOutlets,
+    activeOutlets,
+    totalMatching,
+    page,
+    hasPrevPage,
+    hasNextPage,
+    goToPrevPage,
+    goToNextPage,
+    resetToFirstPage,
+  };
 }

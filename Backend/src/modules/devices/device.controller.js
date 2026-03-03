@@ -18,7 +18,8 @@ export const listDevicesController = asyncHandler(async (req, res) => {
 
   return sendSuccess(res, {
     message: "Devices fetched successfully",
-    data: result,
+    data: result.items,
+    meta: result.meta,
   });
 });
 

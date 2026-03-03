@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import type { Franchise } from "../types/franchise.types";
 import type { CreateFranchiseDTO } from "../services/franchise.service";
 import {
-  getFranchises,
+  getFranchisesPage,
   createFranchise,
   updateFranchise,
   deleteFranchise,
@@ -10,127 +10,145 @@ import {
 } from "../services/franchise.service";
 import { useDebounce } from "@/shared/hooks/useDebounce";
 
+const DEFAULT_PAGE_SIZE = 10;
+
 export interface FranchiseFilters {
   search: string;
   status: "ALL" | "ACTIVE" | "INACTIVE";
 }
 
 export function useFranchises(filters: FranchiseFilters) {
-  // Filtered list for the table
   const [franchises, setFranchises] = useState<Franchise[]>([]);
-  // Full unfiltered list for stats
-  const [allFranchises, setAllFranchises] = useState<Franchise[]>([]);
 
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [filterLoading, setFilterLoading] = useState(false);
 
+  const [totalFranchises, setTotalFranchises] = useState(0);
+  const [activeFranchises, setActiveFranchises] = useState(0);
+  const [totalMatching, setTotalMatching] = useState(0);
+
+  const [cursorStack, setCursorStack] = useState<(string | null)[]>([null]);
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
+  const [hasNextPage, setHasNextPage] = useState(false);
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
+  const [refreshTick, setRefreshTick] = useState(0);
+
+  const hasLoadedPageRef = useRef(false);
+
   const debouncedSearch = useDebounce(filters.search, 400);
-
-  // ── Stats fetch (no filters) — runs on mount + after every mutation ────────
-  const fetchAll = useCallback(async (silent = false) => {
-    if (silent) setRefreshing(true);
-    else setLoading(true);
-
-    try {
-      const data = await getFranchises();
-      setAllFranchises(data);
-    } catch (error) {
-      console.error("Failed to fetch franchises:", error);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }, []);
-
-  useEffect(() => { fetchAll(); }, [fetchAll]);
-
-  // ── Filtered fetch (table) — re-runs whenever filters change ─────────────
-  const isMounted = useRef(false);
+  const currentCursor = cursorStack[cursorStack.length - 1] ?? undefined;
+  const page = cursorStack.length;
+  const hasPrevPage = page > 1;
 
   useEffect(() => {
     let cancelled = false;
 
-    async function fetchFiltered() {
-      if (isMounted.current) setFilterLoading(true);
-      else isMounted.current = true;
+    async function fetchPage() {
+      const firstLoad = !hasLoadedPageRef.current;
+      if (firstLoad) setLoading(true);
+      else setFilterLoading(true);
 
       try {
-        const result = await getFranchises({
-          search: debouncedSearch,
-          status: filters.status,
-        });
-        if (!cancelled) setFranchises(result);
-      } catch (error) {
-        console.error("Failed to fetch filtered franchises:", error);
+        const result = await getFranchisesPage(
+          {
+            search: debouncedSearch,
+            status: filters.status,
+          },
+          {
+            cursor: currentCursor ?? undefined,
+            limit: pageSize,
+          }
+        );
+
+        if (cancelled) return;
+
+        setFranchises(result.items);
+        setHasNextPage(result.pagination.hasNext);
+        setNextCursor(result.pagination.nextCursor);
+        setTotalMatching(result.pagination.totalMatching);
+        setTotalFranchises(result.stats.totalItems);
+        setActiveFranchises(result.stats.activeItems);
       } finally {
-        if (!cancelled) setFilterLoading(false);
+        if (cancelled) return;
+        hasLoadedPageRef.current = true;
+        setLoading(false);
+        setRefreshing(false);
+        setFilterLoading(false);
       }
     }
 
-    fetchFiltered();
-    return () => { cancelled = true; };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [debouncedSearch, filters.status]);
+    fetchPage();
+    return () => {
+      cancelled = true;
+    };
+  }, [debouncedSearch, filters.status, currentCursor, pageSize, refreshTick]);
 
-  // ── Helper to re-fetch table with current filters after a mutation ────────
-  const filtersRef = useRef(filters);
-  useEffect(() => { filtersRef.current = filters; });
+  function goToNextPage() {
+    if (!hasNextPage || !nextCursor) return;
+    setCursorStack((prev) => [...prev, nextCursor]);
+  }
 
-  const refreshFiltered = useCallback(async () => {
-    const f = filtersRef.current;
-    const result = await getFranchises({ search: f.search, status: f.status });
-    setFranchises(result);
+  function goToPrevPage() {
+    setCursorStack((prev) => (prev.length > 1 ? prev.slice(0, -1) : prev));
+  }
+
+  function updatePageSize(size: number) {
+    setPageSize(size);
+    setCursorStack([null]);
+    setNextCursor(null);
+    setHasNextPage(false);
+  }
+
+  function resetToFirstPage() {
+    setCursorStack([null]);
+    setNextCursor(null);
+    setHasNextPage(false);
+  }
+
+  const refreshAll = useCallback(async (silent = false) => {
+    if (silent) setRefreshing(true);
+    resetToFirstPage();
+    setRefreshTick((n) => n + 1);
   }, []);
 
-  // ── Mutations ──────────────────────────────────────────────────────────────
   async function handleCreate(data: CreateFranchiseDTO) {
-    try {
-      await createFranchise(data);
-      await Promise.all([fetchAll(true), refreshFiltered()]);
-    } catch (error) {
-      console.error("Failed to create franchise:", error);
-      throw error;
-    }
+    await createFranchise(data);
+    await refreshAll(true);
   }
 
   async function handleUpdate(id: string, data: Partial<Franchise>) {
-    try {
-      await updateFranchise(id, data);
-      await Promise.all([fetchAll(true), refreshFiltered()]);
-    } catch (error) {
-      console.error("Failed to update franchise:", error);
-      throw error;
-    }
+    await updateFranchise(id, data);
+    await refreshAll(true);
   }
 
   async function handleDelete(id: string) {
-    try {
-      await deleteFranchise(id);
-      await Promise.all([fetchAll(true), refreshFiltered()]);
-    } catch (error) {
-      console.error("Failed to delete franchise:", error);
-      throw error;
-    }
+    await deleteFranchise(id);
+    await refreshAll(true);
   }
 
   async function handleSetStatus(id: string, status: "ACTIVE" | "INACTIVE") {
-    try {
-      await setFranchiseStatus(id, status);
-      await Promise.all([fetchAll(true), refreshFiltered()]);
-    } catch (error) {
-      console.error("Failed to update franchise status:", error);
-      throw error;
-    }
+    await setFranchiseStatus(id, status);
+    await refreshAll(true);
   }
 
   return {
-    franchises,     // filtered list — for the table
-    allFranchises,  // full list — for stats
+    franchises,
     loading,
     refreshing,
     filterLoading,
-    fetchFranchises: fetchAll,
+    totalFranchises,
+    activeFranchises,
+    totalMatching,
+    page,
+    pageSize,
+    hasPrevPage,
+    hasNextPage,
+    goToNextPage,
+    goToPrevPage,
+    setPageSize: updatePageSize,
+    resetToFirstPage,
+    fetchFranchises: refreshAll,
     handleCreate,
     handleUpdate,
     handleDelete,

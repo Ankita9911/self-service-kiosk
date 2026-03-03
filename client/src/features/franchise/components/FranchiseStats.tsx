@@ -4,6 +4,8 @@ import type { Franchise } from "../types/franchise.types";
 interface Props {
   franchises: Franchise[];
   loading: boolean;
+  totalFranchises?: number;
+  activeFranchises?: number;
 }
 
 function StatPill({
@@ -56,15 +58,18 @@ function StatPill({
   );
 }
 
-export function FranchiseStats({ franchises, loading }: Props) {
-  const activeCount = franchises.filter((f) => f.status === "ACTIVE").length;
-  const inactiveCount = franchises.length - activeCount;
+export function FranchiseStats({ franchises, loading, totalFranchises, activeFranchises }: Props) {
+  const totalCount = typeof totalFranchises === "number" ? totalFranchises : franchises.length;
+  const activeCount = typeof activeFranchises === "number"
+    ? activeFranchises
+    : franchises.filter((f) => f.status === "ACTIVE").length;
+  const inactiveCount = totalCount - activeCount;
 
   return (
     <div className="grid grid-cols-3 gap-3">
       <StatPill
         loading={loading}
-        value={franchises.length}
+        value={totalCount}
         label="Total Franchises"
         iconBg="bg-indigo-50 dark:bg-indigo-500/10"
         icon={<Building2 className="w-4 h-4 text-indigo-500" />}

@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 
 import { useMenuLanding } from "../hooks/useMenuLanding";
 import { OutletSelectionCard } from "../components/OutletSelectionCard";
-import { GridPagination } from "@/shared/components/ui/GridPagination";
+import { CursorPagination } from "@/shared/components/ui/CursorPagination";
 
 export default function MenuLandingPage() {
   const navigate = useNavigate();
@@ -14,22 +14,29 @@ export default function MenuLandingPage() {
   const { hasPermission } = usePermission();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"ALL" | "ACTIVE" | "INACTIVE">("ALL");
-  const [page, setPage] = useState(1);
-  const pageSize = 3;
 
-  const { outlets, allOutlets, loading, searching } = useMenuLanding(user, hasPermission, {
+  const {
+    outlets,
+    loading,
+    searching,
+    totalOutlets,
+    activeOutlets,
+    totalMatching,
+    page,
+    hasPrevPage,
+    hasNextPage,
+    goToPrevPage,
+    goToNextPage,
+    resetToFirstPage,
+  } = useMenuLanding(user, hasPermission, {
     search,
     status: statusFilter,
   });
 
-  const paginatedOutlets = outlets.slice((page - 1) * pageSize, page * pageSize);
+  const activeCount = activeOutlets;
+  const inactiveCount = totalOutlets - activeCount;
 
-  const activeCount = allOutlets.filter(
-    (o) => o.status?.toLowerCase() === "active"
-  ).length;
-  const inactiveCount = allOutlets.length - activeCount;
-
-  useEffect(() => { setPage(1); }, [search, statusFilter]);
+  useEffect(() => { resetToFirstPage(); }, [search, statusFilter, resetToFirstPage]);
 
   if (loading) {
     return (
@@ -69,10 +76,10 @@ export default function MenuLandingPage() {
       </div>
 
       {/* Stats row */}
-      {allOutlets.length > 0 && (
+      {totalOutlets > 0 && (
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           {[
-            { label: "Total Outlets", value: allOutlets.length, icon: Building2, color: "indigo" },
+            { label: "Total Outlets", value: totalOutlets, icon: Building2, color: "indigo" },
             { label: "Active", value: activeCount, icon: Store, color: "emerald" },
             { label: "Inactive", value: inactiveCount, icon: XCircle, color: "slate" },
           ].map(({ label, value, icon: Icon, color }) => (
@@ -99,7 +106,7 @@ export default function MenuLandingPage() {
       )}
 
       {/* Search + status filter tabs — right-aligned */}
-      {allOutlets.length > 0 && (
+      {totalOutlets > 0 && (
         <div className="flex items-center justify-end gap-2">
         <div className="relative flex-1">
             {searching
@@ -108,7 +115,7 @@ export default function MenuLandingPage() {
             }
             <input
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => { setSearch(e.target.value); resetToFirstPage(); }}
               placeholder="Search outlets…"
               className="pl-8 pr-3 h-9 w-full text-sm rounded-xl border border-slate-200 dark:border-white/8 bg-white dark:bg-[#161920] text-slate-700 dark:text-slate-300 placeholder:text-slate-400 dark:placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-400 transition-all"
             />
@@ -117,14 +124,14 @@ export default function MenuLandingPage() {
             {(["ALL", "ACTIVE", "INACTIVE"] as const).map((s) => (
               <button
                 key={s}
-                onClick={() => setStatusFilter(s)}
+                onClick={() => { setStatusFilter(s); resetToFirstPage(); }}
                 className={`h-7 px-2.5 rounded-lg text-[11px] font-semibold transition-all ${
                   statusFilter === s
                     ? "bg-indigo-600 text-white shadow-sm"
                     : "text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
                 }`}
               >
-                {s === "ALL" ? `All (${allOutlets.length})` : s === "ACTIVE" ? `Active (${activeCount})` : `Inactive (${inactiveCount})`}
+                {s === "ALL" ? `All (${totalOutlets})` : s === "ACTIVE" ? `Active (${activeCount})` : `Inactive (${inactiveCount})`}
               </button>
             ))}
           </div>
@@ -132,7 +139,7 @@ export default function MenuLandingPage() {
       )}
 
       {/* Outlet grid */}
-      {allOutlets.length === 0 ? (
+      {totalOutlets === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 bg-white dark:bg-[#1e2130] rounded-2xl border-2 border-dashed border-slate-200 dark:border-white/[0.07]">
           <div className="h-14 w-14 rounded-2xl bg-slate-100 dark:bg-white/4 flex items-center justify-center mb-4">
             <Building2 className="w-7 h-7 text-slate-400 dark:text-slate-600" />
@@ -151,7 +158,7 @@ export default function MenuLandingPage() {
       ) : (
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {paginatedOutlets.map((o) => (
+            {outlets.map((o) => (
               <OutletSelectionCard
                 key={o._id}
                 outlet={o}
@@ -159,11 +166,16 @@ export default function MenuLandingPage() {
               />
             ))}
           </div>
-          <GridPagination
-            total={outlets.length}
+          <CursorPagination
+            total={totalMatching}
             page={page}
-            pageSize={pageSize}
-            onPageChange={setPage}
+            pageSize={3}
+            hasPrevPage={hasPrevPage}
+            hasNextPage={hasNextPage}
+            onPrevPage={goToPrevPage}
+            onNextPage={goToNextPage}
+            onPageSizeChange={() => {}}
+            showPageSize={false}
           />
         </>
       )}

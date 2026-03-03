@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState } from "react";
 import useAuth from "@/shared/hooks/useAuth";
 import { usePermission } from "@/shared/hooks/usePermissions";
 import { PERMISSIONS } from "@/shared/lib/permissions";
@@ -12,7 +12,7 @@ import { TempPasswordModal } from "../components/TempPasswordModal";
 import { UserRowMenu } from "../components/UserRowMenu";
 
 import { Users, Plus, Search, RefreshCcw, CheckCircle2, XCircle, Building2, Store, X } from "lucide-react";
-import { TablePagination } from "@/shared/components/ui/TablePagination";
+import { CursorPagination } from "@/shared/components/ui/CursorPagination";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/components/ui/select";
 
 export default function UserPage() {
@@ -30,11 +30,21 @@ export default function UserPage() {
 
   const {
     users,
-    allUsers,
     franchises,
     outlets,
     loading,
     refreshing,
+    totalUsers,
+    activeUsers,
+    totalMatching,
+    page,
+    pageSize,
+    hasPrevPage,
+    hasNextPage,
+    goToNextPage,
+    goToPrevPage,
+    setPageSize,
+    resetToFirstPage,
     fetchUsers,
     handleUpdate,
     handleDelete,
@@ -46,9 +56,6 @@ export default function UserPage() {
   const [open, setOpen] = useState(false);
   const [createdUser, setCreatedUser] = useState<{ password: string; email: string } | null>(null);
 
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(5);
-
   const allRoles = [
     "ALL",
     "FRANCHISE_ADMIN",
@@ -59,19 +66,9 @@ export default function UserPage() {
 
   const assignableRoles = allRoles.filter((r) => r !== "ALL") as any[];
 
-  const paginated = useMemo(() => {
-    return users.slice((page - 1) * pageSize, page * pageSize);
-  }, [users, page, pageSize]);
+  const activeCount = activeUsers;
 
-  useEffect(() => {
-    setPage(1);
-  }, [searchTerm, roleFilter, franchiseFilter, outletFilter, statusFilter]);
-
-  const activeCount = allUsers.filter(
-    (u) => u.status === "ACTIVE"
-  ).length;
-
-  const handleStatusChange = (v: "ALL" | "ACTIVE" | "INACTIVE") => { setStatusFilter(v); setPage(1); };
+  const handleStatusChange = (v: "ALL" | "ACTIVE" | "INACTIVE") => { setStatusFilter(v); resetToFirstPage(); };
 
   const isFiltered =
     searchTerm !== "" ||
@@ -86,7 +83,7 @@ export default function UserPage() {
     setFranchiseFilter("ALL");
     setOutletFilter("ALL");
     setStatusFilter("ALL");
-    setPage(1);
+    resetToFirstPage();
   };
 
   const showShimmer = loading || refreshing;
@@ -129,9 +126,9 @@ export default function UserPage() {
       {/* ── Stats ── */}
       <div className="grid grid-cols-3 gap-3">
         {[
-          { label: "Total Users", value: allUsers.length,               icon: <Users        className="w-4 h-4 text-indigo-500"   />, iconBg: "bg-indigo-50 dark:bg-indigo-500/10"   },
+          { label: "Total Users", value: totalUsers,               icon: <Users        className="w-4 h-4 text-indigo-500"   />, iconBg: "bg-indigo-50 dark:bg-indigo-500/10"   },
           { label: "Active",      value: activeCount,                icon: <CheckCircle2 className="w-4 h-4 text-emerald-500" />, iconBg: "bg-emerald-50 dark:bg-emerald-500/10" },
-          { label: "Inactive",    value: allUsers.length - activeCount, icon: <XCircle     className="w-4 h-4 text-slate-400"   />, iconBg: "bg-slate-50 dark:bg-white/5"    },
+          { label: "Inactive",    value: totalUsers - activeCount, icon: <XCircle     className="w-4 h-4 text-slate-400"   />, iconBg: "bg-slate-50 dark:bg-white/5"    },
         ].map(({ label, value, icon, iconBg }) =>
           showShimmer ? (
             <div key={label} className="flex items-center gap-3 p-3.5 rounded-2xl bg-white dark:bg-[#1e2130] border border-slate-100 dark:border-white/7 shadow-sm">
@@ -168,13 +165,13 @@ export default function UserPage() {
             placeholder="Search by name or email…"
             className="w-full h-9 pl-9 pr-3.5 rounded-xl bg-white dark:bg-[#161920] border border-slate-100 dark:border-white/8 text-[13px] text-slate-700 dark:text-slate-200 placeholder:text-slate-400 dark:placeholder:text-slate-600 focus:outline-none focus:border-indigo-400 dark:focus:border-indigo-500/60 focus:ring-2 focus:ring-indigo-400/15 dark:focus:ring-indigo-500/10 transition-all"
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => { setSearchTerm(e.target.value); resetToFirstPage(); }}
           />
         </div>
 
         {/* Franchise filter — super admin only */}
         {isSuperAdmin && (
-          <Select value={franchiseFilter} onValueChange={(v) => { setFranchiseFilter(v); setOutletFilter("ALL"); }}>
+          <Select value={franchiseFilter} onValueChange={(v) => { setFranchiseFilter(v); setOutletFilter("ALL"); resetToFirstPage(); }}>
             <SelectTrigger className="h-9 w-44 rounded-xl border-slate-100 dark:border-white/8 bg-white dark:bg-[#161920] text-[13px] text-slate-700 dark:text-slate-200 focus:ring-indigo-400/20 overflow-hidden">
               <div className="flex items-center gap-1.5 min-w-0 overflow-hidden">
                 <Building2 className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 shrink-0" />
@@ -196,7 +193,7 @@ export default function UserPage() {
 
         {/* Outlet filter — super admin + franchise admin */}
         {(isSuperAdmin || isFranchiseAdmin) && (
-          <Select value={outletFilter} onValueChange={setOutletFilter}>
+          <Select value={outletFilter} onValueChange={(v) => { setOutletFilter(v); resetToFirstPage(); }}>
             <SelectTrigger className="h-9 w-44 rounded-xl border-slate-100 dark:border-white/8 bg-white dark:bg-[#161920] text-[13px] text-slate-700 dark:text-slate-200 focus:ring-indigo-400/20 overflow-hidden">
               <div className="flex items-center gap-1.5 min-w-0 overflow-hidden">
                 <Store className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 shrink-0" />
@@ -217,7 +214,7 @@ export default function UserPage() {
         )}
 
         {/* Role filter */}
-        <Select value={roleFilter} onValueChange={setRoleFilter}>
+        <Select value={roleFilter} onValueChange={(v) => { setRoleFilter(v); resetToFirstPage(); }}>
           <SelectTrigger className="h-9 w-40 rounded-xl border-slate-100 dark:border-white/8 bg-white dark:bg-[#161920] text-[13px] text-slate-700 dark:text-slate-200 focus:ring-indigo-400/20">
             <SelectValue placeholder="All Roles" />
           </SelectTrigger>
@@ -321,7 +318,7 @@ export default function UserPage() {
                 </td>
               </tr>
             ) : (
-              paginated.map((u) => (
+              users.map((u) => (
                 <tr
                   key={u._id}
                   className="group hover:bg-indigo-50/30 dark:hover:bg-indigo-500/4 transition-colors"
@@ -374,15 +371,15 @@ export default function UserPage() {
         </table>
 
         {!showShimmer && users.length > 0 && (
-          <TablePagination
-            total={users.length}
+          <CursorPagination
+            total={totalMatching}
             page={page}
             pageSize={pageSize}
-            onPageChange={setPage}
-            onPageSizeChange={(s) => {
-              setPageSize(s);
-              setPage(1);
-            }}
+            hasPrevPage={hasPrevPage}
+            hasNextPage={hasNextPage}
+            onPrevPage={goToPrevPage}
+            onNextPage={goToNextPage}
+            onPageSizeChange={setPageSize}
           />
         )}
       </div>

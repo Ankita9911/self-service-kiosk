@@ -15,7 +15,7 @@ import { CreateDeviceModal } from "../components/CreateDeviceModal";
 import { SecretRevealModal } from "../components/SecretRevealModal";
 import { DeviceRowMenu } from "../components/DeviceRowMenu";
 
-import { TablePagination } from "@/shared/components/ui/TablePagination";
+import { CursorPagination } from "@/shared/components/ui/CursorPagination";
 import { Cpu, ShieldAlert } from "lucide-react";
 import type { Device } from "../types/device.types";
 
@@ -45,19 +45,26 @@ export default function DevicePage() {
 
   const {
     devices,
-    allDevices,
     outlets,
     loading,
     refreshing,
+    totalDevices,
+    activeDevices,
+    totalMatching,
+    page,
+    pageSize,
+    hasPrevPage,
+    hasNextPage,
+    goToNextPage,
+    goToPrevPage,
+    setPageSize,
+    resetToFirstPage,
     fetchData,
     handleCreate,
     handleUpdate,
     handleDelete: deleteDeviceHook,
     handleStatusChange,
   } = useDevices(canView, { search: searchTerm, status: statusFilter, franchiseId: franchiseFilter, outletId: outletFilter });
-
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(5);
 
   useEffect(() => {
     if (isSuperAdmin && canView) {
@@ -75,14 +82,6 @@ export default function DevicePage() {
     return outlets;
   }, [outlets, isSuperAdmin, franchiseFilter]);
 
-  const paginatedDevices = useMemo(() => {
-    return devices.slice((page - 1) * pageSize, page * pageSize);
-  }, [devices, page, pageSize]);
-
-  useEffect(() => {
-    setPage(1);
-  }, [searchTerm, statusFilter, franchiseFilter, outletFilter]);
-
   const hasActiveFilters =
     searchTerm !== "" ||
     statusFilter !== "ALL" ||
@@ -94,7 +93,7 @@ export default function DevicePage() {
     setStatusFilter("ALL");
     setFranchiseFilter("ALL");
     setOutletFilter("ALL");
-    setPage(1);
+    resetToFirstPage();
   };
 
   function getOutletName(d: Device): string {
@@ -145,20 +144,25 @@ export default function DevicePage() {
         onCreate={() => setOpen(true)}
       />
 
-      <DeviceStats devices={allDevices} loading={showShimmer} />
+      <DeviceStats
+        devices={[]}
+        loading={showShimmer}
+        totalDevices={totalDevices}
+        activeDevices={activeDevices}
+      />
 
       <DeviceFilters
         searchTerm={searchTerm}
         statusFilter={statusFilter}
-        onSearchChange={setSearchTerm}
-        onStatusChange={setStatusFilter}
+        onSearchChange={(v) => { setSearchTerm(v); resetToFirstPage(); }}
+        onStatusChange={(v) => { setStatusFilter(v); resetToFirstPage(); }}
         isSuperAdmin={isSuperAdmin}
         franchises={franchises}
         franchiseFilter={franchiseFilter}
-        onFranchiseChange={(v) => { setFranchiseFilter(v); setOutletFilter("ALL"); }}
+        onFranchiseChange={(v) => { setFranchiseFilter(v); setOutletFilter("ALL"); resetToFirstPage(); }}
         filterableOutlets={(isSuperAdmin || isFranchiseAdmin) ? filterableOutlets : undefined}
         outletFilter={outletFilter}
-        onOutletChange={setOutletFilter}
+        onOutletChange={(v) => { setOutletFilter(v); resetToFirstPage(); }}
         hasActiveFilters={hasActiveFilters}
         onClearFilters={clearFilters}
       />
@@ -228,7 +232,7 @@ export default function DevicePage() {
                 </td>
               </tr>
             ) : (
-              paginatedDevices.map((d) => (
+              devices.map((d) => (
                 <tr
                   key={d._id}
                   className="group hover:bg-indigo-50/30 dark:hover:bg-indigo-500/4 transition-colors"
@@ -278,15 +282,15 @@ export default function DevicePage() {
         </table>
 
         {!showShimmer && devices.length > 0 && (
-          <TablePagination
-            total={devices.length}
+          <CursorPagination
+            total={totalMatching}
             page={page}
             pageSize={pageSize}
-            onPageChange={setPage}
-            onPageSizeChange={(s) => {
-              setPageSize(s);
-              setPage(1);
-            }}
+            hasPrevPage={hasPrevPage}
+            hasNextPage={hasNextPage}
+            onPrevPage={goToPrevPage}
+            onNextPage={goToNextPage}
+            onPageSizeChange={setPageSize}
           />
         )}
       </div>

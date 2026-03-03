@@ -9,16 +9,84 @@ export interface UserFilterParams {
   status?: "ALL" | "ACTIVE" | "INACTIVE";
 }
 
-export async function getUsers(params: UserFilterParams = {}): Promise<User[]> {
+export interface CursorPageOptions {
+  cursor?: string;
+  limit?: number;
+}
+
+export interface PaginatedUsersResult {
+  items: User[];
+  pagination: {
+    limit: number;
+    hasNext: boolean;
+    nextCursor: string | null;
+    totalMatching: number;
+  };
+  stats: {
+    totalItems: number;
+    activeItems: number;
+  };
+}
+
+export async function getUsersPage(
+  params: UserFilterParams = {},
+  options: CursorPageOptions = {}
+): Promise<PaginatedUsersResult> {
   const query: Record<string, string> = {};
   if (params.search?.trim())   query.search      = params.search.trim();
   if (params.role      && params.role      !== "ALL") query.role      = params.role;
   if (params.franchiseId && params.franchiseId !== "ALL") query.franchiseId = params.franchiseId;
   if (params.outletId  && params.outletId  !== "ALL") query.outletId  = params.outletId;
   if (params.status    && params.status    !== "ALL") query.status    = params.status;
+  if (options.cursor) query.cursor = options.cursor;
+  if (typeof options.limit === "number") query.limit = String(options.limit);
 
-  const response = await axios.get<{ data: User[] }>("/users", { params: query });
-  return response.data.data;
+  const response = await axios.get<{
+    data: User[];
+    meta?: {
+      pagination?: {
+        limit?: number;
+        hasNext?: boolean;
+        nextCursor?: string | null;
+        totalMatching?: number;
+      };
+      stats?: {
+        totalItems?: number;
+        activeItems?: number;
+      };
+    };
+  }>("/users", { params: query });
+
+  const pagination = response.data.meta?.pagination ?? {};
+  const stats = response.data.meta?.stats ?? {};
+
+  return {
+    items: response.data.data,
+    pagination: {
+      limit: pagination.limit ?? options.limit ?? 10,
+      hasNext: pagination.hasNext ?? false,
+      nextCursor: pagination.nextCursor ?? null,
+      totalMatching: pagination.totalMatching ?? response.data.data.length,
+    },
+    stats: {
+      totalItems: stats.totalItems ?? response.data.data.length,
+      activeItems: stats.activeItems ?? response.data.data.filter((u) => u.status === "ACTIVE").length,
+    },
+  };
+}
+
+export async function getUsers(params: UserFilterParams = {}): Promise<User[]> {
+  const allUsers: User[] = [];
+  let cursor: string | undefined;
+
+  while (true) {
+    const page = await getUsersPage(params, { cursor, limit: 100 });
+    allUsers.push(...page.items);
+    if (!page.pagination.hasNext || !page.pagination.nextCursor) break;
+    cursor = page.pagination.nextCursor;
+  }
+
+  return allUsers;
 }
 
 export async function createUser(payload: {

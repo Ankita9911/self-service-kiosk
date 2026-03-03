@@ -5,6 +5,38 @@ import Device from "../devices/device.model.js";
 import { forceLogout, broadcastRefresh } from "../../realtime/realtime.manager.js";
 import AppError from "../../shared/errors/AppError.js";
 
+const DEFAULT_LIMIT = 10;
+const MAX_LIMIT = 100;
+
+function toBoundedLimit(value) {
+  const parsed = Number.parseInt(String(value ?? DEFAULT_LIMIT), 10);
+  if (Number.isNaN(parsed)) return DEFAULT_LIMIT;
+  return Math.min(Math.max(parsed, 1), MAX_LIMIT);
+}
+
+function encodeCursor(payload) {
+  return Buffer.from(JSON.stringify(payload)).toString("base64url");
+}
+
+function decodeCursor(cursor) {
+  if (!cursor) return null;
+
+  try {
+    const decoded = JSON.parse(Buffer.from(cursor, "base64url").toString("utf-8"));
+    if (!decoded?.createdAt || !decoded?._id) return null;
+
+    const createdAt = new Date(decoded.createdAt);
+    if (Number.isNaN(createdAt.getTime())) return null;
+
+    return {
+      createdAt,
+      _id: decoded._id,
+    };
+  } catch {
+    return null;
+  }
+}
+
 export async function createOutlet(payload, user) {
   let { franchiseId, name, outletCode, address } = payload;
 
@@ -50,32 +82,82 @@ export async function createOutlet(payload, user) {
 }
 
 export async function getOutlets(user, query = {}) {
-  const { search, status, franchiseId } = query;
-  const filter = { isDeleted: false };
+  const { search, status, franchiseId, cursor, limit } = query;
+  const pageLimit = toBoundedLimit(limit);
+  const baseFilter = { isDeleted: false };
 
   if (user.role === "SUPER_ADMIN") {
     // Optionally restrict to a specific franchise
-    if (franchiseId && franchiseId !== "ALL") filter.franchiseId = franchiseId;
+    if (franchiseId && franchiseId !== "ALL") baseFilter.franchiseId = franchiseId;
   } else if (user.role === "FRANCHISE_ADMIN") {
-    filter.franchiseId = user.franchiseId;
+    baseFilter.franchiseId = user.franchiseId;
   } else if (user.role === "OUTLET_MANAGER") {
-    filter._id = user.outletId;
+    baseFilter._id = user.outletId;
   } else {
     throw new AppError("Forbidden", 403, "FORBIDDEN");
   }
 
   // Full-text search on name and outletCode
   if (search && search.trim()) {
-    filter.$or = [
+    baseFilter.$or = [
       { name: { $regex: search.trim(), $options: "i" } },
       { outletCode: { $regex: search.trim(), $options: "i" } },
     ];
   }
 
   // Status filter
-  if (status && status !== "ALL") filter.status = status;
+  if (status && status !== "ALL") baseFilter.status = status;
 
-  return Outlet.find(filter).sort({ createdAt: -1 });
+  const decodedCursor = decodeCursor(cursor);
+  const cursorFilter = decodedCursor
+    ? {
+        $or: [
+          { createdAt: { $lt: decodedCursor.createdAt } },
+          { createdAt: decodedCursor.createdAt, _id: { $lt: decodedCursor._id } },
+        ],
+      }
+    : null;
+
+  const queryFilter = cursorFilter
+    ? { $and: [baseFilter, cursorFilter] }
+    : baseFilter;
+
+  const scopeFilter = { isDeleted: false };
+  if (user.role === "FRANCHISE_ADMIN") scopeFilter.franchiseId = user.franchiseId;
+  if (user.role === "OUTLET_MANAGER") scopeFilter._id = user.outletId;
+
+  const [outletsPlusOne, totalMatching, totalOutlets, activeOutlets] = await Promise.all([
+    Outlet.find(queryFilter)
+      .sort({ createdAt: -1, _id: -1 })
+      .limit(pageLimit + 1),
+    Outlet.countDocuments(baseFilter),
+    Outlet.countDocuments(scopeFilter),
+    Outlet.countDocuments({ ...scopeFilter, status: "ACTIVE" }),
+  ]);
+
+  const hasNext = outletsPlusOne.length > pageLimit;
+  const outlets = hasNext ? outletsPlusOne.slice(0, pageLimit) : outletsPlusOne;
+
+  const lastOutlet = outlets[outlets.length - 1];
+  const nextCursor = hasNext && lastOutlet
+    ? encodeCursor({ createdAt: lastOutlet.createdAt, _id: lastOutlet._id })
+    : null;
+
+  return {
+    items: outlets,
+    meta: {
+      pagination: {
+        limit: pageLimit,
+        hasNext,
+        nextCursor,
+        totalMatching,
+      },
+      stats: {
+        totalItems: totalOutlets,
+        activeItems: activeOutlets,
+      },
+    },
+  };
 }
 export async function getOutletById(id, user) {
   const outlet = await Outlet.findOne({

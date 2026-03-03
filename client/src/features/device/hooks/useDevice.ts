@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import {
-  getDevices,
+  getDevicesPage,
   createDevice,
   updateDevice,
   deleteDevice,
@@ -11,6 +11,8 @@ import { useDebounce } from "@/shared/hooks/useDebounce";
 import type { Device } from "@/features/device/types/device.types";
 import type { Outlet } from "@/features/outlet/types/outlet.types";
 
+const DEFAULT_PAGE_SIZE = 10;
+
 export interface DeviceFilters {
   search: string;
   status: "ALL" | "ACTIVE" | "INACTIVE";
@@ -19,88 +21,125 @@ export interface DeviceFilters {
 }
 
 export function useDevices(canView: boolean, filters: DeviceFilters) {
-  // Table data — re-fetched from backend whenever filters change
   const [devices, setDevices] = useState<Device[]>([]);
-  // Full unfiltered list — for stats in DeviceStats
-  const [allDevices, setAllDevices] = useState<Device[]>([]);
-
   const [outlets, setOutlets] = useState<Outlet[]>([]);
+
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [filterLoading, setFilterLoading] = useState(false);
 
+  const [totalDevices, setTotalDevices] = useState(0);
+  const [activeDevices, setActiveDevices] = useState(0);
+  const [totalMatching, setTotalMatching] = useState(0);
+
+  const [cursorStack, setCursorStack] = useState<(string | null)[]>([null]);
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
+  const [hasNextPage, setHasNextPage] = useState(false);
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
+  const [refreshTick, setRefreshTick] = useState(0);
+
+  const hasLoadedPageRef = useRef(false);
+
   const debouncedSearch = useDebounce(filters.search, 400);
+  const currentCursor = cursorStack[cursorStack.length - 1] ?? undefined;
+  const page = cursorStack.length;
+  const hasPrevPage = page > 1;
 
-  // ── Stats + outlets fetch (no filters) — runs on mount + after mutations ──
-  const fetchAll = useCallback(
-    async (silent = false) => {
-      if (!canView) return;
-      if (silent) setRefreshing(true);
-      else setLoading(true);
+  const fetchOutlets = useCallback(async () => {
+    if (!canView) return;
+    const result = await getOutlets().catch(() => []);
+    setOutlets(result);
+  }, [canView]);
 
-      try {
-        const [deviceList, outletList] = await Promise.all([
-          getDevices(),
-          getOutlets(),
-        ]);
-        setAllDevices(deviceList);
-        setOutlets(outletList);
-      } finally {
-        setLoading(false);
-        setRefreshing(false);
-      }
-    },
-    [canView],
-  );
-
-  useEffect(() => { fetchAll(); }, [fetchAll]);
-
-  // ── Filtered fetch (table) — re-runs whenever filters change ─────────────
-  const isMounted = useRef(false);
+  useEffect(() => {
+    fetchOutlets();
+  }, [fetchOutlets]);
 
   useEffect(() => {
     if (!canView) return;
     let cancelled = false;
 
-    async function fetchFiltered() {
-      if (isMounted.current) setFilterLoading(true);
-      else isMounted.current = true;
+    async function fetchPage() {
+      const firstLoad = !hasLoadedPageRef.current;
+      if (firstLoad) setLoading(true);
+      else setFilterLoading(true);
 
       try {
-        const result = await getDevices({
-          search: debouncedSearch,
-          status: filters.status,
-          franchiseId: filters.franchiseId,
-          outletId: filters.outletId,
-        });
-        if (!cancelled) setDevices(result);
+        const result = await getDevicesPage(
+          {
+            search: debouncedSearch,
+            status: filters.status,
+            franchiseId: filters.franchiseId,
+            outletId: filters.outletId,
+          },
+          {
+            cursor: currentCursor ?? undefined,
+            limit: pageSize,
+          }
+        );
+
+        if (cancelled) return;
+
+        setDevices(result.items);
+        setHasNextPage(result.pagination.hasNext);
+        setNextCursor(result.pagination.nextCursor);
+        setTotalMatching(result.pagination.totalMatching);
+        setTotalDevices(result.stats.totalItems);
+        setActiveDevices(result.stats.activeItems);
       } finally {
-        if (!cancelled) setFilterLoading(false);
+        if (cancelled) return;
+        hasLoadedPageRef.current = true;
+        setLoading(false);
+        setRefreshing(false);
+        setFilterLoading(false);
       }
     }
 
-    fetchFiltered();
-    return () => { cancelled = true; };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [canView, debouncedSearch, filters.status, filters.franchiseId, filters.outletId]);
+    fetchPage();
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    canView,
+    debouncedSearch,
+    filters.status,
+    filters.franchiseId,
+    filters.outletId,
+    currentCursor,
+    pageSize,
+    refreshTick,
+  ]);
 
-  // ── Helper to re-fetch table after a mutation ─────────────────────────────
-  const filtersRef = useRef(filters);
-  useEffect(() => { filtersRef.current = filters; });
+  function goToNextPage() {
+    if (!hasNextPage || !nextCursor) return;
+    setCursorStack((prev) => [...prev, nextCursor]);
+  }
 
-  const refreshFiltered = useCallback(async () => {
+  function goToPrevPage() {
+    setCursorStack((prev) => (prev.length > 1 ? prev.slice(0, -1) : prev));
+  }
+
+  function updatePageSize(size: number) {
+    setPageSize(size);
+    setCursorStack([null]);
+    setNextCursor(null);
+    setHasNextPage(false);
+  }
+
+  function resetToFirstPage() {
+    setCursorStack([null]);
+    setNextCursor(null);
+    setHasNextPage(false);
+  }
+
+  const refreshAll = useCallback(async (silent = false) => {
     if (!canView) return;
-    const f = filtersRef.current;
-    const result = await getDevices({
-      search: f.search,
-      status: f.status,
-      franchiseId: f.franchiseId,
-      outletId: f.outletId,
-    });
-    setDevices(result);
-  }, [canView]);
+    if (silent) setRefreshing(true);
+    await fetchOutlets();
+    resetToFirstPage();
+    setRefreshTick((n) => n + 1);
+  }, [canView, fetchOutlets]);
 
-  // ── Mutations ──────────────────────────────────────────────────────────────
   async function handleCreate(payload: { outletId: string; name?: string; landingImage?: string; landingTitle?: string; landingSubtitle?: string }) {
     const result = await createDevice(payload);
     return result.secret;
@@ -108,27 +147,37 @@ export function useDevices(canView: boolean, filters: DeviceFilters) {
 
   async function handleUpdate(deviceId: string, name: string) {
     await updateDevice(deviceId, { name });
-    await Promise.all([fetchAll(true), refreshFiltered()]);
+    await refreshAll(true);
   }
 
   async function handleDelete(deviceId: string) {
     await deleteDevice(deviceId);
-    await Promise.all([fetchAll(true), refreshFiltered()]);
+    await refreshAll(true);
   }
 
   async function handleStatusChange(deviceId: string, status: "ACTIVE" | "INACTIVE") {
     await changeDeviceStatus(deviceId, status);
-    await Promise.all([fetchAll(true), refreshFiltered()]);
+    await refreshAll(true);
   }
 
   return {
-    devices,      // filtered list — for the table
-    allDevices,   // full list — for stats
+    devices,
     outlets,
     loading,
     refreshing,
     filterLoading,
-    fetchData: fetchAll,
+    totalDevices,
+    activeDevices,
+    totalMatching,
+    page,
+    pageSize,
+    hasPrevPage,
+    hasNextPage,
+    goToNextPage,
+    goToPrevPage,
+    setPageSize: updatePageSize,
+    resetToFirstPage,
+    fetchData: refreshAll,
     handleCreate,
     handleDelete,
     handleUpdate,

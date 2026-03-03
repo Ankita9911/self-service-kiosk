@@ -46,17 +46,24 @@ function StatPill({
 export function DeviceStats({
   devices,
   loading,
+  totalDevices,
+  activeDevices,
 }: {
   devices: Device[];
   loading: boolean;
+  totalDevices?: number;
+  activeDevices?: number;
 }) {
-  const activeCount = devices.filter(d => d.status === "ACTIVE").length;
+  const resolvedTotal = typeof totalDevices === "number" ? totalDevices : devices.length;
+  const activeCount = typeof activeDevices === "number"
+    ? activeDevices
+    : devices.filter((d) => d.status === "ACTIVE").length;
 
   return (
     <div className="grid grid-cols-3 gap-3">
-      <StatPill loading={loading} value={devices.length}              label="Total Devices" iconBg="bg-indigo-50 dark:bg-indigo-500/10"   icon={<Cpu        className="w-4 h-4 text-indigo-500"   />} />
+      <StatPill loading={loading} value={resolvedTotal}              label="Total Devices" iconBg="bg-indigo-50 dark:bg-indigo-500/10"   icon={<Cpu        className="w-4 h-4 text-indigo-500"   />} />
       <StatPill loading={loading} value={activeCount}                 label="Online"        iconBg="bg-emerald-50 dark:bg-emerald-500/10" icon={<CheckCircle2 className="w-4 h-4 text-emerald-500" />} />
-      <StatPill loading={loading} value={devices.length - activeCount} label="Offline"      iconBg="bg-red-50 dark:bg-red-500/10"         icon={<WifiOff    className="w-4 h-4 text-red-400"      />} />
+      <StatPill loading={loading} value={resolvedTotal - activeCount} label="Offline"      iconBg="bg-red-50 dark:bg-red-500/10"         icon={<WifiOff    className="w-4 h-4 text-red-400"      />} />
     </div>
   );
 }

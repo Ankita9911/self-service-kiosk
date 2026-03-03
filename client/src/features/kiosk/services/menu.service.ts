@@ -44,17 +44,63 @@ export async function getMenuItems(
   outletId?: string,
   categoryId?: string,
   search?: string,
-  status?: "ALL" | "ACTIVE" | "INACTIVE"
-): Promise<MenuItem[]> {
+  status?: "ALL" | "ACTIVE" | "INACTIVE",
+  options?: { cursor?: string; limit?: number }
+): Promise<{
+  items: MenuItem[];
+  pagination: {
+    limit: number;
+    hasNext: boolean;
+    nextCursor: string | null;
+    totalMatching: number;
+  };
+  stats: {
+    totalItems: number;
+    activeItems: number;
+  };
+}> {
   const p: Record<string, string> = {};
   if (outletId) p.outletId = outletId;
   if (categoryId) p.categoryId = categoryId;
   if (search?.trim()) p.search = search.trim();
   if (status && status !== "ALL") p.status = status;
-  const response = await axiosInstance.get<{ data: MenuItem[] }>("/menu/items", {
+  if (options?.cursor) p.cursor = options.cursor;
+  if (typeof options?.limit === "number") p.limit = String(options.limit);
+
+  const response = await axiosInstance.get<{
+    data: MenuItem[];
+    meta?: {
+      pagination?: {
+        limit?: number;
+        hasNext?: boolean;
+        nextCursor?: string | null;
+        totalMatching?: number;
+      };
+      stats?: {
+        totalItems?: number;
+        activeItems?: number;
+      };
+    };
+  }>("/menu/items", {
     params: Object.keys(p).length ? p : undefined,
   });
-  return response.data.data;
+
+  const pagination = response.data.meta?.pagination ?? {};
+  const stats = response.data.meta?.stats ?? {};
+
+  return {
+    items: response.data.data,
+    pagination: {
+      limit: pagination.limit ?? options?.limit ?? 12,
+      hasNext: pagination.hasNext ?? false,
+      nextCursor: pagination.nextCursor ?? null,
+      totalMatching: pagination.totalMatching ?? response.data.data.length,
+    },
+    stats: {
+      totalItems: stats.totalItems ?? response.data.data.length,
+      activeItems: stats.activeItems ?? response.data.data.filter((item) => item.isActive !== false).length,
+    },
+  };
 }
 
 export async function createMenuItem(

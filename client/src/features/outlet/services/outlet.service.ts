@@ -7,14 +7,82 @@ export interface OutletFilterParams {
   franchiseId?: string;
 }
 
-export async function getOutlets(params: OutletFilterParams = {}): Promise<Outlet[]> {
+export interface CursorPageOptions {
+  cursor?: string;
+  limit?: number;
+}
+
+export interface PaginatedOutletsResult {
+  items: Outlet[];
+  pagination: {
+    limit: number;
+    hasNext: boolean;
+    nextCursor: string | null;
+    totalMatching: number;
+  };
+  stats: {
+    totalItems: number;
+    activeItems: number;
+  };
+}
+
+export async function getOutletsPage(
+  params: OutletFilterParams = {},
+  options: CursorPageOptions = {}
+): Promise<PaginatedOutletsResult> {
   const query: Record<string, string> = {};
   if (params.search?.trim()) query.search = params.search.trim();
   if (params.status && params.status !== "ALL") query.status = params.status;
   if (params.franchiseId && params.franchiseId !== "ALL") query.franchiseId = params.franchiseId;
+  if (options.cursor) query.cursor = options.cursor;
+  if (typeof options.limit === "number") query.limit = String(options.limit);
 
-  const response = await axiosInstance.get("/outlets", { params: query });
-  return response.data.data;
+  const response = await axiosInstance.get<{
+    data: Outlet[];
+    meta?: {
+      pagination?: {
+        limit?: number;
+        hasNext?: boolean;
+        nextCursor?: string | null;
+        totalMatching?: number;
+      };
+      stats?: {
+        totalItems?: number;
+        activeItems?: number;
+      };
+    };
+  }>("/outlets", { params: query });
+
+  const pagination = response.data.meta?.pagination ?? {};
+  const stats = response.data.meta?.stats ?? {};
+
+  return {
+    items: response.data.data,
+    pagination: {
+      limit: pagination.limit ?? options.limit ?? 10,
+      hasNext: pagination.hasNext ?? false,
+      nextCursor: pagination.nextCursor ?? null,
+      totalMatching: pagination.totalMatching ?? response.data.data.length,
+    },
+    stats: {
+      totalItems: stats.totalItems ?? response.data.data.length,
+      activeItems: stats.activeItems ?? response.data.data.filter((o) => o.status === "ACTIVE").length,
+    },
+  };
+}
+
+export async function getOutlets(params: OutletFilterParams = {}): Promise<Outlet[]> {
+  const allOutlets: Outlet[] = [];
+  let cursor: string | undefined;
+
+  while (true) {
+    const page = await getOutletsPage(params, { cursor, limit: 100 });
+    allOutlets.push(...page.items);
+    if (!page.pagination.hasNext || !page.pagination.nextCursor) break;
+    cursor = page.pagination.nextCursor;
+  }
+
+  return allOutlets;
 }
 
 export async function createOutlet(payload: {

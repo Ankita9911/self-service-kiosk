@@ -4,6 +4,38 @@ import { getRedisClient } from "../../core/cache/redis.client.js";
 import { buildTenantKey } from "../../core/cache/cache.utils.js";
 import { enqueue } from "../../core/queue/queue.producer.js";
 
+const DEFAULT_LIMIT = 12;
+const MAX_LIMIT = 100;
+
+function toBoundedLimit(value) {
+  const parsed = Number.parseInt(String(value ?? DEFAULT_LIMIT), 10);
+  if (Number.isNaN(parsed)) return DEFAULT_LIMIT;
+  return Math.min(Math.max(parsed, 1), MAX_LIMIT);
+}
+
+function encodeCursor(payload) {
+  return Buffer.from(JSON.stringify(payload)).toString("base64url");
+}
+
+function decodeCursor(cursor) {
+  if (!cursor) return null;
+
+  try {
+    const decoded = JSON.parse(Buffer.from(cursor, "base64url").toString("utf-8"));
+    if (!decoded?.createdAt || !decoded?._id) return null;
+
+    const createdAt = new Date(decoded.createdAt);
+    if (Number.isNaN(createdAt.getTime())) return null;
+
+    return {
+      createdAt,
+      _id: decoded._id,
+    };
+  } catch {
+    return null;
+  }
+}
+
 export async function createCategory(data, tenant) {
   await enqueue("MENU_CATEGORY_CREATE", { data, tenant });
   return { queued: true };
@@ -17,7 +49,7 @@ export async function getCategories(tenant) {
     console.log(2);
     return JSON.parse(cached);
   }
-  
+
   const categories = await Category.find({
     franchiseId: tenant.franchiseId,
     outletId: tenant.outletId,
@@ -46,44 +78,77 @@ export async function createMenuItem(data, tenant) {
   return { queued: true };
 }
 
-export async function getMenuItems(tenant, { categoryId, search, status } = {}) {
-  const redis = getRedisClient();
+export async function getMenuItems(tenant, { categoryId, search, status, cursor, limit } = {}) {
+  const pageLimit = toBoundedLimit(limit);
 
-  // Skip cache when search or status filters are active — results are dynamic
-  const useCache = !search?.trim() && (!status || status === "ALL");
-
-  const baseKey = categoryId ? `menuItems:${categoryId}` : "menuItems";
-  const cacheKey = buildTenantKey(baseKey, tenant);
-
-  if (useCache) {
-    const cached = await redis.get(cacheKey);
-    if (cached) return JSON.parse(cached);
-  }
-
-  const filter = {
+  const baseFilter = {
     franchiseId: tenant.franchiseId,
     outletId: tenant.outletId,
     isDeleted: false,
   };
 
-  if (categoryId) filter.categoryId = categoryId;
+  if (categoryId) baseFilter.categoryId = categoryId;
 
   if (search?.trim()) {
-    filter.name = { $regex: search.trim(), $options: "i" };
+    baseFilter.name = { $regex: search.trim(), $options: "i" };
   }
 
-  if (status === "ACTIVE") filter.isActive = { $ne: false };
-  if (status === "INACTIVE") filter.isActive = false;
+  if (status === "ACTIVE") baseFilter.isActive = { $ne: false };
+  if (status === "INACTIVE") baseFilter.isActive = false;
 
-  const items = await MenuItem.find(filter)
-    .sort({ createdAt: -1 })
-    .lean();
+  const queryFilter = { ...baseFilter };
 
-  if (useCache) {
-    await redis.set(cacheKey, JSON.stringify(items), "EX", 300);
+  const decodedCursor = decodeCursor(cursor);
+
+  if (decodedCursor) {
+    queryFilter.$or = [
+      { createdAt: { $lt: decodedCursor.createdAt } },
+      { createdAt: decodedCursor.createdAt, _id: { $lt: decodedCursor._id } },
+    ];
   }
 
-  return items;
+  const [itemsPlusOne, totalMatching, totalItems, activeItems] = await Promise.all([
+    MenuItem.find(queryFilter)
+      .sort({ createdAt: -1, _id: -1 })
+      .limit(pageLimit + 1)
+      .lean(),
+    MenuItem.countDocuments(baseFilter),
+    MenuItem.countDocuments({
+      franchiseId: tenant.franchiseId,
+      outletId: tenant.outletId,
+      isDeleted: false,
+    }),
+    MenuItem.countDocuments({
+      franchiseId: tenant.franchiseId,
+      outletId: tenant.outletId,
+      isDeleted: false,
+      isActive: { $ne: false },
+    }),
+  ]);
+
+  const hasNext = itemsPlusOne.length > pageLimit;
+  const items = hasNext ? itemsPlusOne.slice(0, pageLimit) : itemsPlusOne;
+
+  const lastItem = items[items.length - 1];
+  const nextCursor = hasNext && lastItem
+    ? encodeCursor({ createdAt: lastItem.createdAt, _id: lastItem._id })
+    : null;
+
+  return {
+    items,
+    meta: {
+      pagination: {
+        limit: pageLimit,
+        hasNext,
+        nextCursor,
+        totalMatching,
+      },
+      stats: {
+        totalItems,
+        activeItems,
+      },
+    },
+  };
 }
 
 export async function updateMenuItem(id, data, tenant) {

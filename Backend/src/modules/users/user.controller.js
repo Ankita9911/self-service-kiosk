@@ -17,7 +17,8 @@ export const listUsersController = asyncHandler(async (req, res) => {
 
   return sendSuccess(res, {
     message: "Users fetched successfully",
-    data: result,
+    data: result.items,
+    meta: result.meta,
   });
 });
 

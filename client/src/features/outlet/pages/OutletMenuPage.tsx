@@ -32,8 +32,7 @@ import { CreateComboModal } from "../components/CreateComboModal";
 import { EditComboModal } from "../components/EditComboModal";
 
 import { Button } from "@/shared/components/ui/button";
-import { TablePagination } from "@/shared/components/ui/TablePagination";
-import { GridPagination } from "@/shared/components/ui/GridPagination";
+import { CursorPagination } from "@/shared/components/ui/CursorPagination";
 
 type Layout = "grid" | "table";
 type ActiveTab = "items" | "combos";
@@ -52,13 +51,23 @@ export default function OutletMenuPage() {
 
   const {
     categories,
-    allItems,
     items,
     combos,
     loading,
     filterLoading,
     selectedCategoryId,
     setSelectedCategoryId,
+    totalItems,
+    activeItems,
+    totalMatching,
+    page,
+    pageSize,
+    hasPrevPage,
+    hasNextPage,
+    goToNextPage,
+    goToPrevPage,
+    setPageSize,
+    resetToFirstPage,
     addCategory,
     addItem,
     updateItem,
@@ -84,8 +93,6 @@ export default function OutletMenuPage() {
   const [stockItem, setStockItem] = useState<any | null>(null);
   const [priceInput, setPriceInput] = useState("");
   const [stockInput, setStockInput] = useState("");
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(12);
   const [viewItem, setViewItem] = useState<any | null>(null);
   const [layout, setLayout] = useState<Layout>(
     () => (localStorage.getItem("menu-layout") as Layout) ?? "grid"
@@ -107,15 +114,13 @@ export default function OutletMenuPage() {
     }
   }, [user?.role, user?.outletId, outletId, canManage]);
 
-  const paginatedItems = items.slice((page - 1) * pageSize, page * pageSize);
-
-  const activeCount = allItems.filter((i) => i.isActive !== false).length;
+  const activeCount = activeItems;
 
   const isFiltered = search !== "" || itemStatusFilter !== "ALL" || selectedCategoryId !== "ALL";
 
-  const handleSearchChange = (v: string) => { setSearch(v); setPage(1); };
-  const handleStatusChange = (v: "ALL" | "ACTIVE" | "INACTIVE") => { setItemStatusFilter(v); setPage(1); };
-  const clearFilters = () => { setSearch(""); setItemStatusFilter("ALL"); setSelectedCategoryId("ALL"); setPage(1); };
+  const handleSearchChange = (v: string) => { setSearch(v); resetToFirstPage(); };
+  const handleStatusChange = (v: "ALL" | "ACTIVE" | "INACTIVE") => { setItemStatusFilter(v); resetToFirstPage(); };
+  const clearFilters = () => { setSearch(""); setItemStatusFilter("ALL"); setSelectedCategoryId("ALL"); resetToFirstPage(); };
 
   const openEdit = (item: any) => {
     setEditItem(item);
@@ -237,7 +242,7 @@ export default function OutletMenuPage() {
       {/* ── Stats bar ── */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[
-          { label: "Total Items", value: allItems.length, icon: Package, color: "indigo" },
+          { label: "Total Items", value: totalItems, icon: Package, color: "indigo" },
           { label: "Active", value: activeCount, icon: CheckCircle2, color: "emerald" },
           { label: "Categories", value: categories.length, icon: Tag, color: "violet" },
           { label: "Combos", value: combos.length, icon: Layers, color: "orange" },
@@ -373,7 +378,7 @@ export default function OutletMenuPage() {
         <CategoryFilter
           categories={categories}
           selectedCategoryId={selectedCategoryId}
-          onSelect={(id) => { setSelectedCategoryId(id); setPage(1); }}
+          onSelect={(id) => { setSelectedCategoryId(id); resetToFirstPage(); }}
           onDeleteCategory={async (id) => {
             await removeCategory(id);
             if (selectedCategoryId === id) setSelectedCategoryId("ALL");
@@ -476,7 +481,7 @@ export default function OutletMenuPage() {
       ) : layout === "grid" ? (
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {paginatedItems.map((item) => (
+            {items.map((item) => (
               <MenuItemCard
                 key={item._id}
                 item={item}
@@ -487,11 +492,15 @@ export default function OutletMenuPage() {
               />
             ))}
           </div>
-          <GridPagination
-            total={items.length}
+          <CursorPagination
+            total={totalMatching}
             page={page}
             pageSize={pageSize}
-            onPageChange={setPage}
+            hasPrevPage={hasPrevPage}
+            hasNextPage={hasNextPage}
+            onPrevPage={goToPrevPage}
+            onNextPage={goToNextPage}
+            onPageSizeChange={setPageSize}
           />
         </>
       ) : (
@@ -514,12 +523,12 @@ export default function OutletMenuPage() {
                 </tr>
               </thead>
               <tbody>
-                {paginatedItems.map((item, idx) => (
+                {items.map((item, idx) => (
                   <MenuItemTableRow
                     key={item._id}
                     item={item}
                     categories={categories}
-                    index={idx + 1}
+                    index={(page - 1) * pageSize + idx + 1}
                     onEdit={() => openEdit(item)}
                     onDelete={() => setDeleteItem(item)}
                     onUpdatePrice={() => { setPriceItem(item); setPriceInput(String(item.price)); }}
@@ -531,12 +540,15 @@ export default function OutletMenuPage() {
               </tbody>
             </table>
           </div>
-          <TablePagination
-            total={items.length}
+          <CursorPagination
+            total={totalMatching}
             page={page}
             pageSize={pageSize}
-            onPageChange={setPage}
-            onPageSizeChange={(s) => { setPageSize(s); setPage(1); }}
+            hasPrevPage={hasPrevPage}
+            hasNextPage={hasNextPage}
+            onPrevPage={goToPrevPage}
+            onNextPage={goToNextPage}
+            onPageSizeChange={setPageSize}
           />
         </div>
       ))}

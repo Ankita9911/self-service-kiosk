@@ -28,6 +28,8 @@ import {
 } from "@/features/upload/service/upload.service";
 import { useMenuSocket } from "@/shared/hooks/useMenuSocket";
 
+const DEFAULT_PAGE_SIZE = 12;
+
 export interface OutletMenuFilters {
   search: string;
   status: "ALL" | "ACTIVE" | "INACTIVE";
@@ -41,13 +43,25 @@ export function useOutletMenu(
 ) {
   const [outlets, setOutlets] = useState<Outlet[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
-  const [allItems, setAllItems] = useState<MenuItem[]>([]); // unfiltered — for stats
-  const [items, setItems] = useState<MenuItem[]>([]);       // filtered by backend
+  const [items, setItems] = useState<MenuItem[]>([]);
   const [combos, setCombos] = useState<Combo[]>([]);
-  const [loading, setLoading] = useState(true);
+
+  const [staticLoading, setStaticLoading] = useState(true);
+  const [itemsLoading, setItemsLoading] = useState(true);
   const [filterLoading, setFilterLoading] = useState(false);
 
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>("ALL");
+
+  const [totalItems, setTotalItems] = useState(0);
+  const [activeItems, setActiveItems] = useState(0);
+  const [totalMatching, setTotalMatching] = useState(0);
+
+  const [cursorStack, setCursorStack] = useState<(string | null)[]>([null]);
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
+  const [hasNextPage, setHasNextPage] = useState(false);
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
+  const [refreshTick, setRefreshTick] = useState(0);
+  const hasLoadedItemsRef = useRef(false);
 
   const [catForm, setCatForm] = useState({ name: "", description: "" });
   const [itemForm, setItemForm] = useState<ItemFormState>({
@@ -66,46 +80,51 @@ export function useOutletMenu(
 
   const oidForApi = needsOutletId ? outletId : undefined;
 
-  // Debounce search — backend only called 400ms after user stops typing
   const debouncedSearch = useDebounce(filters?.search ?? "", 400);
 
-  // ── Stats fetch (no filters) — runs on mount + after every mutation ────────
-  const fetchData = useCallback(async () => {
+  const currentCursor = cursorStack[cursorStack.length - 1] ?? undefined;
+  const page = cursorStack.length;
+  const hasPrevPage = page > 1;
+  const loading = staticLoading || itemsLoading;
+
+  useEffect(() => {
+    hasLoadedItemsRef.current = false;
+    setItemsLoading(true);
+    setCursorStack([null]);
+    setNextCursor(null);
+    setHasNextPage(false);
+  }, [outletId, canManage]);
+
+  const fetchStaticData = useCallback(async () => {
     if (!canManage || !outletId) return;
 
-    setLoading(true);
+    setStaticLoading(true);
     try {
-      const [catList, itemList, outletList, comboList] = await Promise.all([
+      const [catList, outletList, comboList] = await Promise.all([
         getCategories(oidForApi),
-        getMenuItems(oidForApi),          // no search/status — full list for stats
         needsOutletId ? getOutlets() : Promise.resolve([]),
         getCombos(oidForApi),
       ]);
 
       setCategories(catList);
-      setAllItems(itemList);
-      setItems(itemList);               // populate display list on initial load
       setOutlets(outletList);
       setCombos(comboList);
     } finally {
-      setLoading(false);
+      setStaticLoading(false);
     }
   }, [outletId, canManage, oidForApi, needsOutletId]);
 
   useEffect(() => {
-    fetchData();
-  }, [fetchData]);
-
-  // ── Filtered fetch — re-runs whenever search/status/category changes ───────
-  const isMounted = useRef(false);
+    fetchStaticData();
+  }, [fetchStaticData]);
 
   useEffect(() => {
     if (!canManage || !outletId) return;
     let cancelled = false;
 
-    async function fetchFiltered() {
-      if (isMounted.current) setFilterLoading(true);
-      else isMounted.current = true;
+    async function fetchItems() {
+      const firstLoad = !hasLoadedItemsRef.current;
+      if (!firstLoad) setFilterLoading(true);
 
       try {
         const result = await getMenuItems(
@@ -113,23 +132,77 @@ export function useOutletMenu(
           selectedCategoryId !== "ALL" ? selectedCategoryId : undefined,
           debouncedSearch,
           filters?.status,
+          {
+            cursor: currentCursor ?? undefined,
+            limit: pageSize,
+          },
         );
-        if (!cancelled) setItems(result);
-      } catch {}
-      finally {
-        if (!cancelled) setFilterLoading(false);
+
+        if (cancelled) return;
+
+        setItems(result.items);
+        setHasNextPage(result.pagination.hasNext);
+        setNextCursor(result.pagination.nextCursor);
+        setTotalMatching(result.pagination.totalMatching);
+        setTotalItems(result.stats.totalItems);
+        setActiveItems(result.stats.activeItems);
+      } finally {
+        if (cancelled) return;
+        if (firstLoad) {
+          hasLoadedItemsRef.current = true;
+          setItemsLoading(false);
+        }
+        setFilterLoading(false);
       }
     }
 
-    fetchFiltered();
-    return () => { cancelled = true; };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [canManage, outletId, oidForApi, selectedCategoryId, debouncedSearch, filters?.status]);
+    fetchItems();
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    canManage,
+    outletId,
+    oidForApi,
+    selectedCategoryId,
+    debouncedSearch,
+    filters?.status,
+    currentCursor,
+    pageSize,
+    refreshTick,
+  ]);
 
-  // Silently reload whenever the queue worker finishes a menu change.
-  // Pass outletId so admin users (who have no outletId in their JWT) can
-  // join the correct outlet socket room via join:outlet.
-  useMenuSocket(fetchData, outletId);
+  const refreshMenuData = useCallback(async () => {
+    await fetchStaticData();
+    setCursorStack([null]);
+    setNextCursor(null);
+    setHasNextPage(false);
+    setRefreshTick((n) => n + 1);
+  }, [fetchStaticData]);
+
+  useMenuSocket(refreshMenuData, outletId);
+
+  function goToNextPage() {
+    if (!hasNextPage || !nextCursor) return;
+    setCursorStack((prev) => [...prev, nextCursor]);
+  }
+
+  function goToPrevPage() {
+    setCursorStack((prev) => (prev.length > 1 ? prev.slice(0, -1) : prev));
+  }
+
+  function updatePageSize(size: number) {
+    setPageSize(size);
+    setCursorStack([null]);
+    setNextCursor(null);
+    setHasNextPage(false);
+  }
+
+  function resetToFirstPage() {
+    setCursorStack([null]);
+    setNextCursor(null);
+    setHasNextPage(false);
+  }
 
   async function addCategory() {
     await createCategory(
@@ -137,7 +210,7 @@ export function useOutletMenu(
       oidForApi,
     );
     setCatForm({ name: "", description: "" });
-    await fetchData();
+    await refreshMenuData();
   }
 
   async function addItem() {
@@ -168,7 +241,7 @@ export function useOutletMenu(
       },
       oidForApi,
     );
-  
+
     setItemForm({
       categoryId: "",
       name: "",
@@ -180,7 +253,7 @@ export function useOutletMenu(
       offers: [],
     });
 
-    await fetchData();
+    await refreshMenuData();
   }
 
   async function updateItem(id: string) {
@@ -208,35 +281,33 @@ export function useOutletMenu(
 
     await updateMenuItem(id, payload, oidForApi);
 
-    await fetchData();
+    await refreshMenuData();
   }
 
   async function updatePrice(id: string, price: number) {
     await updateMenuItemPrice(id, price, oidForApi);
-    await fetchData();
+    await refreshMenuData();
   }
 
   async function updateStock(id: string, quantity: number) {
     await updateMenuItemStock(id, quantity, oidForApi);
-    await fetchData();
+    await refreshMenuData();
   }
 
   async function removeItem(id: string) {
     await deleteMenuItem(id, oidForApi);
-    await fetchData();
+    await refreshMenuData();
   }
 
   async function removeCategory(id: string) {
     await deleteCategory(id, oidForApi);
-    await fetchData();
+    await refreshMenuData();
   }
 
   async function toggleItemStatus(id: string) {
     await toggleMenuItemStatus(id, oidForApi);
-    await fetchData();
+    await refreshMenuData();
   }
-
-  // ─── Combos ────────────────────────────────────────────────────────────────
 
   async function addCombo(data: {
     name: string;
@@ -248,29 +319,39 @@ export function useOutletMenu(
     serviceType?: "DINE_IN" | "TAKE_AWAY" | "BOTH";
   }) {
     await createCombo(data, oidForApi);
-    await fetchData();
+    await refreshMenuData();
   }
 
   async function editCombo(id: string, data: any) {
     await updateCombo(id, data, oidForApi);
-    await fetchData();
+    await refreshMenuData();
   }
 
   async function removeCombo(id: string) {
     await deleteCombo(id, oidForApi);
-    await fetchData();
+    await refreshMenuData();
   }
 
   return {
     outlets,
     categories,
-    allItems,
     items,
     combos,
     loading,
     filterLoading,
     selectedCategoryId,
     setSelectedCategoryId,
+    totalItems,
+    activeItems,
+    totalMatching,
+    page,
+    pageSize,
+    hasPrevPage,
+    hasNextPage,
+    goToNextPage,
+    goToPrevPage,
+    setPageSize: updatePageSize,
+    resetToFirstPage,
     catForm,
     setCatForm,
     itemForm,

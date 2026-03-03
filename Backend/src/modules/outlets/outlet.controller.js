@@ -22,11 +22,12 @@ export const createOutletController = asyncHandler(async (req, res) => {
 });
 
 export const getOutletsController = asyncHandler(async (req, res) => {
-  const outlets = await getOutlets(req.user, req.query);
+  const result = await getOutlets(req.user, req.query);
 
   return sendSuccess(res, {
     message: "Outlets fetched successfully",
-    data: outlets,
+    data: result.items,
+    meta: result.meta,
   });
 });
 

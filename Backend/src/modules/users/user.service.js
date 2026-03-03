@@ -6,6 +6,9 @@ import crypto from "crypto";
 import { sendWelcomeEmail, sendPasswordResetEmail } from "../../core/email/email.service.js";
 import { forceLogout } from "../../realtime/realtime.manager.js";
 
+const DEFAULT_LIMIT = 10;
+const MAX_LIMIT = 100;
+
 //helper
 
 function generateTempPassword() {
@@ -13,6 +16,35 @@ function generateTempPassword() {
 }
 
 const SALT_ROUNDS = 10;
+
+function toBoundedLimit(value) {
+  const parsed = Number.parseInt(String(value ?? DEFAULT_LIMIT), 10);
+  if (Number.isNaN(parsed)) return DEFAULT_LIMIT;
+  return Math.min(Math.max(parsed, 1), MAX_LIMIT);
+}
+
+function encodeCursor(payload) {
+  return Buffer.from(JSON.stringify(payload)).toString("base64url");
+}
+
+function decodeCursor(cursor) {
+  if (!cursor) return null;
+
+  try {
+    const decoded = JSON.parse(Buffer.from(cursor, "base64url").toString("utf-8"));
+    if (!decoded?.createdAt || !decoded?._id) return null;
+
+    const createdAt = new Date(decoded.createdAt);
+    if (Number.isNaN(createdAt.getTime())) return null;
+
+    return {
+      createdAt,
+      _id: decoded._id,
+    };
+  } catch {
+    return null;
+  }
+}
 
 function ensureHigherRole(creatorRole, targetRole) {
   if (ROLE_HIERARCHY[creatorRole] <= ROLE_HIERARCHY[targetRole]) {
@@ -110,7 +142,8 @@ export async function createUser(currentUser, payload) {
 }
 
 export async function listUsers(currentUser, query = {}) {
-  const { search, role: roleFilter, franchiseId, outletId, status } = query;
+  const { search, role: roleFilter, franchiseId, outletId, status, cursor, limit } = query;
+  const pageLimit = toBoundedLimit(limit);
 
   const currentLevel = ROLE_HIERARCHY[currentUser.role] ?? 0;
 
@@ -119,45 +152,103 @@ export async function listUsers(currentUser, query = {}) {
     .filter(([, level]) => level < currentLevel)
     .map(([role]) => role);
 
-  const filter = {
+  const baseFilter = {
     isDeleted: false,
     _id: { $ne: currentUser._id },
   };
 
   // Role filter — if a specific role is requested, validate it is a subordinate role
   if (roleFilter && roleFilter !== "ALL") {
-    filter.role = subordinateRoles.includes(roleFilter) ? roleFilter : { $in: [] };
+    baseFilter.role = subordinateRoles.includes(roleFilter) ? roleFilter : { $in: [] };
   } else {
-    filter.role = { $in: subordinateRoles };
+    baseFilter.role = { $in: subordinateRoles };
   }
 
   // Full-text search on name and email
   if (search && search.trim()) {
-    filter.$or = [
+    baseFilter.$or = [
       { name: { $regex: search.trim(), $options: "i" } },
       { email: { $regex: search.trim(), $options: "i" } },
     ];
   }
 
   // Status filter
-  if (status && status !== "ALL") filter.status = status;
+  if (status && status !== "ALL") baseFilter.status = status;
 
   // Scope to the caller's franchise (except SUPER_ADMIN who sees all)
   if (currentUser.role !== "SUPER_ADMIN") {
-    filter.franchiseId = currentUser.franchiseId;
+    baseFilter.franchiseId = currentUser.franchiseId;
   } else if (franchiseId && franchiseId !== "ALL") {
-    filter.franchiseId = franchiseId;
+    baseFilter.franchiseId = franchiseId;
   }
 
   // Outlet filter
-  if (outletId && outletId !== "ALL") filter.outletId = outletId;
+  if (outletId && outletId !== "ALL") baseFilter.outletId = outletId;
 
   // Scope to the caller's outlet
   if (currentUser.role === "OUTLET_MANAGER") {
-    filter.outletId = currentUser.outletId;
+    baseFilter.outletId = currentUser.outletId;
   }
 
-  return User.find(filter);
+  const decodedCursor = decodeCursor(cursor);
+  const cursorFilter = decodedCursor
+    ? {
+        $or: [
+          { createdAt: { $lt: decodedCursor.createdAt } },
+          { createdAt: decodedCursor.createdAt, _id: { $lt: decodedCursor._id } },
+        ],
+      }
+    : null;
+
+  const queryFilter = cursorFilter
+    ? { $and: [baseFilter, cursorFilter] }
+    : baseFilter;
+
+  const [usersPlusOne, totalMatching, totalUsers, activeUsers] = await Promise.all([
+    User.find(queryFilter)
+      .sort({ createdAt: -1, _id: -1 })
+      .limit(pageLimit + 1),
+    User.countDocuments(baseFilter),
+    User.countDocuments({
+      isDeleted: false,
+      _id: { $ne: currentUser._id },
+      ...(currentUser.role !== "SUPER_ADMIN"
+        ? { franchiseId: currentUser.franchiseId }
+        : {}),
+    }),
+    User.countDocuments({
+      isDeleted: false,
+      status: "ACTIVE",
+      _id: { $ne: currentUser._id },
+      ...(currentUser.role !== "SUPER_ADMIN"
+        ? { franchiseId: currentUser.franchiseId }
+        : {}),
+    }),
+  ]);
+
+  const hasNext = usersPlusOne.length > pageLimit;
+  const users = hasNext ? usersPlusOne.slice(0, pageLimit) : usersPlusOne;
+
+  const lastUser = users[users.length - 1];
+  const nextCursor = hasNext && lastUser
+    ? encodeCursor({ createdAt: lastUser.createdAt, _id: lastUser._id })
+    : null;
+
+  return {
+    items: users,
+    meta: {
+      pagination: {
+        limit: pageLimit,
+        hasNext,
+        nextCursor,
+        totalMatching,
+      },
+      stats: {
+        totalItems: totalUsers,
+        activeItems: activeUsers,
+      },
+    },
+  };
 }
 
 export async function getUser(currentUser, id) {

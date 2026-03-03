@@ -6,6 +6,8 @@ import { forceLogout } from "../../realtime/realtime.manager.js";
 
 const SALT_ROUNDS = 10;
 const ID_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+const DEFAULT_LIMIT = 10;
+const MAX_LIMIT = 100;
 
 //helpers
 function generateShortDeviceId() {
@@ -18,6 +20,35 @@ function generateShortDeviceId() {
 }
 function generateSecret() {
   return crypto.randomBytes(12).toString("hex");
+}
+
+function toBoundedLimit(value) {
+  const parsed = Number.parseInt(String(value ?? DEFAULT_LIMIT), 10);
+  if (Number.isNaN(parsed)) return DEFAULT_LIMIT;
+  return Math.min(Math.max(parsed, 1), MAX_LIMIT);
+}
+
+function encodeCursor(payload) {
+  return Buffer.from(JSON.stringify(payload)).toString("base64url");
+}
+
+function decodeCursor(cursor) {
+  if (!cursor) return null;
+
+  try {
+    const decoded = JSON.parse(Buffer.from(cursor, "base64url").toString("utf-8"));
+    if (!decoded?.createdAt || !decoded?._id) return null;
+
+    const createdAt = new Date(decoded.createdAt);
+    if (Number.isNaN(createdAt.getTime())) return null;
+
+    return {
+      createdAt,
+      _id: decoded._id,
+    };
+  } catch {
+    return null;
+  }
 }
 
 export async function createDevice(currentUser, payload) {
@@ -87,18 +118,19 @@ export async function createDevice(currentUser, payload) {
 }
 
 export async function listDevices(currentUser, query = {}) {
-  const { search, status, franchiseId, outletId } = query;
-  const filter = { isDeleted: false };
+  const { search, status, franchiseId, outletId, cursor, limit } = query;
+  const pageLimit = toBoundedLimit(limit);
+  const baseFilter = { isDeleted: false };
 
   if (currentUser.role === "SUPER_ADMIN") {
     // Super admin can filter by franchise
-    if (franchiseId && franchiseId !== "ALL") filter.franchiseId = franchiseId;
+    if (franchiseId && franchiseId !== "ALL") baseFilter.franchiseId = franchiseId;
   } else {
     // All other roles are scoped to their franchise
-    filter.franchiseId = currentUser.franchiseId;
+    baseFilter.franchiseId = currentUser.franchiseId;
     if (currentUser.role === "OUTLET_MANAGER") {
       // Outlet manager is always scoped to their outlet
-      filter.outletId = currentUser.outletId;
+      baseFilter.outletId = currentUser.outletId;
     }
   }
 
@@ -108,21 +140,73 @@ export async function listDevices(currentUser, query = {}) {
     outletId !== "ALL" &&
     currentUser.role !== "OUTLET_MANAGER"
   ) {
-    filter.outletId = outletId;
+    baseFilter.outletId = outletId;
   }
 
   // Full-text search on deviceId and name
   if (search && search.trim()) {
-    filter.$or = [
+    baseFilter.$or = [
       { deviceId: { $regex: search.trim(), $options: "i" } },
       { name: { $regex: search.trim(), $options: "i" } },
     ];
   }
 
   // Status filter
-  if (status && status !== "ALL") filter.status = status;
+  if (status && status !== "ALL") baseFilter.status = status;
 
-  return Device.find(filter);
+  const decodedCursor = decodeCursor(cursor);
+  const cursorFilter = decodedCursor
+    ? {
+        $or: [
+          { createdAt: { $lt: decodedCursor.createdAt } },
+          { createdAt: decodedCursor.createdAt, _id: { $lt: decodedCursor._id } },
+        ],
+      }
+    : null;
+
+  const queryFilter = cursorFilter
+    ? { $and: [baseFilter, cursorFilter] }
+    : baseFilter;
+
+  const [devicesPlusOne, totalMatching, totalDevices, activeDevices] = await Promise.all([
+    Device.find(queryFilter)
+      .sort({ createdAt: -1, _id: -1 })
+      .limit(pageLimit + 1),
+    Device.countDocuments(baseFilter),
+    Device.countDocuments({
+      isDeleted: false,
+      ...(currentUser.role === "SUPER_ADMIN" ? {} : { franchiseId: currentUser.franchiseId }),
+    }),
+    Device.countDocuments({
+      isDeleted: false,
+      status: "ACTIVE",
+      ...(currentUser.role === "SUPER_ADMIN" ? {} : { franchiseId: currentUser.franchiseId }),
+    }),
+  ]);
+
+  const hasNext = devicesPlusOne.length > pageLimit;
+  const devices = hasNext ? devicesPlusOne.slice(0, pageLimit) : devicesPlusOne;
+
+  const lastDevice = devices[devices.length - 1];
+  const nextCursor = hasNext && lastDevice
+    ? encodeCursor({ createdAt: lastDevice.createdAt, _id: lastDevice._id })
+    : null;
+
+  return {
+    items: devices,
+    meta: {
+      pagination: {
+        limit: pageLimit,
+        hasNext,
+        nextCursor,
+        totalMatching,
+      },
+      stats: {
+        totalItems: totalDevices,
+        activeItems: activeDevices,
+      },
+    },
+  };
 }
 
 export async function updateDevice(currentUser, deviceId, payload) {
