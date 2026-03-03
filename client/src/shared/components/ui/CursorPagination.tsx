@@ -30,6 +30,7 @@ export function CursorPagination({
   onPageSizeChange,
   showPageSize = true,
 }: Props) {
+  const pageSizeOptions = Array.from(new Set([10, 20, 40, 50, pageSize])).sort((a, b) => a - b);
   const from = total === 0 ? 0 : (page - 1) * pageSize + 1;
   const to = total === 0 ? 0 : Math.min(page * pageSize, total);
 
@@ -50,7 +51,7 @@ export function CursorPagination({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent className="rounded-lg border-slate-200 dark:border-white/8 bg-white dark:bg-[#161920] min-w-8">
-                {[10, 20, 40, 50].map((size) => (
+                {pageSizeOptions.map((size) => (
                   <SelectItem key={size} value={String(size)} className="text-xs">
                     {size}
                   </SelectItem>
