@@ -1,6 +1,10 @@
 import axiosInstance from "@/shared/lib/axiosInstance";
 import type { Franchise } from "@/features/franchise/types/franchise.types";
 
+export interface FranchiseFilterParams {
+  search?: string;
+  status?: "ALL" | "ACTIVE" | "INACTIVE";
+}
 
 export interface CreateFranchiseDTO {
   name: string;
@@ -9,8 +13,12 @@ export interface CreateFranchiseDTO {
   contactPhone?: string;
 }
 
-export async function getFranchises(): Promise<Franchise[]> {
-  const response = await axiosInstance.get("/franchises");
+export async function getFranchises(params: FranchiseFilterParams = {}): Promise<Franchise[]> {
+  const query: Record<string, string> = {};
+  if (params.search?.trim()) query.search = params.search.trim();
+  if (params.status && params.status !== "ALL") query.status = params.status;
+
+  const response = await axiosInstance.get("/franchises", { params: query });
   return response.data.data;
 }
 

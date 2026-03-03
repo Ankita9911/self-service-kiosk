@@ -32,18 +32,6 @@ export default function DevicePage() {
   const isSuperAdmin = user?.role === "SUPER_ADMIN";
   const isFranchiseAdmin = user?.role === "FRANCHISE_ADMIN";
 
-  const {
-    devices,
-    outlets,
-    loading,
-    refreshing,
-    fetchData,
-    handleCreate,
-    handleUpdate,
-    handleDelete: deleteDeviceHook,
-    handleStatusChange,
-  } = useDevices(canView);
-
   const [open, setOpen] = useState(false);
   const [createdSecret, setCreatedSecret] = useState<string | null>(null);
   const [franchises, setFranchises] = useState<Franchise[]>([]);
@@ -54,6 +42,19 @@ export default function DevicePage() {
   >("ALL");
   const [franchiseFilter, setFranchiseFilter] = useState("ALL");
   const [outletFilter, setOutletFilter]     = useState("ALL");
+
+  const {
+    devices,
+    allDevices,
+    outlets,
+    loading,
+    refreshing,
+    fetchData,
+    handleCreate,
+    handleUpdate,
+    handleDelete: deleteDeviceHook,
+    handleStatusChange,
+  } = useDevices(canView, { search: searchTerm, status: statusFilter, franchiseId: franchiseFilter, outletId: outletFilter });
 
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
@@ -74,21 +75,9 @@ export default function DevicePage() {
     return outlets;
   }, [outlets, isSuperAdmin, franchiseFilter]);
 
-  const filteredDevices = useMemo(() => {
-    return devices.filter((d) => {
-      const matchesSearch =
-        (d.deviceId?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
-        (d.name?.toLowerCase() || "").includes(searchTerm.toLowerCase());
-      const matchesStatus    = statusFilter === "ALL" || d.status === statusFilter;
-      const matchesFranchise = franchiseFilter === "ALL" || d.franchiseId === franchiseFilter;
-      const matchesOutlet    = outletFilter === "ALL" || d.outletId === outletFilter;
-      return matchesSearch && matchesStatus && matchesFranchise && matchesOutlet;
-    });
-  }, [devices, searchTerm, statusFilter, franchiseFilter, outletFilter]);
-
   const paginatedDevices = useMemo(() => {
-    return filteredDevices.slice((page - 1) * pageSize, page * pageSize);
-  }, [filteredDevices, page, pageSize]);
+    return devices.slice((page - 1) * pageSize, page * pageSize);
+  }, [devices, page, pageSize]);
 
   useEffect(() => {
     setPage(1);
@@ -156,7 +145,7 @@ export default function DevicePage() {
         onCreate={() => setOpen(true)}
       />
 
-      <DeviceStats devices={devices} loading={showShimmer} />
+      <DeviceStats devices={allDevices} loading={showShimmer} />
 
       <DeviceFilters
         searchTerm={searchTerm}
@@ -220,7 +209,7 @@ export default function DevicePage() {
                   </td>
                 </tr>
               ))
-            ) : filteredDevices.length === 0 ? (
+            ) : devices.length === 0 ? (
               <tr>
                 <td colSpan={6} className="py-16 text-center">
                   <div className="flex flex-col items-center gap-3">
@@ -288,9 +277,9 @@ export default function DevicePage() {
           </tbody>
         </table>
 
-        {!showShimmer && filteredDevices.length > 0 && (
+        {!showShimmer && devices.length > 0 && (
           <TablePagination
-            total={filteredDevices.length}
+            total={devices.length}
             page={page}
             pageSize={pageSize}
             onPageChange={setPage}

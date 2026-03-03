@@ -22,8 +22,15 @@ export default function UserPage() {
   const isSuperAdmin = currentUser?.role === "SUPER_ADMIN";
   const isFranchiseAdmin = currentUser?.role === "FRANCHISE_ADMIN";
 
+  const [searchTerm, setSearchTerm] = useState("");
+  const [roleFilter, setRoleFilter] = useState("ALL");
+  const [franchiseFilter, setFranchiseFilter] = useState("ALL");
+  const [outletFilter, setOutletFilter] = useState("ALL");
+  const [statusFilter, setStatusFilter] = useState<"ALL" | "ACTIVE" | "INACTIVE">("ALL");
+
   const {
     users,
+    allUsers,
     franchises,
     outlets,
     loading,
@@ -34,16 +41,10 @@ export default function UserPage() {
     handleChangeRole,
     handleChangeStatus,
     handleResetPassword,
-  } = useUsers();
+  } = useUsers({ search: searchTerm, role: roleFilter, franchiseId: franchiseFilter, outletId: outletFilter, status: statusFilter });
 
   const [open, setOpen] = useState(false);
   const [createdUser, setCreatedUser] = useState<{ password: string; email: string } | null>(null);
-
-  const [searchTerm, setSearchTerm] = useState("");
-  const [roleFilter, setRoleFilter] = useState("ALL");
-  const [franchiseFilter, setFranchiseFilter] = useState("ALL");
-  const [outletFilter, setOutletFilter] = useState("ALL");
-  const [statusFilter, setStatusFilter] = useState<"ALL" | "ACTIVE" | "INACTIVE">("ALL");
 
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
@@ -65,39 +66,15 @@ export default function UserPage() {
     return outlets;
   }, [isSuperAdmin, franchiseFilter, outlets]);
 
-  const filtered = useMemo(() => {
-    return users.filter((u) => {
-      const matchSearch =
-        u.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        u.email.toLowerCase().includes(searchTerm.toLowerCase());
-
-      const matchRole = roleFilter === "ALL" || u.role === roleFilter;
-
-      const matchFranchise =
-        !isSuperAdmin || franchiseFilter === "ALL" || u.franchiseId === franchiseFilter;
-
-      const matchOutlet =
-        outletFilter === "ALL" || u.outletId === outletFilter;
-
-      const matchStatus =
-        statusFilter === "ALL" || u.status === statusFilter;
-
-      return matchSearch && matchRole && matchFranchise && matchOutlet && matchStatus;
-    });
-  }, [users, searchTerm, roleFilter, isSuperAdmin, franchiseFilter, outletFilter, statusFilter]);
-
   const paginated = useMemo(() => {
-    return filtered.slice(
-      (page - 1) * pageSize,
-      page * pageSize
-    );
-  }, [filtered, page, pageSize]);
+    return users.slice((page - 1) * pageSize, page * pageSize);
+  }, [users, page, pageSize]);
 
   useEffect(() => {
     setPage(1);
   }, [searchTerm, roleFilter, franchiseFilter, outletFilter, statusFilter]);
 
-  const activeCount = users.filter(
+  const activeCount = allUsers.filter(
     (u) => u.status === "ACTIVE"
   ).length;
 
@@ -126,16 +103,10 @@ export default function UserPage() {
       {/* ── Header ── */}
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
-          {/* <div className="flex items-center gap-2 mb-1"> */}
-            {/* <Users className="w-3.5 h-3.5 text-indigo-500" /> */}
-            {/* <span className="text-[11px] font-medium text-indigo-500 uppercase tracking-widest">
-              Users Directory
-            </span> */}
-          {/* </div> */}
           <h1 className="text-[28px] font-semibold text-slate-900 dark:text-white tracking-tight">
             Users
           </h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
+          <p className="text-sm text-slate-500 dark:text-slate-400 ">
             Manage platform users, roles, and access levels.
           </p>
         </div>
@@ -165,9 +136,9 @@ export default function UserPage() {
       {/* ── Stats ── */}
       <div className="grid grid-cols-3 gap-3">
         {[
-          { label: "Total Users", value: users.length,              icon: <Users        className="w-4 h-4 text-indigo-500"   />, iconBg: "bg-indigo-50 dark:bg-indigo-500/10"   },
-          { label: "Active",      value: activeCount,               icon: <CheckCircle2 className="w-4 h-4 text-emerald-500" />, iconBg: "bg-emerald-50 dark:bg-emerald-500/10" },
-          { label: "Inactive",    value: users.length - activeCount, icon: <XCircle     className="w-4 h-4 text-slate-400"   />, iconBg: "bg-slate-50 dark:bg-white/5"    },
+          { label: "Total Users", value: allUsers.length,               icon: <Users        className="w-4 h-4 text-indigo-500"   />, iconBg: "bg-indigo-50 dark:bg-indigo-500/10"   },
+          { label: "Active",      value: activeCount,                icon: <CheckCircle2 className="w-4 h-4 text-emerald-500" />, iconBg: "bg-emerald-50 dark:bg-emerald-500/10" },
+          { label: "Inactive",    value: allUsers.length - activeCount, icon: <XCircle     className="w-4 h-4 text-slate-400"   />, iconBg: "bg-slate-50 dark:bg-white/5"    },
         ].map(({ label, value, icon, iconBg }) =>
           showShimmer ? (
             <div key={label} className="flex items-center gap-3 p-3.5 rounded-2xl bg-white dark:bg-[#1e2130] border border-slate-100 dark:border-white/7 shadow-sm">
@@ -338,7 +309,7 @@ export default function UserPage() {
                   </td>
                 </tr>
               ))
-            ) : filtered.length === 0 ? (
+            ) : users.length === 0 ? (
               <tr>
                 <td colSpan={5} className="py-16 text-center">
                   <div className="flex flex-col items-center gap-3">
@@ -409,9 +380,9 @@ export default function UserPage() {
           </tbody>
         </table>
 
-        {!showShimmer && filtered.length > 0 && (
+        {!showShimmer && users.length > 0 && (
           <TablePagination
-            total={filtered.length}
+            total={users.length}
             page={page}
             pageSize={pageSize}
             onPageChange={setPage}

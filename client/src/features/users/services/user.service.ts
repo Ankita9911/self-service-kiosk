@@ -1,8 +1,23 @@
 import axios from "@/shared/lib/axiosInstance";
 import type { User } from "@/features/users/types/user.types";
 
-export async function getUsers(): Promise<User[]> {
-  const response = await axios.get<{ data: User[] }>("/users");
+export interface UserFilterParams {
+  search?: string;
+  role?: string;
+  franchiseId?: string;
+  outletId?: string;
+  status?: "ALL" | "ACTIVE" | "INACTIVE";
+}
+
+export async function getUsers(params: UserFilterParams = {}): Promise<User[]> {
+  const query: Record<string, string> = {};
+  if (params.search?.trim())   query.search      = params.search.trim();
+  if (params.role      && params.role      !== "ALL") query.role      = params.role;
+  if (params.franchiseId && params.franchiseId !== "ALL") query.franchiseId = params.franchiseId;
+  if (params.outletId  && params.outletId  !== "ALL") query.outletId  = params.outletId;
+  if (params.status    && params.status    !== "ALL") query.status    = params.status;
+
+  const response = await axios.get<{ data: User[] }>("/users", { params: query });
   return response.data.data;
 }
 

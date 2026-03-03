@@ -109,7 +109,9 @@ export async function createUser(currentUser, payload) {
   };
 }
 
-export async function listUsers(currentUser) {
+export async function listUsers(currentUser, query = {}) {
+  const { search, role: roleFilter, franchiseId, outletId, status } = query;
+
   const currentLevel = ROLE_HIERARCHY[currentUser.role] ?? 0;
 
   // Only show roles strictly below the caller's hierarchy level
@@ -120,13 +122,35 @@ export async function listUsers(currentUser) {
   const filter = {
     isDeleted: false,
     _id: { $ne: currentUser._id },
-    role: { $in: subordinateRoles },
   };
+
+  // Role filter — if a specific role is requested, validate it is a subordinate role
+  if (roleFilter && roleFilter !== "ALL") {
+    filter.role = subordinateRoles.includes(roleFilter) ? roleFilter : { $in: [] };
+  } else {
+    filter.role = { $in: subordinateRoles };
+  }
+
+  // Full-text search on name and email
+  if (search && search.trim()) {
+    filter.$or = [
+      { name: { $regex: search.trim(), $options: "i" } },
+      { email: { $regex: search.trim(), $options: "i" } },
+    ];
+  }
+
+  // Status filter
+  if (status && status !== "ALL") filter.status = status;
 
   // Scope to the caller's franchise (except SUPER_ADMIN who sees all)
   if (currentUser.role !== "SUPER_ADMIN") {
     filter.franchiseId = currentUser.franchiseId;
+  } else if (franchiseId && franchiseId !== "ALL") {
+    filter.franchiseId = franchiseId;
   }
+
+  // Outlet filter
+  if (outletId && outletId !== "ALL") filter.outletId = outletId;
 
   // Scope to the caller's outlet
   if (currentUser.role === "OUTLET_MANAGER") {

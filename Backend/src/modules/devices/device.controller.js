@@ -14,7 +14,7 @@ export const createDeviceController = asyncHandler(async (req, res) => {
 });
 
 export const listDevicesController = asyncHandler(async (req, res) => {
-  const result = await service.listDevices(req.user);
+  const result = await service.listDevices(req.user, req.query);
 
   return sendSuccess(res, {
     message: "Devices fetched successfully",

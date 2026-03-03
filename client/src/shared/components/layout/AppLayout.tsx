@@ -44,32 +44,32 @@ function getRoleStyle(role?: string) {
     : "bg-slate-50 text-slate-600 border-slate-200 dark:bg-slate-500/10 dark:text-slate-400 dark:border-slate-500/20";
 }
 
-function Breadcrumb() {
-  const location = useLocation();
-  const parts = location.pathname.split("/").filter(Boolean);
+// function Breadcrumb() {
+//   const location = useLocation();
+//   const parts = location.pathname.split("/").filter(Boolean);
 
-  return (
-    <nav className="flex items-center gap-1 text-[12px] text-slate-400 dark:text-slate-500">
-      <span className="hover:text-slate-600 dark:hover:text-slate-300 cursor-pointer transition">
-        Home
-      </span>
-      {parts.map((p, i) => (
-        <span key={i} className="flex items-center gap-1">
-          <span className="text-slate-300 dark:text-slate-700">/</span>
-          <span
-            className={
-              i === parts.length - 1
-                ? "text-slate-700 dark:text-slate-200 font-medium"
-                : "hover:text-slate-600 dark:hover:text-slate-300 cursor-pointer transition"
-            }
-          >
-            {p.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}
-          </span>
-        </span>
-      ))}
-    </nav>
-  );
-}
+//   return (
+//     <nav className="flex items-center gap-1 text-[12px] text-slate-400 dark:text-slate-500">
+//       <span className="hover:text-slate-600 dark:hover:text-slate-300 cursor-pointer transition">
+//         Home
+//       </span>
+//       {parts.map((p, i) => (
+//         <span key={i} className="flex items-center gap-1">
+//           <span className="text-slate-300 dark:text-slate-700">/</span>
+//           <span
+//             className={
+//               i === parts.length - 1
+//                 ? "text-slate-700 dark:text-slate-200 font-medium"
+//                 : "hover:text-slate-600 dark:hover:text-slate-300 cursor-pointer transition"
+//             }
+//           >
+//             {p.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}
+//           </span>
+//         </span>
+//       ))}
+//     </nav>
+//   );
+// }
 
 const TOAST_STYLES: Record<ToastType, string> = {
   success: "border-l-emerald-500 dark:border-l-emerald-400",
@@ -212,12 +212,12 @@ export default function AppLayout() {
         <header className="
           h-16 bg-white dark:bg-[#111318]
           border-b border-slate-100 dark:border-white/[0.06]
-          px-5 flex items-center justify-between
+          px-5 flex items-center justify-end
           sticky top-0 z-30 shrink-0
-          transition-colors duration-300
+          transition-colors duration-300 
         ">
          
-          <Breadcrumb />
+          {/* <Breadcrumb /> */}
 
         
           <div className="flex items-center gap-1.5">
@@ -290,7 +290,7 @@ export default function AppLayout() {
                         : <Moon className="w-4 h-4 text-indigo-400 dark:text-indigo-300" />
                       }
                       <span className="flex-1 text-left">
-                        {isDark ? "Light mode" : "Dark mode"}
+                        Dark Mode
                       </span>
                       <span className={`
                         flex items-center justify-center w-8 h-4 rounded-full transition-colors duration-300

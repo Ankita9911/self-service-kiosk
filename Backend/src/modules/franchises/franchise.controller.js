@@ -26,7 +26,7 @@ export const createFranchiseController = asyncHandler(async (req, res) => {
 });
 
 export const getFranchisesController = asyncHandler(async (req, res) => {
-  const franchises = await getFranchises(req.user);
+  const franchises = await getFranchises(req.user, req.query);
 
   return sendSuccess(res, {
     message: "Franchises fetched successfully",

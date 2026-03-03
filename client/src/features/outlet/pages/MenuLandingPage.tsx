@@ -17,25 +17,17 @@ export default function MenuLandingPage() {
   const [page, setPage] = useState(1);
   const pageSize = 3;
 
-  const { outlets, loading } = useMenuLanding(user, hasPermission);
-
-  const filtered = outlets.filter((o) => {
-    const matchSearch =
-      o.name.toLowerCase().includes(search.toLowerCase()) ||
-      o.outletCode.toLowerCase().includes(search.toLowerCase());
-    const isActive = o.status?.toLowerCase() === "active";
-    const matchStatus =
-      statusFilter === "ALL" ||
-      (statusFilter === "ACTIVE" ? isActive : !isActive);
-    return matchSearch && matchStatus;
+  const { outlets, allOutlets, loading } = useMenuLanding(user, hasPermission, {
+    search,
+    status: statusFilter,
   });
 
-  const paginatedOutlets = filtered.slice((page - 1) * pageSize, page * pageSize);
+  const paginatedOutlets = outlets.slice((page - 1) * pageSize, page * pageSize);
 
-  const activeCount = outlets.filter(
+  const activeCount = allOutlets.filter(
     (o) => o.status?.toLowerCase() === "active"
   ).length;
-  const inactiveCount = outlets.length - activeCount;
+  const inactiveCount = allOutlets.length - activeCount;
 
   useEffect(() => { setPage(1); }, [search, statusFilter]);
 
@@ -77,10 +69,10 @@ export default function MenuLandingPage() {
       </div>
 
       {/* Stats row */}
-      {outlets.length > 0 && (
+      {allOutlets.length > 0 && (
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           {[
-            { label: "Total Outlets", value: outlets.length, icon: Building2, color: "indigo" },
+            { label: "Total Outlets", value: allOutlets.length, icon: Building2, color: "indigo" },
             { label: "Active", value: activeCount, icon: Store, color: "emerald" },
             { label: "Inactive", value: inactiveCount, icon: XCircle, color: "slate" },
           ].map(({ label, value, icon: Icon, color }) => (
@@ -107,7 +99,7 @@ export default function MenuLandingPage() {
       )}
 
       {/* Search + status filter tabs — right-aligned */}
-      {outlets.length > 0 && (
+      {allOutlets.length > 0 && (
         <div className="flex items-center justify-end gap-2">
         <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
@@ -129,7 +121,7 @@ export default function MenuLandingPage() {
                     : "text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
                 }`}
               >
-                {s === "ALL" ? `All (${outlets.length})` : s === "ACTIVE" ? `Active (${activeCount})` : `Inactive (${inactiveCount})`}
+                {s === "ALL" ? `All (${allOutlets.length})` : s === "ACTIVE" ? `Active (${activeCount})` : `Inactive (${inactiveCount})`}
               </button>
             ))}
           </div>
@@ -137,9 +129,9 @@ export default function MenuLandingPage() {
       )}
 
       {/* Outlet grid */}
-      {outlets.length === 0 ? (
+      {allOutlets.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 bg-white dark:bg-[#1e2130] rounded-2xl border-2 border-dashed border-slate-200 dark:border-white/[0.07]">
-          <div className="h-14 w-14 rounded-2xl bg-slate-100 dark:bg-white/[0.04] flex items-center justify-center mb-4">
+          <div className="h-14 w-14 rounded-2xl bg-slate-100 dark:bg-white/4 flex items-center justify-center mb-4">
             <Building2 className="w-7 h-7 text-slate-400 dark:text-slate-600" />
           </div>
           <p className="font-semibold text-slate-700 dark:text-white">No outlets found</p>
@@ -147,7 +139,7 @@ export default function MenuLandingPage() {
             Create outlets first to manage their menus.
           </p>
         </div>
-      ) : (filtered.length === 0 && outlets.length > 0) ? (
+      ) : (outlets.length === 0) ? (
         <div className="flex flex-col items-center justify-center py-16 bg-white dark:bg-[#1e2130] rounded-2xl border border-slate-100 dark:border-white/[0.07]">
           <Search className="w-8 h-8 text-slate-300 dark:text-slate-600 mb-3" />
           <p className="font-semibold text-slate-600 dark:text-white">No matches</p>
@@ -165,7 +157,7 @@ export default function MenuLandingPage() {
             ))}
           </div>
           <GridPagination
-            total={filtered.length}
+            total={outlets.length}
             page={page}
             pageSize={pageSize}
             onPageChange={setPage}

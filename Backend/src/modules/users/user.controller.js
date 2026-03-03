@@ -13,7 +13,7 @@ export const createUserController = asyncHandler(async (req, res) => {
 });
 
 export const listUsersController = asyncHandler(async (req, res) => {
-  const result = await service.listUsers(req.user);
+  const result = await service.listUsers(req.user, req.query);
 
   return sendSuccess(res, {
     message: "Users fetched successfully",

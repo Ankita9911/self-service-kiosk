@@ -1,8 +1,21 @@
 import axiosInstance from "@/shared/lib/axiosInstance";
 import type { Device } from "@/features/device/types/device.types";
 
-export async function getDevices(): Promise<Device[]> {
-  const response = await axiosInstance.get<{ data: Device[] }>("/devices");
+export interface DeviceFilterParams {
+  search?: string;
+  status?: "ALL" | "ACTIVE" | "INACTIVE";
+  franchiseId?: string;
+  outletId?: string;
+}
+
+export async function getDevices(params: DeviceFilterParams = {}): Promise<Device[]> {
+  const query: Record<string, string> = {};
+  if (params.search?.trim()) query.search = params.search.trim();
+  if (params.status && params.status !== "ALL") query.status = params.status;
+  if (params.franchiseId && params.franchiseId !== "ALL") query.franchiseId = params.franchiseId;
+  if (params.outletId && params.outletId !== "ALL") query.outletId = params.outletId;
+
+  const response = await axiosInstance.get<{ data: Device[] }>("/devices", { params: query });
   return response.data.data;
 }
 

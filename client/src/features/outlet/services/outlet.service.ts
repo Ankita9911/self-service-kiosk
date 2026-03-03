@@ -1,8 +1,19 @@
 import axiosInstance from "@/shared/lib/axiosInstance";
 import type { Outlet, OutletAddress } from "@/features/outlet/types/outlet.types";
 
-export async function getOutlets(): Promise<Outlet[]> {
-  const response = await axiosInstance.get("/outlets");
+export interface OutletFilterParams {
+  search?: string;
+  status?: "ALL" | "ACTIVE" | "INACTIVE";
+  franchiseId?: string;
+}
+
+export async function getOutlets(params: OutletFilterParams = {}): Promise<Outlet[]> {
+  const query: Record<string, string> = {};
+  if (params.search?.trim()) query.search = params.search.trim();
+  if (params.status && params.status !== "ALL") query.status = params.status;
+  if (params.franchiseId && params.franchiseId !== "ALL") query.franchiseId = params.franchiseId;
+
+  const response = await axiosInstance.get("/outlets", { params: query });
   return response.data.data;
 }
 

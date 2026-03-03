@@ -49,27 +49,33 @@ export async function createOutlet(payload, user) {
   return outlet;
 }
 
-export async function getOutlets(user) {
+export async function getOutlets(user, query = {}) {
+  const { search, status, franchiseId } = query;
   const filter = { isDeleted: false };
 
   if (user.role === "SUPER_ADMIN") {
-    return Outlet.find(filter).sort({ createdAt: -1 });
+    // Optionally restrict to a specific franchise
+    if (franchiseId && franchiseId !== "ALL") filter.franchiseId = franchiseId;
+  } else if (user.role === "FRANCHISE_ADMIN") {
+    filter.franchiseId = user.franchiseId;
+  } else if (user.role === "OUTLET_MANAGER") {
+    filter._id = user.outletId;
+  } else {
+    throw new AppError("Forbidden", 403, "FORBIDDEN");
   }
 
-  if (user.role === "FRANCHISE_ADMIN") {
-    return Outlet.find({
-      ...filter,
-      franchiseId: user.franchiseId,
-    }).sort({ createdAt: -1 });
-  }
-  if (user.role === "OUTLET_MANAGER") {
-    return Outlet.find({
-      ...filter,
-      _id: user.outletId,
-    });
+  // Full-text search on name and outletCode
+  if (search && search.trim()) {
+    filter.$or = [
+      { name: { $regex: search.trim(), $options: "i" } },
+      { outletCode: { $regex: search.trim(), $options: "i" } },
+    ];
   }
 
-  throw new AppError("Forbidden", 403, "FORBIDDEN");
+  // Status filter
+  if (status && status !== "ALL") filter.status = status;
+
+  return Outlet.find(filter).sort({ createdAt: -1 });
 }
 export async function getOutletById(id, user) {
   const outlet = await Outlet.findOne({

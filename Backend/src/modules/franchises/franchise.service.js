@@ -56,14 +56,27 @@ export async function createFranchise(payload, user) {
 
   return franchise;
 }
-export async function getFranchises(user) {
+export async function getFranchises(user, query = {}) {
   if (user.role !== "SUPER_ADMIN") {
     throw new AppError("Forbidden", 403, "FORBIDDEN");
   }
 
-  return Franchise.find({ isDeleted: false }).sort({
-    createdAt: -1,
-  });
+  const { search, status } = query;
+  const filter = { isDeleted: false };
+
+  // Full-text search on name, brandCode and contactEmail
+  if (search && search.trim()) {
+    filter.$or = [
+      { name: { $regex: search.trim(), $options: "i" } },
+      { brandCode: { $regex: search.trim(), $options: "i" } },
+      { contactEmail: { $regex: search.trim(), $options: "i" } },
+    ];
+  }
+
+  // Status filter
+  if (status && status !== "ALL") filter.status = status;
+
+  return Franchise.find(filter).sort({ createdAt: -1 });
 }
 
 export async function getFranchiseById(id, user) {

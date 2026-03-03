@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { useFranchises } from "../hooks/useFranchise";
 import { FranchiseTable } from "../components/FranchiseTable";
 import { FranchiseHeader } from "../components/FranchiseHeader";
@@ -9,8 +9,15 @@ import { DeleteModal } from "../components/DeleteModal";
 import type { Franchise } from "../types/franchise.types";
 
 export default function FranchisePage() {
+  const [modalOpen,    setModalOpen]    = useState(false);
+  const [editing,      setEditing]      = useState<Franchise | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<Franchise | null>(null);
+  const [searchTerm,   setSearchTerm]   = useState("");
+  const [statusFilter, setStatusFilter] = useState<"ALL" | "ACTIVE" | "INACTIVE">("ALL");
+
   const {
     franchises,
+    allFranchises,
     loading,
     refreshing,
     fetchFranchises,
@@ -18,32 +25,9 @@ export default function FranchisePage() {
     handleCreate,
     handleUpdate,
     handleSetStatus,
-  } = useFranchises();
-
-  const [modalOpen,    setModalOpen]    = useState(false);
-  const [editing,      setEditing]      = useState<Franchise | null>(null);
-  const [deleteTarget, setDeleteTarget] = useState<Franchise | null>(null);
-  const [searchTerm,   setSearchTerm]   = useState("");
-  const [statusFilter, setStatusFilter] = useState<"ALL" | "ACTIVE" | "INACTIVE">("ALL");
+  } = useFranchises({ search: searchTerm, status: statusFilter });
   const [page,         setPage]         = useState(1);
   const [pageSize,     setPageSize]     = useState(10);
-
-  const filteredFranchises = useMemo(() => {
-    const query = searchTerm.toLowerCase();
-    return franchises.filter((f) => {
-      const matchesSearch =
-        !query ||
-        f.name.toLowerCase().includes(query) ||
-        f.brandCode.toLowerCase().includes(query) ||
-        (f.contactEmail || "").toLowerCase().includes(query);
-
-      const matchesStatus =
-        statusFilter === "ALL" ||
-        (statusFilter === "ACTIVE" ? f.status === "ACTIVE" : f.status !== "ACTIVE");
-
-      return matchesSearch && matchesStatus;
-    });
-  }, [franchises, searchTerm, statusFilter]);
 
   // Reset to page 1 when filters change
   const handleSearchChange = (v: string) => { setSearchTerm(v); setPage(1); };
@@ -59,7 +43,7 @@ export default function FranchisePage() {
         />
 
         <FranchiseStats
-          franchises={franchises}
+          franchises={allFranchises}
           loading={loading || refreshing}
         />
 
@@ -71,7 +55,7 @@ export default function FranchisePage() {
         />
 
         <FranchiseTable
-          franchises={filteredFranchises}
+          franchises={franchises}
           loading={loading || refreshing}
           page={page}
           pageSize={pageSize}

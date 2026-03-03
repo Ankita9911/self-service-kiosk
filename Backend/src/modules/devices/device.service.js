@@ -86,15 +86,42 @@ export async function createDevice(currentUser, payload) {
   };
 }
 
-export async function listDevices(currentUser) {
+export async function listDevices(currentUser, query = {}) {
+  const { search, status, franchiseId, outletId } = query;
   const filter = { isDeleted: false };
+
   if (currentUser.role === "SUPER_ADMIN") {
-    return Device.find(filter);
+    // Super admin can filter by franchise
+    if (franchiseId && franchiseId !== "ALL") filter.franchiseId = franchiseId;
+  } else {
+    // All other roles are scoped to their franchise
+    filter.franchiseId = currentUser.franchiseId;
+    if (currentUser.role === "OUTLET_MANAGER") {
+      // Outlet manager is always scoped to their outlet
+      filter.outletId = currentUser.outletId;
+    }
   }
-  filter.franchiseId = currentUser.franchiseId;
-  if (currentUser.role === "OUTLET_MANAGER") {
-    filter.outletId = currentUser.outletId;
+
+  // Outlet filter (for franchise admin / super admin)
+  if (
+    outletId &&
+    outletId !== "ALL" &&
+    currentUser.role !== "OUTLET_MANAGER"
+  ) {
+    filter.outletId = outletId;
   }
+
+  // Full-text search on deviceId and name
+  if (search && search.trim()) {
+    filter.$or = [
+      { deviceId: { $regex: search.trim(), $options: "i" } },
+      { name: { $regex: search.trim(), $options: "i" } },
+    ];
+  }
+
+  // Status filter
+  if (status && status !== "ALL") filter.status = status;
+
   return Device.find(filter);
 }
 

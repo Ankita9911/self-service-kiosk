@@ -14,23 +14,15 @@ export function DeviceHeader({
   onCreate,
 }: Props) {
   return (
-    <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-      {/* <div> */}
-        {/* {/* <div className="flex items-center gap-2 mb-1"> */}
-          {/* <MonitorSmartphone className="w-3.5 h-3.5 text-indigo-500" />
-          <span className="text-[11px] font-medium text-indigo-500 uppercase tracking-widest">
-            Device Registry
-          </span> */}
-        {/* </div>  */}
-<div>
+    <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2">
+      <div>
         <h1 className="text-[28px] font-semibold text-slate-900 dark:text-white tracking-tight">
           Devices
         </h1>
-        <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
+        <p className="text-sm text-slate-500 dark:text-slate-400">
           Monitor and register kiosk hardware across outlets.
         </p>
-        </div>
-      {/* </div> */}
+     </div>
 
       <div className="flex items-center gap-2">
         <button
