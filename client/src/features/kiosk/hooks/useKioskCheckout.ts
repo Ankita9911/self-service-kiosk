@@ -79,9 +79,6 @@ export function useKioskCheckout(
 
       try {
         const response = await kioskAxios.post("/orders", orderData);
-
-        toast.dismiss(loadingToast);
-
         setOrderNumber(response.data.data.orderNumber.toString());
 
         setShowSuccessDialog(true);
@@ -93,7 +90,7 @@ export function useKioskCheckout(
 
         await reloadMenu(true);
       } catch (error: any) {
-        toast.dismiss(loadingToast);
+       
 
         if (!error.response) {
           await addToQueue(orderData);
@@ -106,6 +103,7 @@ export function useKioskCheckout(
         }
       }
     } finally {
+      toast.dismiss(loadingToast);
       setIsProcessing(false);
       setSelectedMethod("");
     }

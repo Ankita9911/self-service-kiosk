@@ -22,10 +22,6 @@ function emitToOutlet(outletId, event, data) {
   }
 }
 
-/**
- * Handles ORDER_PLACED messages from the SQS queue.
- * Performs idempotency check, stock deduction, and order creation in a transaction.
- */
 export async function handleOrderPlaced(payload) {
   const { items, paymentMethod, clientOrderId, orderNumber, tenant, userRole } = payload;
 
@@ -33,7 +29,6 @@ export async function handleOrderPlaced(payload) {
   session.startTransaction();
 
   try {
-    // Idempotency: return silently if order already exists
     const existing = await Order.findOne({
       outletId: tenant.outletId,
       clientOrderId,
@@ -80,8 +75,7 @@ export async function handleOrderPlaced(payload) {
         lineTotal,
       });
     }
-
-    // Use the pre-assigned orderNumber from the HTTP layer (already incremented the counter)
+   
     const resolvedOrderNumber = orderNumber ?? await getNextOrderNumber(tenant.outletId, session);
 
     const order = await Order.create(
