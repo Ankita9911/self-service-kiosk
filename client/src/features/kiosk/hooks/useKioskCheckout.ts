@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { v4 as uuidv4 } from "uuid";
-import { toast } from "sonner";
+import { toast } from "react-hot-toast";
 import kioskAxios from "@/shared/lib/kioskAxios";
 import { addToQueue } from "@/shared/lib/orderQueue";
 import type { CartItem } from "../types/cartItem.types";
@@ -45,9 +45,7 @@ export function useKioskCheckout(
 
   const handleOpenCheckout = () => {
     if (cart.length === 0) {
-      toast.error("Cart is empty", {
-        description: "Add some items before checkout",
-      });
+      toast.error("Cart is empty");
       return;
     }
 
@@ -100,18 +98,11 @@ export function useKioskCheckout(
         if (!error.response) {
           await addToQueue(orderData);
 
-          toast.warning("Offline: Order queued", {
-            description: "Will be processed when connection is restored",
-            duration: 4000,
-          });
+          toast.error("Offline: Order queued");
 
           setCart([]);
         } else {
-          toast.error("Order failed", {
-            description:
-              error.response.data?.error?.message || "Please try again",
-            duration: 4000,
-          });
+          toast.error("Order failed");
         }
       }
     } finally {
