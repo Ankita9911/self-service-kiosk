@@ -125,6 +125,10 @@ export async function handleOrderPlaced(payload) {
     );
 
     emitToOutlet(tenant.outletId, "order:new", order[0]);
+    emitToOutlet(tenant.outletId, "menu:updated", {
+      type: "ORDER_STOCK_CHANGED",
+      outletId: tenant.outletId,
+    });
 
     return order[0];
   } catch (error) {

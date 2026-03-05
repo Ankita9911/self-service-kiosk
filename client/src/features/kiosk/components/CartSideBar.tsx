@@ -6,6 +6,7 @@ import type { CartItem } from "../types/cartItem.types";
 interface CartSidebarProps {
   isCartOpen: boolean;
   cart: CartItem[];
+  cartSyncAlerts: string[];
   totalItems: number;
   onClose: () => void;
   onUpdateQuantity: (id: string, delta: number) => void;
@@ -17,6 +18,7 @@ interface CartSidebarProps {
 export default function CartSidebar({
   isCartOpen,
   cart,
+  cartSyncAlerts,
   totalItems,
   onClose,
   onUpdateQuantity,
@@ -60,6 +62,7 @@ export default function CartSidebar({
         <div className="flex-1 overflow-hidden">
           <CartPanel
             cart={cart}
+            cartSyncAlerts={cartSyncAlerts}
             onUpdateQuantity={onUpdateQuantity}
             onRemoveItem={onRemoveItem}
             onPlaceOrder={onCheckout}

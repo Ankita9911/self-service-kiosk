@@ -1,4 +1,4 @@
-import { Minus, Plus, Trash2, ShoppingCart, Package, Tag } from "lucide-react";
+import { Minus, Plus, Trash2, ShoppingCart, Package, AlertTriangle } from "lucide-react";
 import { Button } from "../../../shared/components/ui/button";
 import type { CartItem } from "../types/cartItem.types";
 import { effectiveLineTotal } from "../hooks/useKioskCart";
@@ -6,6 +6,7 @@ import { effectiveLineTotal } from "../hooks/useKioskCart";
 
 interface CartPanelProps {
   cart: CartItem[];
+  cartSyncAlerts: string[];
   onUpdateQuantity: (itemId: string, delta: number) => void;
   onRemoveItem: (itemId: string) => void;
   onPlaceOrder: () => void;
@@ -14,6 +15,7 @@ interface CartPanelProps {
 
 export default function CartPanel({
   cart,
+  cartSyncAlerts,
   onUpdateQuantity,
   onRemoveItem,
   onPlaceOrder,
@@ -48,6 +50,31 @@ export default function CartPanel({
   return (
     <div className="flex flex-col h-full">
       <div className="flex-1 overflow-y-auto p-4 space-y-3 scrollbar-thin scrollbar-thumb-orange-200 scrollbar-track-transparent">
+        {cartSyncAlerts.length > 0 && (
+          <div className="rounded-2xl border-2 border-amber-200 bg-amber-50 p-3 shadow-sm">
+            <div className="flex items-center gap-2 mb-2">
+              <AlertTriangle className="w-4 h-4 text-amber-700" />
+              <p
+                className="text-sm font-black text-amber-800"
+                style={{ fontFamily: "var(--font-display)" }}
+              >
+                Cart updated due to latest stock/price changes
+              </p>
+            </div>
+            <div className="space-y-1">
+              {cartSyncAlerts.map((alert, idx) => (
+                <p
+                  key={`${alert}-${idx}`}
+                  className="text-xs font-semibold text-amber-800"
+                  style={{ fontFamily: "var(--font-body)" }}
+                >
+                  • {alert}
+                </p>
+              ))}
+            </div>
+          </div>
+        )}
+
         {cart.map((item) => {
           const isAtMaxStock = item.quantity >= item.stockQuantity;
           const isLowStock = item.stockQuantity <= 3;

@@ -20,6 +20,8 @@ import { useKioskCheckout } from "../hooks/useKioskCheckout";
 import { useKioskForceLogout } from "../hooks/useKioskForceLogout";
 import type { OfferType } from "../types/menu.types";
 import { getKioskToken } from "@/shared/lib/kioskSession";
+import type { CartItem } from "../types/cartItem.types";
+import type { Combo, MenuCategory, MenuItem } from "../types/menu.types";
 
 const OFFER_CHIPS: { value: OfferType | null; label: string; emoji: string }[] =
   [
@@ -34,11 +36,13 @@ const OFFER_CHIPS: { value: OfferType | null; label: string; emoji: string }[] =
 export default function KioskPage() {
   const navigate = useNavigate();
   const [isCartOpen, setIsCartOpen] = useState(true);
+  const [cartSyncAlerts, setCartSyncAlerts] = useState<string[]>([]);
 
   // Redirect immediately if the device is deactivated by an admin
   useKioskForceLogout();
 
   const {
+    menu,
     selectedCategory,
     setSelectedCategory,
     categoriesWithAll,
@@ -87,6 +91,23 @@ export default function KioskPage() {
   }, [navigate]);
 
   const isOnCombos = selectedCategory === COMBOS_CATEGORY_ID;
+
+  useEffect(() => {
+    if (cart.length === 0) {
+      if (cartSyncAlerts.length > 0) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setCartSyncAlerts([]);
+      }
+      return;
+    }
+
+    const result = reconcileCartWithCatalog(cart, menu, combos);
+
+    if (result.changed) {
+      setCart(result.cart);
+      setCartSyncAlerts(result.alerts);
+    }
+  }, [cart, menu, combos, setCart, cartSyncAlerts.length]);
 
   return (
     <div className="h-screen flex flex-row bg-gray-50 overflow-hidden">
@@ -219,6 +240,7 @@ export default function KioskPage() {
       <CartSidebar
         isCartOpen={isCartOpen}
         cart={cart}
+        cartSyncAlerts={cartSyncAlerts}
         totalItems={totalItems}
         onClose={() => setIsCartOpen(false)}
         onUpdateQuantity={handleUpdateQuantity}
@@ -248,4 +270,104 @@ export default function KioskPage() {
       />
     </div>
   );
+}
+
+function reconcileCartWithCatalog(
+  cart: CartItem[],
+  menu: MenuCategory[],
+  combos: Combo[]
+): { cart: CartItem[]; alerts: string[]; changed: boolean } {
+  const menuById = new Map<string, MenuItem>();
+  const comboById = new Map<string, Combo>();
+
+  for (const category of menu) {
+    for (const item of category.items || []) {
+      menuById.set(String(item._id), item);
+    }
+  }
+
+  for (const combo of combos) {
+    comboById.set(String(combo._id), combo);
+  }
+
+  const nextCart: CartItem[] = [];
+  const alerts: string[] = [];
+
+  for (const cartItem of cart) {
+    if (cartItem.isCombo) {
+      const combo = comboById.get(cartItem.itemId);
+
+      if (!combo || combo.isActive === false) {
+        alerts.push(`${cartItem.name} was removed because it is no longer available.`);
+        continue;
+      }
+
+      const nextPrice = combo.comboPrice ?? cartItem.price;
+      if (nextPrice !== cartItem.price) {
+        alerts.push(
+          `${cartItem.name} price changed: Rs ${cartItem.price.toFixed(2)} -> Rs ${nextPrice.toFixed(2)}.`
+        );
+      }
+
+      nextCart.push({
+        ...cartItem,
+        price: nextPrice,
+      });
+      continue;
+    }
+
+    const liveItem = menuById.get(cartItem.itemId);
+
+    if (!liveItem || liveItem.isActive === false || liveItem.stockQuantity <= 0) {
+      alerts.push(`${cartItem.name} was removed because it is out of stock.`);
+      continue;
+    }
+
+    const reducedQuantity = Math.min(cartItem.quantity, liveItem.stockQuantity);
+    if (reducedQuantity !== cartItem.quantity) {
+      alerts.push(
+        `${cartItem.name} quantity reduced from ${cartItem.quantity} to ${reducedQuantity} due to stock limits.`
+      );
+    }
+
+    const firstOffer = liveItem.offers?.[0];
+    if (liveItem.price !== cartItem.price) {
+      alerts.push(
+        `${cartItem.name} price changed: Rs ${cartItem.price.toFixed(2)} -> Rs ${liveItem.price.toFixed(2)}.`
+      );
+    }
+
+    nextCart.push({
+      ...cartItem,
+      price: liveItem.price,
+      quantity: reducedQuantity,
+      stockQuantity: liveItem.stockQuantity,
+      offerType: firstOffer?.type,
+      discountPercent: firstOffer?.discountPercent,
+    });
+  }
+
+  const changed = hasCartChanged(cart, nextCart);
+  return { cart: nextCart, alerts, changed };
+}
+
+function hasCartChanged(prev: CartItem[], next: CartItem[]): boolean {
+  if (prev.length !== next.length) return true;
+
+  for (let i = 0; i < prev.length; i += 1) {
+    const a = prev[i];
+    const b = next[i];
+    if (
+      a.itemId !== b.itemId ||
+      a.price !== b.price ||
+      a.quantity !== b.quantity ||
+      a.stockQuantity !== b.stockQuantity ||
+      a.offerType !== b.offerType ||
+      a.discountPercent !== b.discountPercent
+    ) {
+      return true;
+    }
+  }
+
+  return false;
 }
