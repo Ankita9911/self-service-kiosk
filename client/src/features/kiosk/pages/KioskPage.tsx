@@ -12,6 +12,7 @@ import {
 } from "../components/LoadingSkeleton";
 import CartSidebar from "../components/CartSideBar";
 import PaymentDialouge from "../components/PaymentDialouge";
+import ProcessingOrderDialouge from "../components/ProcessingOrderDialouge";
 import SuccessDialouge from "../components/SuccessDialouge";
 import FailedOrderDialouge from "../components/FailedOrderDialouge";
 
@@ -69,6 +70,7 @@ export default function KioskPage() {
   const {
     showPaymentDialog,
     setShowPaymentDialog,
+    showProcessingDialog,
     showSuccessDialog,
     setShowSuccessDialog,
     showFailedDialog,
@@ -266,6 +268,8 @@ export default function KioskPage() {
         totalPrice={totalPrice}
         onConfirm={handleConfirmOrder}
       />
+
+      <ProcessingOrderDialouge open={showProcessingDialog} />
 
       <SuccessDialouge
         open={showSuccessDialog}

@@ -14,6 +14,7 @@ type CheckoutFailureKind = "ORDER_FAILED" | "ORDER_UNCONFIRMED";
 interface UseKioskCheckoutReturn {
   showPaymentDialog: boolean;
   setShowPaymentDialog: (v: boolean) => void;
+  showProcessingDialog: boolean;
 
   showSuccessDialog: boolean;
   setShowSuccessDialog: (v: boolean) => void;
@@ -56,6 +57,7 @@ export function useKioskCheckout(
   reloadMenu: (silent?: boolean) => Promise<void>,
 ): UseKioskCheckoutReturn {
   const [showPaymentDialog, setShowPaymentDialog] = useState(false);
+  const [showProcessingDialog, setShowProcessingDialog] = useState(false);
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
   const [showFailedDialog, setShowFailedDialog] = useState(false);
   const [failedMessage, setFailedMessage] = useState("");
@@ -197,8 +199,7 @@ export function useKioskCheckout(
 
     setIsProcessing(true);
     setShowPaymentDialog(false);
-
-    const loadingToast = toast.loading("Processing your order...");
+    setShowProcessingDialog(true);
 
     try {
       const clientOrderId = uuidv4();
@@ -229,6 +230,7 @@ export function useKioskCheckout(
         }
 
         if (queuedOrder.status === "SUCCESS") {
+          setShowProcessingDialog(false);
           setOrderNumber(queuedOrder.orderNumber.toString());
           setShowSuccessDialog(true);
           setCart([]);
@@ -242,6 +244,7 @@ export function useKioskCheckout(
           queuedOrder.orderNumber
         );
 
+        setShowProcessingDialog(false);
         setOrderNumber(outcome.orderNumber.toString());
         setShowSuccessDialog(true);
         setCart([]);
@@ -260,6 +263,7 @@ export function useKioskCheckout(
         const failureKind = maybeError.kind;
 
         if (failureKind === "ORDER_FAILED" || failureKind === "ORDER_UNCONFIRMED") {
+          setShowProcessingDialog(false);
           toast.error(errorMessage);
           setFailedMessage(errorMessage);
           setShowFailedDialog(true);
@@ -268,10 +272,12 @@ export function useKioskCheckout(
         }
 
         if (!hasResponse) {
+          setShowProcessingDialog(false);
           await addToQueue(orderData);
           toast.error("Offline: Order queued");
           setCart([]);
         } else {
+          setShowProcessingDialog(false);
           const serverMessage = maybeError.response?.data?.message || "Order failed";
           toast.error(serverMessage);
           setFailedMessage(serverMessage);
@@ -279,7 +285,7 @@ export function useKioskCheckout(
         }
       }
     } finally {
-      toast.dismiss(loadingToast);
+      setShowProcessingDialog(false);
       setIsProcessing(false);
       setSelectedMethod("");
     }
@@ -288,6 +294,7 @@ export function useKioskCheckout(
   return {
     showPaymentDialog,
     setShowPaymentDialog,
+    showProcessingDialog,
 
     showSuccessDialog,
     setShowSuccessDialog,
