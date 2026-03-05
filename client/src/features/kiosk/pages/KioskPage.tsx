@@ -13,6 +13,7 @@ import {
 import CartSidebar from "../components/CartSideBar";
 import PaymentDialouge from "../components/PaymentDialouge";
 import SuccessDialouge from "../components/SuccessDialouge";
+import FailedOrderDialouge from "../components/FailedOrderDialouge";
 
 import { useKioskMenu } from "../hooks/usekioskMenu";
 import { useKioskCart } from "../hooks/useKioskCart";
@@ -70,6 +71,9 @@ export default function KioskPage() {
     setShowPaymentDialog,
     showSuccessDialog,
     setShowSuccessDialog,
+    showFailedDialog,
+    setShowFailedDialog,
+    failedMessage,
     paymentStep,
     setPaymentStep,
     selectedMethod,
@@ -267,6 +271,12 @@ export default function KioskPage() {
         open={showSuccessDialog}
         orderNumber={orderNumber}
         onClose={() => setShowSuccessDialog(false)}
+      />
+
+      <FailedOrderDialouge
+        open={showFailedDialog}
+        message={failedMessage}
+        onClose={() => setShowFailedDialog(false)}
       />
     </div>
   );

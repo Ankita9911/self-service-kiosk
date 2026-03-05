@@ -9,6 +9,7 @@ import type { CartItem } from "../types/cartItem.types";
 
 type PaymentStep = "SELECTION" | "DETAILS";
 type PaymentMethod = "CASH" | "CARD" | "UPI" | "";
+type CheckoutFailureKind = "ORDER_FAILED" | "ORDER_UNCONFIRMED";
 
 interface UseKioskCheckoutReturn {
   showPaymentDialog: boolean;
@@ -16,6 +17,9 @@ interface UseKioskCheckoutReturn {
 
   showSuccessDialog: boolean;
   setShowSuccessDialog: (v: boolean) => void;
+  showFailedDialog: boolean;
+  setShowFailedDialog: (v: boolean) => void;
+  failedMessage: string;
 
   paymentStep: PaymentStep;
   setPaymentStep: (v: PaymentStep) => void;
@@ -31,6 +35,10 @@ interface UseKioskCheckoutReturn {
 }
 
 type OrderProcessingStatus = "PENDING" | "SUCCESS" | "FAILED" | "UNKNOWN";
+
+interface CheckoutFailure extends Error {
+  kind?: CheckoutFailureKind;
+}
 
 function getSocketUrl(): string {
   const apiUrl = import.meta.env.VITE_API_BASE_URL;
@@ -49,6 +57,8 @@ export function useKioskCheckout(
 ): UseKioskCheckoutReturn {
   const [showPaymentDialog, setShowPaymentDialog] = useState(false);
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
+  const [showFailedDialog, setShowFailedDialog] = useState(false);
+  const [failedMessage, setFailedMessage] = useState("");
 
   const [paymentStep, setPaymentStep] = useState<PaymentStep>("SELECTION");
 
@@ -106,7 +116,9 @@ export function useKioskCheckout(
         if (settled) return;
         settled = true;
         cleanup();
-        reject(new Error(message));
+        const err = new Error(message) as CheckoutFailure;
+        err.kind = "ORDER_FAILED";
+        reject(err);
       };
 
       const checkStatus = async () => {
@@ -151,7 +163,13 @@ export function useKioskCheckout(
         void (async () => {
           await checkStatus();
           if (!settled) {
-            settleFailure("Unable to confirm your order. Please try again.");
+            const timeoutError = new Error(
+              "Unable to confirm your order. Please try again."
+            ) as CheckoutFailure;
+            timeoutError.kind = "ORDER_UNCONFIRMED";
+            settled = true;
+            cleanup();
+            reject(timeoutError);
           }
         })();
       }, timeoutMs);
@@ -203,7 +221,11 @@ export function useKioskCheckout(
         };
 
         if (queuedOrder.status === "FAILED") {
-          throw new Error(queuedOrder.errorMessage || "Order could not be completed");
+          const failedError = new Error(
+            queuedOrder.errorMessage || "Order could not be completed"
+          ) as CheckoutFailure;
+          failedError.kind = "ORDER_FAILED";
+          throw failedError;
         }
 
         if (queuedOrder.status === "SUCCESS") {
@@ -227,18 +249,33 @@ export function useKioskCheckout(
         toast.success("Order placed successfully!", { duration: 3000 });
 
         await reloadMenu(true);
-      } catch (error: any) {
-        if (!error.response) {
-          if (error?.message?.includes("could not be completed") || error?.message?.includes("Unable to confirm")) {
-            toast.error(error.message);
-            await reloadMenu(true);
-          } else {
-            await addToQueue(orderData);
-            toast.error("Offline: Order queued");
-            setCart([]);
-          }
+      } catch (error: unknown) {
+        const maybeError = error as {
+          message?: string;
+          response?: { data?: { message?: string } };
+          kind?: CheckoutFailureKind;
+        };
+        const hasResponse = !!maybeError.response;
+        const errorMessage = maybeError.message || "Order failed";
+        const failureKind = maybeError.kind;
+
+        if (failureKind === "ORDER_FAILED" || failureKind === "ORDER_UNCONFIRMED") {
+          toast.error(errorMessage);
+          setFailedMessage(errorMessage);
+          setShowFailedDialog(true);
+          await reloadMenu(true);
+          return;
+        }
+
+        if (!hasResponse) {
+          await addToQueue(orderData);
+          toast.error("Offline: Order queued");
+          setCart([]);
         } else {
-          toast.error(error.response?.data?.message || "Order failed");
+          const serverMessage = maybeError.response?.data?.message || "Order failed";
+          toast.error(serverMessage);
+          setFailedMessage(serverMessage);
+          setShowFailedDialog(true);
         }
       }
     } finally {
@@ -254,6 +291,9 @@ export function useKioskCheckout(
 
     showSuccessDialog,
     setShowSuccessDialog,
+    showFailedDialog,
+    setShowFailedDialog,
+    failedMessage,
 
     paymentStep,
     setPaymentStep,
