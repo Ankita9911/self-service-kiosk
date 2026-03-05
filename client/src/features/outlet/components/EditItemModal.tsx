@@ -6,8 +6,10 @@ import { Pencil, X, ImageIcon, RefreshCcw } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/components/ui/select";
 import { OfferEditor } from "./OfferEditor";
+import { CustomizationPicker } from "./CustomizationPicker";
 
 import type { ServiceType, ItemOfferForm } from "@/features/outlet/types/outlet.types";
+import type { MenuItem } from "@/features/kiosk/types/menu.types";
 
 const SERVICE_OPTIONS: { value: ServiceType; label: string }[] = [
   { value: "DINE_IN",   label: "Dine In"   },
@@ -18,10 +20,12 @@ const SERVICE_OPTIONS: { value: ServiceType; label: string }[] = [
 interface Props {
   open: boolean;
   onClose: () => void;
-  form: { name: string; description: string; imageUrl?: string; imageFile: File | null; price: string; stockQuantity: string; categoryId?: string; serviceType?: ServiceType; offers?: ItemOfferForm[] };
+  form: { name: string; description: string; imageUrl?: string; imageFile: File | null; price: string; stockQuantity: string; categoryId?: string; serviceType?: ServiceType; offers?: ItemOfferForm[]; customizationItemIds?: string[] };
   setForm: React.Dispatch<React.SetStateAction<any>>;
   onSubmit: () => Promise<void>;
   categories?: { _id: string; name: string }[];
+  items: MenuItem[];
+  editingItemId?: string;
 }
 
 type FieldErrors = Partial<Record<keyof EditMenuItemFormValues, string>>;
@@ -37,12 +41,20 @@ const LabelEl = ({ children }: { children: React.ReactNode }) => (
 const ErrTxt = ({ msg }: { msg?: string }) =>
   msg ? <p className="mt-1 text-[11px] text-red-500 flex items-center gap-1"><span className="w-1 h-1 rounded-full bg-red-400" />{msg}</p> : null;
 
-export function EditItemModal({ open, onClose, form, setForm, onSubmit, categories }: Props) {
+export function EditItemModal({ open, onClose, form, setForm, onSubmit, categories, items, editingItemId }: Props) {
   const [errors, setErrors] = useState<FieldErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   function validate(): boolean {
-    const payload = { name: form.name, description: form.description, price: form.price, stockQuantity: form.stockQuantity, imageFile: form.imageFile ?? undefined, offers: form.offers };
+    const payload = {
+      name: form.name,
+      description: form.description,
+      price: form.price,
+      stockQuantity: form.stockQuantity,
+      imageFile: form.imageFile ?? undefined,
+      offers: form.offers,
+      customizationItemIds: form.customizationItemIds ?? [],
+    };
     const result = editMenuItemSchema.safeParse(payload);
     if (!result.success) {
       setErrors(getZodFieldErrors<EditMenuItemFormValues>(result.error));
@@ -76,7 +88,7 @@ export function EditItemModal({ open, onClose, form, setForm, onSubmit, categori
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md p-0 border border-slate-100 dark:border-white/8 bg-white dark:bg-[#1e2130] rounded-2xl overflow-hidden shadow-2xl shadow-black/20">
+      <DialogContent className="sm:max-w-lg p-0 border border-slate-100 dark:border-white/8 bg-white dark:bg-[#1e2130] rounded-2xl overflow-hidden shadow-2xl shadow-black/20 max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-5 border-b border-slate-100 dark:border-white/8">
           <div className="flex items-center gap-3">
@@ -189,6 +201,19 @@ export function EditItemModal({ open, onClose, form, setForm, onSubmit, categori
               onChange={(offers) => setForm((prev: any) => ({ ...prev, offers }))}
             />
             <ErrTxt msg={errors.offers as string | undefined} />
+          </div>
+
+          <div>
+            <LabelEl>Customization Options <span className="text-slate-400 font-medium normal-case">(optional)</span></LabelEl>
+            <CustomizationPicker
+              items={items}
+              selectedIds={form.customizationItemIds ?? []}
+              excludeItemId={editingItemId}
+              onChange={(customizationItemIds) => setForm((prev: any) => ({ ...prev, customizationItemIds }))}
+            />
+            <p className="mt-1 text-[11px] text-slate-400">
+              Tip: keep customization items inactive so they only appear as add-ons.
+            </p>
           </div>
 
           {/* Actions */}

@@ -52,6 +52,7 @@ export default function OutletMenuPage() {
   const {
     categories,
     items,
+    customizationItems,
     combos,
     loading,
     filterLoading,
@@ -133,6 +134,7 @@ export default function OutletMenuPage() {
       stockQuantity: String(item.stockQuantity),
       serviceType: item.serviceType ?? "BOTH",
       offers: item.offers ?? [],
+      customizationItemIds: item.customizationItemIds ?? [],
     });
   };
 
@@ -217,7 +219,7 @@ export default function OutletMenuPage() {
               <Button
                 size="sm"
                 onClick={() => {
-                  setItemForm({ categoryId: categories[0]?._id ?? "", name: "", description: "", imageFile: null, price: "", stockQuantity: "0", serviceType: "BOTH", offers: [] });
+                  setItemForm({ categoryId: categories[0]?._id ?? "", name: "", description: "", imageFile: null, price: "", stockQuantity: "0", serviceType: "BOTH", offers: [], customizationItemIds: [] });
                   setAddItemOpen(true);
                 }}
                 className="rounded-xl h-9 text-xs bg-indigo-600 hover:bg-indigo-700 text-white"
@@ -654,6 +656,7 @@ export default function OutletMenuPage() {
         open={addItemOpen}
         onClose={() => setAddItemOpen(false)}
         categories={categories}
+        items={customizationItems}
         form={itemForm}
         setForm={setItemForm}
         onSubmit={async () => { await addItem(); setAddItemOpen(false); }}
@@ -662,6 +665,8 @@ export default function OutletMenuPage() {
         <EditItemModal
           open={!!editItem}
           onClose={() => setEditItem(null)}
+          items={customizationItems}
+          editingItemId={editItem._id}
           form={itemForm}
           setForm={setItemForm}
           onSubmit={async () => { await updateItem(editItem._id); setEditItem(null); }}

@@ -113,6 +113,7 @@ export async function createMenuItem(
     stockQuantity: number;
     serviceType?: "DINE_IN" | "TAKE_AWAY" | "BOTH";
     offers?: MenuItem["offers"];
+    customizationItemIds?: string[];
   },
   outletId?: string
 ): Promise<MenuItem> {
@@ -125,7 +126,7 @@ export async function createMenuItem(
 
 export async function updateMenuItem(
   id: string,
-  data: Partial<MenuItem>,
+  data: Partial<MenuItem> & { customizationItemIds?: string[] },
   outletId?: string
 ): Promise<MenuItem> {
   const response = await axiosInstance.put<{ data: MenuItem }>(

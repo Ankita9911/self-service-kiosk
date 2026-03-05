@@ -1,9 +1,10 @@
 import { Plus, ImageOff, Minus, AlertCircle, ChevronDown } from "lucide-react";
 import { motion } from "framer-motion";
 import { useState } from "react";
-import type { MenuItem } from "../../../shared/lib/menuCache";
+import type { MenuItem } from "../types/menu.types";
 import type { CartItem } from "../types/cartItem.types";
 import { OfferBadge } from "./OfferBadge";
+import CustomizeItemDialouge from "./CustomizeItemDialouge";
 
 const DESC_LIMIT = 70;
 
@@ -41,6 +42,7 @@ export default function MenuGrid({
   onAddToCart,
   onUpdateQuantity,
 }: MenuGridProps) {
+  const [customizationItem, setCustomizationItem] = useState<MenuItem | null>(null);
   const availableItems = items.filter((item) => item.stockQuantity > 0);
 
   if (availableItems.length === 0) {
@@ -66,10 +68,19 @@ export default function MenuGrid({
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-      {availableItems.map((item) => {
-        const cartItem = cart.find((c) => c.itemId === item._id);
-        const quantity = cartItem?.quantity || 0;
+    <>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {availableItems.map((item) => {
+          const offers = item.offers || [];
+          const discountOffer = offers.find(
+            (offer) => offer.type === "DISCOUNT" && typeof offer.discountPercent === "number"
+          );
+          const cartLines = cart.filter((c) => c.itemId === item._id);
+          const quantity = cartLines.reduce((sum, line) => sum + line.quantity, 0);
+          const defaultCartLine = cartLines.find(
+            (line) => !line.selectedCustomizations || line.selectedCustomizations.length === 0
+          );
+          const hasCustomizationOptions = (item.customizationOptions || []).length > 0;
         const remainingStock = item.stockQuantity - quantity;
         const isLowStock = remainingStock <= 3 && remainingStock > 0;
         const isOutOfStock = remainingStock === 0;
@@ -119,9 +130,9 @@ export default function MenuGrid({
               )}
 
               {/* Offer badges – top left */}
-              {(item as any).offers && (item as any).offers.length > 0 && (
+              {offers.length > 0 && (
                 <div className="absolute top-3 left-3 flex flex-col gap-1">
-                  {(item as any).offers.map((offer: any, idx: number) => (
+                  {offers.map((offer, idx) => (
                     <OfferBadge key={idx} offer={offer} />
                   ))}
                 </div>
@@ -165,13 +176,13 @@ export default function MenuGrid({
                   >
                     PRICE
                   </span>
-                  {(item as any).offers?.find((o: any) => o.type === "DISCOUNT" && o.discountPercent) ? (
+                  {discountOffer ? (
                     <div className="flex flex-col">
                       <span className="text-sm line-through text-gray-400" style={{ fontFamily: "var(--font-display)" }}>
                         ₹{item.price.toFixed(2)}
                       </span>
                       <span className="text-2xl font-black text-red-500" style={{ fontFamily: "var(--font-display)" }}>
-                        ₹{(item.price * (1 - (item as any).offers.find((o: any) => o.type === "DISCOUNT").discountPercent / 100)).toFixed(2)}
+                        ₹{(item.price * (1 - (discountOffer.discountPercent || 0) / 100)).toFixed(2)}
                       </span>
                     </div>
                   ) : (
@@ -184,9 +195,16 @@ export default function MenuGrid({
                   )}
                 </div>
 
-                {quantity === 0 ? (
+                {quantity === 0 || hasCustomizationOptions ? (
                   <motion.button
-                    onClick={() => !isOutOfStock && onAddToCart(item)}
+                    onClick={() => {
+                      if (isOutOfStock) return;
+                      if (hasCustomizationOptions) {
+                        setCustomizationItem(item);
+                        return;
+                      }
+                      onAddToCart(item);
+                    }}
                     disabled={isOutOfStock}
                     whileHover={{ scale: isOutOfStock ? 1 : 1.05 }}
                     whileTap={{ scale: isOutOfStock ? 1 : 0.95 }}
@@ -196,12 +214,19 @@ export default function MenuGrid({
                         : "bg-linear-to-br from-orange-500 via-orange-600 to-orange-500 hover:from-orange-600 hover:via-orange-700 hover:to-orange-600 text-white shadow-orange-300"
                     }`}
                   >
-                    <Plus className="w-6 h-6" strokeWidth={3} />
+                    {hasCustomizationOptions ? (
+                      <span className="text-xs font-black px-1">CUSTOMIZE ({quantity})</span>
+                    ) : (
+                      <Plus className="w-6 h-6" strokeWidth={3} />
+                    )}
                   </motion.button>
                 ) : (
                   <div className="flex items-center gap-2 bg-white rounded-2xl p-1.5 shadow-xl border-2 border-orange-100">
                     <motion.button
-                      onClick={() => onUpdateQuantity(item._id, -1)}
+                      onClick={() => {
+                        if (!defaultCartLine) return;
+                        onUpdateQuantity(defaultCartLine.cartItemId, -1);
+                      }}
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.9 }}
                       className="w-9 h-9 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 flex items-center justify-center transition-all"
@@ -217,7 +242,14 @@ export default function MenuGrid({
                     </span>
 
                     <motion.button
-                      onClick={() => !isAtMaxStock && onAddToCart(item)}
+                      onClick={() => {
+                        if (isAtMaxStock) return;
+                        if ((item.customizationOptions || []).length > 0) {
+                          setCustomizationItem(item);
+                          return;
+                        }
+                        onAddToCart(item);
+                      }}
                       disabled={isAtMaxStock}
                       whileHover={{ scale: isAtMaxStock ? 1 : 1.1 }}
                       whileTap={{ scale: isAtMaxStock ? 1 : 0.9 }}
@@ -235,7 +267,24 @@ export default function MenuGrid({
             </div>
           </motion.div>
         );
-      })}
-    </div>
+        })}
+      </div>
+      <CustomizeItemDialouge
+        open={!!customizationItem}
+        item={customizationItem}
+        onClose={() => setCustomizationItem(null)}
+        onConfirm={(customizationItemIds) => {
+          if (!customizationItem) return;
+          const selectedCustomizations = (customizationItem.customizationOptions || []).filter(
+            (option) => customizationItemIds.includes(option.itemId)
+          );
+          onAddToCart({
+            ...customizationItem,
+            selectedCustomizations,
+          } as MenuItem & { selectedCustomizations: NonNullable<CartItem["selectedCustomizations"]> });
+          setCustomizationItem(null);
+        }}
+      />
+    </>
   );
 }

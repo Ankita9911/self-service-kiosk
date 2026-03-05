@@ -13,6 +13,13 @@ export interface OrderItem {
   priceSnapshot: number;
   quantity: number;
   lineTotal: number;
+  customizations?: {
+    itemId: string;
+    nameSnapshot: string;
+    priceSnapshot: number;
+    quantity: number;
+    lineTotal: number;
+  }[];
 }
 
 export interface Order {

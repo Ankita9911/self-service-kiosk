@@ -78,7 +78,55 @@ export async function handleOrderPlaced(payload) {
         );
       }
 
-      const lineTotal = menuItem.price * item.quantity;
+      const requestedCustomizationIds = [
+        ...new Set((item.customizationItemIds || []).map((id) => String(id))),
+      ];
+      const allowedCustomizationIds = new Set(
+        (menuItem.customizationItemIds || []).map((id) => String(id))
+      );
+
+      const selectedCustomizations = [];
+      let customizationUnitTotal = 0;
+
+      for (const customizationItemId of requestedCustomizationIds) {
+        if (!allowedCustomizationIds.has(customizationItemId)) {
+          throw new Error(
+            `Invalid customization ${customizationItemId} for item: ${item.itemId}`
+          );
+        }
+
+        const customizationItem = await MenuItem.findOneAndUpdate(
+          {
+            _id: customizationItemId,
+            outletId: tenant.outletId,
+            franchiseId: tenant.franchiseId,
+            isDeleted: false,
+            stockQuantity: { $gte: item.quantity },
+          },
+          { $inc: { stockQuantity: -item.quantity } },
+          { returnDocument: "after", session }
+        );
+
+        if (!customizationItem) {
+          throw new Error(
+            `Insufficient stock or invalid customization item: ${customizationItemId}`
+          );
+        }
+
+        const customizationLineTotal = customizationItem.price * item.quantity;
+        customizationUnitTotal += customizationItem.price;
+
+        selectedCustomizations.push({
+          itemId: customizationItem._id,
+          nameSnapshot: customizationItem.name,
+          priceSnapshot: customizationItem.price,
+          quantity: item.quantity,
+          lineTotal: customizationLineTotal,
+        });
+      }
+
+      const unitPrice = menuItem.price + customizationUnitTotal;
+      const lineTotal = unitPrice * item.quantity;
       totalAmount += lineTotal;
 
       processedItems.push({
@@ -87,6 +135,7 @@ export async function handleOrderPlaced(payload) {
         priceSnapshot: menuItem.price,
         quantity: item.quantity,
         lineTotal,
+        customizations: selectedCustomizations,
       });
     }
    

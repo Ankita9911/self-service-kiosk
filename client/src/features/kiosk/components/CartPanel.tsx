@@ -86,7 +86,7 @@ export default function CartPanel({
             >
               <div className="flex items-start justify-between mb-3">
                 <div className="flex-1 pr-2">
-                  <h4 
+                  <h4
                     className="text-base font-bold text-gray-900 leading-tight mb-1" 
                     style={{ fontFamily: 'var(--font-display)' }}
                   >
@@ -119,9 +119,22 @@ export default function CartPanel({
                       </span>
                     </div>
                   )}
+                  {(item.selectedCustomizations || []).length > 0 && (
+                    <div className="mt-2 space-y-1">
+                      {item.selectedCustomizations!.map((option) => (
+                        <p
+                          key={option.itemId}
+                          className="text-[11px] font-semibold text-gray-600"
+                          style={{ fontFamily: "var(--font-body)" }}
+                        >
+                          + {option.name} (Rs {option.price.toFixed(2)})
+                        </p>
+                      ))}
+                    </div>
+                  )}
                 </div>
                 <button 
-                  onClick={() => onRemoveItem(item.itemId)} 
+                  onClick={() => onRemoveItem(item.cartItemId)} 
                   className="p-2 hover:bg-red-50 rounded-xl transition-all group shrink-0"
                 >
                   <Trash2 className="w-4 h-4 text-gray-400 group-hover:text-red-500 transition-colors" strokeWidth={2} />
@@ -131,7 +144,7 @@ export default function CartPanel({
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2 bg-white rounded-xl p-1 shadow-md border-2 border-gray-100">
                   <button 
-                    onClick={() => onUpdateQuantity(item.itemId, -1)} 
+                    onClick={() => onUpdateQuantity(item.cartItemId, -1)} 
                     className="w-9 h-9 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 flex items-center justify-center transition-all active:scale-95"
                   >
                     <Minus className="w-4 h-4" strokeWidth={2.5} />
@@ -143,7 +156,7 @@ export default function CartPanel({
                     {item.quantity}
                   </span>
                   <button 
-                    onClick={() => onUpdateQuantity(item.itemId, 1)} 
+                    onClick={() => onUpdateQuantity(item.cartItemId, 1)} 
                     disabled={isAtMaxStock}
                     className={`w-9 h-9 rounded-lg flex items-center justify-center transition-all ${
                       isAtMaxStock 

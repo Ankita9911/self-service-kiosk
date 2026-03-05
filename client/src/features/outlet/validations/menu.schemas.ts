@@ -55,6 +55,7 @@ export const menuItemSchema = z.object({
       }
     })
     .optional(),
+  customizationItemIds: z.array(z.string().min(1)).max(30, "You can add up to 30 customizations").optional(),
   imageFile: z
     .instanceof(Blob)
     .optional()

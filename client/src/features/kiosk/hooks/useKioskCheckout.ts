@@ -210,6 +210,7 @@ export function useKioskCheckout(
         items: cart.map((item) => ({
           itemId: item.itemId,
           quantity: item.quantity,
+          customizationItemIds: (item.selectedCustomizations || []).map((option) => option.itemId),
         })),
       };
 

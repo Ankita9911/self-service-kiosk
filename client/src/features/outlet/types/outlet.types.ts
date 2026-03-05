@@ -36,4 +36,5 @@ export type ItemFormState = {
   stockQuantity: string;
   serviceType: ServiceType;
   offers: ItemOfferForm[];
+  customizationItemIds: string[];
 };

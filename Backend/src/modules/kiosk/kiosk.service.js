@@ -18,6 +18,30 @@ export async function getKioskMenu(tenant) {
     stockQuantity: { $gt: 0 },
   });
 
+  const customizationIds = [
+    ...new Set(
+      items
+        .flatMap((item) => (item.customizationItemIds || []).map((id) => String(id)))
+        .filter(Boolean)
+    ),
+  ];
+
+  let customizationItemMap = new Map();
+
+  if (customizationIds.length > 0) {
+    const customizationItems = await MenuItem.find({
+      _id: { $in: customizationIds },
+      franchiseId: tenant.franchiseId,
+      outletId: tenant.outletId,
+      isDeleted: false,
+    })
+      .select("_id name price stockQuantity isDeleted")
+      .lean();
+
+    customizationItemMap = new Map(
+      customizationItems.map((item) => [String(item._id), item])
+    );
+  }
 
   const categoryMap = {};
 
@@ -41,6 +65,15 @@ export async function getKioskMenu(tenant) {
         stockQuantity: item.stockQuantity,
         serviceType: item.serviceType ?? "BOTH",
         offers: item.offers ?? [],
+        customizationOptions: (item.customizationItemIds || [])
+          .map((id) => customizationItemMap.get(String(id)))
+          .filter(Boolean)
+          .map((opt) => ({
+            itemId: String(opt._id),
+            name: opt.name,
+            price: opt.price,
+            stockQuantity: opt.stockQuantity,
+          })),
       });
     }
   });

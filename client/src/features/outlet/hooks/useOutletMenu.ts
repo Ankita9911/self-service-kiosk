@@ -44,6 +44,7 @@ export function useOutletMenu(
   const [outlets, setOutlets] = useState<Outlet[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [items, setItems] = useState<MenuItem[]>([]);
+  const [customizationItems, setCustomizationItems] = useState<MenuItem[]>([]);
   const [combos, setCombos] = useState<Combo[]>([]);
 
   const [staticLoading, setStaticLoading] = useState(true);
@@ -73,6 +74,7 @@ export function useOutletMenu(
     stockQuantity: "",
     serviceType: "BOTH",
     offers: [],
+    customizationItemIds: [],
   });
 
   const needsOutletId =
@@ -100,15 +102,21 @@ export function useOutletMenu(
 
     setStaticLoading(true);
     try {
-      const [catList, outletList, comboList] = await Promise.all([
+      const [catList, outletList, comboList, customizationItemsResult] = await Promise.all([
         getCategories(oidForApi),
         needsOutletId ? getOutlets() : Promise.resolve([]),
         getCombos(oidForApi),
+        getMenuItems(oidForApi, undefined, undefined, "ALL", { limit: 100 }).catch(() => ({
+          items: [],
+          pagination: { limit: 100, hasNext: false, nextCursor: null, totalMatching: 0 },
+          stats: { totalItems: 0, activeItems: 0 },
+        })),
       ]);
 
       setCategories(catList);
       setOutlets(outletList);
       setCombos(comboList);
+      setCustomizationItems(customizationItemsResult.items);
     } finally {
       setStaticLoading(false);
     }
@@ -238,6 +246,7 @@ export function useOutletMenu(
         stockQuantity: parseInt(itemForm.stockQuantity, 10) || 0,
         serviceType: itemForm.serviceType ?? "BOTH",
         offers: itemForm.offers ?? [],
+        customizationItemIds: itemForm.customizationItemIds ?? [],
       },
       oidForApi,
     );
@@ -251,6 +260,7 @@ export function useOutletMenu(
       stockQuantity: "",
       serviceType: "BOTH",
       offers: [],
+      customizationItemIds: [],
     });
 
     await refreshMenuData();
@@ -264,6 +274,7 @@ export function useOutletMenu(
       stockQuantity: parseInt(itemForm.stockQuantity, 10) || 0,
       serviceType: itemForm.serviceType ?? "BOTH",
       offers: itemForm.offers ?? [],
+      customizationItemIds: itemForm.customizationItemIds ?? [],
       ...(itemForm.categoryId && { categoryId: itemForm.categoryId }),
     };
 
@@ -336,6 +347,7 @@ export function useOutletMenu(
     outlets,
     categories,
     items,
+    customizationItems,
     combos,
     loading,
     filterLoading,

@@ -1,4 +1,4 @@
-import { Plus, Minus, ImageOff, Package } from "lucide-react";
+import { Plus, Minus, Package } from "lucide-react";
 import { motion } from "framer-motion";
 import type { Combo } from "../types/menu.types";
 import type { CartItem } from "../types/cartItem.types";
@@ -6,7 +6,13 @@ import type { CartItem } from "../types/cartItem.types";
 interface ComboGridProps {
   combos: Combo[];
   cart: CartItem[];
-  onAddToCart: (item: any) => void;
+  onAddToCart: (item: {
+    _id: string;
+    name: string;
+    price: number;
+    comboPrice: number;
+    stockQuantity: number;
+  }) => void;
   onUpdateQuantity: (itemId: string, delta: number) => void;
 }
 
@@ -140,7 +146,10 @@ export default function ComboGrid({ combos, cart, onAddToCart, onUpdateQuantity 
                 ) : (
                   <div className="flex items-center gap-2 bg-white rounded-2xl p-1.5 shadow-xl border-2 border-orange-100">
                     <motion.button
-                      onClick={() => onUpdateQuantity(String(combo._id), -1)}
+                      onClick={() => {
+                        if (!cartItem) return;
+                        onUpdateQuantity(cartItem.cartItemId, -1);
+                      }}
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.9 }}
                       className="w-9 h-9 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 flex items-center justify-center transition-all"

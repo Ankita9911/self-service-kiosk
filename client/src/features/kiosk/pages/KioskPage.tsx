@@ -199,7 +199,7 @@ export default function KioskPage() {
         </div>
 
         {/* Menu grid */}
-        <main className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-orange-200 scrollbar-track-transparent">
+        <main className="flex-1 overflow-y-auto scrollbar-hide scrollbar-thumb-orange-200 scrollbar-track-transparent">
           <div className="p-6">
             {isLoading ? (
               <MenuGridSkeleton />
@@ -250,9 +250,9 @@ export default function KioskPage() {
         totalItems={totalItems}
         onClose={() => setIsCartOpen(false)}
         onUpdateQuantity={handleUpdateQuantity}
-        onRemoveItem={(id) => {
-          const item = cart.find((i) => i.itemId === id);
-          if (item) handleUpdateQuantity(id, -item.quantity);
+        onRemoveItem={(cartItemId) => {
+          const item = cart.find((i) => i.cartItemId === cartItemId);
+          if (item) handleUpdateQuantity(cartItemId, -item.quantity);
         }}
         onCheckout={handleOpenCheckout}
         isProcessing={isProcessing}
@@ -337,7 +337,40 @@ function reconcileCartWithCatalog(
       continue;
     }
 
-    const reducedQuantity = Math.min(cartItem.quantity, liveItem.stockQuantity);
+    const selectedOptions = cartItem.selectedCustomizations || [];
+    const liveOptionsMap = new Map(
+      (liveItem.customizationOptions || []).map((opt) => [opt.itemId, opt])
+    );
+
+    const nextSelectedOptions = [];
+
+    for (const option of selectedOptions) {
+      const liveOption = liveOptionsMap.get(option.itemId);
+      if (!liveOption || liveOption.stockQuantity <= 0) {
+        alerts.push(`${option.name} was removed from ${cartItem.name} because it is unavailable.`);
+        continue;
+      }
+
+      if (liveOption.price !== option.price) {
+        alerts.push(
+          `${option.name} price changed: Rs ${option.price.toFixed(2)} -> Rs ${liveOption.price.toFixed(2)}.`
+        );
+      }
+
+      nextSelectedOptions.push({
+        ...option,
+        price: liveOption.price,
+        stockQuantity: liveOption.stockQuantity,
+        name: liveOption.name,
+      });
+    }
+
+    const optionStockLimit = nextSelectedOptions.length
+      ? Math.min(...nextSelectedOptions.map((opt) => opt.stockQuantity))
+      : liveItem.stockQuantity;
+
+    const effectiveStockLimit = Math.min(liveItem.stockQuantity, optionStockLimit);
+    const reducedQuantity = Math.min(cartItem.quantity, effectiveStockLimit);
     if (reducedQuantity !== cartItem.quantity) {
       alerts.push(
         `${cartItem.name} quantity reduced from ${cartItem.quantity} to ${reducedQuantity} due to stock limits.`
@@ -355,9 +388,10 @@ function reconcileCartWithCatalog(
       ...cartItem,
       price: liveItem.price,
       quantity: reducedQuantity,
-      stockQuantity: liveItem.stockQuantity,
+      stockQuantity: effectiveStockLimit,
       offerType: firstOffer?.type,
       discountPercent: firstOffer?.discountPercent,
+      selectedCustomizations: nextSelectedOptions,
     });
   }
 
@@ -372,12 +406,14 @@ function hasCartChanged(prev: CartItem[], next: CartItem[]): boolean {
     const a = prev[i];
     const b = next[i];
     if (
+      a.cartItemId !== b.cartItemId ||
       a.itemId !== b.itemId ||
       a.price !== b.price ||
       a.quantity !== b.quantity ||
       a.stockQuantity !== b.stockQuantity ||
       a.offerType !== b.offerType ||
-      a.discountPercent !== b.discountPercent
+      a.discountPercent !== b.discountPercent ||
+      JSON.stringify(a.selectedCustomizations || []) !== JSON.stringify(b.selectedCustomizations || [])
     ) {
       return true;
     }

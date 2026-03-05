@@ -25,6 +25,16 @@ const orderItemSchema = new Schema(
       type: Number,
       required: true,
     },
+    customizations: [
+      {
+        itemId: { type: Schema.Types.ObjectId, required: true },
+        nameSnapshot: { type: String, required: true },
+        priceSnapshot: { type: Number, required: true },
+        quantity: { type: Number, required: true, min: 1 },
+        lineTotal: { type: Number, required: true },
+        _id: false,
+      },
+    ],
   },
   { _id: false }
 );

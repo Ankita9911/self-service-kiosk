@@ -108,7 +108,11 @@ async function processMessage(client, message) {
     const terminalBusinessError =
       type === "ORDER_PLACED" &&
       typeof err?.message === "string" &&
-      err.message.startsWith("Insufficient stock or invalid item:");
+      (
+        err.message.startsWith("Insufficient stock or invalid item:") ||
+        err.message.startsWith("Insufficient stock or invalid customization item:") ||
+        err.message.startsWith("Invalid customization")
+      );
 
     if (terminalBusinessError && payload?.tenant?.outletId && payload?.clientOrderId) {
       await markOrderRequestFailed(payload, err?.message);

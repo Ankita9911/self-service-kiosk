@@ -65,6 +65,13 @@ const menuItemSchema = new Schema(
       },
     ],
 
+    customizationItemIds: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "MenuItem",
+      },
+    ],
+
     isActive: {
       type: Boolean,
       default: true,

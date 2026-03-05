@@ -25,6 +25,13 @@ export interface MenuItem {
   isActive: boolean;
   serviceType?: "DINE_IN" | "TAKE_AWAY" | "BOTH";
   offers?: ItemOffer[];
+  customizationItemIds?: string[];
+  customizationOptions?: {
+    itemId: string;
+    name: string;
+    price: number;
+    stockQuantity: number;
+  }[];
 }
 
 export interface MenuCategory {

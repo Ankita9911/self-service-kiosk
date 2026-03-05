@@ -73,7 +73,11 @@ export async function deleteCategory(id, tenant) {
 }
 
 export async function createMenuItem(data, tenant) {
-  await enqueue("MENU_ITEM_CREATE", { data, tenant });
+  const normalizedData = {
+    ...data,
+    customizationItemIds: [...new Set((data.customizationItemIds || []).map(String))],
+  };
+  await enqueue("MENU_ITEM_CREATE", { data: normalizedData, tenant });
   return { queued: true };
 }
 
@@ -151,7 +155,21 @@ export async function getMenuItems(tenant, { categoryId, search, status, cursor,
 }
 
 export async function updateMenuItem(id, data, tenant) {
-  await enqueue("MENU_ITEM_UPDATE", { id, data, tenant });
+  const normalizedData = {
+    ...data,
+    ...(data.customizationItemIds
+      ? {
+          customizationItemIds: [
+            ...new Set(
+              data.customizationItemIds
+                .map(String)
+                .filter((itemId) => itemId !== String(id))
+            ),
+          ],
+        }
+      : {}),
+  };
+  await enqueue("MENU_ITEM_UPDATE", { id, data: normalizedData, tenant });
   return { queued: true };
 }
 
