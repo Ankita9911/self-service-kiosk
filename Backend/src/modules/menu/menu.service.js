@@ -46,7 +46,6 @@ export async function getCategories(tenant) {
   const cacheKey = buildTenantKey("categories", tenant);
   const cached = await redis.get(cacheKey);
   if (cached) {
-    console.log(2);
     return JSON.parse(cached);
   }
 
