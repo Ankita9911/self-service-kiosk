@@ -1,14 +1,15 @@
 import mongoose from "mongoose";
 import Order from "../../../modules/orders/order.model.js";
 import Counter from "../../../modules/orders/counter.model.js";
-import MenuItem from "../../../modules/menu/menuItem.model.js"
+import OrderRequest from "../../../modules/orders/orderRequest.model.js";
+import MenuItem from "../../../modules/menu/menuItem.model.js";
 import { getIO} from "../../../realtime/realtime.manager.js";
 
 async function getNextOrderNumber(outletId, session) {
   const counter = await Counter.findOneAndUpdate(
     { outletId },
     { $inc: { seq: 1 } },
-    { new: true, upsert: true, session }
+    { returnDocument: "after", upsert: true, session }
   );
   return counter.seq;
 }
@@ -37,6 +38,19 @@ export async function handleOrderPlaced(payload) {
     if (existing) {
       await session.commitTransaction();
       session.endSession();
+
+      await OrderRequest.findOneAndUpdate(
+        { outletId: tenant.outletId, clientOrderId },
+        {
+          $set: {
+            status: "SUCCESS",
+            orderId: existing._id,
+            orderNumber: existing.orderNumber,
+            errorMessage: null,
+          },
+        }
+      );
+
       emitToOutlet(tenant.outletId, "order:new", existing);
       return existing;
     }
@@ -55,7 +69,7 @@ export async function handleOrderPlaced(payload) {
           stockQuantity: { $gte: item.quantity },
         },
         { $inc: { stockQuantity: -item.quantity } },
-        { new: true, session }
+        { returnDocument: "after", session }
       );
 
       if (!menuItem) {
@@ -97,6 +111,18 @@ export async function handleOrderPlaced(payload) {
 
     await session.commitTransaction();
     session.endSession();
+
+    await OrderRequest.findOneAndUpdate(
+      { outletId: tenant.outletId, clientOrderId },
+      {
+        $set: {
+          status: "SUCCESS",
+          orderId: order[0]._id,
+          orderNumber: order[0].orderNumber,
+          errorMessage: null,
+        },
+      }
+    );
 
     emitToOutlet(tenant.outletId, "order:new", order[0]);
 

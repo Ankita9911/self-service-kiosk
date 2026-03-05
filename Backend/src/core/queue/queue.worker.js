@@ -4,6 +4,8 @@ import {
 } from "@aws-sdk/client-sqs";
 import { getSQSClient } from "./sqs.client.js";
 import env from "../../config/env.js";
+import { getIO } from "../../realtime/realtime.manager.js";
+import OrderRequest from "../../modules/orders/orderRequest.model.js";
 import { handleOrderPlaced } from "./handlers/order.handler.js";
 import {
   handleMenuPriceUpdate,
@@ -81,10 +83,11 @@ async function poll() {
 
 async function processMessage(client, message) {
   let type;
+  let payload;
   try {
     const body = JSON.parse(message.Body);
     type = body.type;
-    const payload = body.payload;
+    payload = body.payload;
 
     const handler = MESSAGE_HANDLERS[type];
 
@@ -102,10 +105,55 @@ async function processMessage(client, message) {
       })
     );
   } catch (err) {
+    const terminalBusinessError =
+      type === "ORDER_PLACED" &&
+      typeof err?.message === "string" &&
+      err.message.startsWith("Insufficient stock or invalid item:");
+
+    if (terminalBusinessError && payload?.tenant?.outletId && payload?.clientOrderId) {
+      await markOrderRequestFailed(payload, err?.message);
+      emitOrderFailed(payload, err?.message);
+      await client.send(
+        new DeleteMessageCommand({
+          QueueUrl: env.SQS_QUEUE_URL,
+          ReceiptHandle: message.ReceiptHandle,
+        })
+      );
+    }
+
     console.error(
       `[queue] Failed to process ${type || "unknown"} (${message.MessageId}):`,
       err.message
     );
+  }
+}
+
+async function markOrderRequestFailed(payload, errorMessage) {
+  try {
+    await OrderRequest.findOneAndUpdate(
+      { outletId: payload.tenant.outletId, clientOrderId: payload.clientOrderId },
+      {
+        $set: {
+          status: "FAILED",
+          errorMessage: errorMessage || "Order processing failed",
+        },
+      }
+    );
+  } catch (updateErr) {
+    console.error("[queue] Failed to update order request status:", updateErr.message);
+  }
+}
+
+function emitOrderFailed(payload, errorMessage) {
+  try {
+    const io = getIO();
+    io.to(`outlet:${payload.tenant.outletId}`).emit("order:failed", {
+      clientOrderId: payload.clientOrderId,
+      orderNumber: payload.orderNumber,
+      message: errorMessage || "Order processing failed",
+    });
+  } catch (_) {
+    console.log("Socket not initialized, skipping failed-order emit");
   }
 }
 

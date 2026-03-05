@@ -17,6 +17,12 @@ router.post(
 );
 
 router.get(
+  "/client/:clientOrderId/status",
+  authorize(PERMISSIONS.ORDERS_CREATE),
+  controller.getOrderProcessingStatus
+);
+
+router.get(
   "/",
   authorize(PERMISSIONS.ORDERS_VIEW),
   controller.listOrders

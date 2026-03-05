@@ -17,6 +17,18 @@ export const createOrder = asyncHandler(async (req, res) => {
   });
 });
 
+export const getOrderProcessingStatus = asyncHandler(async (req, res) => {
+  const result = await orderService.getOrderProcessingStatus(
+    req.params.clientOrderId,
+    req.tenant
+  );
+
+  return sendSuccess(res, {
+    message: "Order status fetched successfully",
+    data: result,
+  });
+});
+
 export const listOrders = asyncHandler(async (req, res) => {
   const { statuses } = req.query;
 

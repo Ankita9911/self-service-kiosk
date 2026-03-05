@@ -1,5 +1,6 @@
 import Order from "./order.model.js";
 import Counter from "./counter.model.js";
+import OrderRequest from "./orderRequest.model.js";
 import AppError from "../../shared/errors/AppError.js";
 import { getIO } from "../../realtime/realtime.manager.js";
 import { enqueue } from "../../core/queue/queue.producer.js";
@@ -24,13 +25,36 @@ export async function createOrder(data, tenant, userRole) {
     throw new AppError("clientOrderId is required", 400, "INVALID_ORDER");
   }
 
+  const existingRequest = await OrderRequest.findOne({
+    outletId: tenant.outletId,
+    clientOrderId,
+  }).lean();
+
+  if (existingRequest) {
+    return {
+      clientOrderId,
+      orderNumber: existingRequest.orderNumber,
+      queued: existingRequest.status === "PENDING",
+      status: existingRequest.status,
+      errorMessage: existingRequest.errorMessage,
+    };
+  }
+
   // Pre-generate the order number so it can be returned immediately
   const counter = await Counter.findOneAndUpdate(
     { outletId: tenant.outletId },
     { $inc: { seq: 1 } },
-    { new: true, upsert: true }
+    { returnDocument: "after", upsert: true }
   );
   const orderNumber = counter.seq;
+
+  await OrderRequest.create({
+    franchiseId: tenant.franchiseId,
+    outletId: tenant.outletId,
+    clientOrderId,
+    orderNumber,
+    status: "PENDING",
+  });
 
   await enqueue("ORDER_PLACED", {
     items,
@@ -42,6 +66,37 @@ export async function createOrder(data, tenant, userRole) {
   });
 
   return { clientOrderId, orderNumber, queued: true };
+}
+
+export async function getOrderProcessingStatus(clientOrderId, tenant) {
+  if (!tenant.outletId) {
+    throw new AppError("Outlet context required", 403, "OUTLET_REQUIRED");
+  }
+
+  const request = await OrderRequest.findOne({
+    outletId: tenant.outletId,
+    clientOrderId,
+  })
+    .select("clientOrderId orderNumber status errorMessage orderId")
+    .lean();
+
+  if (!request) {
+    return {
+      clientOrderId,
+      orderNumber: null,
+      status: "UNKNOWN",
+      errorMessage: null,
+      orderId: null,
+    };
+  }
+
+  return {
+    clientOrderId: request.clientOrderId,
+    orderNumber: request.orderNumber,
+    status: request.status,
+    errorMessage: request.errorMessage,
+    orderId: request.orderId,
+  };
 }
 
 export async function listOrders(tenant, statuses) {
