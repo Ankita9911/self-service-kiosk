@@ -35,7 +35,7 @@ export default function CartSidebar({
       style={{ minWidth: 0 }}
     >
       <div className="w-96 min-w-96 flex flex-col h-full">
-        <div className="p-5 border-b-4 border-orange-100 bg-gradient-to-br from-orange-500 via-orange-600 to-orange-500 relative overflow-hidden">
+        <div className=" py-8 p-5 border-b-4 border-orange-100 bg-gradient-to-br from-orange-500 via-orange-600 to-orange-500 relative overflow-hidden">
           <div className="relative z-10 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="p-2.5 bg-white/20 backdrop-blur-sm rounded-xl">
