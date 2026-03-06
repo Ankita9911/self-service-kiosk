@@ -22,6 +22,7 @@ import type { Category, MenuItem, Combo } from "@/features/kiosk/types/menu.type
 import type {
   Outlet,
   ItemFormState,
+  CategoryFormState,
 } from "@/features/outlet/types/outlet.types";
 import {
   getUploadUrl,
@@ -65,17 +66,17 @@ export function useOutletMenu(
   const [refreshTick, setRefreshTick] = useState(0);
   const hasLoadedItemsRef = useRef(false);
 
-  const [catForm, setCatForm] = useState({
+  const [catForm, setCatForm] = useState<CategoryFormState>({
     name: "",
     description: "",
-    imageFile: null as File | null,
-    imageUrl: undefined as string | undefined,
+    imageFile: null,
+    imageUrl: undefined,
   });
-  const [editCatForm, setEditCatForm] = useState({
+  const [editCatForm, setEditCatForm] = useState<CategoryFormState>({
     name: "",
     description: "",
-    imageFile: null as File | null,
-    imageUrl: "" as string | undefined,
+    imageFile: null,
+    imageUrl: undefined,
   });
   const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null);
   const [itemForm, setItemForm] = useState<ItemFormState>({

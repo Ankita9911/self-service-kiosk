@@ -3,12 +3,13 @@ import { toast } from "react-hot-toast";
 import { categorySchema } from "../validations/menu.schemas";
 import { useState } from "react";
 import { Tag, X, RefreshCcw, ImageIcon } from "lucide-react";
+import type { CategoryFormState } from "../types/outlet.types";
 
 interface Props {
   open: boolean;
   onClose: () => void;
-  form: { name: string; description: string; imageFile: File | null; imageUrl?: string };
-  setForm: React.Dispatch<React.SetStateAction<{ name: string; description: string; imageFile: File | null; imageUrl?: string }>>;
+  form: CategoryFormState;
+  setForm: React.Dispatch<React.SetStateAction<CategoryFormState>>;
   onSubmit: () => Promise<void>;
 }
 

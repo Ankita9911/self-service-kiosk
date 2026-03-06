@@ -3,13 +3,7 @@ import { toast } from "react-hot-toast";
 import { categorySchema } from "../validations/menu.schemas";
 import { useState } from "react";
 import { Tag, X, RefreshCcw, ImageIcon } from "lucide-react";
-
-type CategoryFormState = {
-  name: string;
-  description: string;
-  imageFile: File | null;
-  imageUrl?: string;
-};
+import type { CategoryFormState } from "../types/outlet.types";
 
 interface Props {
   open: boolean;

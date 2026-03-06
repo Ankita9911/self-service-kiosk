@@ -38,3 +38,10 @@ export type ItemFormState = {
   offers: ItemOfferForm[];
   customizationItemIds: string[];
 };
+
+export type CategoryFormState = {
+  name: string;
+  description: string;
+  imageFile: File | null;
+  imageUrl: string | undefined;
+};
