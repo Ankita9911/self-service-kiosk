@@ -523,7 +523,7 @@ export default function OutletMenuPage() {
       ) : (
         /* Table view */
         <div className="rounded-2xl border border-slate-100 dark:border-white/[0.07] bg-white dark:bg-[#1e2130] shadow-sm">
-          <div className="overflow-x-auto">
+          <div>
             <table className="w-full min-w-175 text-sm">
               <thead>
                 <tr className="border-b border-slate-100 dark:border-white/7 bg-slate-50/80 dark:bg-white/2">

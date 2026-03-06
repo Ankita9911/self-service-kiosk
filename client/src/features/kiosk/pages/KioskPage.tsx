@@ -27,7 +27,7 @@ import type { Combo, MenuCategory, MenuItem } from "../types/menu.types";
 
 const OFFER_CHIPS: { value: OfferType | null; label: string; emoji: string }[] =
   [
-    { value: null, label: "All", emoji: "🍽️" },
+    // { value: null, label: "All", emoji: "🍽️" },
     { value: "DISCOUNT", label: "Deals", emoji: "🏷️" },
     { value: "BOGO", label: "Buy 1 Get 1", emoji: "🎁" },
     { value: "BESTSELLER", label: "Best Seller", emoji: "⭐" },
