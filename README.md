@@ -31,3 +31,7 @@ Frontend
 3. Strict Multi-Tenant Isolation (franchiseId + outletId)
 4. Feature-based modular frontend
 5. Business modules (Orders, Menu, Inventory, Kitchen flow, etc.)
+
+### Schema Design
+
+![alt text](hyper_kitchen_hub_06_03_2026.png)
