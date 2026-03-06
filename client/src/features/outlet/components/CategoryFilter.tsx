@@ -1,14 +1,15 @@
 import { useState, useRef, useEffect } from "react";
-import { SlidersHorizontal, ChevronDown, Check, Trash2, X } from "lucide-react";
+import { SlidersHorizontal, ChevronDown, Check, Trash2, X, Pencil } from "lucide-react";
 
 interface Props {
-  categories: { _id: string; name: string }[];
+  categories: { _id: string; name: string; imageUrl?: string; description?: string }[];
   selectedCategoryId: string;
   onSelect: (id: string) => void;
+  onEditCategory?: (category: { _id: string; name: string; imageUrl?: string; description?: string }) => void;
   onDeleteCategory?: (id: string) => void;
 }
 
-export function CategoryFilter({ categories, selectedCategoryId, onSelect, onDeleteCategory }: Props) {
+export function CategoryFilter({ categories, selectedCategoryId, onSelect, onEditCategory, onDeleteCategory }: Props) {
   const [open, setOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const [pendingDelete, setPendingDelete] = useState<string | null>(null);
@@ -20,6 +21,7 @@ export function CategoryFilter({ categories, selectedCategoryId, onSelect, onDel
 
   // keep visibleIds in sync if categories list changes
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setVisibleIds((prev) => {
       const valid = prev.filter((id) => categories.some((c) => c._id === id));
       return valid.length > 0 ? valid : categories.map((c) => c._id);
@@ -52,7 +54,7 @@ export function CategoryFilter({ categories, selectedCategoryId, onSelect, onDel
       {/* ── tab strip — naturally sized, scrolls on overflow ── */}
       <div className="flex-1 min-w-0 overflow-x-auto scrollbar-hide">
         <div className="flex items-center gap-1 bg-white dark:bg-[#161920] border border-slate-100 dark:border-white/8 rounded-xl p-1 w-fit">
-          {tabItems.map((c) => (
+              {tabItems.map((c) => (
             <button
               key={c._id}
               onClick={() => onSelect(c._id)}
@@ -62,7 +64,16 @@ export function CategoryFilter({ categories, selectedCategoryId, onSelect, onDel
                   : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-white/5"
               }`}
             >
-              {c.name}
+              <span className="inline-flex items-center gap-1.5">
+                {c._id !== "ALL" && categories.find((cat) => cat._id === c._id)?.imageUrl ? (
+                  <img
+                    src={categories.find((cat) => cat._id === c._id)?.imageUrl}
+                    alt={c.name}
+                    className="w-4 h-4 rounded-md object-cover"
+                  />
+                ) : null}
+                {c.name}
+              </span>
             </button>
           ))}
         </div>
@@ -138,7 +149,7 @@ export function CategoryFilter({ categories, selectedCategoryId, onSelect, onDel
                       </button>
 
                       {/* delete action */}
-                      {onDeleteCategory && (
+                      {(onEditCategory || onDeleteCategory) && (
                         isPending ? (
                           <div className="flex items-center gap-0.5 shrink-0">
                             <button
@@ -157,13 +168,30 @@ export function CategoryFilter({ categories, selectedCategoryId, onSelect, onDel
                             </button>
                           </div>
                         ) : (
-                          <button
-                            onClick={(e) => { e.stopPropagation(); setPendingDelete(c._id); }}
-                            className="h-6 w-6 rounded-lg flex items-center justify-center text-slate-300 dark:text-slate-600 opacity-0 group-hover:opacity-100 hover:text-red-500! hover:bg-red-50 dark:hover:bg-red-500/10 transition-all shrink-0"
-                            title="Delete category"
-                          >
-                            <Trash2 className="w-3 h-3" />
-                          </button>
+                          <div className="flex items-center gap-0.5 shrink-0 opacity-0 group-hover:opacity-100 transition-all">
+                            {onEditCategory && (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setPendingDelete(null);
+                                  onEditCategory(c);
+                                }}
+                                className="h-6 w-6 rounded-lg flex items-center justify-center text-slate-300 dark:text-slate-600 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 transition-all"
+                                title="Edit category"
+                              >
+                                <Pencil className="w-3 h-3" />
+                              </button>
+                            )}
+                            {onDeleteCategory && (
+                              <button
+                                onClick={(e) => { e.stopPropagation(); setPendingDelete(c._id); }}
+                                className="h-6 w-6 rounded-lg flex items-center justify-center text-slate-300 dark:text-slate-600 hover:text-red-500! hover:bg-red-50 dark:hover:bg-red-500/10 transition-all"
+                                title="Delete category"
+                              >
+                                <Trash2 className="w-3 h-3" />
+                              </button>
+                            )}
+                          </div>
                         )
                       )}
                     </div>

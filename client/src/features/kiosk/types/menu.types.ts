@@ -10,6 +10,7 @@ export interface Category {
   _id: string;
   name: string;
   description?: string;
+  imageUrl?: string;
   displayOrder: number;
   isActive: boolean;
 }
@@ -37,6 +38,7 @@ export interface MenuItem {
 export interface MenuCategory {
   _id: string;
   name: string;
+  imageUrl?: string;
   displayOrder?: number;
   items: MenuItem[];
 }

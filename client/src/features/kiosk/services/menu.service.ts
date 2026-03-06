@@ -14,7 +14,7 @@ export async function getCategories(outletId?: string): Promise<Category[]> {
 }
 
 export async function createCategory(
-  data: { name: string; description?: string; displayOrder?: number },
+  data: { name: string; description?: string; imageUrl?: string; displayOrder?: number },
   outletId?: string
 ): Promise<Category> {
   const response = await axiosInstance.post<{ data: Category }>(
@@ -29,7 +29,7 @@ export async function updateCategory(
   data: Partial<Category>,
   outletId?: string
 ): Promise<Category> {
-  const response = await axiosInstance.put<{ data: Category }>(
+  const response = await axiosInstance.patch<{ data: Category }>(
     `/menu/categories/${id}`,
     { ...data, ...(outletId && { outletId }) }
   );

@@ -4,6 +4,7 @@ import {
   getCategories,
   getMenuItems,
   createCategory,
+  updateCategory,
   createMenuItem,
   updateMenuItem,
   updateMenuItemPrice,
@@ -64,7 +65,19 @@ export function useOutletMenu(
   const [refreshTick, setRefreshTick] = useState(0);
   const hasLoadedItemsRef = useRef(false);
 
-  const [catForm, setCatForm] = useState({ name: "", description: "" });
+  const [catForm, setCatForm] = useState({
+    name: "",
+    description: "",
+    imageFile: null as File | null,
+    imageUrl: undefined as string | undefined,
+  });
+  const [editCatForm, setEditCatForm] = useState({
+    name: "",
+    description: "",
+    imageFile: null as File | null,
+    imageUrl: "" as string | undefined,
+  });
+  const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null);
   const [itemForm, setItemForm] = useState<ItemFormState>({
     categoryId: "",
     name: "",
@@ -213,11 +226,45 @@ export function useOutletMenu(
   }
 
   async function addCategory() {
+    let imageUrl: string | undefined;
+    if (catForm.imageFile) {
+      const upload = await getUploadUrl(catForm.imageFile, "category", oidForApi);
+      await uploadFileToS3(upload.uploadUrl, catForm.imageFile);
+      imageUrl = upload.publicUrl;
+    }
+
     await createCategory(
-      { name: catForm.name, description: catForm.description || undefined },
+      {
+        name: catForm.name,
+        description: catForm.description || undefined,
+        imageUrl,
+      },
       oidForApi,
     );
-    setCatForm({ name: "", description: "" });
+    setCatForm({ name: "", description: "", imageFile: null, imageUrl: undefined });
+    await refreshMenuData();
+  }
+
+  async function editCategory(id: string) {
+    let imageUrl = editCatForm.imageUrl;
+    if (editCatForm.imageFile) {
+      const upload = await getUploadUrl(editCatForm.imageFile, "category", oidForApi);
+      await uploadFileToS3(upload.uploadUrl, editCatForm.imageFile);
+      imageUrl = upload.publicUrl;
+    }
+
+    await updateCategory(
+      id,
+      {
+        name: editCatForm.name,
+        description: editCatForm.description || undefined,
+        imageUrl,
+      },
+      oidForApi
+    );
+
+    setEditingCategoryId(null);
+    setEditCatForm({ name: "", description: "", imageFile: null, imageUrl: undefined });
     await refreshMenuData();
   }
 
@@ -366,9 +413,14 @@ export function useOutletMenu(
     resetToFirstPage,
     catForm,
     setCatForm,
+    editCatForm,
+    setEditCatForm,
+    editingCategoryId,
+    setEditingCategoryId,
     itemForm,
     setItemForm,
     addCategory,
+    editCategory,
     addItem,
     updateItem,
     updatePrice,

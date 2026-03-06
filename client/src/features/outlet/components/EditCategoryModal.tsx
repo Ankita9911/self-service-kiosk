@@ -4,29 +4,42 @@ import { categorySchema } from "../validations/menu.schemas";
 import { useState } from "react";
 import { Tag, X, RefreshCcw, ImageIcon } from "lucide-react";
 
+type CategoryFormState = {
+  name: string;
+  description: string;
+  imageFile: File | null;
+  imageUrl?: string;
+};
+
 interface Props {
   open: boolean;
   onClose: () => void;
-  form: { name: string; description: string; imageFile: File | null; imageUrl?: string };
-  setForm: React.Dispatch<React.SetStateAction<{ name: string; description: string; imageFile: File | null; imageUrl?: string }>>;
+  form: CategoryFormState;
+  setForm: React.Dispatch<React.SetStateAction<CategoryFormState>>;
   onSubmit: () => Promise<void>;
 }
 
 const inputBase = "w-full px-3 h-10 rounded-xl border bg-slate-50 dark:bg-white/5 text-sm text-slate-800 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-600 focus:outline-none focus:ring-2 transition-all";
-const inputOk  = "border-slate-200 dark:border-white/8 focus:ring-indigo-500/30 focus:border-indigo-400";
-const inputErr  = "border-red-400 focus:ring-red-400/30 focus:border-red-400";
+const inputOk = "border-slate-200 dark:border-white/8 focus:ring-indigo-500/30 focus:border-indigo-400";
+const inputErr = "border-red-400 focus:ring-red-400/30 focus:border-red-400";
 
 const LabelEl = ({ children }: { children: React.ReactNode }) => (
   <label className="block text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">{children}</label>
 );
 
-export function AddCategoryModal({ open, onClose, form, setForm, onSubmit }: Props) {
+export function EditCategoryModal({ open, onClose, form, setForm, onSubmit }: Props) {
   const [errors, setErrors] = useState<{ name?: string; description?: string }>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   function validate(): boolean {
-    const result = categorySchema.safeParse(form);
-    if (result.success) { setErrors({}); return true; }
+    const result = categorySchema.safeParse({
+      name: form.name,
+      description: form.description,
+    });
+    if (result.success) {
+      setErrors({});
+      return true;
+    }
     const fieldErrors: { name?: string; description?: string } = {};
     result.error.issues.forEach((issue) => {
       const key = issue.path[0] as "name" | "description";
@@ -43,9 +56,10 @@ export function AddCategoryModal({ open, onClose, form, setForm, onSubmit }: Pro
     try {
       await onSubmit();
       setErrors({});
-      toast.success("Category added successfully!");
+      toast.success("Category updated successfully!");
+      onClose();
     } catch {
-      toast.error("Failed to add category. Please try again!");
+      toast.error("Failed to update category. Please try again!");
     } finally {
       setIsSubmitting(false);
     }
@@ -56,15 +70,14 @@ export function AddCategoryModal({ open, onClose, form, setForm, onSubmit }: Pro
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-sm p-0 border border-slate-100 dark:border-white/8 bg-white dark:bg-[#1e2130] rounded-2xl overflow-hidden shadow-2xl shadow-black/20">
-        {/* Header */}
         <div className="flex items-center justify-between px-6 py-5 border-b border-slate-100 dark:border-white/8">
           <div className="flex items-center gap-3">
             <div className="h-9 w-9 rounded-xl bg-violet-50 dark:bg-violet-500/10 border border-violet-100 dark:border-violet-500/20 flex items-center justify-center">
               <Tag className="w-4 h-4 text-violet-600 dark:text-violet-400" />
             </div>
             <div>
-              <h3 className="text-sm font-bold text-slate-800 dark:text-white">Add Category</h3>
-              <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">Create a new menu category</p>
+              <h3 className="text-sm font-bold text-slate-800 dark:text-white">Edit Category</h3>
+              <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">Update category details</p>
             </div>
           </div>
           <button onClick={onClose} className="h-7 w-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/8 transition-colors">
@@ -77,7 +90,10 @@ export function AddCategoryModal({ open, onClose, form, setForm, onSubmit }: Pro
             <LabelEl>Name <span className="text-red-400 normal-case">*</span></LabelEl>
             <input
               value={form.name}
-              onChange={(e) => { setForm((prev) => ({ ...prev, name: e.target.value })); if (errors.name) setErrors((p) => ({ ...p, name: undefined })); }}
+              onChange={(e) => {
+                setForm((prev) => ({ ...prev, name: e.target.value }));
+                if (errors.name) setErrors((p) => ({ ...p, name: undefined }));
+              }}
               placeholder="e.g. Beverages"
               className={`${inputBase} ${errors.name ? inputErr : inputOk}`}
               autoFocus
@@ -89,7 +105,10 @@ export function AddCategoryModal({ open, onClose, form, setForm, onSubmit }: Pro
             <LabelEl>Description <span className="text-slate-400 font-medium normal-case">(optional)</span></LabelEl>
             <input
               value={form.description}
-              onChange={(e) => { setForm((prev) => ({ ...prev, description: e.target.value })); if (errors.description) setErrors((p) => ({ ...p, description: undefined })); }}
+              onChange={(e) => {
+                setForm((prev) => ({ ...prev, description: e.target.value }));
+                if (errors.description) setErrors((p) => ({ ...p, description: undefined }));
+              }}
               placeholder="Optional description"
               className={`${inputBase} ${errors.description ? inputErr : inputOk}`}
             />
@@ -122,7 +141,7 @@ export function AddCategoryModal({ open, onClose, form, setForm, onSubmit }: Pro
               Cancel
             </button>
             <button type="submit" disabled={isSubmitting} className="flex-1 h-10 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold transition-colors disabled:opacity-50 flex items-center justify-center gap-2">
-              {isSubmitting ? <RefreshCcw className="w-4 h-4 animate-spin" /> : "Create Category"}
+              {isSubmitting ? <RefreshCcw className="w-4 h-4 animate-spin" /> : "Save Category"}
             </button>
           </div>
         </form>

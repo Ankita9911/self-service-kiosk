@@ -23,6 +23,10 @@ const categorySchema = new Schema(
       type: String,
       trim: true,
     },
+    imageUrl: {
+      type: String,
+      trim: true,
+    },
     displayOrder: {
       type: Number,
       default: 0,

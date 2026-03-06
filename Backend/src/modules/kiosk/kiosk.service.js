@@ -49,6 +49,7 @@ export async function getKioskMenu(tenant) {
     categoryMap[cat._id] = {
       _id: cat._id,
       name: cat.name,
+      imageUrl: cat.imageUrl,
       displayOrder: cat.displayOrder,
       items: [],
     };

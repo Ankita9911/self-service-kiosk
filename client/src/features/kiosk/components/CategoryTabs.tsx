@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import type { MenuCategory } from "../../../shared/lib/menuCache";
+import type { MenuCategory } from "../types/menu.types";
 
 interface CategoryTabsProps {
   categories: MenuCategory[];
@@ -48,7 +48,16 @@ export default function CategoryTabs({ categories, selectedCategory, onCategoryC
               
               <div className="relative z-10">
                 <div className={`font-black text-lg ${isActive ? 'text-white' : 'text-gray-900'}`}>
-                  {category.name}
+                  <span className="inline-flex items-center gap-2">
+                    {category.imageUrl ? (
+                      <img
+                        src={category.imageUrl}
+                        alt={category.name}
+                        className="w-6 h-6 rounded-lg object-cover border border-white/40"
+                      />
+                    ) : null}
+                    {category.name}
+                  </span>
                 </div>
                 <div 
                   className={`text-xs font-semibold mt-1 ${isActive ? 'text-orange-100' : 'text-gray-400'}`}

@@ -24,6 +24,7 @@ import { CategoryFilter } from "../components/CategoryFilter";
 import { MenuItemCard } from "../components/MenuItemCard";
 import { MenuItemTableRow } from "../components/MenuItemTableRow";
 import { AddCategoryModal } from "../components/AddCategoryModal";
+import { EditCategoryModal } from "../components/EditCategoryModal";
 import { AddItemModal } from "../components/AddItemModal";
 import { EditItemModal } from "../components/EditItemModal";
 import { DeleteItemModal } from "../components/DeleteItemModal";
@@ -79,8 +80,13 @@ export default function OutletMenuPage() {
     toggleItemStatus,
     catForm,
     setCatForm,
+    editCatForm,
+    setEditCatForm,
+    editingCategoryId,
+    setEditingCategoryId,
     itemForm,
     setItemForm,
+    editCategory,
     addCombo,
     editCombo,
     removeCombo,
@@ -381,6 +387,15 @@ export default function OutletMenuPage() {
           categories={categories}
           selectedCategoryId={selectedCategoryId}
           onSelect={(id) => { setSelectedCategoryId(id); resetToFirstPage(); }}
+          onEditCategory={(category) => {
+            setEditingCategoryId(category._id);
+            setEditCatForm({
+              name: category.name,
+              description: category.description ?? "",
+              imageFile: null,
+              imageUrl: category.imageUrl,
+            });
+          }}
           onDeleteCategory={async (id) => {
             await removeCategory(id);
             if (selectedCategoryId === id) setSelectedCategoryId("ALL");
@@ -651,6 +666,17 @@ export default function OutletMenuPage() {
         form={catForm}
         setForm={setCatForm}
         onSubmit={async () => { await addCategory(); setAddCategoryOpen(false); }}
+      />
+      <EditCategoryModal
+        open={!!editingCategoryId}
+        onClose={() => setEditingCategoryId(null)}
+        form={editCatForm}
+        setForm={setEditCatForm}
+        onSubmit={async () => {
+          if (!editingCategoryId) return;
+          await editCategory(editingCategoryId);
+          setEditingCategoryId(null);
+        }}
       />
       <AddItemModal
         open={addItemOpen}
