@@ -4,6 +4,7 @@ import {
   createManualTransaction,
 } from "@/features/stockTransactions/services/stockTransaction.service";
 import type { StockTransaction, ManualTransactionPayload } from "@/features/stockTransactions/types/stockTransaction.types";
+import { useOutletEvents } from "@/shared/hooks/useOutletEvents";
 
 export function useStockTransactions(
   outletId: string | undefined,
@@ -41,6 +42,10 @@ export function useStockTransactions(
   useEffect(() => {
     fetchTransactions();
   }, [fetchTransactions]);
+
+  useOutletEvents(["stock-transactions:updated"], () => {
+    void fetchTransactions(true);
+  }, outletId);
 
   async function handleCreate(data: ManualTransactionPayload) {
     const result = await createManualTransaction(data, outletId);

@@ -1,6 +1,7 @@
 import Ingredient from "./ingredient.model.js";
 import { getRedisClient } from "../../core/cache/redis.client.js";
 import { buildTenantKey } from "../../core/cache/cache.utils.js";
+import { emitOutletEvent } from "../../realtime/realtime.manager.js";
 import AppError from "../../shared/errors/AppError.js";
 
 const CACHE_TTL = 300;
@@ -66,6 +67,14 @@ export async function createIngredient(data, tenant) {
   });
 
   await invalidateIngredientCache(tenant);
+  emitOutletEvent(tenant.outletId, "ingredient:updated", {
+    type: "INGREDIENT_CREATE",
+    ingredientId: String(ingredient._id),
+  });
+  emitOutletEvent(tenant.outletId, "inventory:updated", {
+    type: "INGREDIENT_CREATE",
+    ingredientId: String(ingredient._id),
+  });
   return ingredient;
 }
 
@@ -164,6 +173,14 @@ export async function updateIngredient(id, data, tenant) {
   }
 
   await invalidateIngredientCache(tenant);
+  emitOutletEvent(tenant.outletId, "ingredient:updated", {
+    type: "INGREDIENT_UPDATE",
+    ingredientId: String(ingredient._id),
+  });
+  emitOutletEvent(tenant.outletId, "inventory:updated", {
+    type: "INGREDIENT_UPDATE",
+    ingredientId: String(ingredient._id),
+  });
   return ingredient;
 }
 
@@ -184,6 +201,14 @@ export async function deleteIngredient(id, tenant) {
   }
 
   await invalidateIngredientCache(tenant);
+  emitOutletEvent(tenant.outletId, "ingredient:updated", {
+    type: "INGREDIENT_DELETE",
+    ingredientId: String(ingredient._id),
+  });
+  emitOutletEvent(tenant.outletId, "inventory:updated", {
+    type: "INGREDIENT_DELETE",
+    ingredientId: String(ingredient._id),
+  });
   return { deleted: true, id };
 }
 
@@ -217,5 +242,13 @@ export async function adjustStock(id, { quantity, note }, tenant) {
   }
 
   await invalidateIngredientCache(tenant);
+  emitOutletEvent(tenant.outletId, "ingredient:updated", {
+    type: "INGREDIENT_STOCK_ADJUST",
+    ingredientId: String(ingredient._id),
+  });
+  emitOutletEvent(tenant.outletId, "inventory:updated", {
+    type: "INGREDIENT_STOCK_ADJUST",
+    ingredientId: String(ingredient._id),
+  });
   return ingredient;
 }

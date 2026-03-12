@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { OfferEditor } from "./OfferEditor";
 import { CustomizationPicker } from "./CustomizationPicker";
 
-import type { ServiceType, ItemOfferForm } from "@/features/outlet/types/outlet.types";
+import type { ServiceType, ItemOfferForm, InventoryMode } from "@/features/outlet/types/outlet.types";
 import type { MenuItem } from "@/features/kiosk/types/menu.types";
 
 const SERVICE_OPTIONS: { value: ServiceType; label: string }[] = [
@@ -17,16 +17,35 @@ const SERVICE_OPTIONS: { value: ServiceType; label: string }[] = [
   { value: "BOTH",      label: "Both"      },
 ];
 
+const INVENTORY_OPTIONS: { value: InventoryMode; label: string; hint: string }[] = [
+  { value: "RECIPE", label: "Recipe Based", hint: "For prepared items tracked from ingredients." },
+  { value: "DIRECT", label: "Direct Stock", hint: "For packaged items managed from menu stock." },
+];
+
 interface Props {
   open: boolean;
   onClose: () => void;
-  form: { name: string; description: string; imageUrl?: string; imageFile: File | null; price: string; categoryId?: string; serviceType?: ServiceType; offers?: ItemOfferForm[]; customizationItemIds?: string[] };
-  setForm: React.Dispatch<React.SetStateAction<any>>;
+  form: EditItemFormState;
+  setForm: React.Dispatch<React.SetStateAction<EditItemFormState>>;
   onSubmit: () => Promise<void>;
   categories?: { _id: string; name: string }[];
   items: MenuItem[];
   editingItemId?: string;
 }
+
+type EditItemFormState = {
+  name: string;
+  description: string;
+  imageUrl?: string;
+  imageFile: File | null;
+  price: string;
+  stockQuantity: string;
+  inventoryMode: InventoryMode;
+  categoryId?: string;
+  serviceType?: ServiceType;
+  offers?: ItemOfferForm[];
+  customizationItemIds?: string[];
+};
 
 type FieldErrors = Partial<Record<keyof EditMenuItemFormValues, string>>;
 
@@ -50,6 +69,8 @@ export function EditItemModal({ open, onClose, form, setForm, onSubmit, categori
       name: form.name,
       description: form.description,
       price: form.price,
+      stockQuantity: form.stockQuantity,
+      inventoryMode: form.inventoryMode,
       imageFile: form.imageFile ?? undefined,
       offers: form.offers,
       customizationItemIds: form.customizationItemIds ?? [],
@@ -109,7 +130,7 @@ export function EditItemModal({ open, onClose, form, setForm, onSubmit, categori
           {categories && categories.length > 0 && (
             <div>
               <LabelEl>Category</LabelEl>
-              <Select value={form.categoryId ?? ""} onValueChange={(val) => setForm((prev: any) => ({ ...prev, categoryId: val }))}>
+              <Select value={form.categoryId ?? ""} onValueChange={(val) => setForm((prev) => ({ ...prev, categoryId: val }))}>
                 <SelectTrigger className="h-10 rounded-xl text-sm bg-slate-50 dark:bg-white/5 border-slate-200 dark:border-white/8">
                   <SelectValue placeholder="Select category…" />
                 </SelectTrigger>
@@ -130,14 +151,14 @@ export function EditItemModal({ open, onClose, form, setForm, onSubmit, categori
           {/* Name */}
           <div>
             <LabelEl>Name <span className="text-red-400 normal-case">*</span></LabelEl>
-            <input value={form.name} onChange={(e) => { setForm((prev: any) => ({ ...prev, name: e.target.value })); clearError("name"); }} className={`${inputBase} ${errors.name ? inputErr : inputOk}`} />
+            <input value={form.name} onChange={(e) => { setForm((prev) => ({ ...prev, name: e.target.value })); clearError("name"); }} className={`${inputBase} ${errors.name ? inputErr : inputOk}`} />
             <ErrTxt msg={errors.name} />
           </div>
 
           {/* Description */}
           <div>
             <LabelEl>Description <span className="text-slate-400 font-medium normal-case">(optional)</span></LabelEl>
-            <input value={form.description} onChange={(e) => { setForm((prev: any) => ({ ...prev, description: e.target.value })); clearError("description"); }} className={`${inputBase} ${errors.description ? inputErr : inputOk}`} />
+            <input value={form.description} onChange={(e) => { setForm((prev) => ({ ...prev, description: e.target.value })); clearError("description"); }} className={`${inputBase} ${errors.description ? inputErr : inputOk}`} />
             <ErrTxt msg={errors.description} />
           </div>
 
@@ -146,7 +167,7 @@ export function EditItemModal({ open, onClose, form, setForm, onSubmit, categori
             <LabelEl>Image <span className="text-slate-400 font-medium normal-case">(optional)</span></LabelEl>
             <div className="flex gap-2 items-center">
               <input type="file" accept="image/jpeg,image/png,image/webp,image/gif"
-                onChange={(e) => { setForm((prev: any) => ({ ...prev, imageFile: e.target.files?.[0] || null })); clearError("imageFile"); }}
+                onChange={(e) => { setForm((prev) => ({ ...prev, imageFile: e.target.files?.[0] || null })); clearError("imageFile"); }}
                 className={`flex-1 h-10 rounded-xl border px-3 text-sm bg-slate-50 dark:bg-white/5 text-slate-600 dark:text-slate-400 file:mr-3 file:text-xs file:font-semibold file:text-indigo-600 dark:file:text-indigo-400 file:bg-transparent file:border-0 file:py-2 ${errors.imageFile ? "border-red-400" : "border-slate-200 dark:border-white/8"}`} />
               <div className="h-10 w-10 rounded-xl border border-slate-200 dark:border-white/8 overflow-hidden bg-slate-100 dark:bg-white/5 flex items-center justify-center shrink-0">
                 {previewSrc
@@ -165,7 +186,7 @@ export function EditItemModal({ open, onClose, form, setForm, onSubmit, categori
                 <button
                   key={opt.value}
                   type="button"
-                  onClick={() => setForm((prev: any) => ({ ...prev, serviceType: opt.value }))}
+                  onClick={() => setForm((prev) => ({ ...prev, serviceType: opt.value }))}
                   className={`flex-1 h-9 rounded-xl border text-xs font-semibold transition-all ${
                     (form.serviceType ?? "BOTH") === opt.value
                       ? "bg-indigo-600 border-indigo-600 text-white shadow-sm"
@@ -178,28 +199,66 @@ export function EditItemModal({ open, onClose, form, setForm, onSubmit, categori
             </div>
           </div>
 
+          <div>
+            <LabelEl>Inventory Tracking <span className="text-red-400 normal-case">*</span></LabelEl>
+            <div className="grid gap-2">
+              {INVENTORY_OPTIONS.map((opt) => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => {
+                    setForm((prev) => ({
+                      ...prev,
+                      inventoryMode: opt.value,
+                      stockQuantity: opt.value === "DIRECT" ? prev.stockQuantity : "",
+                    }));
+                    clearError("inventoryMode");
+                    clearError("stockQuantity");
+                  }}
+                  className={`rounded-2xl border px-4 py-3 text-left transition-all ${
+                    form.inventoryMode === opt.value
+                      ? "border-indigo-300 bg-indigo-50 dark:border-indigo-500/30 dark:bg-indigo-500/10"
+                      : "border-slate-200 dark:border-white/8 bg-slate-50 dark:bg-white/5"
+                  }`}
+                >
+                  <p className="text-sm font-semibold text-slate-800 dark:text-white">{opt.label}</p>
+                  <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">{opt.hint}</p>
+                </button>
+              ))}
+            </div>
+            <ErrTxt msg={errors.inventoryMode} />
+          </div>
+
           <div className="rounded-2xl border border-indigo-100 dark:border-indigo-500/20 bg-indigo-50/80 dark:bg-indigo-500/10 px-4 py-3">
             <p className="text-[11px] font-semibold uppercase tracking-wider text-indigo-600 dark:text-indigo-300">Inventory Source</p>
             <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
-              Outlet availability is now derived from recipes and ingredient stock transactions instead of manual menu stock edits.
+              {form.inventoryMode === "RECIPE"
+                ? "Recipe-based items stay off kiosk until a recipe is linked. Ingredient stock controls availability."
+                : "Direct-stock items are ideal for packaged products and keep using menu-level stock updates."}
             </p>
           </div>
 
-          {/* Price */}
-          <div>
+          <div className={form.inventoryMode === "DIRECT" ? "grid grid-cols-2 gap-4" : ""}>
             <div>
               <LabelEl>Price (₹) <span className="text-red-400 normal-case">*</span></LabelEl>
-              <input type="number" step="0.01" min="0" value={form.price} onChange={(e) => { setForm((prev: any) => ({ ...prev, price: e.target.value })); clearError("price"); }} placeholder="0.00" className={`${inputBase} ${errors.price ? inputErr : inputOk}`} />
+              <input type="number" step="0.01" min="0" value={form.price} onChange={(e) => { setForm((prev) => ({ ...prev, price: e.target.value })); clearError("price"); }} placeholder="0.00" className={`${inputBase} ${errors.price ? inputErr : inputOk}`} />
               <ErrTxt msg={errors.price} />
             </div>
+            {form.inventoryMode === "DIRECT" && (
+              <div>
+                <LabelEl>Direct Stock Qty <span className="text-red-400 normal-case">*</span></LabelEl>
+                <input type="number" min="0" step="1" value={form.stockQuantity} onChange={(e) => { setForm((prev) => ({ ...prev, stockQuantity: e.target.value })); clearError("stockQuantity"); }} placeholder="0" className={`${inputBase} ${errors.stockQuantity ? inputErr : inputOk}`} />
+                <ErrTxt msg={errors.stockQuantity} />
+              </div>
+            )}
           </div>
 
           {/* Offers */}
           <div>
             <LabelEl>Offers & Tags <span className="text-slate-400 font-medium normal-case">(optional)</span></LabelEl>
             <OfferEditor
-              offers={(form as any).offers ?? []}
-              onChange={(offers) => setForm((prev: any) => ({ ...prev, offers }))}
+              offers={form.offers ?? []}
+              onChange={(offers) => setForm((prev) => ({ ...prev, offers }))}
             />
             <ErrTxt msg={errors.offers as string | undefined} />
           </div>
@@ -210,7 +269,7 @@ export function EditItemModal({ open, onClose, form, setForm, onSubmit, categori
               items={items}
               selectedIds={form.customizationItemIds ?? []}
               excludeItemId={editingItemId}
-              onChange={(customizationItemIds) => setForm((prev: any) => ({ ...prev, customizationItemIds }))}
+              onChange={(customizationItemIds) => setForm((prev) => ({ ...prev, customizationItemIds }))}
             />
             <p className="mt-1 text-[11px] text-slate-400">
               Tip: keep customization items inactive so they only appear as add-ons.

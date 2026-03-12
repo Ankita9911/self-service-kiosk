@@ -91,6 +91,14 @@ export function getIO() {
   return io;
 }
 
+export function emitOutletEvent(outletId, event, payload = {}) {
+  if (!io || !outletId) return;
+  io.to(`outlet:${outletId}`).emit(event, {
+    outletId: String(outletId),
+    ...payload,
+  });
+}
+
 /**
  * Force-disconnect all sockets belonging to a user or device.
  * The client receives `force:logout` before disconnection.

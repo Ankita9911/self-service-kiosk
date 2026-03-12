@@ -9,7 +9,7 @@ import StockTransaction from "../../../modules/stockTransactions/stockTransactio
 import { enqueue } from "../queue.producer.js";
 import { getRedisClient } from "../../cache/redis.client.js";
 import { buildTenantKey } from "../../cache/cache.utils.js";
-import { getIO } from "../../../realtime/realtime.manager.js";
+import { emitOutletEvent, getIO } from "../../../realtime/realtime.manager.js";
 
 async function getNextOrderNumber(outletId, session) {
   const counter = await Counter.findOneAndUpdate(
@@ -63,20 +63,56 @@ export async function handleOrderPlaced(payload) {
 
     let totalAmount = 0;
     const processedItems = [];
+    const recipeDeductionTargets = [];
 
     for (const item of items) {
-      const menuItem = await MenuItem.findOneAndUpdate(
+      const menuItemBase = await MenuItem.findOne(
         {
           _id: item.itemId,
           outletId: tenant.outletId,
           franchiseId: tenant.franchiseId,
           isDeleted: false,
           isActive: true,
-          stockQuantity: { $gte: item.quantity },
-        },
-        { $inc: { stockQuantity: -item.quantity } },
-        { returnDocument: "after", session }
-      );
+        }
+      ).session(session);
+
+      if (!menuItemBase) {
+        throw new Error(`Invalid item: ${item.itemId}`);
+      }
+
+      const menuItemMode = menuItemBase.inventoryMode ?? "RECIPE";
+      let menuItem = menuItemBase;
+
+      if (menuItemMode === "DIRECT") {
+        menuItem = await MenuItem.findOneAndUpdate(
+          {
+            _id: item.itemId,
+            outletId: tenant.outletId,
+            franchiseId: tenant.franchiseId,
+            isDeleted: false,
+            isActive: true,
+            stockQuantity: { $gte: item.quantity },
+          },
+          { $inc: { stockQuantity: -item.quantity } },
+          { returnDocument: "after", session }
+        );
+      } else {
+        const recipe = await Recipe.findOne({
+          menuItemId: item.itemId,
+          franchiseId: tenant.franchiseId,
+          outletId: tenant.outletId,
+          isDeleted: false,
+        }).session(session);
+
+        if (!recipe) {
+          throw new Error(`Recipe not configured for item: ${item.itemId}`);
+        }
+
+        recipeDeductionTargets.push({
+          itemId: menuItemBase._id,
+          quantity: item.quantity,
+        });
+      }
 
       if (!menuItem) {
         throw new Error(
@@ -101,17 +137,55 @@ export async function handleOrderPlaced(payload) {
           );
         }
 
-        const customizationItem = await MenuItem.findOneAndUpdate(
+        const customizationBase = await MenuItem.findOne(
           {
             _id: customizationItemId,
             outletId: tenant.outletId,
             franchiseId: tenant.franchiseId,
             isDeleted: false,
-            stockQuantity: { $gte: item.quantity },
-          },
-          { $inc: { stockQuantity: -item.quantity } },
-          { returnDocument: "after", session }
-        );
+          }
+        ).session(session);
+
+        if (!customizationBase) {
+          throw new Error(
+            `Invalid customization item: ${customizationItemId}`
+          );
+        }
+
+        const customizationMode = customizationBase.inventoryMode ?? "RECIPE";
+        let customizationItem = customizationBase;
+
+        if (customizationMode === "DIRECT") {
+          customizationItem = await MenuItem.findOneAndUpdate(
+            {
+              _id: customizationItemId,
+              outletId: tenant.outletId,
+              franchiseId: tenant.franchiseId,
+              isDeleted: false,
+              stockQuantity: { $gte: item.quantity },
+            },
+            { $inc: { stockQuantity: -item.quantity } },
+            { returnDocument: "after", session }
+          );
+        } else {
+          const customizationRecipe = await Recipe.findOne({
+            menuItemId: customizationItemId,
+            franchiseId: tenant.franchiseId,
+            outletId: tenant.outletId,
+            isDeleted: false,
+          }).session(session);
+
+          if (!customizationRecipe) {
+            throw new Error(
+              `Recipe not configured for customization item: ${customizationItemId}`
+            );
+          }
+
+          recipeDeductionTargets.push({
+            itemId: customizationBase._id,
+            quantity: item.quantity,
+          });
+        }
 
         if (!customizationItem) {
           throw new Error(
@@ -169,7 +243,7 @@ export async function handleOrderPlaced(payload) {
     // Items without a configured recipe fall back to the existing MenuItem.stockQuantity path.
     const ingredientDeductions = []; // { ingredientId, name, quantity, franchiseId, outletId }
 
-    for (const item of processedItems) {
+    for (const item of recipeDeductionTargets) {
       const recipe = await Recipe.findOne({
         menuItemId: item.itemId,
         franchiseId: tenant.franchiseId,
@@ -254,6 +328,15 @@ export async function handleOrderPlaced(payload) {
           );
         }
       }
+
+      emitOutletEvent(tenant.outletId, "inventory:updated", {
+        type: "ORDER_CONSUMPTION",
+        orderId: String(order[0]._id),
+      });
+      emitOutletEvent(tenant.outletId, "stock-transactions:updated", {
+        type: "ORDER_CONSUMPTION",
+        orderId: String(order[0]._id),
+      });
     }
 
     await OrderRequest.findOneAndUpdate(

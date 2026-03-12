@@ -98,7 +98,7 @@ export function ItemViewModal({ item, categories, onClose }: Props) {
               </span>
             ) : isLowStock ? (
               <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-amber-50 dark:bg-amber-400/10 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-400/20">
-                <Package className="w-3 h-3" /> {item.availableQuantity ?? 0} servings left
+                <Package className="w-3 h-3" /> {item.inventoryMode === "DIRECT" ? `${item.availableQuantity ?? 0} units left` : `${item.availableQuantity ?? 0} servings left`}
               </span>
             ) : item.stockStatus === "NO_RECIPE" ? (
               <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-50 dark:bg-white/5 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-white/8">
@@ -106,7 +106,7 @@ export function ItemViewModal({ item, categories, onClose }: Props) {
               </span>
             ) : (
               <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-50 dark:bg-white/5 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-white/8">
-                <Package className="w-3 h-3" /> {item.availableQuantity ?? 0} servings available
+                <Package className="w-3 h-3" /> {item.inventoryMode === "DIRECT" ? `${item.availableQuantity ?? 0} units available` : `${item.availableQuantity ?? 0} servings available`}
               </span>
             )}
 

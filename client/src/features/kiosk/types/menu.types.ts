@@ -23,6 +23,7 @@ export interface MenuItem {
   imageUrl?: string;
   price: number;
   stockQuantity: number;
+  inventoryMode?: "RECIPE" | "DIRECT";
   isActive: boolean;
   serviceType?: "DINE_IN" | "TAKE_AWAY" | "BOTH";
   offers?: ItemOffer[];

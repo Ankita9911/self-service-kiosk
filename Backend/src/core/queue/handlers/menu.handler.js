@@ -50,6 +50,21 @@ export async function handleMenuPriceUpdate(payload) {
 export async function handleMenuStockUpdate(payload) {
   const { itemId, stockQuantity, tenant } = payload;
 
+  const currentItem = await MenuItem.findOne({
+    _id: itemId,
+    franchiseId: tenant.franchiseId,
+    outletId: tenant.outletId,
+    isDeleted: false,
+  });
+
+  if (!currentItem) {
+    throw new Error(`Menu item not found for stock update: ${itemId}`);
+  }
+
+  if ((currentItem.inventoryMode ?? "RECIPE") !== "DIRECT") {
+    throw new Error(`Direct stock updates are only allowed for DIRECT inventory items: ${itemId}`);
+  }
+
   const item = await MenuItem.findOneAndUpdate(
     {
       _id: itemId,

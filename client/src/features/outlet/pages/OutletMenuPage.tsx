@@ -34,6 +34,7 @@ import { EditComboModal } from "../components/EditComboModal";
 
 import { Button } from "@/shared/components/ui/button";
 import { CursorPagination } from "@/shared/components/ui/CursorPagination";
+import type { Combo, MenuItem } from "@/features/kiosk/types/menu.types";
 
 type Layout = "grid" | "table";
 type ActiveTab = "items" | "combos";
@@ -74,6 +75,7 @@ export default function OutletMenuPage() {
     addItem,
     updateItem,
     updatePrice,
+    updateStock,
     removeItem,
     removeCategory,
     toggleItemStatus,
@@ -93,17 +95,19 @@ export default function OutletMenuPage() {
 
   const [addCategoryOpen, setAddCategoryOpen] = useState(false);
   const [addItemOpen, setAddItemOpen] = useState(false);
-  const [editItem, setEditItem] = useState<any | null>(null);
-  const [deleteItem, setDeleteItem] = useState<any | null>(null);
-  const [priceItem, setPriceItem] = useState<any | null>(null);
+  const [editItem, setEditItem] = useState<MenuItem | null>(null);
+  const [deleteItem, setDeleteItem] = useState<MenuItem | null>(null);
+  const [priceItem, setPriceItem] = useState<MenuItem | null>(null);
+  const [stockItem, setStockItem] = useState<MenuItem | null>(null);
   const [priceInput, setPriceInput] = useState("");
-  const [viewItem, setViewItem] = useState<any | null>(null);
+  const [stockInput, setStockInput] = useState("");
+  const [viewItem, setViewItem] = useState<MenuItem | null>(null);
   const [layout, setLayout] = useState<Layout>(
     () => (localStorage.getItem("menu-layout") as Layout) ?? "grid"
   );
   const [activeTab, setActiveTab] = useState<ActiveTab>("items");
   const [addComboOpen, setAddComboOpen] = useState(false);
-  const [editComboData, setEditComboData] = useState<any | null>(null);
+  const [editComboData, setEditComboData] = useState<Combo | null>(null);
 
   const saveLayout = (l: Layout) => {
     setLayout(l);
@@ -116,7 +120,7 @@ export default function OutletMenuPage() {
     if ((user?.role === "FRANCHISE_ADMIN" || user?.role === "SUPER_ADMIN") && !outletId) {
       navigate("/outlets");
     }
-  }, [user?.role, user?.outletId, outletId, canManage]);
+  }, [user?.role, user?.outletId, outletId, canManage, navigate]);
 
   const activeCount = activeItems;
 
@@ -126,7 +130,7 @@ export default function OutletMenuPage() {
   const handleStatusChange = (v: "ALL" | "ACTIVE" | "INACTIVE") => { setItemStatusFilter(v); resetToFirstPage(); };
   const clearFilters = () => { setSearch(""); setItemStatusFilter("ALL"); setSelectedCategoryId("ALL"); resetToFirstPage(); };
 
-  const openEdit = (item: any) => {
+  const openEdit = (item: MenuItem) => {
     setEditItem(item);
     setItemForm({
       categoryId: item.categoryId,
@@ -134,6 +138,8 @@ export default function OutletMenuPage() {
       description: item.description ?? "",
       imageFile: null,
       price: String(item.price),
+      stockQuantity: String(item.stockQuantity ?? 0),
+      inventoryMode: item.inventoryMode ?? "RECIPE",
       serviceType: item.serviceType ?? "BOTH",
       offers: item.offers ?? [],
       customizationItemIds: item.customizationItemIds ?? [],
@@ -221,7 +227,7 @@ export default function OutletMenuPage() {
               <Button
                 size="sm"
                 onClick={() => {
-                  setItemForm({ categoryId: categories[0]?._id ?? "", name: "", description: "", imageFile: null, price: "", serviceType: "BOTH", offers: [], customizationItemIds: [] });
+                  setItemForm({ categoryId: categories[0]?._id ?? "", name: "", description: "", imageFile: null, price: "", stockQuantity: "", inventoryMode: "RECIPE", serviceType: "BOTH", offers: [], customizationItemIds: [] });
                   setAddItemOpen(true);
                 }}
                 className="rounded-xl h-9 text-xs bg-indigo-600 hover:bg-indigo-700 text-white"
@@ -545,6 +551,7 @@ export default function OutletMenuPage() {
                     onEdit={() => openEdit(item)}
                     onDelete={() => setDeleteItem(item)}
                     onUpdatePrice={() => { setPriceItem(item); setPriceInput(String(item.price)); }}
+                    onUpdateStock={item.inventoryMode === "DIRECT" ? () => { setStockItem(item); setStockInput(String(item.stockQuantity)); } : undefined}
                     onToggleStatus={() => toggleItemStatus(item._id)}
                     onView={() => setViewItem(item)}
                   />
@@ -605,6 +612,54 @@ export default function OutletMenuPage() {
                 className="flex-1 h-9 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-sm font-semibold text-white transition-colors"
               >
                 Save Price
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {stockItem && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-4">
+          <div className="bg-white dark:bg-[#1e2130] rounded-2xl border border-slate-100 dark:border-white/8 shadow-2xl w-full max-w-sm p-6">
+            <h3 className="text-base font-bold text-slate-800 dark:text-white mb-1">
+              Update Direct Stock
+            </h3>
+            <p className="text-xs text-slate-400 dark:text-slate-500 mb-4">
+              {stockItem.name} — packaged/direct-stock item
+            </p>
+            <input
+              type="number"
+              min="0"
+              step="1"
+              value={stockInput}
+              onChange={(e) => setStockInput(e.target.value)}
+              className="w-full px-3 h-10 rounded-xl border border-slate-200 dark:border-white/8 bg-slate-50 dark:bg-white/5 text-sm text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-400"
+              placeholder="Enter quantity"
+              autoFocus
+            />
+            <div className="mt-3 rounded-xl border border-slate-200 dark:border-white/8 bg-slate-50/80 dark:bg-white/[0.03] px-3 py-2">
+              <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                Use this only for direct-stock items like bottled drinks. Recipe-based items are controlled from ingredients.
+              </p>
+            </div>
+            <div className="flex gap-2 mt-4">
+              <button
+                onClick={() => setStockItem(null)}
+                className="flex-1 h-9 rounded-xl border border-slate-200 dark:border-white/8 text-sm text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={async () => {
+                  const q = parseInt(stockInput, 10);
+                  if (!isNaN(q) && q >= 0) {
+                    await updateStock(stockItem._id, q);
+                    setStockItem(null);
+                  }
+                }}
+                className="flex-1 h-9 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-sm font-semibold text-white transition-colors"
+              >
+                Save Stock
               </button>
             </div>
           </div>
@@ -677,7 +732,7 @@ export default function OutletMenuPage() {
           onClose={() => setEditComboData(null)}
           combo={editComboData}
           items={items}
-          onSubmit={async (data: any) => { await editCombo(editComboData._id, data); setEditComboData(null); }}
+          onSubmit={async (data) => { await editCombo(editComboData._id, data); setEditComboData(null); }}
         />
       )}
     </div>

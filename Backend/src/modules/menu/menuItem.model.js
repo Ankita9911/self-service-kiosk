@@ -46,6 +46,12 @@ const menuItemSchema = new Schema(
       min: 0,
     },
 
+    inventoryMode: {
+      type: String,
+      enum: ["RECIPE", "DIRECT"],
+      default: "RECIPE",
+    },
+
     serviceType: {
       type: String,
       enum: ["DINE_IN", "TAKE_AWAY", "BOTH"],

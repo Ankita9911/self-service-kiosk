@@ -43,9 +43,8 @@ export default function MenuGrid({
   onUpdateQuantity,
 }: MenuGridProps) {
   const [customizationItem, setCustomizationItem] = useState<MenuItem | null>(null);
-  const availableItems = items.filter((item) => item.stockQuantity > 0);
 
-  if (availableItems.length === 0) {
+  if (items.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-96 text-gray-400">
         <div className="w-32 h-32 bg-linear-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center mb-6">
@@ -70,7 +69,7 @@ export default function MenuGrid({
   return (
     <>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {availableItems.map((item) => {
+        {items.map((item) => {
           const offers = item.offers || [];
           const discountOffer = offers.find(
             (offer) => offer.type === "DISCOUNT" && typeof offer.discountPercent === "number"

@@ -7,6 +7,7 @@ import {
   aiGenerateRecipe,
 } from "@/features/recipes/services/recipe.service";
 import type { Recipe, RecipeFormState, AISuggestion } from "@/features/recipes/types/recipe.types";
+import { useOutletEvents } from "@/shared/hooks/useOutletEvents";
 
 export function useRecipes(outletId: string | undefined) {
   const [recipes, setRecipes] = useState<Recipe[]>([]);
@@ -37,6 +38,10 @@ export function useRecipes(outletId: string | undefined) {
   useEffect(() => {
     fetchRecipes();
   }, [fetchRecipes]);
+
+  useOutletEvents(["recipe:updated", "inventory:updated"], () => {
+    void fetchRecipes(true);
+  }, outletId);
 
   async function handleCreate(data: RecipeFormState) {
     const cleanIngredients = data.ingredients

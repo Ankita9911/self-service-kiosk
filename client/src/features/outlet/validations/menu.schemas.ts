@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const menuItemSchema = z.object({
+const menuItemBaseSchema = z.object({
   categoryId: z.string().min(1, "Please select a category"),
   name: z
     .string()
@@ -28,6 +28,8 @@ export const menuItemSchema = z.object({
       (val) => /^\d+(\.\d{1,2})?$/.test(val) && parseFloat(val) >= 1 && parseFloat(val) <= 1_000_000_000,
       "Price must be between 1 and 1,000,000,000 (e.g. 49 or 49.99)",
     ),
+  stockQuantity: z.string().optional(),
+  inventoryMode: z.enum(["RECIPE", "DIRECT"]).default("RECIPE"),
   offers: z
     .array(
       z.object({
@@ -67,7 +69,37 @@ export const menuItemSchema = z.object({
     ),
 });
 
-export const editMenuItemSchema = menuItemSchema.omit({ categoryId: true });
+function withInventoryModeRefinement<T extends z.ZodObject>(schema: T) {
+  return schema.superRefine((data, ctx) => {
+    if (data.inventoryMode === "DIRECT") {
+      if (!data.stockQuantity || data.stockQuantity.trim() === "") {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["stockQuantity"],
+          message: "Direct-stock items require a stock quantity",
+        });
+        return;
+      }
+
+      if (
+        !/^\d+$/.test(data.stockQuantity) ||
+        Number.parseInt(data.stockQuantity, 10) < 0 ||
+        Number.parseInt(data.stockQuantity, 10) > 1000
+      ) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["stockQuantity"],
+          message: "Stock quantity must be a whole number between 0 and 1000",
+        });
+      }
+    }
+  });
+}
+
+export const menuItemSchema = withInventoryModeRefinement(menuItemBaseSchema);
+export const editMenuItemSchema = withInventoryModeRefinement(
+  menuItemBaseSchema.omit({ categoryId: true })
+);
 export const categorySchema = z.object({
   name: z
     .string()
@@ -91,20 +123,22 @@ export type EditMenuItemFormValues = z.infer<typeof editMenuItemSchema>;
 export type CategoryFormValues = z.infer<typeof categorySchema>;
 
 // For creating items, image is required
-export const createMenuItemSchema = menuItemSchema.extend({
-  imageFile: z
-    .instanceof(Blob, { message: "Please upload an image" })
-    .refine(
-      (file) => file.size <= 5 * 1024 * 1024,
-      "Image must be smaller than 5 MB",
-    )
-    .refine(
-      (file) =>
-        ["image/jpeg", "image/png", "image/webp", "image/gif"].includes(
-          file.type,
-        ),
-      "Only JPEG, PNG, WebP or GIF images are allowed",
-    ),
-});
+export const createMenuItemSchema = withInventoryModeRefinement(
+  menuItemBaseSchema.extend({
+    imageFile: z
+      .instanceof(Blob, { message: "Please upload an image" })
+      .refine(
+        (file) => file.size <= 5 * 1024 * 1024,
+        "Image must be smaller than 5 MB",
+      )
+      .refine(
+        (file) =>
+          ["image/jpeg", "image/png", "image/webp", "image/gif"].includes(
+            file.type,
+          ),
+        "Only JPEG, PNG, WebP or GIF images are allowed",
+      ),
+  })
+);
 
 export type CreateMenuItemFormValues = z.infer<typeof createMenuItemSchema>;

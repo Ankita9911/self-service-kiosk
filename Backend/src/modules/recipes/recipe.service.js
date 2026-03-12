@@ -3,6 +3,7 @@ import Recipe from "./recipe.model.js";
 import Ingredient from "../ingredients/ingredient.model.js";
 import { getRedisClient } from "../../core/cache/redis.client.js";
 import { buildTenantKey } from "../../core/cache/cache.utils.js";
+import { emitOutletEvent } from "../../realtime/realtime.manager.js";
 import AppError from "../../shared/errors/AppError.js";
 import env from "../../config/env.js";
 
@@ -92,6 +93,11 @@ export async function createRecipe(data, tenant) {
   });
 
   await invalidateRecipeCache(tenant, data.menuItemId);
+  emitOutletEvent(tenant.outletId, "recipe:updated", {
+    type: "RECIPE_CREATE",
+    recipeId: String(recipe._id),
+    menuItemId: String(data.menuItemId),
+  });
   return recipe;
 }
 
@@ -236,6 +242,11 @@ export async function updateRecipe(id, data, tenant) {
   }
 
   await invalidateRecipeCache(tenant, String(recipe.menuItemId?._id || recipe.menuItemId));
+  emitOutletEvent(tenant.outletId, "recipe:updated", {
+    type: "RECIPE_UPDATE",
+    recipeId: String(recipe._id),
+    menuItemId: String(recipe.menuItemId?._id || recipe.menuItemId),
+  });
   return recipe;
 }
 
@@ -256,6 +267,11 @@ export async function deleteRecipe(id, tenant) {
   }
 
   await invalidateRecipeCache(tenant, String(recipe.menuItemId));
+  emitOutletEvent(tenant.outletId, "recipe:updated", {
+    type: "RECIPE_DELETE",
+    recipeId: String(recipe._id),
+    menuItemId: String(recipe.menuItemId),
+  });
   return { deleted: true, id };
 }
 

@@ -1,5 +1,6 @@
 import StockTransaction from "./stockTransaction.model.js";
 import Ingredient from "../ingredients/ingredient.model.js";
+import { emitOutletEvent } from "../../realtime/realtime.manager.js";
 import AppError from "../../shared/errors/AppError.js";
 
 const DEFAULT_LIMIT = 20;
@@ -140,6 +141,17 @@ export async function createManualTransaction(data, tenant) {
     note: note ?? "",
     franchiseId: tenant.franchiseId,
     outletId: tenant.outletId,
+  });
+
+  emitOutletEvent(tenant.outletId, "stock-transactions:updated", {
+    type: "MANUAL_TRANSACTION_CREATE",
+    transactionId: String(transaction._id),
+    ingredientId: String(ingredientId),
+  });
+  emitOutletEvent(tenant.outletId, "inventory:updated", {
+    type: "MANUAL_TRANSACTION_CREATE",
+    transactionId: String(transaction._id),
+    ingredientId: String(ingredientId),
   });
 
   return transaction;

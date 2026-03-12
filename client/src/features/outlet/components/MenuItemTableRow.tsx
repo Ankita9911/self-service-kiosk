@@ -11,11 +11,12 @@ interface Props {
   onEdit: () => void;
   onDelete: () => void;
   onUpdatePrice: () => void;
+  onUpdateStock?: () => void;
   onToggleStatus: () => void;
   onView: () => void;
 }
 
-export function MenuItemTableRow({ item, categories, index, onEdit, onDelete, onUpdatePrice, onToggleStatus, onView }: Props) {
+export function MenuItemTableRow({ item, categories, index, onEdit, onDelete, onUpdatePrice, onUpdateStock, onToggleStatus, onView }: Props) {
   const category = categories.find((c) => c._id === item.categoryId);
   const isLowStock = item.stockStatus === "LOW_STOCK";
   const isOutOfStock = item.stockStatus === "OUT_OF_STOCK";
@@ -42,6 +43,9 @@ export function MenuItemTableRow({ item, categories, index, onEdit, onDelete, on
     ...(item.imageUrl ? [{ icon: ZoomIn, label: "View image", onClick: () => setPreview(true), className: "text-slate-600 dark:text-slate-300 hover:text-violet-600 dark:hover:text-violet-400" }] : []),
     { icon: Pencil, label: "Edit item", onClick: onEdit, className: "text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400" },
     { icon: DollarSign, label: "Update price", onClick: onUpdatePrice, className: "text-slate-600 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400" },
+    ...(item.inventoryMode === "DIRECT" && onUpdateStock
+      ? [{ icon: Package, label: "Update direct stock", onClick: onUpdateStock, className: "text-slate-600 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400" }]
+      : []),
     { icon: Power, label: item.isActive !== false ? "Deactivate" : "Activate", onClick: onToggleStatus, className: item.isActive !== false ? "text-slate-600 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400" : "text-emerald-600 dark:text-emerald-400 hover:text-emerald-700" },
     { icon: Trash2, label: "Delete", onClick: onDelete, className: "text-red-500 dark:text-red-400 hover:text-red-600 dark:hover:text-red-300" },
   ];
@@ -123,7 +127,7 @@ export function MenuItemTableRow({ item, categories, index, onEdit, onDelete, on
           ) : isLowStock ? (
             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[11px] font-semibold bg-amber-50 dark:bg-amber-400/10 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-400/20">
               <Package className="w-3 h-3" />
-              {item.availableQuantity ?? 0} servings left
+              {item.inventoryMode === "DIRECT" ? `${item.availableQuantity ?? 0} units left` : `${item.availableQuantity ?? 0} servings left`}
             </span>
           ) : item.stockStatus === "NO_RECIPE" ? (
             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[11px] font-semibold bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-white/8">
@@ -133,7 +137,11 @@ export function MenuItemTableRow({ item, categories, index, onEdit, onDelete, on
           ) : (
             <span className="inline-flex items-center gap-1 text-sm font-medium text-slate-600 dark:text-slate-400">
               <Package className="w-3.5 h-3.5 text-slate-400" />
-              {hasRecipeStock ? `${item.availableQuantity ?? 0} servings` : "Available"}
+              {item.inventoryMode === "DIRECT"
+                ? `${item.availableQuantity ?? 0} units`
+                : hasRecipeStock
+                  ? `${item.availableQuantity ?? 0} servings`
+                  : "Available"}
             </span>
           )}
         </div>

@@ -8,6 +8,7 @@ import {
   createMenuItem,
   updateMenuItem,
   updateMenuItemPrice,
+  updateMenuItemStock,
   deleteMenuItem,
   deleteCategory,
   toggleMenuItemStatus,
@@ -83,11 +84,29 @@ function decorateMenuItems(
   availabilityByItemId: Record<string, ReturnType<typeof getRecipeAvailability>>
 ) {
   return rawItems.map((item) => {
+    const inventoryMode = item.inventoryMode ?? "RECIPE";
+    if (inventoryMode === "DIRECT") {
+      const availableQuantity = Math.max(0, Number(item.stockQuantity ?? 0));
+      return {
+        ...item,
+        inventoryMode,
+        stockSource: "MENU" as const,
+        stockStatus:
+          availableQuantity <= 0
+            ? ("OUT_OF_STOCK" as const)
+            : availableQuantity <= LOW_STOCK_THRESHOLD
+              ? ("LOW_STOCK" as const)
+              : ("IN_STOCK" as const),
+        availableQuantity,
+      };
+    }
+
     const recipeAvailability = availabilityByItemId[item._id];
     if (!recipeAvailability) {
       return {
         ...item,
-        stockSource: "MENU" as const,
+        inventoryMode,
+        stockSource: "RECIPE" as const,
         stockStatus: "NO_RECIPE" as const,
         availableQuantity: null,
       };
@@ -157,6 +176,8 @@ export function useOutletMenu(
     description: "",
     imageFile: null,
     price: "",
+    stockQuantity: "",
+    inventoryMode: "RECIPE",
     serviceType: "BOTH",
     offers: [],
     customizationItemIds: [],
@@ -385,7 +406,11 @@ export function useOutletMenu(
         description: itemForm.description || undefined,
         imageUrl,
         price: parseFloat(itemForm.price),
-        stockQuantity: 0,
+        stockQuantity:
+          itemForm.inventoryMode === "DIRECT"
+            ? parseInt(itemForm.stockQuantity, 10) || 0
+            : 0,
+        inventoryMode: itemForm.inventoryMode,
         serviceType: itemForm.serviceType ?? "BOTH",
         offers: itemForm.offers ?? [],
         customizationItemIds: itemForm.customizationItemIds ?? [],
@@ -399,6 +424,8 @@ export function useOutletMenu(
       description: "",
       imageFile: null,
       price: "",
+      stockQuantity: "",
+      inventoryMode: "RECIPE",
       serviceType: "BOTH",
       offers: [],
       customizationItemIds: [],
@@ -412,6 +439,11 @@ export function useOutletMenu(
       name: itemForm.name,
       description: itemForm.description || undefined,
       price: parseFloat(itemForm.price),
+      stockQuantity:
+        itemForm.inventoryMode === "DIRECT"
+          ? parseInt(itemForm.stockQuantity, 10) || 0
+          : 0,
+      inventoryMode: itemForm.inventoryMode,
       serviceType: itemForm.serviceType ?? "BOTH",
       offers: itemForm.offers ?? [],
       customizationItemIds: itemForm.customizationItemIds ?? [],
@@ -437,6 +469,11 @@ export function useOutletMenu(
 
   async function updatePrice(id: string, price: number) {
     await updateMenuItemPrice(id, price, oidForApi);
+    await refreshMenuData();
+  }
+
+  async function updateStock(id: string, stockQuantity: number) {
+    await updateMenuItemStock(id, stockQuantity, oidForApi);
     await refreshMenuData();
   }
 
@@ -512,6 +549,7 @@ export function useOutletMenu(
     addItem,
     updateItem,
     updatePrice,
+    updateStock,
     removeItem,
     removeCategory,
     toggleItemStatus,

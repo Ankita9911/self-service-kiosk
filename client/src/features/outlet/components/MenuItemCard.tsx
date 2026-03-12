@@ -138,7 +138,9 @@ export function MenuItemCard({ item, onEdit, onDelete, onToggleStatus, onView }:
               ? "Out of stock"
               : item.stockStatus === "NO_RECIPE"
                 ? "No recipe linked"
-                : hasRecipeStock
+                : item.inventoryMode === "DIRECT"
+                  ? `${item.availableQuantity ?? 0} units`
+                  : hasRecipeStock
                   ? `${item.availableQuantity ?? 0} servings`
                   : "Available"}
           </div>

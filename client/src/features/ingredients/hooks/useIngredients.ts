@@ -8,6 +8,7 @@ import {
 import { createManualTransaction } from "@/features/stockTransactions/services/stockTransaction.service";
 import type { Ingredient, IngredientFormState, StockAdjustPayload } from "@/features/ingredients/types/ingredient.types";
 import { useDebounce } from "@/shared/hooks/useDebounce";
+import { useOutletEvents } from "@/shared/hooks/useOutletEvents";
 
 export function useIngredients(outletId: string | undefined, search?: string) {
   const [ingredients, setIngredients] = useState<Ingredient[]>([]);
@@ -42,6 +43,10 @@ export function useIngredients(outletId: string | undefined, search?: string) {
   useEffect(() => {
     fetchIngredients();
   }, [fetchIngredients]);
+
+  useOutletEvents(["ingredient:updated", "inventory:updated"], () => {
+    void fetchIngredients(true);
+  }, outletId);
 
   async function handleCreate(data: IngredientFormState) {
     const result = await createIngredient(data, outletId);

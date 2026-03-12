@@ -1,0 +1,7 @@
+{
+  "watch": ["src/", ".env"],
+  "ignore": ["node_modules/", ".git/"],
+  "ext": "ts,js,json,env",
+  "delay": 500,
+  "exec": "node dist/index.js"
+}

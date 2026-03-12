@@ -111,6 +111,7 @@ export async function createMenuItem(
     imageUrl?: string;
     price: number;
     stockQuantity: number;
+    inventoryMode?: "RECIPE" | "DIRECT";
     serviceType?: "DINE_IN" | "TAKE_AWAY" | "BOTH";
     offers?: MenuItem["offers"];
     customizationItemIds?: string[];
