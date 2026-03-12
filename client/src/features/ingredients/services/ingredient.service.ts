@@ -11,6 +11,8 @@ export interface IngredientQueryOptions {
   lowStock?: boolean;
   cursor?: string;
   limit?: number;
+  sortBy?: string;
+  sortOrder?: string;
 }
 
 export interface IngredientListResult {
@@ -38,6 +40,8 @@ export async function getIngredients(
   if (options?.lowStock) p.lowStock = "true";
   if (options?.cursor) p.cursor = options.cursor;
   if (typeof options?.limit === "number") p.limit = String(options.limit);
+  if (options?.sortBy) p.sortBy = options.sortBy;
+  if (options?.sortOrder) p.sortOrder = options.sortOrder;
 
   const response = await axiosInstance.get<{
     data: Ingredient[];
@@ -71,6 +75,31 @@ export async function getIngredients(
       lowStockItems: stats.lowStockItems ?? 0,
     },
   };
+}
+
+export async function getAllIngredients(outletId?: string): Promise<Ingredient[]> {
+  const allItems: Ingredient[] = [];
+  const seenIds = new Set<string>();
+  let cursor: string | undefined;
+
+  do {
+    const result = await getIngredients(outletId, {
+      limit: 100,
+      sortBy: "name",
+      sortOrder: "asc",
+      cursor,
+    });
+
+    for (const item of result.items) {
+      if (seenIds.has(item._id)) continue;
+      seenIds.add(item._id);
+      allItems.push(item);
+    }
+
+    cursor = result.pagination.hasNext ? result.pagination.nextCursor ?? undefined : undefined;
+  } while (cursor);
+
+  return allItems;
 }
 
 export async function getIngredientById(id: string, outletId?: string): Promise<Ingredient> {

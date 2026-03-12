@@ -6,6 +6,7 @@ import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/components/ui/select";
+import { findIngredientMatch } from "@/features/recipes/lib/ingredientMatching";
 import { Plus, Trash2, Loader2, ChefHat, Pencil, X } from "lucide-react";
 
 interface MenuItem {
@@ -108,9 +109,7 @@ export function RecipeFormModal({
       const nextIngredients = prev.ingredients.map((row) => {
         if (row.ingredientId || !row._aiName) return row;
 
-        const match = ingredients.find(
-          (ingredient) => ingredient.name.toLowerCase() === row._aiName?.toLowerCase()
-        );
+        const match = findIngredientMatch(ingredients, row._aiName);
 
         if (!match) return row;
 
@@ -364,7 +363,12 @@ export function RecipeFormModal({
                         <SelectContent>
                           {ingredients.map((ing) => (
                             <SelectItem key={ing._id} value={ing._id}>
-                              {ing.name}
+                              <span className="flex items-center justify-between w-full gap-3">
+                                <span>{ing.name}</span>
+                                <span className="text-[11px] text-slate-400 font-mono shrink-0">
+                                  {ing.currentStock} {ing.unit === "gram" ? "g" : ing.unit === "liter" ? "L" : ing.unit}
+                                </span>
+                              </span>
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -455,6 +459,32 @@ export function RecipeFormModal({
               ))}
             </div>
           </div>
+
+          {/* Servings estimate */}
+          {form.ingredients.some((r) => r.ingredientId && r.quantity > 0) && (() => {
+            const resolved = form.ingredients.filter((r) => r.ingredientId && r.quantity > 0);
+            const servings = resolved.reduce((min, r) => {
+              const ing = ingredients.find((i) => i._id === r.ingredientId);
+              if (!ing) return min;
+              return Math.min(min, Math.floor(ing.currentStock / r.quantity));
+            }, Number.POSITIVE_INFINITY);
+            const estimate = Number.isFinite(servings) ? servings : null;
+            if (estimate === null) return null;
+            return (
+              <div className={`flex items-center gap-2.5 rounded-xl px-3.5 py-2.5 text-sm font-medium ${
+                estimate <= 0
+                  ? "bg-red-50 dark:bg-red-500/10 text-red-700 dark:text-red-300 border border-red-100 dark:border-red-500/20"
+                  : estimate <= 5
+                  ? "bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-100 dark:border-amber-500/20"
+                  : "bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-100 dark:border-emerald-500/20"
+              }`}>
+                <span className="text-lg font-black">{estimate}</span>
+                <span className="text-[12px]">
+                  {estimate === 1 ? "serving" : "servings"} available with current stock
+                </span>
+              </div>
+            );
+          })()}
 
           {/* Prep Time */}
           <div className="grid grid-cols-2 gap-4">

@@ -20,12 +20,16 @@ export interface IngredientFilters {
   search: string;
   unit: string;   // "ALL" | "gram" | "ml" | "piece" | "kg" | "liter" | "dozen"
   lowStock: boolean;
+  sortBy: string;    // "createdAt" | "currentStock" | "minThreshold" | "name"
+  sortOrder: string; // "asc" | "desc"
 }
 
 const DEFAULT_FILTERS: IngredientFilters = {
   search: "",
   unit: "ALL",
   lowStock: false,
+  sortBy: "createdAt",
+  sortOrder: "desc",
 };
 
 export function useIngredients(
@@ -69,6 +73,8 @@ export function useIngredients(
           lowStock: filters.lowStock || undefined,
           cursor: currentCursor,
           limit: pageSize,
+          sortBy: filters.sortBy !== "createdAt" ? filters.sortBy : undefined,
+          sortOrder: filters.sortOrder !== "desc" ? filters.sortOrder : undefined,
         });
 
         setIngredients(result.items);
@@ -86,7 +92,7 @@ export function useIngredients(
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [outletId, debouncedSearch, filters.unit, filters.lowStock, currentCursor, pageSize, refreshTick]
+    [outletId, debouncedSearch, filters.unit, filters.lowStock, filters.sortBy, filters.sortOrder, currentCursor, pageSize, refreshTick]
   );
 
   useEffect(() => {

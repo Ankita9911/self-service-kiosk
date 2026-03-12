@@ -78,8 +78,38 @@ export async function createIngredient(data, tenant) {
   return ingredient;
 }
 
-export async function getIngredients(tenant, { search, unit, lowStock, cursor, limit } = {}) {
+function buildSortSpec(sortBy, sortOrder) {
+  const order = sortOrder === "asc" ? 1 : -1;
+  const allowedFields = ["createdAt", "currentStock", "minThreshold", "name"];
+  const field = allowedFields.includes(sortBy) ? sortBy : "createdAt";
+  return { field, order };
+}
+
+function encodeSortCursor(payload) {
+  return Buffer.from(JSON.stringify(payload)).toString("base64url");
+}
+
+function decodeSortCursor(cursor, sortField) {
+  if (!cursor) return null;
+  try {
+    const decoded = JSON.parse(Buffer.from(cursor, "base64url").toString("utf-8"));
+    if (!decoded?._id) return null;
+    if (sortField === "createdAt") {
+      if (!decoded.createdAt) return null;
+      const createdAt = new Date(decoded.createdAt);
+      if (Number.isNaN(createdAt.getTime())) return null;
+      return { createdAt, _id: decoded._id };
+    }
+    if (decoded[sortField] === undefined) return null;
+    return { [sortField]: decoded[sortField], _id: decoded._id };
+  } catch {
+    return null;
+  }
+}
+
+export async function getIngredients(tenant, { search, unit, lowStock, cursor, limit, sortBy, sortOrder } = {}) {
   const pageLimit = toBoundedLimit(limit);
+  const { field: sortField, order: sortOrderNum } = buildSortSpec(sortBy, sortOrder);
 
   // Base tenant filter — always applied
   const tenantFilter = {
@@ -97,18 +127,35 @@ export async function getIngredients(tenant, { search, unit, lowStock, cursor, l
   }
 
   const queryFilter = { ...baseFilter };
-  const decodedCursor = decodeCursor(cursor);
+  const decodedCursor = decodeSortCursor(cursor, sortField);
 
   if (decodedCursor) {
-    queryFilter.$or = [
-      { createdAt: { $lt: decodedCursor.createdAt } },
-      { createdAt: decodedCursor.createdAt, _id: { $lt: decodedCursor._id } },
-    ];
+    const cursorVal = decodedCursor[sortField];
+    if (sortField === "createdAt") {
+      queryFilter.$or = [
+        { createdAt: { $lt: decodedCursor.createdAt } },
+        { createdAt: decodedCursor.createdAt, _id: { $lt: decodedCursor._id } },
+      ];
+    } else if (sortOrderNum === -1) {
+      queryFilter.$or = [
+        { [sortField]: { $lt: cursorVal } },
+        { [sortField]: cursorVal, _id: { $lt: decodedCursor._id } },
+      ];
+    } else {
+      queryFilter.$or = [
+        { [sortField]: { $gt: cursorVal } },
+        { [sortField]: cursorVal, _id: { $lt: decodedCursor._id } },
+      ];
+    }
   }
+
+  const sortSpec = sortField === "createdAt"
+    ? { createdAt: sortOrderNum, _id: -1 }
+    : { [sortField]: sortOrderNum, _id: -1 };
 
   const [itemsPlusOne, totalMatching, totalItems, lowStockItems] = await Promise.all([
     Ingredient.find(queryFilter)
-      .sort({ createdAt: -1, _id: -1 })
+      .sort(sortSpec)
       .limit(pageLimit + 1)
       .lean(),
     Ingredient.countDocuments(baseFilter),
@@ -123,11 +170,12 @@ export async function getIngredients(tenant, { search, unit, lowStock, cursor, l
   const hasNext = itemsPlusOne.length > pageLimit;
   const items = hasNext ? itemsPlusOne.slice(0, pageLimit) : itemsPlusOne;
 
+  const lastItem = items[items.length - 1];
   const nextCursor =
-    hasNext
-      ? encodeCursor({
-        createdAt: items[items.length - 1].createdAt,
-        _id: items[items.length - 1]._id,
+    hasNext && lastItem
+      ? encodeSortCursor({
+        [sortField]: lastItem[sortField],
+        _id: lastItem._id,
       })
       : null;
 

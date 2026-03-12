@@ -34,6 +34,8 @@ export default function IngredientsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [unitFilter, setUnitFilter] = useState("ALL");
   const [lowStockOnly, setLowStockOnly] = useState(false);
+  const [sortBy, setSortBy] = useState("createdAt");
+  const [sortOrder, setSortOrder] = useState("desc");
 
   const {
     ingredients,
@@ -59,6 +61,8 @@ export default function IngredientsPage() {
     search: searchTerm,
     unit: unitFilter,
     lowStock: lowStockOnly,
+    sortBy,
+    sortOrder,
   });
 
   const [showForm, setShowForm] = useState(false);
@@ -66,12 +70,15 @@ export default function IngredientsPage() {
   const [adjustingIngredient, setAdjustingIngredient] = useState<Ingredient | null>(null);
 
   const hasActiveFilters =
-    searchTerm !== "" || unitFilter !== "ALL" || lowStockOnly;
+    searchTerm !== "" || unitFilter !== "ALL" || lowStockOnly ||
+    sortBy !== "createdAt" || sortOrder !== "desc";
 
   const clearFilters = () => {
     setSearchTerm("");
     setUnitFilter("ALL");
     setLowStockOnly(false);
+    setSortBy("createdAt");
+    setSortOrder("desc");
     resetToFirstPage();
   };
 
@@ -143,9 +150,12 @@ export default function IngredientsPage() {
         searchTerm={searchTerm}
         unitFilter={unitFilter}
         lowStockOnly={lowStockOnly}
+        sortBy={sortBy}
+        sortOrder={sortOrder}
         onSearchChange={(v) => { setSearchTerm(v); resetToFirstPage(); }}
         onUnitChange={(v) => { setUnitFilter(v); resetToFirstPage(); }}
         onLowStockChange={(v) => { setLowStockOnly(v); resetToFirstPage(); }}
+        onSortChange={(by, order) => { setSortBy(by); setSortOrder(order); resetToFirstPage(); }}
         hasActiveFilters={hasActiveFilters}
         onClearFilters={clearFilters}
       />

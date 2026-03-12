@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import {
   getRecipes,
   createRecipe,
@@ -7,32 +7,79 @@ import {
   aiGenerateRecipe,
 } from "@/features/recipes/services/recipe.service";
 import type { Recipe, RecipeFormState, AISuggestion } from "@/features/recipes/types/recipe.types";
+import { useDebounce } from "@/shared/hooks/useDebounce";
 import { useOutletEvents } from "@/shared/hooks/useOutletEvents";
 
-export function useRecipes(outletId: string | undefined) {
+const DEFAULT_PAGE_SIZE = 12;
+
+export interface RecipeFilters {
+  search: string;
+  aiOnly: boolean;
+}
+
+const DEFAULT_FILTERS: RecipeFilters = {
+  search: "",
+  aiOnly: false,
+};
+
+export function useRecipes(
+  outletId: string | undefined,
+  filters: RecipeFilters = DEFAULT_FILTERS
+) {
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);
   const [aiSuggestion, setAiSuggestion] = useState<AISuggestion | null>(null);
 
+  // Stats
+  const [totalRecipes, setTotalRecipes] = useState(0);
+  const [aiGeneratedCount, setAiGeneratedCount] = useState(0);
+
+  // Cursor pagination
+  const [cursorStack, setCursorStack] = useState<(string | null)[]>([null]);
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
+  const [hasNextPage, setHasNextPage] = useState(false);
+  const [totalMatching, setTotalMatching] = useState(0);
+  const [pageSize, setPageSizeState] = useState(DEFAULT_PAGE_SIZE);
+  const [refreshTick, setRefreshTick] = useState(0);
+
+  const hasLoadedRef = useRef(false);
+  const debouncedSearch = useDebounce(filters.search, 400);
+  const currentCursor = cursorStack[cursorStack.length - 1] ?? undefined;
+  const page = cursorStack.length;
+  const hasPrevPage = page > 1;
+
   const fetchRecipes = useCallback(
     async (silent = false) => {
       if (!outletId) return;
+      const firstLoad = !hasLoadedRef.current;
       if (silent) setRefreshing(true);
-      else setLoading(true);
+      else if (firstLoad) setLoading(true);
 
       try {
-        const result = await getRecipes(outletId, { limit: 100 });
+        const result = await getRecipes(outletId, {
+          search: debouncedSearch || undefined,
+          aiOnly: filters.aiOnly || undefined,
+          cursor: currentCursor,
+          limit: pageSize,
+        });
         setRecipes(result.items);
+        setHasNextPage(result.pagination.hasNext);
+        setNextCursor(result.pagination.nextCursor);
+        setTotalMatching(result.pagination.totalMatching);
+        setTotalRecipes(result.stats.totalRecipes);
+        setAiGeneratedCount(result.stats.aiGeneratedCount);
       } catch {
         // errors handled by axiosInstance interceptor
       } finally {
+        hasLoadedRef.current = true;
         setLoading(false);
         setRefreshing(false);
       }
     },
-    [outletId]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [outletId, debouncedSearch, filters.aiOnly, currentCursor, pageSize, refreshTick]
   );
 
   useEffect(() => {
@@ -43,6 +90,40 @@ export function useRecipes(outletId: string | undefined) {
     void fetchRecipes(true);
   }, outletId);
 
+  // ── Navigation ──
+  function goToNextPage() {
+    if (!hasNextPage || !nextCursor) return;
+    setCursorStack((prev) => [...prev, nextCursor]);
+  }
+
+  function goToPrevPage() {
+    setCursorStack((prev) => (prev.length > 1 ? prev.slice(0, -1) : prev));
+  }
+
+  function resetToFirstPage() {
+    setCursorStack([null]);
+    setNextCursor(null);
+    setHasNextPage(false);
+  }
+
+  function setPageSize(size: number) {
+    setPageSizeState(size);
+    setCursorStack([null]);
+    setNextCursor(null);
+    setHasNextPage(false);
+  }
+
+  const refreshAll = useCallback(
+    (silent = false) => {
+      if (!outletId) return;
+      if (silent) setRefreshing(true);
+      resetToFirstPage();
+      setRefreshTick((n) => n + 1);
+    },
+    [outletId]
+  );
+
+  // ── CRUD ──
   async function handleCreate(data: RecipeFormState) {
     const cleanIngredients = data.ingredients
       .filter((i) => i.ingredientId)
@@ -52,7 +133,7 @@ export function useRecipes(outletId: string | undefined) {
       { ...data, ingredients: cleanIngredients },
       outletId
     );
-    await fetchRecipes(true);
+    refreshAll(true);
     return result;
   }
 
@@ -63,13 +144,13 @@ export function useRecipes(outletId: string | undefined) {
         .map(({ ingredientId, quantity, unit }) => ({ ingredientId, quantity, unit }));
     }
     const result = await updateRecipe(id, data, outletId);
-    await fetchRecipes(true);
+    refreshAll(true);
     return result;
   }
 
   async function handleDelete(id: string) {
     await deleteRecipe(id, outletId);
-    await fetchRecipes(true);
+    refreshAll(true);
   }
 
   async function handleAIGenerate(description: string) {
@@ -95,7 +176,21 @@ export function useRecipes(outletId: string | undefined) {
     refreshing,
     aiLoading,
     aiSuggestion,
-    fetchRecipes,
+    // Stats
+    totalRecipes,
+    aiGeneratedCount,
+    totalMatching,
+    // Pagination
+    page,
+    pageSize,
+    hasPrevPage,
+    hasNextPage,
+    goToNextPage,
+    goToPrevPage,
+    setPageSize,
+    resetToFirstPage,
+    fetchData: refreshAll,
+    // CRUD
     handleCreate,
     handleUpdate,
     handleDelete,
@@ -103,3 +198,4 @@ export function useRecipes(outletId: string | undefined) {
     clearAISuggestion,
   };
 }
+

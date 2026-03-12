@@ -17,13 +17,25 @@ export const UNIT_OPTIONS = [
     { value: "dozen", label: "Dozen (doz)" },
 ];
 
+export const SORT_OPTIONS = [
+    { value: "createdAt:desc", label: "Newest First" },
+    { value: "createdAt:asc",  label: "Oldest First" },
+    { value: "currentStock:asc",  label: "Stock ↑" },
+    { value: "currentStock:desc", label: "Stock ↓" },
+    { value: "name:asc",  label: "Name A–Z" },
+    { value: "name:desc", label: "Name Z–A" },
+];
+
 interface Props {
     searchTerm: string;
     unitFilter: string;
     lowStockOnly: boolean;
+    sortBy: string;
+    sortOrder: string;
     onSearchChange: (v: string) => void;
     onUnitChange: (v: string) => void;
     onLowStockChange: (v: boolean) => void;
+    onSortChange: (sortBy: string, sortOrder: string) => void;
     hasActiveFilters: boolean;
     onClearFilters: () => void;
 }
@@ -32,12 +44,17 @@ export function IngredientFilters({
     searchTerm,
     unitFilter,
     lowStockOnly,
+    sortBy,
+    sortOrder,
     onSearchChange,
     onUnitChange,
     onLowStockChange,
+    onSortChange,
     hasActiveFilters,
     onClearFilters,
 }: Props) {
+    const sortValue = `${sortBy}:${sortOrder}`;
+
     return (
         <div className="flex flex-col sm:flex-row gap-3 flex-wrap">
             {/* Search */}
@@ -61,13 +78,33 @@ export function IngredientFilters({
 
             {/* Unit filter */}
             <Select value={unitFilter} onValueChange={onUnitChange}>
-                <SelectTrigger className="h-9 w-44 rounded-xl border-slate-100 dark:border-white/8 bg-white dark:bg-[#161920] text-[13px] text-slate-700 dark:text-slate-200 focus:ring-indigo-400/20">
+                <SelectTrigger className="h-9 w-40 rounded-xl border-slate-100 dark:border-white/8 bg-white dark:bg-[#161920] text-[13px] text-slate-700 dark:text-slate-200 focus:ring-indigo-400/20">
                     <SelectValue placeholder="All Units" />
                 </SelectTrigger>
                 <SelectContent className="rounded-xl border-slate-100 dark:border-white/8 bg-white dark:bg-[#1a1d26]">
                     {UNIT_OPTIONS.map((u) => (
                         <SelectItem key={u.value} value={u.value} className="text-[13px] rounded-lg px-2 py-1.5">
                             {u.label}
+                        </SelectItem>
+                    ))}
+                </SelectContent>
+            </Select>
+
+            {/* Sort */}
+            <Select
+                value={sortValue}
+                onValueChange={(v) => {
+                    const [by, order] = v.split(":");
+                    onSortChange(by, order);
+                }}
+            >
+                <SelectTrigger className="h-9 w-40 rounded-xl border-slate-100 dark:border-white/8 bg-white dark:bg-[#161920] text-[13px] text-slate-700 dark:text-slate-200 focus:ring-indigo-400/20">
+                    <SelectValue placeholder="Sort by" />
+                </SelectTrigger>
+                <SelectContent className="rounded-xl border-slate-100 dark:border-white/8 bg-white dark:bg-[#1a1d26]">
+                    {SORT_OPTIONS.map((s) => (
+                        <SelectItem key={s.value} value={s.value} className="text-[13px] rounded-lg px-2 py-1.5">
+                            {s.label}
                         </SelectItem>
                     ))}
                 </SelectContent>

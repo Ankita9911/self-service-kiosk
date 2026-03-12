@@ -1,6 +1,7 @@
 import { GoogleGenAI } from "@google/genai";
 import Recipe from "./recipe.model.js";
 import Ingredient from "../ingredients/ingredient.model.js";
+import MenuItem from "../menu/menuItem.model.js";
 import { getRedisClient } from "../../core/cache/redis.client.js";
 import { buildTenantKey } from "../../core/cache/cache.utils.js";
 import { emitOutletEvent } from "../../realtime/realtime.manager.js";
@@ -101,14 +102,30 @@ export async function createRecipe(data, tenant) {
   return recipe;
 }
 
-export async function getRecipes(tenant, { cursor, limit } = {}) {
+export async function getRecipes(tenant, { cursor, limit, search, aiOnly } = {}) {
   const pageLimit = toBoundedLimit(limit);
 
-  const baseFilter = {
+  const tenantFilter = {
     franchiseId: tenant.franchiseId,
     outletId: tenant.outletId,
     isDeleted: false,
   };
+
+  // Resolve menu item IDs for search
+  let searchMenuItemIds = null;
+  if (search?.trim()) {
+    const matchingItems = await MenuItem.find({
+      franchiseId: tenant.franchiseId,
+      outletId: tenant.outletId,
+      isDeleted: false,
+      name: { $regex: search.trim(), $options: "i" },
+    }).select("_id").lean();
+    searchMenuItemIds = matchingItems.map((m) => m._id);
+  }
+
+  const baseFilter = { ...tenantFilter };
+  if (searchMenuItemIds !== null) baseFilter.menuItemId = { $in: searchMenuItemIds };
+  if (aiOnly === "true" || aiOnly === true) baseFilter.aiGenerated = true;
 
   const queryFilter = { ...baseFilter };
   const decodedCursor = decodeCursor(cursor);
@@ -120,7 +137,7 @@ export async function getRecipes(tenant, { cursor, limit } = {}) {
     ];
   }
 
-  const [itemsPlusOne, totalMatching] = await Promise.all([
+  const [itemsPlusOne, totalMatching, totalRecipes, aiGeneratedCount] = await Promise.all([
     Recipe.find(queryFilter)
       .populate("menuItemId", "name price categoryId")
       .populate("ingredients.ingredientId", "name unit currentStock")
@@ -128,6 +145,8 @@ export async function getRecipes(tenant, { cursor, limit } = {}) {
       .limit(pageLimit + 1)
       .lean(),
     Recipe.countDocuments(baseFilter),
+    Recipe.countDocuments(tenantFilter),
+    Recipe.countDocuments({ ...tenantFilter, aiGenerated: true }),
   ]);
 
   const hasNext = itemsPlusOne.length > pageLimit;
@@ -136,15 +155,16 @@ export async function getRecipes(tenant, { cursor, limit } = {}) {
   const nextCursor =
     hasNext
       ? encodeCursor({
-          createdAt: items[items.length - 1].createdAt,
-          _id: items[items.length - 1]._id,
-        })
+        createdAt: items[items.length - 1].createdAt,
+        _id: items[items.length - 1]._id,
+      })
       : null;
 
   return {
     items,
     meta: {
       pagination: { limit: pageLimit, hasNext, nextCursor, totalMatching },
+      stats: { totalRecipes, aiGeneratedCount },
     },
   };
 }
