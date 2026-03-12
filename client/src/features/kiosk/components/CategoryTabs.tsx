@@ -7,9 +7,13 @@ interface CategoryTabsProps {
   onCategoryChange: (categoryId: string) => void;
 }
 
-export default function CategoryTabs({ categories, selectedCategory, onCategoryChange }: CategoryTabsProps) {
-  const availableCategories = categories.filter(cat =>
-    cat._id === "__COMBOS__" ? true : cat.items && cat.items.length > 0
+export default function CategoryTabs({
+  categories,
+  selectedCategory,
+  onCategoryChange,
+}: CategoryTabsProps) {
+  const availableCategories = categories.filter((cat) =>
+    cat._id === "__COMBOS__" ? true : cat.items && cat.items.length > 0,
   );
 
   if (availableCategories.length === 0) return null;
@@ -33,7 +37,11 @@ export default function CategoryTabs({ categories, selectedCategory, onCategoryC
               onClick={() => onCategoryChange(category._id)}
               initial={{ opacity: 0, y: -8 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.04, duration: 0.3, ease: "easeOut" }}
+              transition={{
+                delay: index * 0.04,
+                duration: 0.3,
+                ease: "easeOut",
+              }}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               className="flex flex-col items-center focus:outline-none"
@@ -93,25 +101,6 @@ export default function CategoryTabs({ categories, selectedCategory, onCategoryC
                     </div>
                   )}
                 </div>
-
-                {/* Active dot */}
-                {isActive && (
-                  <motion.div
-                    layoutId="activeDot"
-                    style={{
-                      position: "absolute",
-                      bottom: "1px",
-                      right: "2px",
-                      width: "12px",
-                      height: "12px",
-                      borderRadius: "50%",
-                      background: "#0abfa3",
-                      border: "2px solid white",
-                      boxShadow: "0 1px 4px rgba(10,191,163,0.5)",
-                    }}
-                    transition={{ type: "spring", bounce: 0.3, duration: 0.5 }}
-                  />
-                )}
               </div>
 
               {/* Label */}

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
+import { motion } from "framer-motion";
 import { processQueue } from "@/shared/lib/syncEngine";
 
 import CategoryTabs from "../components/CategoryTabs";
@@ -128,39 +129,112 @@ export default function KioskPage() {
         </div>
 
         <div className="flex flex-col gap-1 px-2 pt-2">
-          {OFFER_CHIPS.map(({ value, label, emoji }) => {
+          {OFFER_CHIPS.map(({ value, label, emoji }, index) => {
             if (isOnCombos && value !== null) return null;
 
             const count = value === null ? undefined : offerCounts[value];
             const isActive = offerFilter === value;
 
             return (
-              <button
+              <motion.button
                 key={String(value)}
                 onClick={() => setOfferFilter(value)}
-                className={`flex flex-col items-center gap-1 w-full py-3 px-1 rounded-2xl transition-all active:scale-95 ${
-                  isActive
-                    ? "bg-gradient-to-b from-orange-500 to-orange-600 text-white shadow-md shadow-orange-300/50"
-                    : "bg-gray-50 text-gray-500 hover:bg-orange-50 hover:text-orange-500"
-                }`}
-                style={{ fontFamily: "var(--font-body)" }}
+                initial={{ opacity: 0, y: -8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{
+                  delay: index * 0.04,
+                  duration: 0.3,
+                  ease: "easeOut",
+                }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="flex flex-col items-center focus:outline-none"
+                style={{ gap: "6px", minWidth: "72px" }}
               >
-                <span className="text-xl leading-none">{emoji}</span>
-                <span className="text-[10px] font-bold leading-tight text-center">
+                {/* Circle emoji */}
+                <div
+                  style={{
+                    width: "48px",
+                    height: "48px",
+                    borderRadius: "50%",
+                    padding: "3px",
+                    background: isActive
+                      ? "linear-gradient(135deg, #f97316, #ea580c)"
+                      : "linear-gradient(135deg, #e4e4e4, #cecece)",
+                    boxShadow: isActive
+                      ? "0 4px 14px rgba(249, 115, 22, 0.4)"
+                      : "0 2px 6px rgba(0,0,0,0.08)",
+                    transition: "all 0.3s ease",
+                    position: "relative",
+                    flexShrink: 0,
+                  }}
+                >
+                  <div
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      borderRadius: "50%",
+                      overflow: "hidden",
+                      border: "2.5px solid white",
+                      background: "#f0f0f0",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: "20px",
+                    }}
+                  >
+                    {emoji}
+                  </div>
+                </div>
+
+                {/* Label */}
+                <span
+                  style={{
+                    fontSize: "10px",
+                    fontWeight: isActive ? 700 : 500,
+                    color: isActive ? "#ea580c" : "#777",
+                    textAlign: "center",
+                    lineHeight: "1.3",
+                    maxWidth: "72px",
+                    transition: "color 0.2s ease",
+                    fontFamily: "'DM Sans', 'Nunito', sans-serif",
+                    letterSpacing: "-0.01em",
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                  }}
+                >
                   {label}
                 </span>
+
+                {/* Count */}
                 {count !== undefined && count > 0 && (
                   <span
-                    className={`text-[9px] font-black px-1.5 py-0.5 rounded-full ${
-                      isActive
-                        ? "bg-white/30 text-white"
-                        : "bg-gray-200 text-gray-500"
-                    }`}
+                    style={{
+                      fontSize: "9px",
+                      fontWeight: 900,
+                      color: isActive ? "#ea580c" : "#777",
+                      background: isActive ? "rgba(249, 115, 22, 0.1)" : "#f3f4f6",
+                      padding: "2px 6px",
+                      borderRadius: "10px",
+                      transition: "all 0.2s ease",
+                    }}
                   >
                     {count}
                   </span>
                 )}
-              </button>
+
+                {/* Active underline indicator */}
+                <motion.div
+                  style={{
+                    width: isActive ? "20px" : "0px",
+                    height: "3px",
+                    borderRadius: "2px",
+                    background: "#ea580c",
+                    transition: "width 0.3s ease",
+                  }}
+                />
+              </motion.button>
             );
           })}
         </div>
