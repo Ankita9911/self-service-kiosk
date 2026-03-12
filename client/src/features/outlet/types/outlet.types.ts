@@ -33,7 +33,6 @@ export type ItemFormState = {
   description: string;
   imageFile: File | null;
   price: string;
-  stockQuantity: string;
   serviceType: ServiceType;
   offers: ItemOfferForm[];
   customizationItemIds: string[];

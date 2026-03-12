@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Pencil, Trash2, ImageOff, Package, AlertTriangle, Power, Eye } from "lucide-react";
+import { Pencil, Trash2, ImageOff, Package, AlertTriangle, Power, Eye, BookOpen } from "lucide-react";
 import type { MenuItem } from "@/features/kiosk/types/menu.types";
 import { ImagePreviewModal, ImageZoomButton } from "./ImagePreviewModal";
 import { AdminOfferBadge } from "@/features/kiosk/components/OfferBadge";
@@ -13,8 +13,9 @@ interface Props {
 }
 
 export function MenuItemCard({ item, onEdit, onDelete, onToggleStatus, onView }: Props) {
-  const isLowStock = item.stockQuantity > 0 && item.stockQuantity <= 5;
-  const isOutOfStock = item.stockQuantity === 0;
+  const isLowStock = item.stockStatus === "LOW_STOCK";
+  const isOutOfStock = item.stockStatus === "OUT_OF_STOCK";
+  const hasRecipeStock = item.stockSource === "RECIPE";
   const [preview, setPreview] = useState(false);
 
   return (
@@ -126,13 +127,20 @@ export function MenuItemCard({ item, onEdit, onDelete, onToggleStatus, onView }:
           <div className={`flex items-center gap-1 text-[11px] font-semibold ${
             isOutOfStock
               ? "text-red-500 dark:text-red-400"
-              : isLowStock
+            : isLowStock
                 ? "text-amber-500 dark:text-amber-400"
                 : "text-slate-400 dark:text-slate-500"
           }`}>
             {isLowStock && !isOutOfStock && <AlertTriangle className="w-3 h-3" />}
-            {!isLowStock && !isOutOfStock && <Package className="w-3 h-3" />}
-            {isOutOfStock ? "No stock" : `${item.stockQuantity} in stock`}
+            {!isLowStock && !isOutOfStock && item.stockStatus === "NO_RECIPE" && <BookOpen className="w-3 h-3" />}
+            {!isLowStock && !isOutOfStock && item.stockStatus !== "NO_RECIPE" && <Package className="w-3 h-3" />}
+            {isOutOfStock
+              ? "Out of stock"
+              : item.stockStatus === "NO_RECIPE"
+                ? "No recipe linked"
+                : hasRecipeStock
+                  ? `${item.availableQuantity ?? 0} servings`
+                  : "Available"}
           </div>
         </div>
       </div>

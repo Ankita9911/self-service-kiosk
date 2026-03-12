@@ -1,15 +1,8 @@
 import { useState } from "react";
 import type { AISuggestion } from "@/features/recipes/types/recipe.types";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/shared/components/ui/dialog";
-import { Button } from "@/shared/components/ui/button";
+import { Dialog, DialogContent } from "@/shared/components/ui/dialog";
 import { Label } from "@/shared/components/ui/label";
-import { Loader2, Sparkles, Clock, ChefHat } from "lucide-react";
+import { Loader2, Sparkles, Clock, ChefHat, X } from "lucide-react";
 
 interface Props {
   open: boolean;
@@ -51,20 +44,28 @@ export function AIRecipeModal({
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && handleClose()}>
-      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-purple-500" />
-            AI Recipe Generator
-          </DialogTitle>
-        </DialogHeader>
+      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto p-0 border border-slate-100 dark:border-white/8 bg-white dark:bg-[#1e2130] rounded-2xl shadow-2xl shadow-black/20">
+        <div className="flex items-center justify-between px-6 py-5 border-b border-slate-100 dark:border-white/8">
+          <div className="flex items-center gap-3">
+            <div className="h-9 w-9 rounded-xl bg-purple-50 dark:bg-purple-500/10 border border-purple-100 dark:border-purple-500/20 flex items-center justify-center">
+              <Sparkles className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-slate-800 dark:text-white">AI Recipe Generator</h3>
+              <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">Generate a draft recipe, review it, then save it to inventory flow.</p>
+            </div>
+          </div>
+          <button onClick={handleClose} className="h-7 w-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/8 transition-colors">
+            <X className="w-3.5 h-3.5" />
+          </button>
+        </div>
 
-        <div className="space-y-4 py-2">
+        <div className="space-y-4 px-6 py-5">
           {/* Description input */}
           <div className="space-y-1.5">
             <Label>Describe the dish</Label>
             <textarea
-              className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              className="flex min-h-[100px] w-full rounded-2xl border border-slate-200 dark:border-white/8 bg-slate-50 dark:bg-white/5 px-3 py-2 text-sm text-slate-800 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/30"
               placeholder='e.g. "A spicy paneer tikka masala with cream-based gravy"'
               value={description}
               onChange={(e) => setDescription(e.target.value)}
@@ -72,10 +73,11 @@ export function AIRecipeModal({
             />
           </div>
 
-          <Button
+          <button
+            type="button"
             onClick={handleGenerate}
             disabled={aiLoading || !description.trim()}
-            className="w-full gap-2"
+            className="w-full h-10 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-sm font-semibold transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
           >
             {aiLoading ? (
               <Loader2 className="w-4 h-4 animate-spin" />
@@ -83,7 +85,7 @@ export function AIRecipeModal({
               <Sparkles className="w-4 h-4" />
             )}
             {aiLoading ? "Generating…" : "Generate Recipe"}
-          </Button>
+          </button>
 
           {/* Suggestion preview */}
           {aiSuggestion && (
@@ -132,17 +134,17 @@ export function AIRecipeModal({
           )}
         </div>
 
-        <DialogFooter>
-          <Button variant="outline" onClick={handleClose}>
+        <div className="flex gap-3 px-6 pb-6">
+          <button type="button" onClick={handleClose} className="flex-1 h-10 rounded-xl border border-slate-200 dark:border-white/8 text-sm font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
             Cancel
-          </Button>
+          </button>
           {aiSuggestion && (
-            <Button onClick={handleUse} className="gap-2">
+            <button type="button" onClick={handleUse} className="flex-1 h-10 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold transition-colors flex items-center justify-center gap-2">
               <Sparkles className="w-4 h-4" />
               Use This Recipe
-            </Button>
+            </button>
           )}
-        </DialogFooter>
+        </div>
       </DialogContent>
     </Dialog>
   );

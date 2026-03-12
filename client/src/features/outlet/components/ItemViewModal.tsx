@@ -1,4 +1,4 @@
-import { X, ImageOff, Package, AlertTriangle, Tag } from "lucide-react";
+import { X, ImageOff, Package, AlertTriangle, Tag, BookOpen } from "lucide-react";
 import type { MenuItem, Category } from "@/features/kiosk/types/menu.types";
 
 interface Props {
@@ -9,8 +9,8 @@ interface Props {
 
 export function ItemViewModal({ item, categories, onClose }: Props) {
   const category = categories.find((c) => c._id === item.categoryId);
-  const isLowStock = item.stockQuantity > 0 && item.stockQuantity <= 5;
-  const isOutOfStock = item.stockQuantity === 0;
+  const isLowStock = item.stockStatus === "LOW_STOCK";
+  const isOutOfStock = item.stockStatus === "OUT_OF_STOCK";
   const isActive = item.isActive !== false;
 
   return (
@@ -98,11 +98,15 @@ export function ItemViewModal({ item, categories, onClose }: Props) {
               </span>
             ) : isLowStock ? (
               <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-amber-50 dark:bg-amber-400/10 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-400/20">
-                <Package className="w-3 h-3" /> {item.stockQuantity} left (low)
+                <Package className="w-3 h-3" /> {item.availableQuantity ?? 0} servings left
+              </span>
+            ) : item.stockStatus === "NO_RECIPE" ? (
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-50 dark:bg-white/5 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-white/8">
+                <BookOpen className="w-3 h-3" /> No recipe linked
               </span>
             ) : (
               <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-50 dark:bg-white/5 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-white/8">
-                <Package className="w-3 h-3" /> {item.stockQuantity} in stock
+                <Package className="w-3 h-3" /> {item.availableQuantity ?? 0} servings available
               </span>
             )}
 

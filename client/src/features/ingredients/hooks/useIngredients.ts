@@ -4,8 +4,8 @@ import {
   createIngredient,
   updateIngredient,
   deleteIngredient,
-  adjustStock,
 } from "@/features/ingredients/services/ingredient.service";
+import { createManualTransaction } from "@/features/stockTransactions/services/stockTransaction.service";
 import type { Ingredient, IngredientFormState, StockAdjustPayload } from "@/features/ingredients/types/ingredient.types";
 import { useDebounce } from "@/shared/hooks/useDebounce";
 
@@ -61,7 +61,15 @@ export function useIngredients(outletId: string | undefined, search?: string) {
   }
 
   async function handleAdjustStock(id: string, data: StockAdjustPayload) {
-    const result = await adjustStock(id, data, outletId);
+    const result = await createManualTransaction(
+      {
+        ingredientId: id,
+        type: data.type,
+        quantity: data.type === "ADJUSTMENT" ? data.quantity : Math.abs(data.quantity),
+        note: data.note,
+      },
+      outletId
+    );
     await fetchIngredients(true);
     return result;
   }

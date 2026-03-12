@@ -8,7 +8,6 @@ import {
   createMenuItem,
   updateMenuItem,
   updateMenuItemPrice,
-  updateMenuItemStock,
   deleteMenuItem,
   deleteCategory,
   toggleMenuItemStatus,
@@ -17,6 +16,8 @@ import {
   updateCombo,
   deleteCombo,
 } from "@/features/kiosk/services/menu.service";
+import { getRecipes } from "@/features/recipes/services/recipe.service";
+import type { Recipe } from "@/features/recipes/types/recipe.types";
 import { getOutlets } from "@/features/outlet/services/outlet.service";
 import type { Category, MenuItem, Combo } from "@/features/kiosk/types/menu.types";
 import type {
@@ -31,6 +32,73 @@ import {
 import { useMenuSocket } from "@/shared/hooks/useMenuSocket";
 
 const DEFAULT_PAGE_SIZE = 12;
+const LOW_STOCK_THRESHOLD = 5;
+
+function getRecipeAvailability(recipe: Recipe) {
+  const ingredients = Array.isArray(recipe?.ingredients) ? recipe.ingredients : [];
+
+  if (!ingredients.length) {
+    return {
+      stockSource: "RECIPE" as const,
+      stockStatus: "NO_RECIPE" as const,
+      availableQuantity: null,
+    };
+  }
+
+  let servings = Number.POSITIVE_INFINITY;
+
+  for (const row of ingredients) {
+    const quantityNeeded = Number(row?.quantity ?? 0);
+    const ingredient =
+      row?.ingredientId && typeof row.ingredientId === "object" ? row.ingredientId : null;
+    const currentStock = Number(ingredient?.currentStock ?? 0);
+
+    if (!ingredient || quantityNeeded <= 0) {
+      return {
+        stockSource: "RECIPE" as const,
+        stockStatus: "OUT_OF_STOCK" as const,
+        availableQuantity: 0,
+      };
+    }
+
+    servings = Math.min(servings, Math.floor(currentStock / quantityNeeded));
+  }
+
+  const availableQuantity = Number.isFinite(servings) ? Math.max(0, servings) : 0;
+
+  return {
+    stockSource: "RECIPE" as const,
+    stockStatus:
+      availableQuantity <= 0
+        ? ("OUT_OF_STOCK" as const)
+        : availableQuantity <= LOW_STOCK_THRESHOLD
+          ? ("LOW_STOCK" as const)
+          : ("IN_STOCK" as const),
+    availableQuantity,
+  };
+}
+
+function decorateMenuItems(
+  rawItems: MenuItem[],
+  availabilityByItemId: Record<string, ReturnType<typeof getRecipeAvailability>>
+) {
+  return rawItems.map((item) => {
+    const recipeAvailability = availabilityByItemId[item._id];
+    if (!recipeAvailability) {
+      return {
+        ...item,
+        stockSource: "MENU" as const,
+        stockStatus: "NO_RECIPE" as const,
+        availableQuantity: null,
+      };
+    }
+
+    return {
+      ...item,
+      ...recipeAvailability,
+    };
+  });
+}
 
 export interface OutletMenuFilters {
   search: string;
@@ -46,8 +114,12 @@ export function useOutletMenu(
   const [outlets, setOutlets] = useState<Outlet[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [items, setItems] = useState<MenuItem[]>([]);
+  const [rawItems, setRawItems] = useState<MenuItem[]>([]);
   const [customizationItems, setCustomizationItems] = useState<MenuItem[]>([]);
   const [combos, setCombos] = useState<Combo[]>([]);
+  const [availabilityByItemId, setAvailabilityByItemId] = useState<
+    Record<string, ReturnType<typeof getRecipeAvailability>>
+  >({});
 
   const [staticLoading, setStaticLoading] = useState(true);
   const [itemsLoading, setItemsLoading] = useState(true);
@@ -85,7 +157,6 @@ export function useOutletMenu(
     description: "",
     imageFile: null,
     price: "",
-    stockQuantity: "",
     serviceType: "BOTH",
     offers: [],
     customizationItemIds: [],
@@ -116,10 +187,14 @@ export function useOutletMenu(
 
     setStaticLoading(true);
     try {
-      const [catList, outletList, comboList, customizationItemsResult] = await Promise.all([
+      const [catList, outletList, comboList, recipeList, customizationItemsResult] = await Promise.all([
         getCategories(oidForApi),
         needsOutletId ? getOutlets() : Promise.resolve([]),
         getCombos(oidForApi),
+        getRecipes(oidForApi, { limit: 500 }).catch(() => ({
+          items: [],
+          pagination: { limit: 500, hasNext: false, nextCursor: null, totalMatching: 0 },
+        })),
         getMenuItems(oidForApi, undefined, undefined, "ALL", { limit: 100 }).catch(() => ({
           items: [],
           pagination: { limit: 100, hasNext: false, nextCursor: null, totalMatching: 0 },
@@ -131,6 +206,20 @@ export function useOutletMenu(
       setOutlets(outletList);
       setCombos(comboList);
       setCustomizationItems(customizationItemsResult.items);
+      setAvailabilityByItemId(
+        recipeList.items.reduce((acc, recipe) => {
+          const menuItemId =
+            recipe?.menuItemId && typeof recipe.menuItemId === "object"
+              ? recipe.menuItemId._id
+              : recipe?.menuItemId;
+
+          if (menuItemId) {
+            acc[String(menuItemId)] = getRecipeAvailability(recipe);
+          }
+
+          return acc;
+        }, {} as Record<string, ReturnType<typeof getRecipeAvailability>>)
+      );
     } finally {
       setStaticLoading(false);
     }
@@ -162,19 +251,20 @@ export function useOutletMenu(
 
         if (cancelled) return;
 
-        setItems(result.items);
+        setRawItems(result.items);
         setHasNextPage(result.pagination.hasNext);
         setNextCursor(result.pagination.nextCursor);
         setTotalMatching(result.pagination.totalMatching);
         setTotalItems(result.stats.totalItems);
         setActiveItems(result.stats.activeItems);
       } finally {
-        if (cancelled) return;
-        if (firstLoad) {
-          hasLoadedItemsRef.current = true;
-          setItemsLoading(false);
+        if (!cancelled) {
+          if (firstLoad) {
+            hasLoadedItemsRef.current = true;
+            setItemsLoading(false);
+          }
+          setFilterLoading(false);
         }
-        setFilterLoading(false);
       }
     }
 
@@ -193,6 +283,10 @@ export function useOutletMenu(
     pageSize,
     refreshTick,
   ]);
+
+  useEffect(() => {
+    setItems(decorateMenuItems(rawItems, availabilityByItemId));
+  }, [rawItems, availabilityByItemId]);
 
   const refreshMenuData = useCallback(async () => {
     await fetchStaticData();
@@ -291,7 +385,7 @@ export function useOutletMenu(
         description: itemForm.description || undefined,
         imageUrl,
         price: parseFloat(itemForm.price),
-        stockQuantity: parseInt(itemForm.stockQuantity, 10) || 0,
+        stockQuantity: 0,
         serviceType: itemForm.serviceType ?? "BOTH",
         offers: itemForm.offers ?? [],
         customizationItemIds: itemForm.customizationItemIds ?? [],
@@ -305,7 +399,6 @@ export function useOutletMenu(
       description: "",
       imageFile: null,
       price: "",
-      stockQuantity: "",
       serviceType: "BOTH",
       offers: [],
       customizationItemIds: [],
@@ -315,11 +408,10 @@ export function useOutletMenu(
   }
 
   async function updateItem(id: string) {
-    let payload: any = {
+    const payload: Partial<MenuItem> & { customizationItemIds?: string[]; imageUrl?: string } = {
       name: itemForm.name,
       description: itemForm.description || undefined,
       price: parseFloat(itemForm.price),
-      stockQuantity: parseInt(itemForm.stockQuantity, 10) || 0,
       serviceType: itemForm.serviceType ?? "BOTH",
       offers: itemForm.offers ?? [],
       customizationItemIds: itemForm.customizationItemIds ?? [],
@@ -345,11 +437,6 @@ export function useOutletMenu(
 
   async function updatePrice(id: string, price: number) {
     await updateMenuItemPrice(id, price, oidForApi);
-    await refreshMenuData();
-  }
-
-  async function updateStock(id: string, quantity: number) {
-    await updateMenuItemStock(id, quantity, oidForApi);
     await refreshMenuData();
   }
 
@@ -381,7 +468,7 @@ export function useOutletMenu(
     await refreshMenuData();
   }
 
-  async function editCombo(id: string, data: any) {
+  async function editCombo(id: string, data: Partial<Combo>) {
     await updateCombo(id, data, oidForApi);
     await refreshMenuData();
   }
@@ -425,7 +512,6 @@ export function useOutletMenu(
     addItem,
     updateItem,
     updatePrice,
-    updateStock,
     removeItem,
     removeCategory,
     toggleItemStatus,

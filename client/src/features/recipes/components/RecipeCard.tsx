@@ -1,5 +1,5 @@
 import type { Recipe } from "@/features/recipes/types/recipe.types";
-import { Clock, ChefHat, Sparkles, Pencil, Trash2 } from "lucide-react";
+import { Clock, ChefHat, Sparkles, Pencil, Trash2, Package } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
 
 interface Props {
@@ -13,6 +13,15 @@ export function RecipeCard({ recipe, onEdit, onDelete }: Props) {
     typeof recipe.menuItemId === "object"
       ? recipe.menuItemId.name
       : recipe.menuItemId;
+  const availableServings = recipe.ingredients.reduce((min, row) => {
+    if (typeof row.ingredientId !== "object" || row.quantity <= 0) return min;
+    return Math.min(min, Math.floor(row.ingredientId.currentStock / row.quantity));
+  }, Number.POSITIVE_INFINITY);
+  const stockLabel = Number.isFinite(availableServings)
+    ? availableServings <= 0
+      ? "Out of stock"
+      : `${availableServings} servings`
+    : "Recipe linked";
 
   return (
     <div className="group rounded-2xl border border-slate-100 dark:border-white/[0.06] bg-white dark:bg-[#1e2130] shadow-sm hover:shadow-md transition-shadow p-4 flex flex-col gap-3">
@@ -34,12 +43,16 @@ export function RecipeCard({ recipe, onEdit, onDelete }: Props) {
       </div>
 
       {/* Meta */}
-      <div className="flex items-center gap-3 text-xs text-slate-400">
+      <div className="flex items-center gap-3 text-xs text-slate-400 flex-wrap">
         <span className="flex items-center gap-1">
           <Clock className="w-3 h-3" />
           {recipe.prepTime} min
         </span>
         <span>{recipe.ingredients.length} ingredients</span>
+        <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 dark:bg-white/5 px-2 py-0.5 text-[10px] font-semibold text-slate-500 dark:text-slate-400">
+          <Package className="w-3 h-3" />
+          {stockLabel}
+        </span>
       </div>
 
       {/* Ingredient chips */}

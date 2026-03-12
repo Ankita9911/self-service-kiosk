@@ -26,6 +26,9 @@ export interface MenuItem {
   isActive: boolean;
   serviceType?: "DINE_IN" | "TAKE_AWAY" | "BOTH";
   offers?: ItemOffer[];
+  stockSource?: "MENU" | "RECIPE";
+  stockStatus?: "IN_STOCK" | "LOW_STOCK" | "OUT_OF_STOCK" | "NO_RECIPE";
+  availableQuantity?: number | null;
   customizationItemIds?: string[];
   customizationOptions?: {
     itemId: string;

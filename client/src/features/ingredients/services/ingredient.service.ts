@@ -1,5 +1,5 @@
 import axiosInstance from "@/shared/lib/axiosInstance";
-import type { Ingredient, IngredientFormState, StockAdjustPayload } from "../types/ingredient.types";
+import type { Ingredient, IngredientFormState } from "../types/ingredient.types";
 
 function outletParams(outletId?: string) {
   return outletId ? { params: { outletId } } : {};
@@ -75,16 +75,4 @@ export async function updateIngredient(
 
 export async function deleteIngredient(id: string, outletId?: string): Promise<void> {
   await axiosInstance.delete(`/ingredients/${id}`, outletParams(outletId));
-}
-
-export async function adjustStock(
-  id: string,
-  data: StockAdjustPayload,
-  outletId?: string
-): Promise<Ingredient> {
-  const response = await axiosInstance.patch<{ data: Ingredient }>(
-    `/ingredients/${id}/stock`,
-    { ...data, ...(outletId && { outletId }) }
-  );
-  return response.data.data;
 }

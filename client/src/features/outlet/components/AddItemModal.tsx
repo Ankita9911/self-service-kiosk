@@ -22,7 +22,7 @@ interface Props {
   onClose: () => void;
   categories: { _id: string; name: string }[];
   items: MenuItem[];
-  form: { categoryId: string; name: string; description: string; imageFile: File | null; price: string; stockQuantity: string; serviceType?: ServiceType; offers?: ItemOfferForm[]; customizationItemIds?: string[] };
+  form: { categoryId: string; name: string; description: string; imageFile: File | null; price: string; serviceType?: ServiceType; offers?: ItemOfferForm[]; customizationItemIds?: string[] };
   setForm: React.Dispatch<React.SetStateAction<any>>;
   onSubmit: () => Promise<void>;
 }
@@ -50,7 +50,6 @@ export function AddItemModal({ open, onClose, categories, items, form, setForm, 
       name: form.name,
       description: form.description,
       price: form.price,
-      stockQuantity: form.stockQuantity,
       imageFile: form.imageFile ?? undefined,
       offers: form.offers,
       customizationItemIds: form.customizationItemIds ?? [],
@@ -198,17 +197,19 @@ export function AddItemModal({ open, onClose, categories, items, form, setForm, 
             </p>
           </div>
 
-          {/* Price & Stock */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="rounded-2xl border border-indigo-100 dark:border-indigo-500/20 bg-indigo-50/80 dark:bg-indigo-500/10 px-4 py-3">
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-indigo-600 dark:text-indigo-300">Inventory Source</p>
+            <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
+              Availability now comes from recipes and ingredient transactions. New menu items start without menu-level stock.
+            </p>
+          </div>
+
+          {/* Price */}
+          <div>
             <div>
               <LabelEl>Price (₹) <span className="text-red-400 normal-case">*</span></LabelEl>
               <input type="number" step="0.01" min="0" value={form.price} onChange={(e) => { setForm((prev: any) => ({ ...prev, price: e.target.value })); clearError("price"); }} placeholder="0.00" className={`${inputBase} ${errors.price ? inputErr : inputOk}`} />
               <ErrTxt msg={errors.price} />
-            </div>
-            <div>
-              <LabelEl>Stock Qty <span className="text-red-400 normal-case">*</span></LabelEl>
-              <input type="number" min="0" step="1" value={form.stockQuantity} onChange={(e) => { setForm((prev: any) => ({ ...prev, stockQuantity: e.target.value })); clearError("stockQuantity"); }} placeholder="0" className={`${inputBase} ${errors.stockQuantity ? inputErr : inputOk}`} />
-              <ErrTxt msg={errors.stockQuantity} />
             </div>
           </div>
 

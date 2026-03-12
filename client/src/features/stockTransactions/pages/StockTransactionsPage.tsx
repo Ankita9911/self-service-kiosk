@@ -5,15 +5,14 @@ import { useIngredients } from "@/features/ingredients/hooks/useIngredients";
 import type { ManualTransactionPayload } from "@/features/stockTransactions/types/stockTransaction.types";
 import {
   ArrowUpDown,
-  Search,
   Plus,
   Loader2,
   PackagePlus,
   PackageMinus,
   ArrowRightLeft,
   ShoppingCart,
+  X,
 } from "lucide-react";
-import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
 import {
@@ -26,9 +25,6 @@ import {
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
 } from "@/shared/components/ui/dialog";
 
 const TYPE_OPTIONS = [
@@ -112,34 +108,40 @@ export default function StockTransactionsPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-[22px] font-extrabold text-slate-800 dark:text-white tracking-tight flex items-center gap-2">
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
             <div className="h-8 w-8 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center">
               <ArrowUpDown className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
             </div>
             Stock Transactions
           </h1>
-          <p className="text-[13px] text-slate-400 dark:text-slate-500 mt-1">
-            Track all ingredient stock movements
+          <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">
+            Review inventory movement history and create manual stock entries.
           </p>
         </div>
-        <Button onClick={() => setShowForm(true)} className="gap-2">
-          <Plus className="w-4 h-4" />
+        <button onClick={() => setShowForm(true)} className="inline-flex items-center justify-center rounded-xl h-9 px-4 text-xs bg-indigo-600 hover:bg-indigo-700 text-white gap-2 font-semibold transition-colors">
+          <Plus className="w-3.5 h-3.5" />
           Log Transaction
-        </Button>
+        </button>
       </div>
 
-      {/* Filters */}
-      <div className="flex flex-col sm:flex-row gap-3">
-        <div className="relative max-w-[240px]">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-white dark:bg-[#1e2130] border border-slate-100 dark:border-white/[0.06] shadow-sm">
+          <div className="h-9 w-9 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center shrink-0">
+            <ArrowUpDown className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+          </div>
+          <div>
+            <p className="text-xl font-black text-slate-800 dark:text-white leading-none">{transactions.length}</p>
+            <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5 font-medium">Visible Logs</p>
+          </div>
+        </div>
+        <div className="col-span-2 sm:col-span-3 flex flex-col sm:flex-row gap-3">
           <Select
             value={ingredientFilter}
-            onValueChange={setIngredientFilter}
+            onValueChange={(value) => setIngredientFilter(value === "ALL" ? "" : value)}
           >
-            <SelectTrigger className="pl-9 w-[240px]">
+            <SelectTrigger className="h-9 rounded-xl bg-white dark:bg-[#161920] border-slate-200 dark:border-white/8 w-full sm:w-[260px]">
               <SelectValue placeholder="All Ingredients" />
             </SelectTrigger>
             <SelectContent>
@@ -151,9 +153,8 @@ export default function StockTransactionsPage() {
               ))}
             </SelectContent>
           </Select>
-        </div>
-        <Select value={typeFilter} onValueChange={setTypeFilter}>
-          <SelectTrigger className="w-[180px]">
+          <Select value={typeFilter} onValueChange={setTypeFilter}>
+          <SelectTrigger className="h-9 rounded-xl bg-white dark:bg-[#161920] border-slate-200 dark:border-white/8 w-full sm:w-[180px]">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -164,6 +165,7 @@ export default function StockTransactionsPage() {
             ))}
           </SelectContent>
         </Select>
+        </div>
       </div>
 
       {/* Table */}
@@ -181,7 +183,7 @@ export default function StockTransactionsPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-slate-100 dark:border-white/[0.06]">
+                <tr className="border-b border-slate-100 dark:border-white/[0.06] bg-slate-50/80 dark:bg-white/2">
                   <th className="text-left px-4 py-3 text-[11px] uppercase tracking-wider text-slate-400 font-semibold">
                     Date
                   </th>
@@ -255,12 +257,23 @@ export default function StockTransactionsPage() {
 
       {/* Manual Transaction Modal */}
       <Dialog open={showForm} onOpenChange={(o) => !o && setShowForm(false)}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Log Stock Transaction</DialogTitle>
-          </DialogHeader>
+        <DialogContent className="max-w-md p-0 border border-slate-100 dark:border-white/8 bg-white dark:bg-[#1e2130] rounded-2xl overflow-hidden shadow-2xl shadow-black/20">
+          <div className="flex items-center justify-between px-6 py-5 border-b border-slate-100 dark:border-white/8">
+            <div className="flex items-center gap-3">
+              <div className="h-9 w-9 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-100 dark:border-emerald-500/20 flex items-center justify-center">
+                <ArrowUpDown className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-slate-800 dark:text-white">Log Stock Transaction</h3>
+                <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">Create a manual purchase, wastage, or adjustment entry.</p>
+              </div>
+            </div>
+            <button onClick={() => setShowForm(false)} className="h-7 w-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/8 transition-colors">
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
 
-          <div className="space-y-4 py-2">
+          <div className="space-y-4 px-6 py-5">
             <div className="space-y-1.5">
               <Label>Ingredient</Label>
               <Select
@@ -269,7 +282,7 @@ export default function StockTransactionsPage() {
                   setFormData((prev) => ({ ...prev, ingredientId: v }))
                 }
               >
-                <SelectTrigger>
+                <SelectTrigger className="h-10 rounded-xl bg-slate-50 dark:bg-white/5 border-slate-200 dark:border-white/8">
                   <SelectValue placeholder="Select ingredient…" />
                 </SelectTrigger>
                 <SelectContent>
@@ -293,7 +306,7 @@ export default function StockTransactionsPage() {
                   }))
                 }
               >
-                <SelectTrigger>
+                <SelectTrigger className="h-10 rounded-xl bg-slate-50 dark:bg-white/5 border-slate-200 dark:border-white/8">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -317,6 +330,7 @@ export default function StockTransactionsPage() {
                     quantity: Number(e.target.value),
                   }))
                 }
+                className="h-10 rounded-xl bg-slate-50 dark:bg-white/5 border-slate-200 dark:border-white/8"
               />
             </div>
 
@@ -328,26 +342,30 @@ export default function StockTransactionsPage() {
                 onChange={(e) =>
                   setFormData((prev) => ({ ...prev, note: e.target.value }))
                 }
+                className="h-10 rounded-xl bg-slate-50 dark:bg-white/5 border-slate-200 dark:border-white/8"
               />
             </div>
           </div>
 
-          <DialogFooter>
-            <Button
-              variant="outline"
+          <div className="flex gap-3 px-6 pb-6">
+            <button
+              type="button"
               onClick={() => setShowForm(false)}
               disabled={saving}
+              className="flex-1 h-10 rounded-xl border border-slate-200 dark:border-white/8 text-sm font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors disabled:opacity-60"
             >
               Cancel
-            </Button>
-            <Button
+            </button>
+            <button
+              type="button"
               onClick={handleSubmit}
               disabled={saving || !formData.ingredientId || formData.quantity <= 0}
+              className="flex-1 h-10 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
             >
-              {saving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+              {saving && <Loader2 className="w-4 h-4 animate-spin" />}
               Log Transaction
-            </Button>
-          </DialogFooter>
+            </button>
+          </div>
         </DialogContent>
       </Dialog>
     </div>

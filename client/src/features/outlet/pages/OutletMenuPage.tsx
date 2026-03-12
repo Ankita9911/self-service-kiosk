@@ -74,7 +74,6 @@ export default function OutletMenuPage() {
     addItem,
     updateItem,
     updatePrice,
-    updateStock,
     removeItem,
     removeCategory,
     toggleItemStatus,
@@ -97,9 +96,7 @@ export default function OutletMenuPage() {
   const [editItem, setEditItem] = useState<any | null>(null);
   const [deleteItem, setDeleteItem] = useState<any | null>(null);
   const [priceItem, setPriceItem] = useState<any | null>(null);
-  const [stockItem, setStockItem] = useState<any | null>(null);
   const [priceInput, setPriceInput] = useState("");
-  const [stockInput, setStockInput] = useState("");
   const [viewItem, setViewItem] = useState<any | null>(null);
   const [layout, setLayout] = useState<Layout>(
     () => (localStorage.getItem("menu-layout") as Layout) ?? "grid"
@@ -137,7 +134,6 @@ export default function OutletMenuPage() {
       description: item.description ?? "",
       imageFile: null,
       price: String(item.price),
-      stockQuantity: String(item.stockQuantity),
       serviceType: item.serviceType ?? "BOTH",
       offers: item.offers ?? [],
       customizationItemIds: item.customizationItemIds ?? [],
@@ -225,7 +221,7 @@ export default function OutletMenuPage() {
               <Button
                 size="sm"
                 onClick={() => {
-                  setItemForm({ categoryId: categories[0]?._id ?? "", name: "", description: "", imageFile: null, price: "", stockQuantity: "0", serviceType: "BOTH", offers: [], customizationItemIds: [] });
+                  setItemForm({ categoryId: categories[0]?._id ?? "", name: "", description: "", imageFile: null, price: "", serviceType: "BOTH", offers: [], customizationItemIds: [] });
                   setAddItemOpen(true);
                 }}
                 className="rounded-xl h-9 text-xs bg-indigo-600 hover:bg-indigo-700 text-white"
@@ -527,7 +523,7 @@ export default function OutletMenuPage() {
             <table className="w-full min-w-175 text-sm">
               <thead>
                 <tr className="border-b border-slate-100 dark:border-white/7 bg-slate-50/80 dark:bg-white/2">
-                  {["#", "Item", "Category", "Price", "Stock", "Status", ""].map((h) => (
+                  {["#", "Item", "Category", "Price", "Availability", "Status", ""].map((h) => (
                     <th
                       key={h}
                       className={`px-4 py-3 text-left text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider ${
@@ -549,7 +545,6 @@ export default function OutletMenuPage() {
                     onEdit={() => openEdit(item)}
                     onDelete={() => setDeleteItem(item)}
                     onUpdatePrice={() => { setPriceItem(item); setPriceInput(String(item.price)); }}
-                    onUpdateStock={() => { setStockItem(item); setStockInput(String(item.stockQuantity)); }}
                     onToggleStatus={() => toggleItemStatus(item._id)}
                     onView={() => setViewItem(item)}
                   />
@@ -610,49 +605,6 @@ export default function OutletMenuPage() {
                 className="flex-1 h-9 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-sm font-semibold text-white transition-colors"
               >
                 Save Price
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ── Quick stock update ── */}
-      {stockItem && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-4">
-          <div className="bg-white dark:bg-[#1e2130] rounded-2xl border border-slate-100 dark:border-white/8 shadow-2xl w-full max-w-sm p-6">
-            <h3 className="text-base font-bold text-slate-800 dark:text-white mb-1">
-              Update Stock
-            </h3>
-            <p className="text-xs text-slate-400 dark:text-slate-500 mb-4">
-              {stockItem.name} — current: {stockItem.stockQuantity} units
-            </p>
-            <input
-              type="number"
-              min="0"
-              value={stockInput}
-              onChange={(e) => setStockInput(e.target.value)}
-              className="w-full px-3 h-10 rounded-xl border border-slate-200 dark:border-white/8 bg-slate-50 dark:bg-white/5 text-sm text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-400"
-              placeholder="Enter quantity"
-              autoFocus
-            />
-            <div className="flex gap-2 mt-4">
-              <button
-                onClick={() => setStockItem(null)}
-                className="flex-1 h-9 rounded-xl border border-slate-200 dark:border-white/8 text-sm text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={async () => {
-                  const q = parseInt(stockInput, 10);
-                  if (!isNaN(q) && q >= 0) {
-                    await updateStock(stockItem._id, q);
-                    setStockItem(null);
-                  }
-                }}
-                className="flex-1 h-9 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-sm font-semibold text-white transition-colors"
-              >
-                Save Stock
               </button>
             </div>
           </div>

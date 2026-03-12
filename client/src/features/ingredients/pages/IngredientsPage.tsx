@@ -5,7 +5,7 @@ import { IngredientTable } from "@/features/ingredients/components/IngredientTab
 import { IngredientFormModal } from "@/features/ingredients/components/IngredientFormModal";
 import { StockAdjustModal } from "@/features/ingredients/components/StockAdjustModal";
 import type { Ingredient } from "@/features/ingredients/types/ingredient.types";
-import { Plus, Search, Package, AlertTriangle } from "lucide-react";
+import { Plus, Search, Package, AlertTriangle, ArrowUpDown } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 
@@ -51,26 +51,24 @@ export default function IngredientsPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-[22px] font-extrabold text-slate-800 dark:text-white tracking-tight flex items-center gap-2">
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
             <div className="h-8 w-8 rounded-xl bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center">
               <Package className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
             </div>
             Ingredients
           </h1>
-          <p className="text-[13px] text-slate-400 dark:text-slate-500 mt-1">
-            Manage your kitchen ingredients and stock levels
+          <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">
+            Manage kitchen inventory, thresholds, and transaction-backed stock movements.
           </p>
         </div>
-        <Button onClick={() => setShowForm(true)} className="gap-2">
-          <Plus className="w-4 h-4" />
+        <Button onClick={() => setShowForm(true)} className="rounded-xl h-9 text-xs bg-indigo-600 hover:bg-indigo-700 text-white gap-2">
+          <Plus className="w-3.5 h-3.5" />
           Add Ingredient
         </Button>
       </div>
 
-      {/* Stat pills */}
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
         <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-white dark:bg-[#1e2130] border border-slate-100 dark:border-white/[0.06] shadow-sm">
           <div className="h-9 w-9 rounded-xl bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center shrink-0">
@@ -92,17 +90,31 @@ export default function IngredientsPage() {
             </div>
           </div>
         )}
+        <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-white dark:bg-[#1e2130] border border-slate-100 dark:border-white/[0.06] shadow-sm">
+          <div className="h-9 w-9 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center shrink-0">
+            <ArrowUpDown className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+          </div>
+          <div>
+            <p className="text-xl font-black text-slate-800 dark:text-white leading-none">Live</p>
+            <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5 font-medium">Txn-backed stock</p>
+          </div>
+        </div>
       </div>
 
-      {/* Search */}
-      <div className="relative max-w-md">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-        <Input
-          placeholder="Search ingredients…"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="pl-9"
-        />
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+        <div className="relative max-w-md flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+          <Input
+            placeholder="Search ingredients…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="pl-9 h-9 rounded-xl border-slate-200 dark:border-white/8 bg-white dark:bg-[#161920]"
+          />
+        </div>
+        <div className="rounded-xl border border-slate-200 dark:border-white/8 bg-white dark:bg-[#161920] px-3 py-2">
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Flow</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Create ingredient, then use transactions to add or deduct stock.</p>
+        </div>
       </div>
 
       {/* Table */}

@@ -28,13 +28,6 @@ export const menuItemSchema = z.object({
       (val) => /^\d+(\.\d{1,2})?$/.test(val) && parseFloat(val) >= 1 && parseFloat(val) <= 1_000_000_000,
       "Price must be between 1 and 1,000,000,000 (e.g. 49 or 49.99)",
     ),
-  stockQuantity: z
-    .string()
-    .min(1, "Stock quantity is required")
-    .refine(
-      (val) => /^\d+$/.test(val) && parseInt(val, 10) >= 0 && parseInt(val, 10) <= 1000,
-      "Stock quantity must be a whole number between 0 and 1000",
-    ),
   offers: z
     .array(
       z.object({

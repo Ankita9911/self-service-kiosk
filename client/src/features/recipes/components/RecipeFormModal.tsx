@@ -1,24 +1,12 @@
 import { useEffect, useState } from "react";
 import type { Recipe, RecipeFormState } from "@/features/recipes/types/recipe.types";
 import type { Ingredient } from "@/features/ingredients/types/ingredient.types";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/shared/components/ui/dialog";
+import { Dialog, DialogContent } from "@/shared/components/ui/dialog";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/shared/components/ui/select";
-import { Plus, Trash2, Loader2 } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/components/ui/select";
+import { Plus, Trash2, Loader2, ChefHat, Pencil, X } from "lucide-react";
 
 interface MenuItem {
   _id: string;
@@ -135,12 +123,25 @@ export function RecipeFormModal({
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>{isEdit ? "Edit Recipe" : "New Recipe"}</DialogTitle>
-        </DialogHeader>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto p-0 border border-slate-100 dark:border-white/8 bg-white dark:bg-[#1e2130] rounded-2xl shadow-2xl shadow-black/20">
+        <div className="flex items-center justify-between px-6 py-5 border-b border-slate-100 dark:border-white/8">
+          <div className="flex items-center gap-3">
+            <div className="h-9 w-9 rounded-xl bg-amber-50 dark:bg-amber-500/10 border border-amber-100 dark:border-amber-500/20 flex items-center justify-center">
+              {isEdit ? <Pencil className="w-4 h-4 text-amber-600 dark:text-amber-400" /> : <ChefHat className="w-4 h-4 text-amber-600 dark:text-amber-400" />}
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-slate-800 dark:text-white">{isEdit ? "Edit Recipe" : "Add Recipe"}</h3>
+              <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">
+                Link menu items with ingredient quantities for live outlet availability.
+              </p>
+            </div>
+          </div>
+          <button onClick={onClose} className="h-7 w-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/8 transition-colors">
+            <X className="w-3.5 h-3.5" />
+          </button>
+        </div>
 
-        <div className="space-y-5 py-2">
+        <div className="space-y-5 px-6 py-5">
           {/* Menu Item */}
           <div className="space-y-1.5">
             <Label>Menu Item</Label>
@@ -151,7 +152,7 @@ export function RecipeFormModal({
               }
               disabled={isEdit}
             >
-              <SelectTrigger>
+              <SelectTrigger className="h-10 rounded-xl bg-slate-50 dark:bg-white/5 border-slate-200 dark:border-white/8">
                 <SelectValue placeholder="Select menu item…" />
               </SelectTrigger>
               <SelectContent>
@@ -168,15 +169,15 @@ export function RecipeFormModal({
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <Label>Ingredients</Label>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={addRow}
-                className="gap-1 text-xs"
-              >
-                <Plus className="w-3.5 h-3.5" /> Add Row
-              </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={addRow}
+                  className="gap-1 text-xs rounded-xl border-slate-200 dark:border-white/8"
+                >
+                  <Plus className="w-3.5 h-3.5" /> Add Row
+                </Button>
             </div>
 
             <div className="space-y-2.5">
@@ -197,7 +198,7 @@ export function RecipeFormModal({
                         updateRow(idx, "ingredientId", v)
                       }
                     >
-                      <SelectTrigger>
+                      <SelectTrigger className="h-10 rounded-xl bg-slate-50 dark:bg-white/5 border-slate-200 dark:border-white/8">
                         <SelectValue placeholder="Select…" />
                       </SelectTrigger>
                       <SelectContent>
@@ -224,6 +225,7 @@ export function RecipeFormModal({
                       onChange={(e) =>
                         updateRow(idx, "quantity", Number(e.target.value))
                       }
+                      className="h-10 rounded-xl bg-slate-50 dark:bg-white/5 border-slate-200 dark:border-white/8"
                     />
                   </div>
 
@@ -237,7 +239,7 @@ export function RecipeFormModal({
                       value={row.unit}
                       onValueChange={(v) => updateRow(idx, "unit", v)}
                     >
-                      <SelectTrigger>
+                      <SelectTrigger className="h-10 rounded-xl bg-slate-50 dark:bg-white/5 border-slate-200 dark:border-white/8">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -279,6 +281,7 @@ export function RecipeFormModal({
                     prepTime: Number(e.target.value),
                   }))
                 }
+                className="h-10 rounded-xl bg-slate-50 dark:bg-white/5 border-slate-200 dark:border-white/8"
               />
             </div>
           </div>
@@ -287,7 +290,7 @@ export function RecipeFormModal({
           <div className="space-y-1.5">
             <Label>Instructions</Label>
             <textarea
-              className="flex min-h-[120px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              className="flex min-h-[120px] w-full rounded-2xl border border-slate-200 dark:border-white/8 bg-slate-50 dark:bg-white/5 px-3 py-2 text-sm text-slate-800 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/30"
               placeholder="Step-by-step preparation instructions…"
               value={form.instructions}
               onChange={(e) =>
@@ -300,15 +303,15 @@ export function RecipeFormModal({
           </div>
         </div>
 
-        <DialogFooter>
-          <Button variant="outline" onClick={onClose} disabled={saving}>
+        <div className="flex gap-3 px-6 pb-6">
+          <button type="button" onClick={onClose} disabled={saving} className="flex-1 h-10 rounded-xl border border-slate-200 dark:border-white/8 text-sm font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors disabled:opacity-60">
             Cancel
-          </Button>
-          <Button onClick={handleSubmit} disabled={saving || !form.menuItemId}>
-            {saving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+          </button>
+          <button type="button" onClick={handleSubmit} disabled={saving || !form.menuItemId} className="flex-1 h-10 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold transition-colors disabled:opacity-60 flex items-center justify-center gap-2">
+            {saving && <Loader2 className="w-4 h-4 animate-spin" />}
             {isEdit ? "Save Changes" : "Create Recipe"}
-          </Button>
-        </DialogFooter>
+          </button>
+        </div>
       </DialogContent>
     </Dialog>
   );

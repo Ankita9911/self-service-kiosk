@@ -19,6 +19,7 @@ export interface IngredientFormState {
 }
 
 export interface StockAdjustPayload {
+  type: "PURCHASE" | "WASTAGE" | "ADJUSTMENT";
   quantity: number;
   note?: string;
 }
