@@ -1,5 +1,6 @@
 import type { Recipe } from "@/features/recipes/types/recipe.types";
-import { Clock, ChefHat, Sparkles, Pencil, Trash2, Package } from "lucide-react";
+import { Clock, ChefHat, Sparkles, Package } from "lucide-react";
+import { RecipeRowMenu } from "@/features/recipes/components/RecipeRowMenu";
 
 interface Props {
   recipe: Recipe;
@@ -46,11 +47,14 @@ export function RecipeCard({ recipe, onEdit, onDelete }: Props) {
             {menuItemName}
           </h3>
         </div>
-        {recipe.aiGenerated && (
-          <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-500/10 px-2 py-0.5 rounded-full shrink-0">
-            <Sparkles className="w-3 h-3" /> AI
-          </span>
-        )}
+        <div className="flex items-center gap-2 shrink-0">
+          {recipe.aiGenerated && (
+            <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-500/10 px-2 py-0.5 rounded-full shrink-0">
+              <Sparkles className="w-3 h-3" /> AI
+            </span>
+          )}
+          <RecipeRowMenu onEdit={() => onEdit(recipe)} onDelete={() => onDelete(recipe)} />
+        </div>
       </div>
 
       {/* Meta row */}
@@ -100,24 +104,6 @@ export function RecipeCard({ recipe, onEdit, onDelete }: Props) {
         </p>
       )}
 
-      {/* Actions */}
-      <div className="flex items-center gap-1 pt-2 border-t border-slate-50 dark:border-white/5 mt-auto">
-        <button
-          className="flex items-center gap-1 h-7 px-2.5 rounded-lg text-[12px] font-medium text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 transition-colors"
-          onClick={() => onEdit(recipe)}
-        >
-          <Pencil className="w-3 h-3" />
-          Edit
-        </button>
-        <button
-          className="flex items-center gap-1 h-7 px-2.5 rounded-lg text-[12px] font-medium text-slate-500 dark:text-slate-400 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"
-          onClick={() => onDelete(recipe)}
-        >
-          <Trash2 className="w-3 h-3" />
-          Delete
-        </button>
-      </div>
     </div>
   );
 }
-

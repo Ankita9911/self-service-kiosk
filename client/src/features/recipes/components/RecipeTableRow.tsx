@@ -1,5 +1,6 @@
 import type { Recipe } from "@/features/recipes/types/recipe.types";
-import { Clock, ChefHat, Sparkles, Package, Pencil, Trash2 } from "lucide-react";
+import { Clock, ChefHat, Sparkles, Package } from "lucide-react";
+import { RecipeRowMenu } from "@/features/recipes/components/RecipeRowMenu";
 
 interface Props {
   recipe: Recipe;
@@ -95,19 +96,8 @@ export function RecipeTableRow({ recipe, index, onEdit, onDelete }: Props) {
 
       {/* Actions */}
       <td className="px-5 py-3.5">
-        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-          <button
-            className="h-7 w-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 dark:hover:text-indigo-400 transition-colors"
-            onClick={() => onEdit(recipe)}
-          >
-            <Pencil className="w-3.5 h-3.5" />
-          </button>
-          <button
-            className="h-7 w-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 dark:hover:text-red-400 transition-colors"
-            onClick={() => onDelete(recipe)}
-          >
-            <Trash2 className="w-3.5 h-3.5" />
-          </button>
+        <div className="flex justify-end">
+          <RecipeRowMenu onEdit={() => onEdit(recipe)} onDelete={() => onDelete(recipe)} />
         </div>
       </td>
     </tr>

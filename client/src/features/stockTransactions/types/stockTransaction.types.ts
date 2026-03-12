@@ -18,3 +18,14 @@ export interface ManualTransactionPayload {
   quantity: number;
   note?: string;
 }
+
+export interface StockTransactionStats {
+  totalTransactions: number;
+  purchaseCount: number;
+  consumptionCount: number;
+  wastageCount: number;
+  adjustmentCount: number;
+}
+
+export type StockTransactionSortBy = "createdAt" | "type" | "quantity";
+export type StockTransactionSortOrder = "asc" | "desc";

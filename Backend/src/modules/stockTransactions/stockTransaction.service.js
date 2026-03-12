@@ -6,10 +6,20 @@ import AppError from "../../shared/errors/AppError.js";
 const DEFAULT_LIMIT = 20;
 const MAX_LIMIT = 100;
 
+const VALID_SORT_FIELDS = ["createdAt", "type", "quantity"];
+const VALID_SORT_ORDERS = ["asc", "desc"];
+
 function toBoundedLimit(value) {
   const parsed = Number.parseInt(String(value ?? DEFAULT_LIMIT), 10);
   if (Number.isNaN(parsed)) return DEFAULT_LIMIT;
   return Math.min(Math.max(parsed, 1), MAX_LIMIT);
+}
+
+function getSortConfig(sortBy, sortOrder) {
+  const field = VALID_SORT_FIELDS.includes(sortBy) ? sortBy : "createdAt";
+  const order = VALID_SORT_ORDERS.includes(sortOrder) ? sortOrder : "desc";
+  const dir = order === "asc" ? 1 : -1;
+  return { field, order, dir };
 }
 
 function encodeCursor(payload) {
@@ -20,13 +30,32 @@ function decodeCursor(cursor) {
   if (!cursor) return null;
   try {
     const decoded = JSON.parse(Buffer.from(cursor, "base64url").toString("utf-8"));
-    if (!decoded?.createdAt || !decoded?._id) return null;
-    const createdAt = new Date(decoded.createdAt);
-    if (Number.isNaN(createdAt.getTime())) return null;
-    return { createdAt, _id: decoded._id };
+    if (!decoded?._id) return null;
+    return decoded;
   } catch {
     return null;
   }
+}
+
+function buildCursorCondition(decoded, field, dir) {
+  if (!decoded) return null;
+  const { _id } = decoded;
+
+  if (field === "createdAt") {
+    const dateVal = decoded.createdAt ? new Date(decoded.createdAt) : null;
+    if (!dateVal || Number.isNaN(dateVal.getTime())) return null;
+    if (dir === -1) {
+      return { $or: [{ createdAt: { $lt: dateVal } }, { createdAt: dateVal, _id: { $lt: _id } }] };
+    }
+    return { $or: [{ createdAt: { $gt: dateVal } }, { createdAt: dateVal, _id: { $gt: _id } }] };
+  }
+
+  const { sortVal } = decoded;
+  if (sortVal === undefined || sortVal === null) return null;
+  if (dir === -1) {
+    return { $or: [{ [field]: { $lt: sortVal } }, { [field]: sortVal, _id: { $lt: _id } }] };
+  }
+  return { $or: [{ [field]: { $gt: sortVal } }, { [field]: sortVal, _id: { $gt: _id } }] };
 }
 
 /**
@@ -157,51 +186,96 @@ export async function createManualTransaction(data, tenant) {
   return transaction;
 }
 
-export async function getTransactions(tenant, { ingredientId, type, cursor, limit } = {}) {
+export async function getTransactions(
+  tenant,
+  { ingredientId, type, search, cursor, limit, sortBy, sortOrder } = {}
+) {
   const pageLimit = toBoundedLimit(limit);
+  const { field, dir } = getSortConfig(sortBy, sortOrder);
 
-  const baseFilter = {
+  const tenantFilter = {
     franchiseId: tenant.franchiseId,
     outletId: tenant.outletId,
   };
 
-  if (ingredientId) baseFilter.ingredientId = ingredientId;
+  const baseFilter = { ...tenantFilter };
+
+  if (ingredientId) {
+    baseFilter.ingredientId = ingredientId;
+  } else if (search?.trim()) {
+    // Resolve ingredient IDs by name search (pre-query pattern, same as recipes)
+    const matchingIngredients = await Ingredient.find({
+      franchiseId: tenant.franchiseId,
+      outletId: tenant.outletId,
+      isDeleted: false,
+      name: { $regex: search.trim(), $options: "i" },
+    })
+      .select("_id")
+      .lean();
+    baseFilter.ingredientId = { $in: matchingIngredients.map((i) => i._id) };
+  }
+
   if (type) baseFilter.type = type;
 
   const queryFilter = { ...baseFilter };
-  const decodedCursor = decodeCursor(cursor);
-
-  if (decodedCursor) {
-    queryFilter.$or = [
-      { createdAt: { $lt: decodedCursor.createdAt } },
-      { createdAt: decodedCursor.createdAt, _id: { $lt: decodedCursor._id } },
-    ];
+  const decoded = decodeCursor(cursor);
+  const cursorCondition = buildCursorCondition(decoded, field, dir);
+  if (cursorCondition) {
+    queryFilter.$or = cursorCondition.$or;
   }
 
-  const [itemsPlusOne, totalMatching] = await Promise.all([
-    StockTransaction.find(queryFilter)
-      .populate("ingredientId", "name unit")
-      .sort({ createdAt: -1, _id: -1 })
-      .limit(pageLimit + 1)
-      .lean(),
-    StockTransaction.countDocuments(baseFilter),
-  ]);
+  const sortSpec = { [field]: dir, _id: dir === -1 ? -1 : 1 };
+
+  const [
+    itemsPlusOne,
+    totalMatching,
+    totalTransactions,
+    purchaseCount,
+    consumptionCount,
+    wastageCount,
+    adjustmentCount,
+  ] =
+    await Promise.all([
+      StockTransaction.find(queryFilter)
+        .populate("ingredientId", "name unit")
+        .sort(sortSpec)
+        .limit(pageLimit + 1)
+        .lean(),
+      StockTransaction.countDocuments(baseFilter),
+      StockTransaction.countDocuments(tenantFilter),
+      StockTransaction.countDocuments({ ...tenantFilter, type: "PURCHASE" }),
+      StockTransaction.countDocuments({ ...tenantFilter, type: "CONSUMPTION" }),
+      StockTransaction.countDocuments({
+        ...tenantFilter,
+        type: "WASTAGE",
+      }),
+      StockTransaction.countDocuments({ ...tenantFilter, type: "ADJUSTMENT" }),
+    ]);
 
   const hasNext = itemsPlusOne.length > pageLimit;
   const items = hasNext ? itemsPlusOne.slice(0, pageLimit) : itemsPlusOne;
 
+  const lastItem = items[items.length - 1];
   const nextCursor =
-    hasNext
-      ? encodeCursor({
-          createdAt: items[items.length - 1].createdAt,
-          _id: items[items.length - 1]._id,
-        })
+    hasNext && lastItem
+      ? encodeCursor(
+          field === "createdAt"
+            ? { createdAt: lastItem.createdAt, _id: lastItem._id }
+            : { sortVal: lastItem[field], _id: lastItem._id }
+        )
       : null;
 
   return {
     items,
     meta: {
       pagination: { limit: pageLimit, hasNext, nextCursor, totalMatching },
+      stats: {
+        totalTransactions,
+        purchaseCount,
+        consumptionCount,
+        wastageCount,
+        adjustmentCount,
+      },
     },
   };
 }
