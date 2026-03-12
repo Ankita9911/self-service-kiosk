@@ -10,6 +10,9 @@ import kioskRoutes from "../modules/kiosk/kiosk.routes.js";
 import orderRoutes from "../modules/orders/order.routes.js";
 import deviceRoutes from "../modules/devices/device.routes.js";
 import userRoutes from "../modules/users/user.routes.js";
+import ingredientRoutes from "../modules/ingredients/ingredient.routes.js";
+import recipeRoutes from "../modules/recipes/recipe.routes.js";
+import stockTransactionRoutes from "../modules/stockTransactions/stockTransaction.routes.js";
 
 import { authenticate } from "../core/auth/auth.middleware.js";
 import { attachTenant } from "../core/tenancy/tenancy.middleware.js";
@@ -44,5 +47,8 @@ router.use("/devices", deviceRoutes);
 router.use("/users", userRoutes);
 router.use("/upload", uploadRoutes);
 router.use("/analytics", analyticsRoutes);
+router.use("/ingredients", ingredientRoutes);
+router.use("/recipes", recipeRoutes);
+router.use("/stock-transactions", stockTransactionRoutes);
 
 export default router;

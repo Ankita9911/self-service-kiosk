@@ -7,6 +7,7 @@ import {
 import { useState, useRef, useEffect } from "react";
 import Sidebar from "./Sidebar";
 import useAuth from "@/shared/hooks/useAuth";
+import { useLowStockAlert } from "@/shared/hooks/useLowStockAlert";
 import { useTheme } from "@/shared/providers/ThemeProvider";
 
 type ToastType = "success" | "error" | "info" | "warning";
@@ -176,6 +177,7 @@ export default function AppLayout() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const { toasts, show: showToast } = useToast();
+  useLowStockAlert(user?.outletId ?? undefined);
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {

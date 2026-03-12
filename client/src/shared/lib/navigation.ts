@@ -7,6 +7,9 @@ import {
   ChefHat,
   ShoppingBag,
   BarChart2,
+  Package,
+  BookOpen,
+  ArrowUpDown,
 } from "lucide-react";
 import { PERMISSIONS } from "@/shared/lib/permissions";
 
@@ -46,6 +49,24 @@ export const NAV_ITEMS = [
     path: "/users",
     icon: Users,
     permission: PERMISSIONS.USERS_VIEW,
+  },
+  {
+    label: "Ingredients",
+    path: "/ingredients",
+    icon: Package,
+    permission: PERMISSIONS.INGREDIENT_MANAGE,
+  },
+  {
+    label: "Recipes",
+    path: "/recipes",
+    icon: BookOpen,
+    permission: PERMISSIONS.RECIPE_MANAGE,
+  },
+  {
+    label: "Stock Log",
+    path: "/stock-transactions",
+    icon: ArrowUpDown,
+    permission: PERMISSIONS.INVENTORY_MANAGE,
   },
   {
     label: "Kitchen Display",

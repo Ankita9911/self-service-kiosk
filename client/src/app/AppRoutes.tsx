@@ -21,6 +21,9 @@ const KitchenPage = lazy(() => import("@/features/kitchen/pages/Kitchenpage"));
 const PickupPage = lazy(() => import("@/features/pickup/pages/PickupPage"));
 const UserPage = lazy(() => import("@/features/users/pages/UserPage"));
 const AnalyticsPage = lazy(() => import("@/features/analytics/pages/AnalyticsPage"));
+const IngredientsPage = lazy(() => import("@/features/ingredients/pages/IngredientsPage"));
+const RecipesPage = lazy(() => import("@/features/recipes/pages/RecipesPage"));
+const StockTransactionsPage = lazy(() => import("@/features/stockTransactions/pages/StockTransactionsPage"));
 
 function PageLoader() {
   return (
@@ -121,6 +124,30 @@ export default function AppRoutes() {
             element={
               <ProtectedRoute requiredPermission={PERMISSIONS.MENU_MANAGE}>
                 <OutletMenuPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/ingredients"
+            element={
+              <ProtectedRoute requiredPermission={PERMISSIONS.INGREDIENT_MANAGE}>
+                <IngredientsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/recipes"
+            element={
+              <ProtectedRoute requiredPermission={PERMISSIONS.RECIPE_MANAGE}>
+                <RecipesPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/stock-transactions"
+            element={
+              <ProtectedRoute requiredPermission={PERMISSIONS.INVENTORY_MANAGE}>
+                <StockTransactionsPage />
               </ProtectedRoute>
             }
           />

@@ -7,6 +7,7 @@ import env from "../../config/env.js";
 import { getIO } from "../../realtime/realtime.manager.js";
 import OrderRequest from "../../modules/orders/orderRequest.model.js";
 import { handleOrderPlaced } from "./handlers/order.handler.js";
+import { handleLowStockAlert } from "./handlers/inventory.handler.js";
 import {
   handleMenuPriceUpdate,
   handleMenuStockUpdate,
@@ -24,6 +25,7 @@ import {
 
 const MESSAGE_HANDLERS = {
   ORDER_PLACED: handleOrderPlaced,
+  LOW_STOCK_ALERT: handleLowStockAlert,
   MENU_PRICE_UPDATE: handleMenuPriceUpdate,
   MENU_STOCK_UPDATE: handleMenuStockUpdate,
   MENU_CATEGORY_CREATE: handleMenuCategoryCreate,
@@ -111,7 +113,8 @@ async function processMessage(client, message) {
       (
         err.message.startsWith("Insufficient stock or invalid item:") ||
         err.message.startsWith("Insufficient stock or invalid customization item:") ||
-        err.message.startsWith("Invalid customization")
+        err.message.startsWith("Invalid customization") ||
+        err.message.startsWith("Insufficient ingredient stock:")
       );
 
     if (terminalBusinessError && payload?.tenant?.outletId && payload?.clientOrderId) {

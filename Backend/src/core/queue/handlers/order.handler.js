@@ -3,7 +3,13 @@ import Order from "../../../modules/orders/order.model.js";
 import Counter from "../../../modules/orders/counter.model.js";
 import OrderRequest from "../../../modules/orders/orderRequest.model.js";
 import MenuItem from "../../../modules/menu/menuItem.model.js";
-import { getIO} from "../../../realtime/realtime.manager.js";
+import Ingredient from "../../../modules/ingredients/ingredient.model.js";
+import Recipe from "../../../modules/recipes/recipe.model.js";
+import StockTransaction from "../../../modules/stockTransactions/stockTransaction.model.js";
+import { enqueue } from "../queue.producer.js";
+import { getRedisClient } from "../../cache/redis.client.js";
+import { buildTenantKey } from "../../cache/cache.utils.js";
+import { getIO } from "../../../realtime/realtime.manager.js";
 
 async function getNextOrderNumber(outletId, session) {
   const counter = await Counter.findOneAndUpdate(
@@ -158,8 +164,97 @@ export async function handleOrderPlaced(payload) {
       { session }
     );
 
+    // ── Ingredient-level inventory deduction ────────────────────────────────
+    // For each ordered item, look up its recipe and deduct ingredient stock.
+    // Items without a configured recipe fall back to the existing MenuItem.stockQuantity path.
+    const ingredientDeductions = []; // { ingredientId, name, quantity, franchiseId, outletId }
+
+    for (const item of processedItems) {
+      const recipe = await Recipe.findOne({
+        menuItemId: item.itemId,
+        franchiseId: tenant.franchiseId,
+        outletId: tenant.outletId,
+        isDeleted: false,
+      }).session(session);
+
+      if (!recipe) continue; // no recipe configured — MenuItem.stockQuantity already deducted above
+
+      for (const recipeIngredient of recipe.ingredients) {
+        const totalDeduction = recipeIngredient.quantity * item.quantity;
+
+        const ingredient = await Ingredient.findOneAndUpdate(
+          {
+            _id: recipeIngredient.ingredientId,
+            franchiseId: tenant.franchiseId,
+            outletId: tenant.outletId,
+            isDeleted: false,
+            currentStock: { $gte: totalDeduction },
+          },
+          { $inc: { currentStock: -totalDeduction } },
+          { returnDocument: "after", session }
+        );
+
+        if (!ingredient) {
+          throw new Error(
+            `Insufficient ingredient stock: ${recipeIngredient.ingredientId}`
+          );
+        }
+
+        ingredientDeductions.push({
+          ingredientId: ingredient._id,
+          ingredientName: ingredient.name,
+          currentStockAfter: ingredient.currentStock,
+          minThreshold: ingredient.minThreshold,
+          deductedQty: totalDeduction,
+        });
+      }
+    }
+
+    // Bulk-log CONSUMPTION transactions within the same Mongo session
+    if (ingredientDeductions.length > 0) {
+      const txDocs = ingredientDeductions.map((d) => ({
+        ingredientId: d.ingredientId,
+        type: "CONSUMPTION",
+        quantity: -d.deductedQty, // stored as negative delta
+        referenceType: "ORDER",
+        referenceId: order[0]._id,
+        note: `Order #${resolvedOrderNumber}`,
+        franchiseId: tenant.franchiseId,
+        outletId: tenant.outletId,
+      }));
+      await StockTransaction.insertMany(txDocs, { session });
+    }
+    // ────────────────────────────────────────────────────────────────────────
+
     await session.commitTransaction();
     session.endSession();
+
+    // Post-commit: invalidate ingredient Redis cache
+    if (ingredientDeductions.length > 0) {
+      try {
+        const redis = getRedisClient();
+        const cacheKey = buildTenantKey("ingredients", tenant);
+        await redis.del(cacheKey);
+      } catch (_) {
+        // non-fatal
+      }
+
+      // Enqueue low-stock alerts for any ingredient that dropped below threshold
+      for (const d of ingredientDeductions) {
+        if (d.currentStockAfter < d.minThreshold) {
+          await enqueue("LOW_STOCK_ALERT", {
+            ingredientId: String(d.ingredientId),
+            ingredientName: d.ingredientName,
+            currentStock: d.currentStockAfter,
+            minThreshold: d.minThreshold,
+            franchiseId: String(tenant.franchiseId),
+            outletId: String(tenant.outletId),
+          }).catch((err) =>
+            console.error("[queue] Failed to enqueue LOW_STOCK_ALERT:", err.message)
+          );
+        }
+      }
+    }
 
     await OrderRequest.findOneAndUpdate(
       { outletId: tenant.outletId, clientOrderId },

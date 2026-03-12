@@ -32,6 +32,9 @@ const env = {
 
   // ── SQS ──
   SQS_QUEUE_URL: requireEnv("SQS_QUEUE_URL"),
+
+  // ── Gemini ──
+  GEMINI_API_KEY: process.env.GEMINI_API_KEY || "",
 };
 
 export default env;

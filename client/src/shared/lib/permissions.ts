@@ -27,6 +27,9 @@ export const PERMISSIONS = {
   MENU_MANAGE: "menu:manage",
   INVENTORY_MANAGE: "inventory:manage",
 
+  INGREDIENT_MANAGE: "ingredient:manage",
+  RECIPE_MANAGE: "recipe:manage",
+
   ORDERS_CREATE: "orders:create",
   ORDERS_VIEW: "orders:view",
   ORDERS_UPDATE_STATUS: "orders:updateStatus",
