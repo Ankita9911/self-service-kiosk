@@ -152,6 +152,7 @@ export default function OutletMenuPage() {
       categoryId: item.categoryId,
       name: item.name,
       description: item.description ?? "",
+      imageUrl: item.imageUrl,
       imageFile: null,
       price: String(item.price),
       stockQuantity: String(item.stockQuantity ?? 0),

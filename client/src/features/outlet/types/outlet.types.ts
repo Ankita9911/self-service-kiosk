@@ -32,6 +32,7 @@ export type ItemFormState = {
   categoryId: string;
   name: string;
   description: string;
+  imageUrl?: string;
   imageFile: File | null;
   price: string;
   stockQuantity: string;

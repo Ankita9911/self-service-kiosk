@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { OfferEditor } from "./OfferEditor";
 import { CustomizationPicker } from "./CustomizationPicker";
 
-import type { ServiceType, ItemOfferForm, InventoryMode } from "@/features/outlet/types/outlet.types";
+import type { ServiceType, ItemFormState, InventoryMode } from "@/features/outlet/types/outlet.types";
 import type { MenuItem } from "@/features/kiosk/types/menu.types";
 
 const SERVICE_OPTIONS: { value: ServiceType; label: string }[] = [
@@ -25,27 +25,13 @@ const INVENTORY_OPTIONS: { value: InventoryMode; label: string; hint: string }[]
 interface Props {
   open: boolean;
   onClose: () => void;
-  form: EditItemFormState;
-  setForm: React.Dispatch<React.SetStateAction<EditItemFormState>>;
+  form: ItemFormState;
+  setForm: React.Dispatch<React.SetStateAction<ItemFormState>>;
   onSubmit: () => Promise<void>;
   categories?: { _id: string; name: string }[];
   items: MenuItem[];
   editingItemId?: string;
 }
-
-type EditItemFormState = {
-  name: string;
-  description: string;
-  imageUrl?: string;
-  imageFile: File | null;
-  price: string;
-  stockQuantity: string;
-  inventoryMode: InventoryMode;
-  categoryId?: string;
-  serviceType?: ServiceType;
-  offers?: ItemOfferForm[];
-  customizationItemIds?: string[];
-};
 
 type FieldErrors = Partial<Record<keyof EditMenuItemFormValues, string>>;
 
