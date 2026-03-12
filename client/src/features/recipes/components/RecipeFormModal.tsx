@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import type { Recipe, RecipeFormState } from "@/features/recipes/types/recipe.types";
-import type { Ingredient } from "@/features/ingredients/types/ingredient.types";
+import type { Ingredient, IngredientFormState } from "@/features/ingredients/types/ingredient.types";
 import { Dialog, DialogContent } from "@/shared/components/ui/dialog";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
@@ -20,6 +20,7 @@ interface Props {
   initialForm?: RecipeFormState | null;
   menuItems: MenuItem[];
   ingredients: Ingredient[];
+  onCreateIngredient?: (data: IngredientFormState) => Promise<unknown>;
   onCreate: (data: RecipeFormState) => Promise<unknown>;
   onUpdate: (id: string, data: Partial<RecipeFormState>) => Promise<unknown>;
 }
@@ -83,6 +84,7 @@ export function RecipeFormModal({
   initialForm,
   menuItems,
   ingredients,
+  onCreateIngredient,
   onCreate,
   onUpdate,
 }: Props) {
@@ -91,6 +93,7 @@ export function RecipeFormModal({
     initForm(recipe, initialForm)
   );
   const [saving, setSaving] = useState(false);
+  const [creatingIngredientNames, setCreatingIngredientNames] = useState<string[]>([]);
 
   useEffect(() => {
     if (!open) return;
@@ -159,6 +162,48 @@ export function RecipeFormModal({
       ...prev,
       ingredients: prev.ingredients.filter((_, i) => i !== index),
     }));
+
+  const handleCreateMissingIngredient = async (ingredientName: string) => {
+    if (!onCreateIngredient) return;
+
+    const missingRow = form.ingredients.find(
+      (row) => !row.ingredientId && row._aiName === ingredientName
+    );
+    if (!missingRow) return;
+
+    const defaultStock = Math.max(1, Number(missingRow.quantity) || 0);
+
+    setCreatingIngredientNames((prev) => [...prev, ingredientName]);
+    try {
+      const created = await onCreateIngredient({
+        name: ingredientName,
+        unit: (missingRow.unit || "gram") as IngredientFormState["unit"],
+        currentStock: defaultStock,
+        minThreshold: defaultStock,
+      });
+
+      const createdIngredient = created as Ingredient;
+      setForm((prev) => ({
+        ...prev,
+        ingredients: prev.ingredients.map((row) =>
+          !row.ingredientId && row._aiName === ingredientName
+            ? {
+                ...row,
+                ingredientId: createdIngredient._id,
+                unit: createdIngredient.unit,
+                _aiName: undefined,
+              }
+            : row
+        ),
+      }));
+    } catch {
+      // handled by interceptor
+    } finally {
+      setCreatingIngredientNames((prev) =>
+        prev.filter((name) => name !== ingredientName)
+      );
+    }
+  };
 
   const handleSubmit = async () => {
     if (!form.menuItemId) return;
@@ -248,11 +293,52 @@ export function RecipeFormModal({
                   Create these ingredients before saving this recipe.
                 </p>
                 <p className="mt-1 text-xs text-amber-800/90 dark:text-amber-100/80">
-                  Missing from inventory:{" "}
-                  {unresolvedAiIngredients.map((row) => row._aiName).join(", ")}.
-                  Add them in Ingredients, then come back here. This modal
-                  will auto-match them once they exist.
+                  AI suggested ingredients below are not in inventory yet. You
+                  can add them here with stock for one dish, then adjust them
+                  later from Ingredients.
                 </p>
+                <div className="mt-3 space-y-2">
+                  {unresolvedAiIngredients.map((row) => {
+                    const ingredientName = row._aiName ?? "";
+                    const isCreating = creatingIngredientNames.includes(ingredientName);
+
+                    return (
+                      <div
+                        key={`${ingredientName}-${row.unit}-${row.quantity}`}
+                        className="flex items-center gap-3 rounded-xl border border-amber-200/80 bg-white/80 px-3 py-2.5 dark:border-amber-500/10 dark:bg-black/10"
+                      >
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2">
+                            <p className="truncate text-sm font-semibold text-amber-950 dark:text-amber-50">
+                              {ingredientName}
+                            </p>
+                            <span className="shrink-0 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-700 dark:bg-amber-500/10 dark:text-amber-200">
+                              Missing
+                            </span>
+                          </div>
+                          <p className="mt-0.5 text-[11px] text-amber-800/90 dark:text-amber-100/75">
+                            Add with default stock for one dish: {Math.max(1, Number(row.quantity) || 0)} {row.unit}
+                          </p>
+                        </div>
+                        {onCreateIngredient && (
+                          <Button
+                            type="button"
+                            size="sm"
+                            onClick={() => handleCreateMissingIngredient(ingredientName)}
+                            disabled={isCreating}
+                            className="h-9 shrink-0 rounded-xl bg-amber-600 px-3.5 text-xs font-semibold text-white hover:bg-amber-700"
+                          >
+                            {isCreating ? (
+                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            ) : (
+                              "Add Ingredient"
+                            )}
+                          </Button>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             )}
 
@@ -339,9 +425,31 @@ export function RecipeFormModal({
                   </div>
 
                   {!row.ingredientId && row._aiName && (
-                    <p className="text-xs text-amber-600 dark:text-amber-300">
-                      AI suggested ingredient: {row._aiName}. Create it in Ingredients, then return here.
-                    </p>
+                    <div className="flex items-center justify-between gap-3 rounded-xl border border-amber-200/70 bg-amber-50/70 px-3 py-2 dark:border-amber-500/10 dark:bg-amber-500/5">
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-xs font-semibold text-amber-700 dark:text-amber-300">
+                          AI suggested ingredient: {row._aiName}
+                        </p>
+                        <p className="text-[11px] text-amber-700/80 dark:text-amber-300/80">
+                          Add it now with {Math.max(1, Number(row.quantity) || 0)} {row.unit} default stock.
+                        </p>
+                      </div>
+                      {onCreateIngredient && (
+                        <Button
+                          type="button"
+                          size="sm"
+                          onClick={() => handleCreateMissingIngredient(row._aiName ?? "")}
+                          disabled={creatingIngredientNames.includes(row._aiName ?? "")}
+                          className="h-8 shrink-0 rounded-lg bg-amber-600 px-3 text-xs font-semibold text-white hover:bg-amber-700"
+                        >
+                          {creatingIngredientNames.includes(row._aiName ?? "") ? (
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          ) : (
+                            "Add"
+                          )}
+                        </Button>
+                      )}
+                    </div>
                   )}
                 </div>
               ))}

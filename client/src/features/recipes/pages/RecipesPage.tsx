@@ -32,7 +32,7 @@ export default function RecipesPage() {
     clearAISuggestion,
   } = useRecipes(outletId);
 
-  const { ingredients } = useIngredients(outletId);
+  const { ingredients, handleCreate: createIngredient } = useIngredients(outletId);
 
   const [menuItems, setMenuItems] = useState<BasicMenuItem[]>([]);
   const [search, setSearch] = useState("");
@@ -213,6 +213,7 @@ export default function RecipesPage() {
           initialForm={aiPrefill}
           menuItems={menuItems}
           ingredients={ingredients}
+          onCreateIngredient={createIngredient}
           onCreate={async (data) => {
             if (aiPrefill) data = { ...aiPrefill, ...data, menuItemId: data.menuItemId };
             return handleCreate(data);

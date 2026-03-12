@@ -48,7 +48,7 @@ export default function OutletMenuPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { hasPermission } = usePermission();
-  const { ingredients } = useIngredients(outletId);
+  const { ingredients, handleCreate: createIngredient } = useIngredients(outletId);
   const { handleCreate: createRecipe } = useRecipes(outletId);
 
   const canManage = hasPermission(PERMISSIONS.MENU_MANAGE);
@@ -762,6 +762,7 @@ export default function OutletMenuPage() {
           initialForm={recipeDraft}
           menuItems={recipeMenuItems}
           ingredients={ingredients}
+          onCreateIngredient={createIngredient}
           onCreate={createRecipe}
           onUpdate={async () => undefined}
         />
