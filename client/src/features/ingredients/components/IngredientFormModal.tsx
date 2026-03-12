@@ -1,15 +1,21 @@
 import { useEffect, useState } from "react";
 import type { Ingredient, IngredientFormState } from "@/features/ingredients/types/ingredient.types";
-import { Dialog, DialogContent } from "@/shared/components/ui/dialog";
-import { Input } from "@/shared/components/ui/input";
-import { Label } from "@/shared/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/components/ui/select";
 import { Loader2, Package, Pencil, Plus, X } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/shared/components/ui/select";
 
-const UNITS = [
+export const UNITS = [
   { value: "gram", label: "Gram (g)" },
+  { value: "kg", label: "Kilogram (kg)" },
   { value: "ml", label: "Milliliter (ml)" },
+  { value: "liter", label: "Liter (L)" },
   { value: "piece", label: "Piece (pcs)" },
+  { value: "dozen", label: "Dozen (doz)" },
 ] as const;
 
 interface Props {
@@ -40,6 +46,8 @@ export function IngredientFormModal({ open, onClose, ingredient, onCreate, onUpd
     });
   }, [ingredient, open]);
 
+  if (!open) return null;
+
   const handleSubmit = async () => {
     if (!form.name.trim()) return;
     setSubmitting(true);
@@ -62,49 +70,76 @@ export function IngredientFormModal({ open, onClose, ingredient, onCreate, onUpd
   };
 
   return (
-    <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="sm:max-w-md p-0 border border-slate-100 dark:border-white/8 bg-white dark:bg-[#1e2130] rounded-2xl overflow-hidden shadow-2xl shadow-black/20">
-        <div className="flex items-center justify-between px-6 py-5 border-b border-slate-100 dark:border-white/8">
+    <div className="fixed inset-0 z-200 flex items-center justify-center px-4">
+      <div
+        className="absolute inset-0 bg-black/40 dark:bg-black/60 backdrop-blur-sm"
+        onClick={!submitting ? onClose : undefined}
+      />
+      <div className="relative bg-white dark:bg-[#1e2130] rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-200 border border-slate-100 dark:border-white/8">
+        {/* Accent bar */}
+        <div className="h-0.5 bg-linear-to-r from-indigo-400 via-indigo-500 to-violet-500" />
+
+        {/* Header */}
+        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-white/6">
           <div className="flex items-center gap-3">
-            <div className="h-9 w-9 rounded-xl bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-100 dark:border-indigo-500/20 flex items-center justify-center">
-              {isEdit ? <Pencil className="w-4 h-4 text-indigo-600 dark:text-indigo-400" /> : <Plus className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />}
+            <div className="h-8 w-8 rounded-lg bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-100 dark:border-indigo-500/20 flex items-center justify-center">
+              {isEdit ? (
+                <Pencil className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
+              ) : (
+                <Plus className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
+              )}
             </div>
             <div>
-              <h3 className="text-sm font-bold text-slate-800 dark:text-white">{isEdit ? "Edit Ingredient" : "Add Ingredient"}</h3>
-              <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">
-                {isEdit ? "Update ingredient details and alert threshold." : "Create a new inventory ingredient for this outlet."}
+              <h3 className="text-[13px] font-semibold text-slate-900 dark:text-white">
+                {isEdit ? "Edit Ingredient" : "Add Ingredient"}
+              </h3>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                {isEdit
+                  ? "Update ingredient details and alert threshold."
+                  : "Create a new inventory ingredient for this outlet."}
               </p>
             </div>
           </div>
-          <button onClick={onClose} className="h-7 w-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/8 transition-colors">
-            <X className="w-3.5 h-3.5" />
-          </button>
+          {!submitting && (
+            <button
+              onClick={onClose}
+              className="h-7 w-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/6 transition-colors"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          )}
         </div>
 
-        <div className="grid gap-4 px-6 py-5">
+        {/* Body */}
+        <div className="grid gap-4 px-5 py-5">
+          {/* Name */}
           <div className="space-y-1.5">
-            <Label htmlFor="name">Name</Label>
-            <Input
-              id="name"
+            <label className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide block">
+              Ingredient Name
+            </label>
+            <input
               placeholder="e.g. Chicken Breast"
               value={form.name}
               onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
-              className="h-10 rounded-xl bg-slate-50 dark:bg-white/5 border-slate-200 dark:border-white/8"
+              className="w-full h-10 px-3.5 rounded-xl border border-slate-200 dark:border-white/8 bg-slate-50 dark:bg-white/4 text-sm text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-400/15 focus:border-indigo-300 dark:focus:border-indigo-500/40 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-600"
             />
           </div>
 
+          {/* Unit */}
           <div className="space-y-1.5">
-            <Label>Unit</Label>
+            <label className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide block">
+              Measurement Unit
+            </label>
             <Select
               value={form.unit}
               onValueChange={(v) => setForm((p) => ({ ...p, unit: v as IngredientFormState["unit"] }))}
             >
-              <SelectTrigger className="h-10 rounded-xl bg-slate-50 dark:bg-white/5 border-slate-200 dark:border-white/8">
+              <SelectTrigger className="h-10 rounded-xl bg-slate-50 dark:bg-white/4 border-slate-200 dark:border-white/8 text-sm text-slate-700 dark:text-slate-200 focus:ring-indigo-400/20">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="rounded-xl border-slate-100 dark:border-white/8 bg-white dark:bg-[#1a1d26]">
                 {UNITS.map((u) => (
-                  <SelectItem key={u.value} value={u.value}>
+                  <SelectItem key={u.value} value={u.value} className="text-[13px] rounded-lg">
                     {u.label}
                   </SelectItem>
                 ))}
@@ -112,61 +147,75 @@ export function IngredientFormModal({ open, onClose, ingredient, onCreate, onUpd
             </Select>
           </div>
 
+          {/* Stock fields */}
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label htmlFor="currentStock">Current Stock</Label>
-              <Input
-                id="currentStock"
+              <label className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide block">
+                Initial Stock
+              </label>
+              <input
                 type="number"
                 min={0}
                 value={form.currentStock}
-                onChange={(e) =>
-                  setForm((p) => ({ ...p, currentStock: Number(e.target.value) }))
-                }
+                onChange={(e) => setForm((p) => ({ ...p, currentStock: Number(e.target.value) }))}
                 disabled={isEdit}
-                className="h-10 rounded-xl bg-slate-50 dark:bg-white/5 border-slate-200 dark:border-white/8 disabled:opacity-60"
+                className="w-full h-10 px-3.5 rounded-xl border border-slate-200 dark:border-white/8 bg-slate-50 dark:bg-white/4 text-sm text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-400/15 focus:border-indigo-300 dark:focus:border-indigo-500/40 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="minThreshold">Min Threshold</Label>
-              <Input
-                id="minThreshold"
+              <label className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide block">
+                Min Threshold
+              </label>
+              <input
                 type="number"
                 min={0}
                 value={form.minThreshold}
-                onChange={(e) =>
-                  setForm((p) => ({ ...p, minThreshold: Number(e.target.value) }))
-                }
-                className="h-10 rounded-xl bg-slate-50 dark:bg-white/5 border-slate-200 dark:border-white/8"
+                onChange={(e) => setForm((p) => ({ ...p, minThreshold: Number(e.target.value) }))}
+                className="w-full h-10 px-3.5 rounded-xl border border-slate-200 dark:border-white/8 bg-slate-50 dark:bg-white/4 text-sm text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-400/15 focus:border-indigo-300 dark:focus:border-indigo-500/40 transition-all"
               />
             </div>
           </div>
 
+          {/* Inventory note box */}
           <div className="rounded-2xl border border-slate-100 dark:border-white/8 bg-slate-50/80 dark:bg-white/[0.03] px-4 py-3">
             <div className="flex items-start gap-3">
               <div className="h-8 w-8 rounded-xl bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center shrink-0">
                 <Package className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
               </div>
               <div>
-                <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Inventory Note</p>
-                <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
-                  Use stock transactions for future increases or deductions after the ingredient is created.
+                <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                  Inventory Note
+                </p>
+                <p className="mt-1 text-[12px] text-slate-500 dark:text-slate-400 leading-relaxed">
+                  {isEdit
+                    ? "Use stock transactions to add or deduct stock after saving."
+                    : "After creating the ingredient, use stock transactions for future movements."}
                 </p>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="flex gap-3 px-6 pb-6">
-          <button type="button" onClick={onClose} disabled={submitting} className="flex-1 h-10 rounded-xl border border-slate-200 dark:border-white/8 text-sm font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors disabled:opacity-60">
+        {/* Footer */}
+        <div className="px-5 pb-5 flex gap-2">
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={submitting}
+            className="flex-1 h-10 rounded-xl border border-slate-200 dark:border-white/8 text-[13px] font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/4 transition-colors disabled:opacity-50"
+          >
             Cancel
           </button>
-          <button type="button" onClick={handleSubmit} disabled={submitting || !form.name.trim()} className="flex-1 h-10 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold transition-colors disabled:opacity-60 flex items-center justify-center gap-2">
-            {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
-            {isEdit ? "Save Changes" : "Add Ingredient"}
+          <button
+            type="button"
+            onClick={handleSubmit}
+            disabled={submitting || !form.name.trim()}
+            className="flex-1 h-10 rounded-xl bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white text-[13px] font-semibold transition-all flex items-center justify-center gap-2 shadow-lg shadow-indigo-500/20"
+          >
+            {submitting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : (isEdit ? "Save Changes" : "Add Ingredient")}
           </button>
         </div>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </div>
   );
 }

@@ -5,17 +5,36 @@ function outletParams(outletId?: string) {
   return outletId ? { params: { outletId } } : {};
 }
 
+export interface IngredientQueryOptions {
+  search?: string;
+  unit?: string;
+  lowStock?: boolean;
+  cursor?: string;
+  limit?: number;
+}
+
+export interface IngredientListResult {
+  items: Ingredient[];
+  pagination: {
+    limit: number;
+    hasNext: boolean;
+    nextCursor: string | null;
+    totalMatching: number;
+  };
+  stats: {
+    totalItems: number;
+    lowStockItems: number;
+  };
+}
+
 export async function getIngredients(
   outletId?: string,
-  options?: { search?: string; unit?: string; lowStock?: boolean; cursor?: string; limit?: number }
-): Promise<{
-  items: Ingredient[];
-  pagination: { limit: number; hasNext: boolean; nextCursor: string | null; totalMatching: number };
-}> {
+  options?: IngredientQueryOptions
+): Promise<IngredientListResult> {
   const p: Record<string, string> = {};
   if (outletId) p.outletId = outletId;
   if (options?.search?.trim()) p.search = options.search.trim();
-  if (options?.unit) p.unit = options.unit;
+  if (options?.unit && options.unit !== "ALL") p.unit = options.unit;
   if (options?.lowStock) p.lowStock = "true";
   if (options?.cursor) p.cursor = options.cursor;
   if (typeof options?.limit === "number") p.limit = String(options.limit);
@@ -29,10 +48,15 @@ export async function getIngredients(
         nextCursor?: string | null;
         totalMatching?: number;
       };
+      stats?: {
+        totalItems?: number;
+        lowStockItems?: number;
+      };
     };
   }>("/ingredients", { params: p });
 
   const pagination = response.data.meta?.pagination ?? {};
+  const stats = response.data.meta?.stats ?? {};
 
   return {
     items: response.data.data,
@@ -41,6 +65,10 @@ export async function getIngredients(
       hasNext: pagination.hasNext ?? false,
       nextCursor: pagination.nextCursor ?? null,
       totalMatching: pagination.totalMatching ?? response.data.data.length,
+    },
+    stats: {
+      totalItems: stats.totalItems ?? 0,
+      lowStockItems: stats.lowStockItems ?? 0,
     },
   };
 }

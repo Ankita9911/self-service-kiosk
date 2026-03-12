@@ -81,13 +81,16 @@ export async function createIngredient(data, tenant) {
 export async function getIngredients(tenant, { search, unit, lowStock, cursor, limit } = {}) {
   const pageLimit = toBoundedLimit(limit);
 
-  const baseFilter = {
+  // Base tenant filter — always applied
+  const tenantFilter = {
     franchiseId: tenant.franchiseId,
     outletId: tenant.outletId,
     isDeleted: false,
   };
 
-  if (unit) baseFilter.unit = unit;
+  // Build search/filter constraints for the paginated query
+  const baseFilter = { ...tenantFilter };
+  if (unit && unit !== "ALL") baseFilter.unit = unit;
   if (search?.trim()) baseFilter.name = { $regex: search.trim(), $options: "i" };
   if (lowStock === "true" || lowStock === true) {
     baseFilter.$expr = { $lt: ["$currentStock", "$minThreshold"] };
@@ -103,12 +106,18 @@ export async function getIngredients(tenant, { search, unit, lowStock, cursor, l
     ];
   }
 
-  const [itemsPlusOne, totalMatching] = await Promise.all([
+  const [itemsPlusOne, totalMatching, totalItems, lowStockItems] = await Promise.all([
     Ingredient.find(queryFilter)
       .sort({ createdAt: -1, _id: -1 })
       .limit(pageLimit + 1)
       .lean(),
     Ingredient.countDocuments(baseFilter),
+    // Stats always use the raw tenant filter (no search/lowStock)
+    Ingredient.countDocuments(tenantFilter),
+    Ingredient.countDocuments({
+      ...tenantFilter,
+      $expr: { $lt: ["$currentStock", "$minThreshold"] },
+    }),
   ]);
 
   const hasNext = itemsPlusOne.length > pageLimit;
@@ -117,9 +126,9 @@ export async function getIngredients(tenant, { search, unit, lowStock, cursor, l
   const nextCursor =
     hasNext
       ? encodeCursor({
-          createdAt: items[items.length - 1].createdAt,
-          _id: items[items.length - 1]._id,
-        })
+        createdAt: items[items.length - 1].createdAt,
+        _id: items[items.length - 1]._id,
+      })
       : null;
 
   return {
@@ -130,6 +139,10 @@ export async function getIngredients(tenant, { search, unit, lowStock, cursor, l
         hasNext,
         nextCursor,
         totalMatching,
+      },
+      stats: {
+        totalItems,
+        lowStockItems,
       },
     },
   };

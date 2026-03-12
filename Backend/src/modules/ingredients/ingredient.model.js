@@ -9,7 +9,7 @@ const ingredientSchema = new Schema(
     },
     unit: {
       type: String,
-      enum: ["gram", "ml", "piece"],
+      enum: ["gram", "ml", "piece", "kg", "liter", "dozen"],
       required: true,
     },
     currentStock: {

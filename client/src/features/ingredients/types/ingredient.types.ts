@@ -1,7 +1,7 @@
 export interface Ingredient {
   _id: string;
   name: string;
-  unit: "gram" | "ml" | "piece";
+  unit: "gram" | "ml" | "piece" | "kg" | "liter" | "dozen";
   currentStock: number;
   minThreshold: number;
   franchiseId: string;
@@ -13,7 +13,7 @@ export interface Ingredient {
 
 export interface IngredientFormState {
   name: string;
-  unit: "gram" | "ml" | "piece";
+  unit: "gram" | "ml" | "piece" | "kg" | "liter" | "dozen";
   currentStock: number;
   minThreshold: number;
 }

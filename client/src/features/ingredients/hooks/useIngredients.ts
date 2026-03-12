@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import {
   getIngredients,
   createIngredient,
@@ -6,63 +6,145 @@ import {
   deleteIngredient,
 } from "@/features/ingredients/services/ingredient.service";
 import { createManualTransaction } from "@/features/stockTransactions/services/stockTransaction.service";
-import type { Ingredient, IngredientFormState, StockAdjustPayload } from "@/features/ingredients/types/ingredient.types";
+import type {
+  Ingredient,
+  IngredientFormState,
+  StockAdjustPayload,
+} from "@/features/ingredients/types/ingredient.types";
 import { useDebounce } from "@/shared/hooks/useDebounce";
 import { useOutletEvents } from "@/shared/hooks/useOutletEvents";
 
-export function useIngredients(outletId: string | undefined, search?: string) {
+const DEFAULT_PAGE_SIZE = 10;
+
+export interface IngredientFilters {
+  search: string;
+  unit: string;   // "ALL" | "gram" | "ml" | "piece" | "kg" | "liter" | "dozen"
+  lowStock: boolean;
+}
+
+const DEFAULT_FILTERS: IngredientFilters = {
+  search: "",
+  unit: "ALL",
+  lowStock: false,
+};
+
+export function useIngredients(
+  outletId: string | undefined,
+  filters: IngredientFilters = DEFAULT_FILTERS
+) {
   const [ingredients, setIngredients] = useState<Ingredient[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+
+  // Stats — always reflect the full dataset (no filters applied)
+  const [totalItems, setTotalItems] = useState(0);
+  const [lowStockItems, setLowStockItems] = useState(0);
+
+  // Cursor pagination
+  const [cursorStack, setCursorStack] = useState<(string | null)[]>([null]);
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
+  const [hasNextPage, setHasNextPage] = useState(false);
   const [totalMatching, setTotalMatching] = useState(0);
-  const debouncedSearch = useDebounce(search ?? "", 400);
+  const [pageSize, setPageSizeState] = useState(DEFAULT_PAGE_SIZE);
+  const [refreshTick, setRefreshTick] = useState(0);
+
+  const hasLoadedRef = useRef(false);
+
+  const debouncedSearch = useDebounce(filters.search, 400);
+  const currentCursor = cursorStack[cursorStack.length - 1] ?? undefined;
+  const page = cursorStack.length;
+  const hasPrevPage = page > 1;
 
   const fetchIngredients = useCallback(
     async (silent = false) => {
       if (!outletId) return;
+      const firstLoad = !hasLoadedRef.current;
       if (silent) setRefreshing(true);
-      else setLoading(true);
+      else if (firstLoad) setLoading(true);
 
       try {
         const result = await getIngredients(outletId, {
           search: debouncedSearch || undefined,
-          limit: 100,
+          unit: filters.unit !== "ALL" ? filters.unit : undefined,
+          lowStock: filters.lowStock || undefined,
+          cursor: currentCursor,
+          limit: pageSize,
         });
+
         setIngredients(result.items);
+        setHasNextPage(result.pagination.hasNext);
+        setNextCursor(result.pagination.nextCursor);
         setTotalMatching(result.pagination.totalMatching);
+        setTotalItems(result.stats.totalItems);
+        setLowStockItems(result.stats.lowStockItems);
       } catch {
-        // errors handled by axiosInstance interceptor
+        // handled by axios interceptor
       } finally {
+        hasLoadedRef.current = true;
         setLoading(false);
         setRefreshing(false);
       }
     },
-    [outletId, debouncedSearch]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [outletId, debouncedSearch, filters.unit, filters.lowStock, currentCursor, pageSize, refreshTick]
   );
 
   useEffect(() => {
     fetchIngredients();
   }, [fetchIngredients]);
 
-  useOutletEvents(["ingredient:updated", "inventory:updated"], () => {
-    void fetchIngredients(true);
-  }, outletId);
+  useOutletEvents(
+    ["ingredient:updated", "inventory:updated"],
+    () => { void fetchIngredients(true); },
+    outletId
+  );
 
+  // ── Navigation ──
+  function goToNextPage() {
+    if (!hasNextPage || !nextCursor) return;
+    setCursorStack((prev) => [...prev, nextCursor]);
+  }
+
+  function goToPrevPage() {
+    setCursorStack((prev) => (prev.length > 1 ? prev.slice(0, -1) : prev));
+  }
+
+  function resetToFirstPage() {
+    setCursorStack([null]);
+    setNextCursor(null);
+    setHasNextPage(false);
+  }
+
+  function setPageSize(size: number) {
+    setPageSizeState(size);
+    setCursorStack([null]);
+    setNextCursor(null);
+    setHasNextPage(false);
+  }
+
+  const refreshAll = useCallback(async (silent = false) => {
+    if (!outletId) return;
+    if (silent) setRefreshing(true);
+    resetToFirstPage();
+    setRefreshTick((n) => n + 1);
+  }, [outletId]);
+
+  // ── CRUD ──
   async function handleCreate(data: IngredientFormState) {
     const result = await createIngredient(data, outletId);
-    await fetchIngredients(true);
+    await refreshAll(true);
     return result;
   }
 
   async function handleUpdate(id: string, data: Partial<IngredientFormState>) {
     const result = await updateIngredient(id, data, outletId);
-    await fetchIngredients(true);
+    await refreshAll(true);
     return result;
   }
 
   async function handleDelete(id: string) {
     await deleteIngredient(id, outletId);
-    await fetchIngredients(true);
+    await refreshAll(true);
   }
 
   async function handleAdjustStock(id: string, data: StockAdjustPayload) {
@@ -75,7 +157,7 @@ export function useIngredients(outletId: string | undefined, search?: string) {
       },
       outletId
     );
-    await fetchIngredients(true);
+    await refreshAll(true);
     return result;
   }
 
@@ -83,8 +165,18 @@ export function useIngredients(outletId: string | undefined, search?: string) {
     ingredients,
     loading,
     refreshing,
+    totalItems,
+    lowStockItems,
     totalMatching,
-    fetchIngredients,
+    page,
+    pageSize,
+    hasPrevPage,
+    hasNextPage,
+    goToNextPage,
+    goToPrevPage,
+    setPageSize,
+    resetToFirstPage,
+    fetchData: refreshAll,
     handleCreate,
     handleUpdate,
     handleDelete,
