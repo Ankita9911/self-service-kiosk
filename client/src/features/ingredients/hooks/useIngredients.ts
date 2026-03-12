@@ -38,6 +38,7 @@ export function useIngredients(
   actionOutletId?: string,
   allowFranchiseScope = false
 ) {
+  const mutationOutletId = actionOutletId ?? outletId;
   const [ingredients, setIngredients] = useState<Ingredient[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -139,23 +140,35 @@ export function useIngredients(
 
   // ── CRUD ──
   async function handleCreate(data: IngredientFormState) {
-    const result = await createIngredient(data, actionOutletId ?? outletId);
+    if (!mutationOutletId) {
+      throw new Error("Select an outlet to create an ingredient.");
+    }
+    const result = await createIngredient(data, mutationOutletId);
     await refreshAll(true);
     return result;
   }
 
   async function handleUpdate(id: string, data: Partial<IngredientFormState>) {
-    const result = await updateIngredient(id, data, actionOutletId ?? outletId);
+    if (!mutationOutletId) {
+      throw new Error("Select an outlet to update an ingredient.");
+    }
+    const result = await updateIngredient(id, data, mutationOutletId);
     await refreshAll(true);
     return result;
   }
 
   async function handleDelete(id: string) {
-    await deleteIngredient(id, actionOutletId ?? outletId);
+    if (!mutationOutletId) {
+      throw new Error("Select an outlet to delete an ingredient.");
+    }
+    await deleteIngredient(id, mutationOutletId);
     await refreshAll(true);
   }
 
   async function handleAdjustStock(id: string, data: StockAdjustPayload) {
+    if (!mutationOutletId) {
+      throw new Error("Select an outlet to log stock changes.");
+    }
     const result = await createManualTransaction(
       {
         ingredientId: id,
@@ -163,7 +176,7 @@ export function useIngredients(
         quantity: data.type === "ADJUSTMENT" ? data.quantity : Math.abs(data.quantity),
         note: data.note,
       },
-      actionOutletId ?? outletId
+      mutationOutletId
     );
     await refreshAll(true);
     return result;

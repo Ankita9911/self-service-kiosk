@@ -332,14 +332,11 @@ export default function StockTransactionsPage() {
       {/* ── Header ── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
-            <div className="h-8 w-8 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center">
-              <ArrowUpDown className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-            </div>
-            Stock Log
+          <h1 className="text-[28px] font-semibold text-slate-900 dark:text-white tracking-tight">
+             Stock Log
           </h1>
-          <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">
-            Review inventory movement history and create manual stock entries.
+          <p className="text-sm text-slate-500 dark:text-slate-400">
+           Review inventory movement history and create manual stock entries.
           </p>
         </div>
         <div className="flex items-center gap-2">

@@ -45,6 +45,7 @@ export function useStockTransactions(
   actionOutletId?: string,
   allowFranchiseScope = false
 ) {
+  const mutationOutletId = actionOutletId ?? outletId;
   const [transactions, setTransactions] = useState<StockTransaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -161,7 +162,10 @@ export function useStockTransactions(
   );
 
   async function handleCreate(data: ManualTransactionPayload) {
-    const result = await createManualTransaction(data, actionOutletId ?? outletId);
+    if (!mutationOutletId) {
+      throw new Error("Select an outlet to log a transaction.");
+    }
+    const result = await createManualTransaction(data, mutationOutletId);
     refreshAll(true);
     return result;
   }

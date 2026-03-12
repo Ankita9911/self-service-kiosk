@@ -28,6 +28,7 @@ export function useRecipes(
   actionOutletId?: string,
   allowFranchiseScope = false
 ) {
+  const mutationOutletId = actionOutletId ?? outletId;
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -127,38 +128,50 @@ export function useRecipes(
 
   // ── CRUD ──
   async function handleCreate(data: RecipeFormState) {
+    if (!mutationOutletId) {
+      throw new Error("Select an outlet to create a recipe.");
+    }
     const cleanIngredients = data.ingredients
       .filter((i) => i.ingredientId)
       .map(({ ingredientId, quantity, unit }) => ({ ingredientId, quantity, unit }));
 
     const result = await createRecipe(
       { ...data, ingredients: cleanIngredients },
-      actionOutletId ?? outletId
+      mutationOutletId
     );
     refreshAll(true);
     return result;
   }
 
   async function handleUpdate(id: string, data: Partial<RecipeFormState>) {
+    if (!mutationOutletId) {
+      throw new Error("Select an outlet to update a recipe.");
+    }
     if (data.ingredients) {
       data.ingredients = data.ingredients
         .filter((i) => i.ingredientId)
         .map(({ ingredientId, quantity, unit }) => ({ ingredientId, quantity, unit }));
     }
-    const result = await updateRecipe(id, data, actionOutletId ?? outletId);
+    const result = await updateRecipe(id, data, mutationOutletId);
     refreshAll(true);
     return result;
   }
 
   async function handleDelete(id: string) {
-    await deleteRecipe(id, actionOutletId ?? outletId);
+    if (!mutationOutletId) {
+      throw new Error("Select an outlet to delete a recipe.");
+    }
+    await deleteRecipe(id, mutationOutletId);
     refreshAll(true);
   }
 
   async function handleAIGenerate(description: string) {
+    if (!mutationOutletId) {
+      throw new Error("Select an outlet to generate a recipe.");
+    }
     setAiLoading(true);
     try {
-      const suggestion = await aiGenerateRecipe(description, actionOutletId ?? outletId);
+      const suggestion = await aiGenerateRecipe(description, mutationOutletId);
       setAiSuggestion(suggestion);
       return suggestion;
     } catch {

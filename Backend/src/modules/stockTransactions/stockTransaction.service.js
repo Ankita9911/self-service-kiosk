@@ -206,9 +206,9 @@ export async function getTransactions(
     // Resolve ingredient IDs by name search (pre-query pattern, same as recipes)
     const matchingIngredients = await Ingredient.find({
       franchiseId: tenant.franchiseId,
-      outletId: tenant.outletId,
       isDeleted: false,
       name: { $regex: search.trim(), $options: "i" },
+      ...(tenant.outletId ? { outletId: tenant.outletId } : {}),
     })
       .select("_id")
       .lean();
