@@ -24,7 +24,9 @@ const DEFAULT_FILTERS: RecipeFilters = {
 
 export function useRecipes(
   outletId: string | undefined,
-  filters: RecipeFilters = DEFAULT_FILTERS
+  filters: RecipeFilters = DEFAULT_FILTERS,
+  actionOutletId?: string,
+  allowFranchiseScope = false
 ) {
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [loading, setLoading] = useState(true);
@@ -52,7 +54,7 @@ export function useRecipes(
 
   const fetchRecipes = useCallback(
     async (silent = false) => {
-      if (!outletId) return;
+      if (!outletId && !allowFranchiseScope) return;
       const firstLoad = !hasLoadedRef.current;
       if (silent) setRefreshing(true);
       else if (firstLoad) setLoading(true);
@@ -115,12 +117,12 @@ export function useRecipes(
 
   const refreshAll = useCallback(
     (silent = false) => {
-      if (!outletId) return;
+      if (!outletId && !allowFranchiseScope) return;
       if (silent) setRefreshing(true);
       resetToFirstPage();
       setRefreshTick((n) => n + 1);
     },
-    [outletId]
+    [allowFranchiseScope, outletId]
   );
 
   // ── CRUD ──
@@ -131,7 +133,7 @@ export function useRecipes(
 
     const result = await createRecipe(
       { ...data, ingredients: cleanIngredients },
-      outletId
+      actionOutletId ?? outletId
     );
     refreshAll(true);
     return result;
@@ -143,20 +145,20 @@ export function useRecipes(
         .filter((i) => i.ingredientId)
         .map(({ ingredientId, quantity, unit }) => ({ ingredientId, quantity, unit }));
     }
-    const result = await updateRecipe(id, data, outletId);
+    const result = await updateRecipe(id, data, actionOutletId ?? outletId);
     refreshAll(true);
     return result;
   }
 
   async function handleDelete(id: string) {
-    await deleteRecipe(id, outletId);
+    await deleteRecipe(id, actionOutletId ?? outletId);
     refreshAll(true);
   }
 
   async function handleAIGenerate(description: string) {
     setAiLoading(true);
     try {
-      const suggestion = await aiGenerateRecipe(description, outletId);
+      const suggestion = await aiGenerateRecipe(description, actionOutletId ?? outletId);
       setAiSuggestion(suggestion);
       return suggestion;
     } catch {
@@ -198,4 +200,3 @@ export function useRecipes(
     clearAISuggestion,
   };
 }
-

@@ -7,6 +7,7 @@ interface Props {
   index: number;
   onEdit: (recipe: Recipe) => void;
   onDelete: (recipe: Recipe) => void;
+  showActions?: boolean;
 }
 
 function getServingsInfo(recipe: Recipe) {
@@ -21,7 +22,7 @@ function getServingsInfo(recipe: Recipe) {
   return { label: `${available} servings`, className: "bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" };
 }
 
-export function RecipeTableRow({ recipe, index, onEdit, onDelete }: Props) {
+export function RecipeTableRow({ recipe, index, onEdit, onDelete, showActions = true }: Props) {
   const menuItemName =
     typeof recipe.menuItemId === "object" ? recipe.menuItemId.name : recipe.menuItemId;
   const { label: stockLabel, className: stockClassName } = getServingsInfo(recipe);
@@ -96,9 +97,11 @@ export function RecipeTableRow({ recipe, index, onEdit, onDelete }: Props) {
 
       {/* Actions */}
       <td className="px-5 py-3.5">
-        <div className="flex justify-end">
-          <RecipeRowMenu onEdit={() => onEdit(recipe)} onDelete={() => onDelete(recipe)} />
-        </div>
+        {showActions && (
+          <div className="flex justify-end">
+            <RecipeRowMenu onEdit={() => onEdit(recipe)} onDelete={() => onDelete(recipe)} />
+          </div>
+        )}
       </td>
     </tr>
   );

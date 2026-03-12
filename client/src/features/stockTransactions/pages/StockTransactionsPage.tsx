@@ -5,8 +5,10 @@ import {
   type StockTransactionFilters,
 } from "@/features/stockTransactions/hooks/useStockTransactions";
 import { getAllIngredients } from "@/features/ingredients/services/ingredient.service";
+import { getOutlets } from "@/features/outlet/services/outlet.service";
 import { CursorPagination } from "@/shared/components/ui/CursorPagination";
 import type { Ingredient } from "@/features/ingredients/types/ingredient.types";
+import type { Outlet } from "@/features/outlet/types/outlet.types";
 import type { ManualTransactionPayload, StockTransactionSortBy } from "@/features/stockTransactions/types/stockTransaction.types";
 import {
   ArrowUpDown,
@@ -25,6 +27,7 @@ import {
   RefreshCcw,
   TrendingDown,
   ShieldAlert,
+  Store,
 } from "lucide-react";
 import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
@@ -178,7 +181,11 @@ const DEFAULT_FILTERS: StockTransactionFilters = {
 
 export default function StockTransactionsPage() {
   const { user } = useAuth();
-  const outletId = user?.outletId ?? undefined;
+  const isFranchiseAdmin = user?.role === "FRANCHISE_ADMIN";
+  const [outletFilter, setOutletFilter] = useState(user?.outletId ?? "ALL");
+  const [outlets, setOutlets] = useState<Outlet[]>([]);
+  const listOutletId = user?.outletId ?? (outletFilter !== "ALL" ? outletFilter : undefined);
+  const actionOutletId = user?.outletId ?? (outletFilter !== "ALL" ? outletFilter : undefined);
 
   // Filters
   const [filters, setFilters] = useState<StockTransactionFilters>(DEFAULT_FILTERS);
@@ -186,15 +193,19 @@ export default function StockTransactionsPage() {
   // All ingredients for filter dropdown
   const [allIngredients, setAllIngredients] = useState<Ingredient[]>([]);
 
+  useEffect(() => {
+    if (!isFranchiseAdmin || user?.outletId) return;
+    void getOutlets().then(setOutlets).catch(() => setOutlets([]));
+  }, [isFranchiseAdmin, user?.outletId]);
+
   const fetchIngredients = useCallback(async () => {
-    if (!outletId) return;
     try {
-      const result = await getAllIngredients(outletId);
+      const result = await getAllIngredients(listOutletId);
       setAllIngredients(result);
     } catch {
       // non-fatal
     }
-  }, [outletId]);
+  }, [listOutletId]);
 
   useEffect(() => {
     fetchIngredients();
@@ -217,7 +228,12 @@ export default function StockTransactionsPage() {
     resetToFirstPage,
     refreshAll,
     handleCreate,
-  } = useStockTransactions(outletId, filters);
+  } = useStockTransactions(
+    listOutletId,
+    filters,
+    actionOutletId,
+    isFranchiseAdmin && !user?.outletId
+  );
 
   // When filter changes, reset to page 1
   const prevFiltersRef = useRef(filters);
@@ -248,9 +264,13 @@ export default function StockTransactionsPage() {
 
   // Clear all filters
   const hasActiveFilters =
-    filters.search !== "" || filters.ingredientId !== "" || filters.type !== "";
+    filters.search !== "" ||
+    filters.ingredientId !== "" ||
+    filters.type !== "" ||
+    (isFranchiseAdmin && !user?.outletId && outletFilter !== "ALL");
 
   function clearFilters() {
+    if (isFranchiseAdmin && !user?.outletId) setOutletFilter("ALL");
     setFilters((prev) => ({ ...prev, search: "", ingredientId: "", type: "" }));
   }
 
@@ -295,7 +315,7 @@ export default function StockTransactionsPage() {
 
   const tableLoading = loading || filterLoading;
 
-  if (!outletId) {
+  if (!listOutletId && !isFranchiseAdmin) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[40vh] gap-3 text-center">
         <ShieldAlert className="w-10 h-10 text-slate-300 dark:text-slate-600" />
@@ -333,6 +353,7 @@ export default function StockTransactionsPage() {
           </button>
           <button
             onClick={openForm}
+            disabled={!actionOutletId}
             className="inline-flex items-center justify-center rounded-xl h-9 px-4 text-xs bg-indigo-600 hover:bg-indigo-700 text-white gap-2 font-semibold transition-colors"
           >
             <Plus className="w-3.5 h-3.5" />
@@ -393,6 +414,25 @@ export default function StockTransactionsPage() {
             </button>
           )}
         </div>
+
+        {isFranchiseAdmin && !user?.outletId && (
+          <Select value={outletFilter} onValueChange={(v) => { setOutletFilter(v); resetToFirstPage(); }}>
+            <SelectTrigger className="h-9 w-44 rounded-xl border-slate-100 dark:border-white/8 bg-white dark:bg-[#161920] text-[13px] text-slate-700 dark:text-slate-200 focus:ring-indigo-400/20">
+              <div className="flex items-center gap-2 min-w-0">
+                <Store className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 shrink-0" />
+                <SelectValue placeholder="All Outlets" />
+              </div>
+            </SelectTrigger>
+            <SelectContent className="rounded-xl border-slate-100 dark:border-white/8 bg-white dark:bg-[#1a1d26]">
+              <SelectItem value="ALL" className="text-[13px] rounded-lg">All Outlets</SelectItem>
+              {outlets.map((outlet) => (
+                <SelectItem key={outlet._id} value={outlet._id} className="text-[13px] rounded-lg">
+                  {outlet.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
 
         {/* Ingredient dropdown */}
         <Select

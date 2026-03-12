@@ -195,8 +195,8 @@ export async function getTransactions(
 
   const tenantFilter = {
     franchiseId: tenant.franchiseId,
-    outletId: tenant.outletId,
   };
+  if (tenant.outletId) tenantFilter.outletId = tenant.outletId;
 
   const baseFilter = { ...tenantFilter };
 

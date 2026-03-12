@@ -107,18 +107,18 @@ export async function getRecipes(tenant, { cursor, limit, search, aiOnly } = {})
 
   const tenantFilter = {
     franchiseId: tenant.franchiseId,
-    outletId: tenant.outletId,
     isDeleted: false,
   };
+  if (tenant.outletId) tenantFilter.outletId = tenant.outletId;
 
   // Resolve menu item IDs for search
   let searchMenuItemIds = null;
   if (search?.trim()) {
     const matchingItems = await MenuItem.find({
       franchiseId: tenant.franchiseId,
-      outletId: tenant.outletId,
       isDeleted: false,
       name: { $regex: search.trim(), $options: "i" },
+      ...(tenant.outletId ? { outletId: tenant.outletId } : {}),
     }).select("_id").lean();
     searchMenuItemIds = matchingItems.map((m) => m._id);
   }
@@ -173,8 +173,8 @@ export async function getRecipeById(id, tenant) {
   const recipe = await Recipe.findOne({
     _id: id,
     franchiseId: tenant.franchiseId,
-    outletId: tenant.outletId,
     isDeleted: false,
+    ...(tenant.outletId ? { outletId: tenant.outletId } : {}),
   })
     .populate("menuItemId", "name price categoryId")
     .populate("ingredients.ingredientId", "name unit currentStock")

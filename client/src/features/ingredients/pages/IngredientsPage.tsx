@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import useAuth from "@/shared/hooks/useAuth";
 import { useIngredients } from "@/features/ingredients/hooks/useIngredients";
+import { getOutlets } from "@/features/outlet/services/outlet.service";
 import { IngredientStats } from "@/features/ingredients/components/IngredientStats";
 import { IngredientFilters } from "@/features/ingredients/components/IngredientFilters";
 import { IngredientFormModal, UNITS } from "@/features/ingredients/components/IngredientFormModal";
@@ -9,6 +10,7 @@ import { StockAdjustModal } from "@/features/ingredients/components/StockAdjustM
 import { CursorPagination } from "@/shared/components/ui/CursorPagination";
 import { Shimmer } from "@/features/device/components/ShimmerCell";
 import type { Ingredient } from "@/features/ingredients/types/ingredient.types";
+import type { Outlet } from "@/features/outlet/types/outlet.types";
 import {
   Package,
   Plus,
@@ -28,7 +30,11 @@ function getUnitLabel(unit: string): string {
 
 export default function IngredientsPage() {
   const { user } = useAuth();
-  const outletId = user?.outletId ?? undefined;
+  const isFranchiseAdmin = user?.role === "FRANCHISE_ADMIN";
+  const [outletFilter, setOutletFilter] = useState(user?.outletId ?? "ALL");
+  const [outlets, setOutlets] = useState<Outlet[]>([]);
+  const listOutletId = user?.outletId ?? (outletFilter !== "ALL" ? outletFilter : undefined);
+  const actionOutletId = user?.outletId ?? (outletFilter !== "ALL" ? outletFilter : undefined);
 
   // Filters
   const [searchTerm, setSearchTerm] = useState("");
@@ -57,17 +63,22 @@ export default function IngredientsPage() {
     handleUpdate,
     handleDelete,
     handleAdjustStock,
-  } = useIngredients(outletId, {
+  } = useIngredients(listOutletId, {
     search: searchTerm,
     unit: unitFilter,
     lowStock: lowStockOnly,
     sortBy,
     sortOrder,
-  });
+  }, actionOutletId, isFranchiseAdmin && !user?.outletId);
 
   const [showForm, setShowForm] = useState(false);
   const [editingIngredient, setEditingIngredient] = useState<Ingredient | null>(null);
   const [adjustingIngredient, setAdjustingIngredient] = useState<Ingredient | null>(null);
+
+  useEffect(() => {
+    if (!isFranchiseAdmin || user?.outletId) return;
+    void getOutlets().then(setOutlets).catch(() => setOutlets([]));
+  }, [isFranchiseAdmin, user?.outletId]);
 
   const hasActiveFilters =
     searchTerm !== "" || unitFilter !== "ALL" || lowStockOnly ||
@@ -79,6 +90,7 @@ export default function IngredientsPage() {
     setLowStockOnly(false);
     setSortBy("createdAt");
     setSortOrder("desc");
+    if (isFranchiseAdmin && !user?.outletId) setOutletFilter("ALL");
     resetToFirstPage();
   };
 
@@ -95,7 +107,7 @@ export default function IngredientsPage() {
   const showShimmer = loading || refreshing;
 
   // Restrict access if no outletId
-  if (!outletId) {
+  if (!listOutletId && !isFranchiseAdmin) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[40vh] gap-3 text-center">
         <ShieldAlert className="w-10 h-10 text-slate-300 dark:text-slate-600" />
@@ -131,6 +143,7 @@ export default function IngredientsPage() {
           </button>
           <button
             onClick={() => setShowForm(true)}
+            disabled={!actionOutletId}
             className="flex items-center gap-2 h-9 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium shadow-lg shadow-indigo-500/20 transition-all"
           >
             <Plus className="w-4 h-4" /> Add Ingredient
@@ -156,7 +169,10 @@ export default function IngredientsPage() {
         onUnitChange={(v) => { setUnitFilter(v); resetToFirstPage(); }}
         onLowStockChange={(v) => { setLowStockOnly(v); resetToFirstPage(); }}
         onSortChange={(by, order) => { setSortBy(by); setSortOrder(order); resetToFirstPage(); }}
-        hasActiveFilters={hasActiveFilters}
+        filterableOutlets={isFranchiseAdmin && !user?.outletId ? outlets : undefined}
+        outletFilter={outletFilter}
+        onOutletChange={(v) => { setOutletFilter(v); resetToFirstPage(); }}
+        hasActiveFilters={hasActiveFilters || (isFranchiseAdmin && !user?.outletId && outletFilter !== "ALL")}
         onClearFilters={clearFilters}
       />
 
@@ -264,12 +280,14 @@ export default function IngredientsPage() {
 
                     {/* Three-dot menu */}
                     <td className="px-5 py-4">
-                      <IngredientRowMenu
-                        ingredient={ing}
-                        onEdit={handleEdit}
-                        onDelete={() => handleDelete(ing._id)}
-                        onAdjustStock={setAdjustingIngredient}
-                      />
+                      {actionOutletId && (
+                        <IngredientRowMenu
+                          ingredient={ing}
+                          onEdit={handleEdit}
+                          onDelete={() => handleDelete(ing._id)}
+                          onAdjustStock={setAdjustingIngredient}
+                        />
+                      )}
                     </td>
                   </tr>
                 );

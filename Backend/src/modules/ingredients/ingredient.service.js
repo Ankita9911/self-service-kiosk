@@ -114,9 +114,9 @@ export async function getIngredients(tenant, { search, unit, lowStock, cursor, l
   // Base tenant filter — always applied
   const tenantFilter = {
     franchiseId: tenant.franchiseId,
-    outletId: tenant.outletId,
     isDeleted: false,
   };
+  if (tenant.outletId) tenantFilter.outletId = tenant.outletId;
 
   // Build search/filter constraints for the paginated query
   const baseFilter = { ...tenantFilter };
@@ -200,8 +200,8 @@ export async function getIngredientById(id, tenant) {
   const ingredient = await Ingredient.findOne({
     _id: id,
     franchiseId: tenant.franchiseId,
-    outletId: tenant.outletId,
     isDeleted: false,
+    ...(tenant.outletId ? { outletId: tenant.outletId } : {}),
   }).lean();
 
   if (!ingredient) {

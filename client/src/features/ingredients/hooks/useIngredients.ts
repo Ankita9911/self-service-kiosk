@@ -34,7 +34,9 @@ const DEFAULT_FILTERS: IngredientFilters = {
 
 export function useIngredients(
   outletId: string | undefined,
-  filters: IngredientFilters = DEFAULT_FILTERS
+  filters: IngredientFilters = DEFAULT_FILTERS,
+  actionOutletId?: string,
+  allowFranchiseScope = false
 ) {
   const [ingredients, setIngredients] = useState<Ingredient[]>([]);
   const [loading, setLoading] = useState(true);
@@ -61,7 +63,7 @@ export function useIngredients(
 
   const fetchIngredients = useCallback(
     async (silent = false) => {
-      if (!outletId) return;
+      if (!outletId && !allowFranchiseScope) return;
       const firstLoad = !hasLoadedRef.current;
       if (silent) setRefreshing(true);
       else if (firstLoad) setLoading(true);
@@ -129,27 +131,27 @@ export function useIngredients(
   }
 
   const refreshAll = useCallback(async (silent = false) => {
-    if (!outletId) return;
+    if (!outletId && !allowFranchiseScope) return;
     if (silent) setRefreshing(true);
     resetToFirstPage();
     setRefreshTick((n) => n + 1);
-  }, [outletId]);
+  }, [allowFranchiseScope, outletId]);
 
   // ── CRUD ──
   async function handleCreate(data: IngredientFormState) {
-    const result = await createIngredient(data, outletId);
+    const result = await createIngredient(data, actionOutletId ?? outletId);
     await refreshAll(true);
     return result;
   }
 
   async function handleUpdate(id: string, data: Partial<IngredientFormState>) {
-    const result = await updateIngredient(id, data, outletId);
+    const result = await updateIngredient(id, data, actionOutletId ?? outletId);
     await refreshAll(true);
     return result;
   }
 
   async function handleDelete(id: string) {
-    await deleteIngredient(id, outletId);
+    await deleteIngredient(id, actionOutletId ?? outletId);
     await refreshAll(true);
   }
 
@@ -161,7 +163,7 @@ export function useIngredients(
         quantity: data.type === "ADJUSTMENT" ? data.quantity : Math.abs(data.quantity),
         note: data.note,
       },
-      outletId
+      actionOutletId ?? outletId
     );
     await refreshAll(true);
     return result;

@@ -3,6 +3,7 @@ import useAuth from "@/shared/hooks/useAuth";
 import { useRecipes } from "@/features/recipes/hooks/useRecipes";
 import { useIngredients } from "@/features/ingredients/hooks/useIngredients";
 import { getAllIngredients } from "@/features/ingredients/services/ingredient.service";
+import { getOutlets } from "@/features/outlet/services/outlet.service";
 import { RecipeStats } from "@/features/recipes/components/RecipeStats";
 import { RecipeFilters } from "@/features/recipes/components/RecipeFilters";
 import { RecipeCard } from "@/features/recipes/components/RecipeCard";
@@ -15,6 +16,7 @@ import { CursorPagination } from "@/shared/components/ui/CursorPagination";
 import { Shimmer } from "@/features/device/components/ShimmerCell";
 import type { Recipe, RecipeFormState, AISuggestion } from "@/features/recipes/types/recipe.types";
 import type { Ingredient, IngredientFormState } from "@/features/ingredients/types/ingredient.types";
+import type { Outlet } from "@/features/outlet/types/outlet.types";
 import axiosInstance from "@/shared/lib/axiosInstance";
 import { Plus, Sparkles, ChefHat, RefreshCcw, ShieldAlert } from "lucide-react";
 
@@ -27,7 +29,11 @@ const LAYOUT_KEY = "recipe-layout";
 
 export default function RecipesPage() {
   const { user } = useAuth();
-  const outletId = user?.outletId ?? undefined;
+  const isFranchiseAdmin = user?.role === "FRANCHISE_ADMIN";
+  const [outletFilter, setOutletFilter] = useState(user?.outletId ?? "ALL");
+  const [outlets, setOutlets] = useState<Outlet[]>([]);
+  const listOutletId = user?.outletId ?? (outletFilter !== "ALL" ? outletFilter : undefined);
+  const actionOutletId = user?.outletId ?? (outletFilter !== "ALL" ? outletFilter : undefined);
 
   // Filters
   const [searchTerm, setSearchTerm] = useState("");
@@ -60,9 +66,19 @@ export default function RecipesPage() {
     aiSuggestion,
     handleAIGenerate,
     clearAISuggestion,
-  } = useRecipes(outletId, { search: searchTerm, aiOnly });
+  } = useRecipes(
+    listOutletId,
+    { search: searchTerm, aiOnly },
+    actionOutletId,
+    isFranchiseAdmin && !user?.outletId
+  );
 
-  const { handleCreate: createIngredient } = useIngredients(outletId);
+  const { handleCreate: createIngredient } = useIngredients(
+    listOutletId,
+    undefined,
+    actionOutletId,
+    isFranchiseAdmin && !user?.outletId
+  );
 
   const [menuItems, setMenuItems] = useState<BasicMenuItem[]>([]);
   const [recipeIngredients, setRecipeIngredients] = useState<Ingredient[]>([]);
@@ -73,31 +89,36 @@ export default function RecipesPage() {
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [aiPrefill, setAiPrefill] = useState<RecipeFormState | null>(null);
 
+  useEffect(() => {
+    if (!isFranchiseAdmin || user?.outletId) return;
+    void getOutlets().then(setOutlets).catch(() => setOutlets([]));
+  }, [isFranchiseAdmin, user?.outletId]);
+
   const fetchMenuItems = useCallback(async () => {
-    if (!outletId) return;
+    if (!listOutletId) return;
     try {
       const res = await axiosInstance.get<{ data: BasicMenuItem[] }>("/menu/items", {
-        params: { outletId, limit: 500 },
+        params: { outletId: listOutletId, limit: 500 },
       });
       setMenuItems(res.data.data);
     } catch {
       // handled by interceptor
     }
-  }, [outletId]);
+  }, [listOutletId]);
 
   useEffect(() => {
     void fetchMenuItems();
   }, [fetchMenuItems]);
 
   const fetchRecipeIngredients = useCallback(async () => {
-    if (!outletId) return;
+    if (!listOutletId) return;
     try {
-      const result = await getAllIngredients(outletId);
+      const result = await getAllIngredients(listOutletId);
       setRecipeIngredients(result);
     } catch {
       // handled by interceptor
     }
-  }, [outletId]);
+  }, [listOutletId]);
 
   useEffect(() => {
     void fetchRecipeIngredients();
@@ -113,6 +134,7 @@ export default function RecipesPage() {
   const clearFilters = () => {
     setSearchTerm("");
     setAiOnly(false);
+    if (isFranchiseAdmin && !user?.outletId) setOutletFilter("ALL");
     resetToFirstPage();
   };
 
@@ -181,7 +203,7 @@ export default function RecipesPage() {
   const showShimmer = loading || refreshing;
   const TABLE_HEADERS = ["#", "Menu Item", "Ingredients", "Prep Time", "Availability", ""];
 
-  if (!outletId) {
+  if (!listOutletId && !isFranchiseAdmin) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[40vh] gap-3 text-center">
         <ShieldAlert className="w-10 h-10 text-slate-300 dark:text-slate-600" />
@@ -215,6 +237,7 @@ export default function RecipesPage() {
           </button>
           <button
             onClick={() => setShowAI(true)}
+            disabled={!actionOutletId}
             className="flex items-center gap-2 h-9 px-4 rounded-xl border border-slate-200 dark:border-white/[0.08] bg-white dark:bg-white/[0.04] text-sm font-medium text-slate-600 dark:text-slate-300 hover:border-purple-300 dark:hover:border-purple-500/40 hover:text-purple-600 dark:hover:text-purple-400 transition-all"
           >
             <Sparkles className="w-4 h-4" />
@@ -226,6 +249,7 @@ export default function RecipesPage() {
               setAiPrefill(null);
               setShowForm(true);
             }}
+            disabled={!actionOutletId}
             className="flex items-center gap-2 h-9 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium shadow-lg shadow-indigo-500/20 transition-all"
           >
             <Plus className="w-4 h-4" />
@@ -250,7 +274,10 @@ export default function RecipesPage() {
         onSearchChange={(v) => { setSearchTerm(v); resetToFirstPage(); }}
         onAiOnlyChange={(v) => { setAiOnly(v); resetToFirstPage(); }}
         onLayoutChange={handleLayoutChange}
-        hasActiveFilters={hasActiveFilters}
+        filterableOutlets={isFranchiseAdmin && !user?.outletId ? outlets : undefined}
+        outletFilter={outletFilter}
+        onOutletChange={(v) => { setOutletFilter(v); resetToFirstPage(); }}
+        hasActiveFilters={hasActiveFilters || (isFranchiseAdmin && !user?.outletId && outletFilter !== "ALL")}
         onClearFilters={clearFilters}
       />
 
@@ -296,6 +323,7 @@ export default function RecipesPage() {
                   recipe={recipe}
                   onEdit={handleEdit}
                   onDelete={handleDeleteClick}
+                  showActions={Boolean(actionOutletId)}
                 />
               ))}
             </div>
@@ -371,6 +399,7 @@ export default function RecipesPage() {
                     index={index}
                     onEdit={handleEdit}
                     onDelete={handleDeleteClick}
+                    showActions={Boolean(actionOutletId)}
                   />
                 ))
               )}

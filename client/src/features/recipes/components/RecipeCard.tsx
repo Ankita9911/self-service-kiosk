@@ -6,6 +6,7 @@ interface Props {
   recipe: Recipe;
   onEdit: (recipe: Recipe) => void;
   onDelete: (recipe: Recipe) => void;
+  showActions?: boolean;
 }
 
 function getServingsInfo(recipe: Recipe) {
@@ -27,7 +28,7 @@ const stockColors = {
   emerald: "bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
 };
 
-export function RecipeCard({ recipe, onEdit, onDelete }: Props) {
+export function RecipeCard({ recipe, onEdit, onDelete, showActions = true }: Props) {
   const menuItemName =
     typeof recipe.menuItemId === "object"
       ? recipe.menuItemId.name
@@ -53,7 +54,9 @@ export function RecipeCard({ recipe, onEdit, onDelete }: Props) {
               <Sparkles className="w-3 h-3" /> AI
             </span>
           )}
-          <RecipeRowMenu onEdit={() => onEdit(recipe)} onDelete={() => onDelete(recipe)} />
+          {showActions && (
+            <RecipeRowMenu onEdit={() => onEdit(recipe)} onDelete={() => onDelete(recipe)} />
+          )}
         </div>
       </div>
 

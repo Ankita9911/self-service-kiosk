@@ -41,7 +41,9 @@ const DEFAULT_STATS: StockTransactionStats = {
 
 export function useStockTransactions(
   outletId: string | undefined,
-  filters: StockTransactionFilters = DEFAULT_FILTERS
+  filters: StockTransactionFilters = DEFAULT_FILTERS,
+  actionOutletId?: string,
+  allowFranchiseScope = false
 ) {
   const [transactions, setTransactions] = useState<StockTransaction[]>([]);
   const [loading, setLoading] = useState(true);
@@ -65,7 +67,7 @@ export function useStockTransactions(
 
   const fetchTransactions = useCallback(
     async (silent = false) => {
-      if (!outletId) return;
+      if (!outletId && !allowFranchiseScope) return;
       const firstLoad = !hasLoadedRef.current;
       if (silent) setRefreshing(true);
       else if (firstLoad) setLoading(true);
@@ -150,16 +152,16 @@ export function useStockTransactions(
 
   const refreshAll = useCallback(
     (silent = false) => {
-      if (!outletId) return;
+      if (!outletId && !allowFranchiseScope) return;
       if (silent) setRefreshing(true);
       resetToFirstPage();
       setRefreshTick((n) => n + 1);
     },
-    [outletId]
+    [allowFranchiseScope, outletId]
   );
 
   async function handleCreate(data: ManualTransactionPayload) {
-    const result = await createManualTransaction(data, outletId);
+    const result = await createManualTransaction(data, actionOutletId ?? outletId);
     refreshAll(true);
     return result;
   }

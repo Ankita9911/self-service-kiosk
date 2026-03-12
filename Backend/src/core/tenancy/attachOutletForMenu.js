@@ -13,6 +13,9 @@ export async function attachOutletForMenu(req, res, next) {
   }
 
   if (user.role === "FRANCHISE_ADMIN" || user.role === "SUPER_ADMIN") {
+    if (!outletId && req.method === "GET") {
+      return next();
+    }
     if (!outletId) {
       return next(new AppError("Outlet ID is required for menu operations", 400, "OUTLET_REQUIRED"));
     }

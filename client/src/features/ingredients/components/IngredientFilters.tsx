@@ -1,4 +1,4 @@
-import { Search, X, AlertTriangle } from "lucide-react";
+import { Search, X, AlertTriangle, Store } from "lucide-react";
 import {
     Select,
     SelectContent,
@@ -6,6 +6,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/shared/components/ui/select";
+import type { Outlet } from "@/features/outlet/types/outlet.types";
 
 export const UNIT_OPTIONS = [
     { value: "ALL", label: "All Units" },
@@ -36,6 +37,9 @@ interface Props {
     onUnitChange: (v: string) => void;
     onLowStockChange: (v: boolean) => void;
     onSortChange: (sortBy: string, sortOrder: string) => void;
+    filterableOutlets?: Outlet[];
+    outletFilter?: string;
+    onOutletChange?: (v: string) => void;
     hasActiveFilters: boolean;
     onClearFilters: () => void;
 }
@@ -50,6 +54,9 @@ export function IngredientFilters({
     onUnitChange,
     onLowStockChange,
     onSortChange,
+    filterableOutlets,
+    outletFilter,
+    onOutletChange,
     hasActiveFilters,
     onClearFilters,
 }: Props) {
@@ -89,6 +96,25 @@ export function IngredientFilters({
                     ))}
                 </SelectContent>
             </Select>
+
+            {filterableOutlets && onOutletChange && (
+                <Select value={outletFilter ?? "ALL"} onValueChange={onOutletChange}>
+                    <SelectTrigger className="h-9 w-44 rounded-xl border-slate-100 dark:border-white/8 bg-white dark:bg-[#161920] text-[13px] text-slate-700 dark:text-slate-200 focus:ring-indigo-400/20">
+                        <div className="flex items-center gap-2 min-w-0">
+                            <Store className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 shrink-0" />
+                            <SelectValue placeholder="All Outlets" />
+                        </div>
+                    </SelectTrigger>
+                    <SelectContent className="rounded-xl border-slate-100 dark:border-white/8 bg-white dark:bg-[#1a1d26]">
+                        <SelectItem value="ALL" className="text-[13px] rounded-lg">All Outlets</SelectItem>
+                        {filterableOutlets.map((o) => (
+                            <SelectItem key={o._id} value={o._id} className="text-[13px] rounded-lg">
+                                {o.name}
+                            </SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+            )}
 
             {/* Sort */}
             <Select
