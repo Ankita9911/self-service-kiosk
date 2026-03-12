@@ -17,6 +17,7 @@ interface Props {
   open: boolean;
   onClose: () => void;
   recipe: Recipe | null;
+  initialForm?: RecipeFormState | null;
   menuItems: MenuItem[];
   ingredients: Ingredient[];
   onCreate: (data: RecipeFormState) => Promise<unknown>;
@@ -29,7 +30,24 @@ function blankRow() {
   return { ingredientId: "", quantity: 0, unit: "gram" as string };
 }
 
-function initForm(recipe: Recipe | null): RecipeFormState {
+function createFormSnapshot(form: RecipeFormState): RecipeFormState {
+  return {
+    menuItemId: form.menuItemId,
+    ingredients: form.ingredients.map((row) => ({ ...row })),
+    prepTime: form.prepTime,
+    instructions: form.instructions,
+    aiGenerated: form.aiGenerated,
+  };
+}
+
+function initForm(
+  recipe: Recipe | null,
+  initialForm?: RecipeFormState | null
+): RecipeFormState {
+  if (!recipe && initialForm) {
+    return createFormSnapshot(initialForm);
+  }
+
   if (!recipe) {
     return {
       menuItemId: "",
@@ -62,18 +80,53 @@ export function RecipeFormModal({
   open,
   onClose,
   recipe,
+  initialForm,
   menuItems,
   ingredients,
   onCreate,
   onUpdate,
 }: Props) {
   const isEdit = Boolean(recipe);
-  const [form, setForm] = useState<RecipeFormState>(() => initForm(recipe));
+  const [form, setForm] = useState<RecipeFormState>(() =>
+    initForm(recipe, initialForm)
+  );
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    setForm(initForm(recipe));
-  }, [recipe]);
+    if (!open) return;
+    setForm(initForm(recipe, initialForm));
+  }, [initialForm, open, recipe]);
+
+  useEffect(() => {
+    if (!open || ingredients.length === 0) return;
+
+    setForm((prev) => {
+      let changed = false;
+      const nextIngredients = prev.ingredients.map((row) => {
+        if (row.ingredientId || !row._aiName) return row;
+
+        const match = ingredients.find(
+          (ingredient) => ingredient.name.toLowerCase() === row._aiName?.toLowerCase()
+        );
+
+        if (!match) return row;
+
+        changed = true;
+        return {
+          ...row,
+          ingredientId: match._id,
+          unit: match.unit,
+        };
+      });
+
+      return changed ? { ...prev, ingredients: nextIngredients } : prev;
+    });
+  }, [ingredients, open]);
+
+  const unresolvedAiIngredients = form.ingredients.filter(
+    (row) => !row.ingredientId && row._aiName
+  );
+  const hasUnresolvedAiIngredients = unresolvedAiIngredients.length > 0;
 
   const updateRow = (
     index: number,
@@ -86,7 +139,10 @@ export function RecipeFormModal({
       // auto-set unit from selected ingredient
       if (field === "ingredientId") {
         const ing = ingredients.find((i) => i._id === value);
-        if (ing) rows[index].unit = ing.unit;
+        if (ing) {
+          rows[index].unit = ing.unit;
+          rows[index]._aiName = undefined;
+        }
       }
       return { ...prev, ingredients: rows };
     });
@@ -127,10 +183,16 @@ export function RecipeFormModal({
         <div className="flex items-center justify-between px-6 py-5 border-b border-slate-100 dark:border-white/8">
           <div className="flex items-center gap-3">
             <div className="h-9 w-9 rounded-xl bg-amber-50 dark:bg-amber-500/10 border border-amber-100 dark:border-amber-500/20 flex items-center justify-center">
-              {isEdit ? <Pencil className="w-4 h-4 text-amber-600 dark:text-amber-400" /> : <ChefHat className="w-4 h-4 text-amber-600 dark:text-amber-400" />}
+              {isEdit ? (
+                <Pencil className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+              ) : (
+                <ChefHat className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+              )}
             </div>
             <div>
-              <h3 className="text-sm font-bold text-slate-800 dark:text-white">{isEdit ? "Edit Recipe" : "Add Recipe"}</h3>
+              <h3 className="text-sm font-bold text-slate-800 dark:text-white">
+                {isEdit ? "Edit Recipe" : "Add Recipe"}
+              </h3>
               <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">
                 Link menu items with ingredient quantities for live outlet availability.
               </p>
@@ -169,99 +231,118 @@ export function RecipeFormModal({
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <Label>Ingredients</Label>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={addRow}
-                  className="gap-1 text-xs rounded-xl border-slate-200 dark:border-white/8"
-                >
-                  <Plus className="w-3.5 h-3.5" /> Add Row
-                </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={addRow}
+                className="gap-1 text-xs rounded-xl border-slate-200 dark:border-white/8"
+              >
+                <Plus className="w-3.5 h-3.5" /> Add Row
+              </Button>
             </div>
+
+            {hasUnresolvedAiIngredients && (
+              <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-100">
+                <p className="font-semibold">
+                  Create these ingredients before saving this recipe.
+                </p>
+                <p className="mt-1 text-xs text-amber-800/90 dark:text-amber-100/80">
+                  Missing from inventory:{" "}
+                  {unresolvedAiIngredients.map((row) => row._aiName).join(", ")}.
+                  Add them in Ingredients, then come back here. This modal
+                  will auto-match them once they exist.
+                </p>
+              </div>
+            )}
 
             <div className="space-y-2.5">
               {form.ingredients.map((row, idx) => (
-                <div
-                  key={idx}
-                  className="grid grid-cols-[1fr_100px_90px_36px] gap-2 items-end"
-                >
-                  <div className="space-y-1">
-                    {idx === 0 && (
-                      <span className="text-[11px] text-slate-400 font-medium">
-                        Ingredient
-                      </span>
-                    )}
-                    <Select
-                      value={row.ingredientId}
-                      onValueChange={(v) =>
-                        updateRow(idx, "ingredientId", v)
-                      }
+                <div key={idx} className="space-y-1.5">
+                  <div className="grid grid-cols-[1fr_100px_90px_36px] gap-2 items-end">
+                    <div className="space-y-1">
+                      {idx === 0 && (
+                        <span className="text-[11px] text-slate-400 font-medium">
+                          Ingredient
+                        </span>
+                      )}
+                      <Select
+                        value={row.ingredientId}
+                        onValueChange={(v) =>
+                          updateRow(idx, "ingredientId", v)
+                        }
+                      >
+                        <SelectTrigger className="h-10 rounded-xl bg-slate-50 dark:bg-white/5 border-slate-200 dark:border-white/8">
+                          <SelectValue placeholder="Select…" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {ingredients.map((ing) => (
+                            <SelectItem key={ing._id} value={ing._id}>
+                              {ing.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-1">
+                      {idx === 0 && (
+                        <span className="text-[11px] text-slate-400 font-medium">
+                          Qty
+                        </span>
+                      )}
+                      <Input
+                        type="number"
+                        min={0}
+                        step="any"
+                        value={row.quantity || ""}
+                        onChange={(e) =>
+                          updateRow(idx, "quantity", Number(e.target.value))
+                        }
+                        className="h-10 rounded-xl bg-slate-50 dark:bg-white/5 border-slate-200 dark:border-white/8"
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      {idx === 0 && (
+                        <span className="text-[11px] text-slate-400 font-medium">
+                          Unit
+                        </span>
+                      )}
+                      <Select
+                        value={row.unit}
+                        onValueChange={(v) => updateRow(idx, "unit", v)}
+                      >
+                        <SelectTrigger className="h-10 rounded-xl bg-slate-50 dark:bg-white/5 border-slate-200 dark:border-white/8">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {UNITS.map((u) => (
+                            <SelectItem key={u} value={u}>
+                              {u}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="text-red-500 hover:text-red-600"
+                      onClick={() => removeRow(idx)}
+                      disabled={form.ingredients.length <= 1}
                     >
-                      <SelectTrigger className="h-10 rounded-xl bg-slate-50 dark:bg-white/5 border-slate-200 dark:border-white/8">
-                        <SelectValue placeholder="Select…" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {ingredients.map((ing) => (
-                          <SelectItem key={ing._id} value={ing._id}>
-                            {ing.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
                   </div>
 
-                  <div className="space-y-1">
-                    {idx === 0 && (
-                      <span className="text-[11px] text-slate-400 font-medium">
-                        Qty
-                      </span>
-                    )}
-                    <Input
-                      type="number"
-                      min={0}
-                      step="any"
-                      value={row.quantity || ""}
-                      onChange={(e) =>
-                        updateRow(idx, "quantity", Number(e.target.value))
-                      }
-                      className="h-10 rounded-xl bg-slate-50 dark:bg-white/5 border-slate-200 dark:border-white/8"
-                    />
-                  </div>
-
-                  <div className="space-y-1">
-                    {idx === 0 && (
-                      <span className="text-[11px] text-slate-400 font-medium">
-                        Unit
-                      </span>
-                    )}
-                    <Select
-                      value={row.unit}
-                      onValueChange={(v) => updateRow(idx, "unit", v)}
-                    >
-                      <SelectTrigger className="h-10 rounded-xl bg-slate-50 dark:bg-white/5 border-slate-200 dark:border-white/8">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {UNITS.map((u) => (
-                          <SelectItem key={u} value={u}>
-                            {u}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="text-red-500 hover:text-red-600"
-                    onClick={() => removeRow(idx)}
-                    disabled={form.ingredients.length <= 1}
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
+                  {!row.ingredientId && row._aiName && (
+                    <p className="text-xs text-amber-600 dark:text-amber-300">
+                      AI suggested ingredient: {row._aiName}. Create it in Ingredients, then return here.
+                    </p>
+                  )}
                 </div>
               ))}
             </div>
@@ -307,7 +388,7 @@ export function RecipeFormModal({
           <button type="button" onClick={onClose} disabled={saving} className="flex-1 h-10 rounded-xl border border-slate-200 dark:border-white/8 text-sm font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors disabled:opacity-60">
             Cancel
           </button>
-          <button type="button" onClick={handleSubmit} disabled={saving || !form.menuItemId} className="flex-1 h-10 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold transition-colors disabled:opacity-60 flex items-center justify-center gap-2">
+          <button type="button" onClick={handleSubmit} disabled={saving || !form.menuItemId || hasUnresolvedAiIngredients} className="flex-1 h-10 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold transition-colors disabled:opacity-60 flex items-center justify-center gap-2">
             {saving && <Loader2 className="w-4 h-4 animate-spin" />}
             {isEdit ? "Save Changes" : "Create Recipe"}
           </button>

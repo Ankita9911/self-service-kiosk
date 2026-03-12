@@ -57,7 +57,11 @@ export default function RecipesPage() {
   }, [outletId]);
 
   useEffect(() => {
-    fetchMenuItems();
+    const loadMenuItems = async () => {
+      await fetchMenuItems();
+    };
+
+    void loadMenuItems();
   }, [fetchMenuItems]);
 
   const filtered = search
@@ -206,6 +210,7 @@ export default function RecipesPage() {
           open={showForm}
           onClose={handleCloseForm}
           recipe={editingRecipe}
+          initialForm={aiPrefill}
           menuItems={menuItems}
           ingredients={ingredients}
           onCreate={async (data) => {

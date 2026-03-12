@@ -31,10 +31,14 @@ import { DeleteItemModal } from "../components/DeleteItemModal";
 import { ItemViewModal } from "../components/ItemViewModal";
 import { CreateComboModal } from "../components/CreateComboModal";
 import { EditComboModal } from "../components/EditComboModal";
+import { RecipeFormModal } from "@/features/recipes/components/RecipeFormModal";
+import { useRecipes } from "@/features/recipes/hooks/useRecipes";
+import { useIngredients } from "@/features/ingredients/hooks/useIngredients";
 
 import { Button } from "@/shared/components/ui/button";
 import { CursorPagination } from "@/shared/components/ui/CursorPagination";
 import type { Combo, MenuItem } from "@/features/kiosk/types/menu.types";
+import type { RecipeFormState } from "@/features/recipes/types/recipe.types";
 
 type Layout = "grid" | "table";
 type ActiveTab = "items" | "combos";
@@ -44,6 +48,8 @@ export default function OutletMenuPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { hasPermission } = usePermission();
+  const { ingredients } = useIngredients(outletId);
+  const { handleCreate: createRecipe } = useRecipes(outletId);
 
   const canManage = hasPermission(PERMISSIONS.MENU_MANAGE);
 
@@ -108,6 +114,16 @@ export default function OutletMenuPage() {
   const [activeTab, setActiveTab] = useState<ActiveTab>("items");
   const [addComboOpen, setAddComboOpen] = useState(false);
   const [editComboData, setEditComboData] = useState<Combo | null>(null);
+  const [recipeDraft, setRecipeDraft] = useState<RecipeFormState | null>(null);
+
+  const recipeMenuItems = Array.from(
+    new Map(
+      [...items, ...customizationItems].map((item) => [
+        item._id,
+        { _id: item._id, name: item.name },
+      ])
+    ).values()
+  );
 
   const saveLayout = (l: Layout) => {
     setLayout(l);
@@ -144,6 +160,21 @@ export default function OutletMenuPage() {
       offers: item.offers ?? [],
       customizationItemIds: item.customizationItemIds ?? [],
     });
+  };
+
+  const openCreateRecipe = (item: MenuItem) => {
+    setViewItem(null);
+    setRecipeDraft({
+      menuItemId: item._id,
+      ingredients: [{ ingredientId: "", quantity: 0, unit: "gram" }],
+      prepTime: 0,
+      instructions: "",
+      aiGenerated: false,
+    });
+  };
+
+  const closeRecipeModal = () => {
+    setRecipeDraft(null);
   };
 
   if (!canManage) {
@@ -508,6 +539,7 @@ export default function OutletMenuPage() {
                 onDelete={() => setDeleteItem(item)}
                 onToggleStatus={() => toggleItemStatus(item._id)}
                 onView={() => setViewItem(item)}
+                onCreateRecipe={() => openCreateRecipe(item)}
               />
             ))}
           </div>
@@ -554,6 +586,7 @@ export default function OutletMenuPage() {
                     onUpdateStock={item.inventoryMode === "DIRECT" ? () => { setStockItem(item); setStockInput(String(item.stockQuantity)); } : undefined}
                     onToggleStatus={() => toggleItemStatus(item._id)}
                     onView={() => setViewItem(item)}
+                    onCreateRecipe={() => openCreateRecipe(item)}
                   />
                 ))}
               </tbody>
@@ -718,6 +751,19 @@ export default function OutletMenuPage() {
           item={viewItem}
           categories={categories}
           onClose={() => setViewItem(null)}
+          onCreateRecipe={() => openCreateRecipe(viewItem)}
+        />
+      )}
+      {recipeDraft && (
+        <RecipeFormModal
+          open={Boolean(recipeDraft)}
+          onClose={closeRecipeModal}
+          recipe={null}
+          initialForm={recipeDraft}
+          menuItems={recipeMenuItems}
+          ingredients={ingredients}
+          onCreate={createRecipe}
+          onUpdate={async () => undefined}
         />
       )}
       <CreateComboModal

@@ -5,9 +5,10 @@ interface Props {
   item: MenuItem;
   categories: Category[];
   onClose: () => void;
+  onCreateRecipe?: () => void;
 }
 
-export function ItemViewModal({ item, categories, onClose }: Props) {
+export function ItemViewModal({ item, categories, onClose, onCreateRecipe }: Props) {
   const category = categories.find((c) => c._id === item.categoryId);
   const isLowStock = item.stockStatus === "LOW_STOCK";
   const isOutOfStock = item.stockStatus === "OUT_OF_STOCK";
@@ -124,10 +125,18 @@ export function ItemViewModal({ item, categories, onClose }: Props) {
         </div>
 
         {/* Footer */}
-        <div className="px-5 pb-5">
+        <div className="px-5 pb-5 flex gap-2">
+          {item.inventoryMode === "RECIPE" && item.stockStatus === "NO_RECIPE" && onCreateRecipe && (
+            <button
+              onClick={onCreateRecipe}
+              className="flex-1 h-10 rounded-xl bg-indigo-600 text-sm font-semibold text-white transition-colors hover:bg-indigo-700"
+            >
+              Create Recipe
+            </button>
+          )}
           <button
             onClick={onClose}
-            className="w-full h-10 rounded-xl border border-slate-200 dark:border-white/8 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/4 transition-colors"
+            className="flex-1 h-10 rounded-xl border border-slate-200 dark:border-white/8 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/4 transition-colors"
           >
             Close
           </button>

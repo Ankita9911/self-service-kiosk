@@ -14,9 +14,10 @@ interface Props {
   onUpdateStock?: () => void;
   onToggleStatus: () => void;
   onView: () => void;
+  onCreateRecipe?: () => void;
 }
 
-export function MenuItemTableRow({ item, categories, index, onEdit, onDelete, onUpdatePrice, onUpdateStock, onToggleStatus, onView }: Props) {
+export function MenuItemTableRow({ item, categories, index, onEdit, onDelete, onUpdatePrice, onUpdateStock, onToggleStatus, onView, onCreateRecipe }: Props) {
   const category = categories.find((c) => c._id === item.categoryId);
   const isLowStock = item.stockStatus === "LOW_STOCK";
   const isOutOfStock = item.stockStatus === "OUT_OF_STOCK";
@@ -45,6 +46,9 @@ export function MenuItemTableRow({ item, categories, index, onEdit, onDelete, on
     { icon: DollarSign, label: "Update price", onClick: onUpdatePrice, className: "text-slate-600 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400" },
     ...(item.inventoryMode === "DIRECT" && onUpdateStock
       ? [{ icon: Package, label: "Update direct stock", onClick: onUpdateStock, className: "text-slate-600 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400" }]
+      : []),
+    ...(item.inventoryMode === "RECIPE" && item.stockStatus === "NO_RECIPE" && onCreateRecipe
+      ? [{ icon: BookOpen, label: "Create recipe", onClick: onCreateRecipe, className: "text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400" }]
       : []),
     { icon: Power, label: item.isActive !== false ? "Deactivate" : "Activate", onClick: onToggleStatus, className: item.isActive !== false ? "text-slate-600 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400" : "text-emerald-600 dark:text-emerald-400 hover:text-emerald-700" },
     { icon: Trash2, label: "Delete", onClick: onDelete, className: "text-red-500 dark:text-red-400 hover:text-red-600 dark:hover:text-red-300" },

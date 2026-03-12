@@ -10,9 +10,10 @@ interface Props {
   onDelete: () => void;
   onToggleStatus: () => void;
   onView: () => void;
+  onCreateRecipe?: () => void;
 }
 
-export function MenuItemCard({ item, onEdit, onDelete, onToggleStatus, onView }: Props) {
+export function MenuItemCard({ item, onEdit, onDelete, onToggleStatus, onView, onCreateRecipe }: Props) {
   const isLowStock = item.stockStatus === "LOW_STOCK";
   const isOutOfStock = item.stockStatus === "OUT_OF_STOCK";
   const hasRecipeStock = item.stockSource === "RECIPE";
@@ -145,6 +146,16 @@ export function MenuItemCard({ item, onEdit, onDelete, onToggleStatus, onView }:
                   : "Available"}
           </div>
         </div>
+
+        {item.inventoryMode === "RECIPE" && item.stockStatus === "NO_RECIPE" && onCreateRecipe && (
+          <button
+            type="button"
+            onClick={onCreateRecipe}
+            className="mt-3 w-full h-9 rounded-xl border border-indigo-200 bg-indigo-50 text-xs font-semibold text-indigo-700 transition-colors hover:bg-indigo-100 dark:border-indigo-500/20 dark:bg-indigo-500/10 dark:text-indigo-300 dark:hover:bg-indigo-500/15"
+          >
+            Create Recipe
+          </button>
+        )}
       </div>
     </div>
 
