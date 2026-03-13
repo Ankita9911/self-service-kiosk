@@ -1,10 +1,10 @@
 {
   "name": "hyper-kitchen-backend",
   "version": "1.0.0",
-  "main": "src/server.js",
+  "main": "src/index.js",
   "scripts": {
-    "start": "node src/server.js",
-    "dev": "ts-node-dev --respawn src/server.js"
+    "start": "node src/index.js",
+    "dev": "ts-node-dev --respawn src/index.js"
   },
   "keywords": [],
   "author": "",

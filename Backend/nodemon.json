@@ -3,5 +3,5 @@
   "ignore": ["node_modules/", ".git/"],
   "ext": "ts,js,json,env",
   "delay": 500,
-  "exec": "node dist/index.js"
+  "exec": "node src/index.js"
 }
