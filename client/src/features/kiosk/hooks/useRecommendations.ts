@@ -60,7 +60,7 @@ export function useRecommendations(
       .finally(() => { if (!cancelled) setIsTrendingLoading(false); });
 
     return () => { cancelled = true; };
-  }, []); // fetch once on mount
+  }, []);
 
   // ── Frequently Bought Together ────────────────────────────────────────────
   const [frequentlyBoughtTogether, setFrequentlyBoughtTogether] = useState<RecommendedItem[]>([]);

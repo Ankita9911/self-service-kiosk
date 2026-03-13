@@ -1,0 +1,56 @@
+{
+  "franchiseId": {
+    "$oid": "6999fcd3bbb2afff808bb3b5"
+  },
+  "outletId": {
+    "$oid": "6999fd65bbb2afff808bb3c8"
+  },
+  "categoryId": {
+    "$oid": "69a41675e97cb92b6463c1b8"
+  },
+  "name": "Classic Indian Thali",
+  "description": "a tasty indian meal",
+  "imageUrl": "https://kiosk-by-ankita.s3.ap-south-1.amazonaws.com/tenant/6999fcd3bbb2afff808bb3b5/6999fd65bbb2afff808bb3c8/menu/1773401616308-thali.jpeg",
+  "price": 450,
+  "stockQuantity": 0,
+  "inventoryMode": "RECIPE",
+  "serviceType": "BOTH",
+  "offers": [
+    {
+      "type": "DISCOUNT",
+      "discountPercent": 10
+    },
+    {
+      "type": "BOGO"
+    },
+    {
+      "type": "BESTSELLER"
+    },
+    {
+      "type": "LIMITED"
+    },
+    {
+      "type": "NEW"
+    }
+  ],
+  "customizationItemIds": [
+    {
+      "$oid": "69a9511f952dab59c1f9e5fd"
+    },
+    {
+      "$oid": "69b2aaa096ba95eeb3ce8c95"
+    },
+    {
+      "$oid": "69b3c6721f247c2fce7b39a8"
+    }
+  ],
+  "isActive": true,
+  "isDeleted": false,
+  "createdAt": {
+    "$date": "2026-03-13T11:33:36.898Z"
+  },
+  "updatedAt": {
+    "$date": "2026-03-13T11:33:36.898Z"
+  },
+  "__v": 0
+}

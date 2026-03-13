@@ -29,7 +29,6 @@ export default function TrendingStrip({
   cart,
   onAddToCart,
 }: TrendingStripProps) {
-  // Don't render the strip at all if not loading and no results
   if (!isLoading && items.length === 0) return null;
 
   return (
