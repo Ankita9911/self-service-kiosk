@@ -19,6 +19,7 @@ import { attachTenant } from "../core/tenancy/tenancy.middleware.js";
 
 import uploadRoutes from "../modules/upload/upload.routes.js";
 import analyticsRoutes from "../modules/analytics/analytics.routes.js";
+import recommendationRoutes from "../modules/recommendations/recommendation.routes.js";
 
 const router = express.Router();
 router.get(
@@ -50,5 +51,6 @@ router.use("/analytics", analyticsRoutes);
 router.use("/ingredients", ingredientRoutes);
 router.use("/recipes", recipeRoutes);
 router.use("/stock-transactions", stockTransactionRoutes);
+router.use("/kiosk/recommendations", recommendationRoutes);
 
 export default router;

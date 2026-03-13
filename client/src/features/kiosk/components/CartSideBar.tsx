@@ -2,6 +2,8 @@ import { motion } from "framer-motion";
 import { ShoppingBag, X } from "lucide-react";
 import CartPanel from "./CartPanel";
 import type { CartItem } from "../types/cartItem.types";
+import type { RecommendedItem, CompleteMealResult } from "../services/recommendation.service";
+import type { MenuItem } from "../types/menu.types";
 
 interface CartSidebarProps {
   isCartOpen: boolean;
@@ -13,6 +15,13 @@ interface CartSidebarProps {
   onRemoveItem: (id: string) => void;
   onCheckout: () => void;
   isProcessing: boolean;
+  // Recommendation props (optional — gracefully omitted when not ready)
+  frequentlyBoughtTogether?: RecommendedItem[];
+  isFbtLoading?: boolean;
+  completeMeal?: CompleteMealResult;
+  isMealLoading?: boolean;
+  onAddRecommendedItem?: (item: MenuItem) => void;
+  onAddComboToCart?: (combo: { _id: string; name: string; comboPrice: number }) => void;
 }
 
 export default function CartSidebar({
@@ -25,6 +34,12 @@ export default function CartSidebar({
   onRemoveItem,
   onCheckout,
   isProcessing,
+  frequentlyBoughtTogether,
+  isFbtLoading,
+  completeMeal,
+  isMealLoading,
+  onAddRecommendedItem,
+  onAddComboToCart,
 }: CartSidebarProps) {
   return (
     <motion.aside
@@ -35,7 +50,8 @@ export default function CartSidebar({
       style={{ minWidth: 0 }}
     >
       <div className="w-96 min-w-96 flex flex-col h-full">
-        <div className=" py-8 p-5 border-b-4 border-orange-100 bg-gradient-to-br from-orange-500 via-orange-600 to-orange-500 relative overflow-hidden">
+        {/* Header */}
+        <div className="py-8 p-5 border-b-4 border-orange-100 bg-gradient-to-br from-orange-500 via-orange-600 to-orange-500 relative overflow-hidden">
           <div className="relative z-10 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="p-2.5 bg-white/20 backdrop-blur-sm rounded-xl">
@@ -59,6 +75,7 @@ export default function CartSidebar({
           </div>
         </div>
 
+        {/* Body */}
         <div className="flex-1 overflow-hidden">
           <CartPanel
             cart={cart}
@@ -67,6 +84,12 @@ export default function CartSidebar({
             onRemoveItem={onRemoveItem}
             onPlaceOrder={onCheckout}
             isProcessing={isProcessing}
+            frequentlyBoughtTogether={frequentlyBoughtTogether}
+            isFbtLoading={isFbtLoading}
+            completeMeal={completeMeal}
+            isMealLoading={isMealLoading}
+            onAddRecommendedItem={onAddRecommendedItem}
+            onAddComboToCart={onAddComboToCart}
           />
         </div>
       </div>

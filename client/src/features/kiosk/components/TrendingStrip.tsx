@@ -1,0 +1,150 @@
+import { motion, AnimatePresence } from "framer-motion";
+import { Flame, Plus, ImageOff } from "lucide-react";
+import type { RecommendedItem } from "../services/recommendation.service";
+import type { CartItem } from "../types/cartItem.types";
+import type { MenuItem } from "../types/menu.types";
+
+interface TrendingStripProps {
+  items: RecommendedItem[];
+  isLoading: boolean;
+  cart: CartItem[];
+  onAddToCart: (item: MenuItem) => void;
+}
+
+function TrendingCardSkeleton() {
+  return (
+    <div className="flex-shrink-0 w-36 bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 animate-pulse">
+      <div className="h-24 bg-gray-100" />
+      <div className="p-3 space-y-2">
+        <div className="h-3 bg-gray-100 rounded-full w-4/5" />
+        <div className="h-3 bg-gray-100 rounded-full w-2/5" />
+      </div>
+    </div>
+  );
+}
+
+export default function TrendingStrip({
+  items,
+  isLoading,
+  cart,
+  onAddToCart,
+}: TrendingStripProps) {
+  // Don't render the strip at all if not loading and no results
+  if (!isLoading && items.length === 0) return null;
+
+  return (
+    <div className="bg-white border-b border-gray-100 px-6 py-3">
+      {/* Header */}
+      <div className="flex items-center gap-2 mb-3">
+        <div className="flex items-center gap-1.5 bg-orange-50 px-3 py-1 rounded-full">
+          <Flame className="w-3.5 h-3.5 text-orange-500" strokeWidth={2.5} />
+          <span
+            className="text-xs font-black text-orange-600 tracking-wide uppercase"
+            style={{ fontFamily: "var(--font-display)" }}
+          >
+            Trending Now
+          </span>
+        </div>
+        <div className="h-px flex-1 bg-gradient-to-r from-orange-100 to-transparent" />
+      </div>
+
+      {/* Scrollable strip */}
+      <div className="flex gap-3 overflow-x-auto scrollbar-none pb-1">
+        <AnimatePresence mode="popLayout">
+          {isLoading
+            ? Array.from({ length: 5 }).map((_, i) => (
+                <TrendingCardSkeleton key={`skel-${i}`} />
+              ))
+            : items.map((item, index) => {
+                const inCart = cart.some((c) => c.itemId === String(item._id));
+                const cartQty = cart
+                  .filter((c) => c.itemId === String(item._id))
+                  .reduce((sum, c) => sum + c.quantity, 0);
+
+                const discountOffer = (item.offers ?? []).find(
+                  (o) => o.type === "DISCOUNT" && o.discountPercent
+                );
+                const effectivePrice = discountOffer?.discountPercent
+                  ? item.price * (1 - discountOffer.discountPercent / 100)
+                  : item.price;
+
+                return (
+                  <motion.div
+                    key={String(item._id)}
+                    layout
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, scale: 0.9 }}
+                    transition={{ delay: index * 0.05, duration: 0.3 }}
+                    className="flex-shrink-0 w-36 bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-lg border-2 border-transparent hover:border-orange-200 transition-all cursor-pointer group"
+                    onClick={() => onAddToCart(item as unknown as MenuItem)}
+                  >
+                    {/* Image */}
+                    <div className="relative h-24 bg-gradient-to-br from-orange-50 to-amber-50 overflow-hidden">
+                      {item.imageUrl ? (
+                        <img
+                          src={item.imageUrl}
+                          alt={item.name}
+                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <ImageOff className="w-8 h-8 text-gray-300" strokeWidth={1.5} />
+                        </div>
+                      )}
+
+                      {/* Rank badge */}
+                      {index < 3 && (
+                        <div className="absolute top-1.5 left-1.5 w-5 h-5 bg-orange-500 rounded-full flex items-center justify-center shadow-sm">
+                          <span className="text-[9px] font-black text-white">
+                            {index + 1}
+                          </span>
+                        </div>
+                      )}
+
+                      {/* In-cart indicator */}
+                      {inCart && (
+                        <div className="absolute top-1.5 right-1.5 bg-emerald-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full shadow-sm">
+                          ×{cartQty}
+                        </div>
+                      )}
+
+                      {/* Add overlay */}
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100">
+                        <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center shadow-lg">
+                          <Plus className="w-4 h-4 text-white" strokeWidth={3} />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Info */}
+                    <div className="p-2.5">
+                      <p
+                        className="text-xs font-bold text-gray-900 leading-tight truncate mb-1"
+                        style={{ fontFamily: "var(--font-display)" }}
+                      >
+                        {item.name}
+                      </p>
+                      <div className="flex items-center justify-between">
+                        <span
+                          className="text-sm font-black text-orange-600"
+                          style={{ fontFamily: "var(--font-display)" }}
+                        >
+                          ₹{effectivePrice.toFixed(0)}
+                        </span>
+                        {item.totalSold && (
+                          <span className="text-[9px] font-bold text-gray-400 flex items-center gap-0.5">
+                            <Flame className="w-2.5 h-2.5 text-orange-400" />
+                            {item.totalSold}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </motion.div>
+                );
+              })}
+        </AnimatePresence>
+      </div>
+    </div>
+  );
+}

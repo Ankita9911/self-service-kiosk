@@ -7,6 +7,7 @@ import { processQueue } from "@/shared/lib/syncEngine";
 import CategoryTabs from "../components/CategoryTabs";
 import MenuGrid from "../components/MenuGrid";
 import ComboGrid from "../components/ComboGrid";
+import TrendingStrip from "../components/TrendingStrip";
 import {
   CategoryTabsSkeleton,
   MenuGridSkeleton,
@@ -21,6 +22,7 @@ import { useKioskMenu } from "../hooks/usekioskMenu";
 import { useKioskCart } from "../hooks/useKioskCart";
 import { useKioskCheckout } from "../hooks/useKioskCheckout";
 import { useKioskForceLogout } from "../hooks/useKioskForceLogout";
+import { useRecommendations } from "../hooks/useRecommendations";
 import type { OfferType } from "../types/menu.types";
 import { getKioskToken } from "@/shared/lib/kioskSession";
 import type { CartItem } from "../types/cartItem.types";
@@ -28,7 +30,6 @@ import type { Combo, MenuCategory, MenuItem } from "../types/menu.types";
 
 const OFFER_CHIPS: { value: OfferType | null; label: string; emoji: string }[] =
   [
-    // { value: null, label: "All", emoji: "🍽️" },
     { value: "DISCOUNT", label: "Deals", emoji: "🏷️" },
     { value: "BOGO", label: "Buy 1 Get 1", emoji: "🎁" },
     { value: "BESTSELLER", label: "Best Seller", emoji: "⭐" },
@@ -87,6 +88,36 @@ export default function KioskPage() {
     handleConfirmOrder,
   } = useKioskCheckout(cart, setCart, loadMenu);
 
+  // ── Recommendations ──────────────────────────────────────────────────────
+  const {
+    trending,
+    isTrendingLoading,
+    frequentlyBoughtTogether,
+    isFbtLoading,
+    completeMeal,
+    isMealLoading,
+  } = useRecommendations(cart, menu);
+
+  // Handler to add a recommended item to cart (mirrors onAddToCart signature)
+  const handleAddRecommendedItem = (item: MenuItem) => {
+    handleAddToCart(item);
+  };
+
+  // Handler for combo upsell in "complete meal" section
+  const handleAddComboToCart = (combo: {
+    _id: string;
+    name: string;
+    comboPrice: number;
+  }) => {
+    handleAddToCart({
+      _id: combo._id,
+      name: combo.name,
+      price: combo.comboPrice,
+      comboPrice: combo.comboPrice,
+      stockQuantity: 999,
+    });
+  };
+
   useEffect(() => {
     processQueue();
   }, []);
@@ -118,11 +149,13 @@ export default function KioskPage() {
 
   return (
     <div className="h-screen flex flex-row bg-gray-50 overflow-hidden">
+      {/* ── Left sidebar: offer filter chips ── */}
       <div className="w-[104px] min-w-20 shrink-0 flex flex-col bg-white border-r border-gray-100 shadow-sm overflow-y-auto scrollbar-none">
         <div className="px-10 py-9.5 flex flex-col bg-white border-r border-gray-100 shadow-sm overflow-y-auto scrollbar-none ">
-          <button 
-          className="text-gray-400 hover:text-orange-500 hover:bg-orange-50 transition-all active:scale-95"
-          onClick={() => navigate("/kiosk/order-type")}>
+          <button
+            className="text-gray-400 hover:text-orange-500 hover:bg-orange-50 transition-all active:scale-95"
+            onClick={() => navigate("/kiosk/order-type")}
+          >
             <ArrowLeft className="w-5 h-5" />
             <span className="text-[10px] font-bold">Back</span>
           </button>
@@ -151,7 +184,6 @@ export default function KioskPage() {
                 className="flex flex-col items-center focus:outline-none"
                 style={{ gap: "6px", minWidth: "72px" }}
               >
-                {/* Circle emoji */}
                 <div
                   style={{
                     width: "48px",
@@ -187,7 +219,6 @@ export default function KioskPage() {
                   </div>
                 </div>
 
-                {/* Label */}
                 <span
                   style={{
                     fontSize: "10px",
@@ -207,7 +238,6 @@ export default function KioskPage() {
                   {label}
                 </span>
 
-                {/* Count */}
                 {count !== undefined && count > 0 && (
                   <span
                     style={{
@@ -224,7 +254,6 @@ export default function KioskPage() {
                   </span>
                 )}
 
-                {/* Active underline indicator */}
                 <motion.div
                   style={{
                     width: isActive ? "20px" : "0px",
@@ -239,7 +268,6 @@ export default function KioskPage() {
           })}
         </div>
 
-        {/* Clear filter — only when an offer filter is active */}
         {offerFilter !== null && !isOnCombos && (
           <div className="px-2 pt-1 pb-4">
             <div className="h-px bg-gray-100 mb-2" />
@@ -254,8 +282,10 @@ export default function KioskPage() {
           </div>
         )}
       </div>
+
+      {/* ── Main content area ── */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        {/* Horizontal category tabs at the top */}
+        {/* Category tabs */}
         <div className="bg-white border-b border-gray-100 z-10 shadow-sm">
           {isLoading ? (
             <CategoryTabsSkeleton />
@@ -265,12 +295,21 @@ export default function KioskPage() {
               selectedCategory={selectedCategory}
               onCategoryChange={(id) => {
                 setSelectedCategory(id);
-                // clear offer filter when switching to combos
                 if (id === COMBOS_CATEGORY_ID) setOfferFilter(null);
               }}
             />
           )}
         </div>
+
+        {/* Trending strip — only shown on non-combo views */}
+        {!isOnCombos && !isLoading && (
+          <TrendingStrip
+            items={trending}
+            isLoading={isTrendingLoading}
+            cart={cart}
+            onAddToCart={handleAddRecommendedItem}
+          />
+        )}
 
         {/* Menu grid */}
         <main className="flex-1 overflow-y-auto scrollbar-hide scrollbar-thumb-orange-200 scrollbar-track-transparent">
@@ -317,6 +356,7 @@ export default function KioskPage() {
         )}
       </div>
 
+      {/* ── Cart sidebar with recommendations ── */}
       <CartSidebar
         isCartOpen={isCartOpen}
         cart={cart}
@@ -330,6 +370,12 @@ export default function KioskPage() {
         }}
         onCheckout={handleOpenCheckout}
         isProcessing={isProcessing}
+        frequentlyBoughtTogether={frequentlyBoughtTogether}
+        isFbtLoading={isFbtLoading}
+        completeMeal={completeMeal}
+        isMealLoading={isMealLoading}
+        onAddRecommendedItem={handleAddRecommendedItem}
+        onAddComboToCart={handleAddComboToCart}
       />
 
       <PaymentDialouge
@@ -359,6 +405,8 @@ export default function KioskPage() {
     </div>
   );
 }
+
+// ─── Cart reconciliation (unchanged from original) ────────────────────────────
 
 function reconcileCartWithCatalog(
   cart: CartItem[],
@@ -397,10 +445,7 @@ function reconcileCartWithCatalog(
         );
       }
 
-      nextCart.push({
-        ...cartItem,
-        price: nextPrice,
-      });
+      nextCart.push({ ...cartItem, price: nextPrice });
       continue;
     }
 
@@ -445,6 +490,7 @@ function reconcileCartWithCatalog(
 
     const effectiveStockLimit = Math.min(liveItem.stockQuantity, optionStockLimit);
     const reducedQuantity = Math.min(cartItem.quantity, effectiveStockLimit);
+
     if (reducedQuantity !== cartItem.quantity) {
       alerts.push(
         `${cartItem.name} quantity reduced from ${cartItem.quantity} to ${reducedQuantity} due to stock limits.`
@@ -452,6 +498,7 @@ function reconcileCartWithCatalog(
     }
 
     const firstOffer = liveItem.offers?.[0];
+
     if (liveItem.price !== cartItem.price) {
       alerts.push(
         `${cartItem.name} price changed: Rs ${cartItem.price.toFixed(2)} -> Rs ${liveItem.price.toFixed(2)}.`
@@ -487,7 +534,8 @@ function hasCartChanged(prev: CartItem[], next: CartItem[]): boolean {
       a.stockQuantity !== b.stockQuantity ||
       a.offerType !== b.offerType ||
       a.discountPercent !== b.discountPercent ||
-      JSON.stringify(a.selectedCustomizations || []) !== JSON.stringify(b.selectedCustomizations || [])
+      JSON.stringify(a.selectedCustomizations || []) !==
+        JSON.stringify(b.selectedCustomizations || [])
     ) {
       return true;
     }
