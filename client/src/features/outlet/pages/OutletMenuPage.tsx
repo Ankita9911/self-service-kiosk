@@ -417,25 +417,6 @@ export default function OutletMenuPage() {
       {/* ── Toolbar: filter + search + layout toggle ── */}
       {activeTab === "items" && (
         <div className="flex flex-col sm:flex-row sm:items-center gap-3 min-w-0">
-        <CategoryFilter
-          categories={categories}
-          selectedCategoryId={selectedCategoryId}
-          onSelect={(id) => { setSelectedCategoryId(id); resetToFirstPage(); }}
-          onEditCategory={(category) => {
-            setEditingCategoryId(category._id);
-            setEditCatForm({
-              name: category.name,
-              description: category.description ?? "",
-              imageFile: null,
-              imageUrl: category.imageUrl,
-            });
-          }}
-          onDeleteCategory={async (id) => {
-            await removeCategory(id);
-            if (selectedCategoryId === id) setSelectedCategoryId("ALL");
-          }}
-        />
-
         <div className="flex items-center gap-2 flex-1 min-w-0">
           {/* Search */}
           <div className="relative flex-1 min-w-0">
@@ -513,6 +494,25 @@ export default function OutletMenuPage() {
         </div>
         </div>
       )}
+
+      <CategoryFilter
+          categories={categories}
+          selectedCategoryId={selectedCategoryId}
+          onSelect={(id) => { setSelectedCategoryId(id); resetToFirstPage(); }}
+          onEditCategory={(category) => {
+            setEditingCategoryId(category._id);
+            setEditCatForm({
+              name: category.name,
+              description: category.description ?? "",
+              imageFile: null,
+              imageUrl: category.imageUrl,
+            });
+          }}
+          onDeleteCategory={async (id) => {
+            await removeCategory(id);
+            if (selectedCategoryId === id) setSelectedCategoryId("ALL");
+          }}
+        />
 
       {/* ── Content ── */}
       {activeTab === "items" && (loading ? (

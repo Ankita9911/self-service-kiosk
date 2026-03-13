@@ -53,7 +53,7 @@ export function CategoryFilter({ categories, selectedCategoryId, onSelect, onEdi
     <div className="flex items-center gap-2 min-w-0">
       {/* ── tab strip — naturally sized, scrolls on overflow ── */}
       <div className="flex-1 min-w-0 overflow-x-auto scrollbar-hide">
-        <div className="flex items-center gap-1 bg-white dark:bg-[#161920] border border-slate-100 dark:border-white/8 rounded-xl p-1 w-fit">
+        <div className="flex items-center gap-1 bg-white dark:bg-[#161920] border border-slate-100 dark:border-white/8 rounded-xl p-1">
               {tabItems.map((c) => (
             <button
               key={c._id}
