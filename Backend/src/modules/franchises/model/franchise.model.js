@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { FRANCHISE_STATUS } from "./franchise.constants.js";
+import { FRANCHISE_STATUS } from "../constant/franchise.constants.js";
 
 const { Schema } = mongoose;
 

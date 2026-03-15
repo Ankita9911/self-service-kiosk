@@ -1,18 +1,18 @@
-import Franchise from "./franchise.model.js";
-import User from "../users/user.model.js";
-import Outlet from "../outlets/outlet.model.js";
-import Device from "../devices/model/device.model.js";
+import Franchise from "../model/franchise.model.js";
+import User from "../../users/user.model.js";
+import Outlet from "../../outlets/outlet.model.js";
+import Device from "../../devices/model/device.model.js";
 import {
   forceLogout,
   broadcastRefresh,
-} from "../../realtime/realtime.manager.js";
-import AppError from "../../shared/errors/AppError.js";
+} from "../../../realtime/realtime.manager.js";
+import AppError from "../../../shared/errors/AppError.js";
 import {
   toBoundedLimit,
   encodeCursor,
   decodeCursor,
-} from "../../shared/utils/pagination.js";
-import { FRANCHISE_STATUS } from "./franchise.constants.js";
+} from "../../../shared/utils/pagination.js";
+import { FRANCHISE_STATUS } from "../constant/franchise.constants.js";
 
 const DEFAULT_LIMIT = 10;
 

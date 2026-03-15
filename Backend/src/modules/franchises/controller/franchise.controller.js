@@ -5,9 +5,9 @@ import {
   updateFranchise,
   deleteFranchise,
   setFranchiseStatus,
-} from "./franchise.service.js";
-import { sendSuccess } from "../../shared/utils/response.js";
-import { asyncHandler } from "../../shared/utils/asyncHandler.js";
+} from "../service/franchise.service.js";
+import { sendSuccess } from "../../../shared/utils/response.js";
+import { asyncHandler } from "../../../shared/utils/asyncHandler.js";
 
 export const createFranchiseController = asyncHandler(async (req, res) => {
   const franchise = await createFranchise(req.body, req.user);

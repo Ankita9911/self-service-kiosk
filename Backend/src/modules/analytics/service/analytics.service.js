@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import Order from "../../orders/order.model.js";
 import User from "../../users/user.model.js";
-import Franchise from "../../franchises/franchise.model.js";
+import Franchise from "../../franchises/model/franchise.model.js";
 import Outlet from "../../outlets/outlet.model.js";
 import Device from "../../devices/model/device.model.js";
 import { getRedisClient } from "../../../core/cache/redis.client.js";

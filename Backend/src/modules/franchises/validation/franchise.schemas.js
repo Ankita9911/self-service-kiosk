@@ -2,7 +2,7 @@ import { z } from "zod";
 import {
   emailSchema,
   statusSchema,
-} from "../../shared/validation/common.schemas.js";
+} from "../../../shared/validation/common.schemas.js";
 
 export const createFranchiseSchema = z.object({
   name: z.string({ required_error: "name is required" }).min(1).trim(),

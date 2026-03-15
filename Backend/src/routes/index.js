@@ -1,7 +1,7 @@
 import express from "express";
 
 import authRoutes from "../core/auth/auth.routes.js";
-import franchiseRoutes from "../modules/franchises/franchise.routes.js";
+import franchiseRoutes from "../modules/franchises/route/franchise.routes.js";
 import outletRoutes from "../modules/outlets/outlet.routes.js";
 import menuRoutes from "../modules/menu/menu.routes.js";
 import comboRoutes from "../modules/menu/combo.routes.js";
