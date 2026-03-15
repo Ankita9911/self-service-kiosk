@@ -13,7 +13,7 @@ import ingredientRoutes from "../modules/ingredients/ingredient.routes.js";
 import recipeRoutes from "../modules/recipes/recipe.routes.js";
 import stockTransactionRoutes from "../modules/stockTransactions/stockTransaction.routes.js";
 import uploadRoutes from "../modules/upload/upload.routes.js";
-import analyticsRoutes from "../modules/analytics/analytics.routes.js";
+import analyticsRoutes from "../modules/analytics/routes/analytics.routes.js";
 import { authenticate } from "../core/auth/auth.middleware.js";
 import { attachTenant } from "../core/tenancy/tenancy.middleware.js";
 
