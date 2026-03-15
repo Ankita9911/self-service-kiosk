@@ -4,7 +4,7 @@ import ProtectedRoute from "./ProtectedRoute";
 import KioskProtectedRoute from "./KioskProtectedRoute";
 import { PageLoader } from "./PageLoader";
 import AppLayout from "@/shared/components/layout/AppLayout";
-import { PERMISSIONS } from "@/shared/lib/permissions";
+import { PERMISSIONS } from "@/shared/constants/permissions";
 
 const Login = lazy(() => import("@/features/auth/pages/Login"));
 const ForceReset = lazy(() => import("@/features/auth/pages/ForceReset").then(m => ({ default: m.ForceReset })));

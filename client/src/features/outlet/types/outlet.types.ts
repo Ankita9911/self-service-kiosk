@@ -1,3 +1,5 @@
+export type { ServiceType, InventoryMode, OfferType, ItemOffer } from "@/shared/types/menu.types";
+
 export interface OutletAddress {
   line1?:   string;
   city?:    string;
@@ -17,13 +19,8 @@ export interface Outlet {
   updatedAt: string;
 }
 
-export type ServiceType = "DINE_IN" | "TAKE_AWAY" | "BOTH";
-export type InventoryMode = "RECIPE" | "DIRECT";
-
-export type OfferType = "DISCOUNT" | "BOGO" | "NEW" | "BESTSELLER" | "LIMITED";
-
 export interface ItemOfferForm {
-  type: OfferType;
+  type: import("@/shared/types/menu.types").OfferType;
   discountPercent?: number;
   label?: string;
 }
@@ -36,8 +33,8 @@ export type ItemFormState = {
   imageFile: File | null;
   price: string;
   stockQuantity: string;
-  inventoryMode: InventoryMode;
-  serviceType: ServiceType;
+  inventoryMode: import("@/shared/types/menu.types").InventoryMode;
+  serviceType: import("@/shared/types/menu.types").ServiceType;
   offers: ItemOfferForm[];
   customizationItemIds: string[];
 };

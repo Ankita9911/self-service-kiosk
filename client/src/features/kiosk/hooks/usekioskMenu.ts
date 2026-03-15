@@ -62,7 +62,6 @@ export function useKioskMenu() {
     loadMenu();
   }, [loadMenu]);
 
-  // Silently reload whenever the queue worker finishes a menu change
   useMenuSocket(() => loadMenu(true));
 
   const filteredMenu: MenuCategory[] = menu
@@ -81,12 +80,9 @@ export function useKioskMenu() {
   const rawItems =
     selectedCategory === ALL_CATEGORY_ID
       ? allItems
-      : menu.find((c) => c._id === selectedCategory)?.items
-          ? filterByOrderType(menu.find((c) => c._id === selectedCategory)!.items || [])
-          : [];
+      : filterByOrderType(menu.find((c) => c._id === selectedCategory)?.items || []);
 
   const selectedItems = filterByOffer(rawItems);
-
   const visibleCombos = filterByOrderTypeCombo(combos);
   const hasActiveCombos = visibleCombos.length > 0;
 
@@ -94,21 +90,12 @@ export function useKioskMenu() {
     ...(hasActiveCombos
       ? [{ _id: COMBOS_CATEGORY_ID, name: "Combos", items: visibleCombos as any } as MenuCategory]
       : []),
-    {
-      _id: ALL_CATEGORY_ID,
-      name: "All",
-      items: allItems,
-    } as MenuCategory,
+    { _id: ALL_CATEGORY_ID, name: "All", items: allItems } as MenuCategory,
     ...filteredMenu,
   ];
 
-  // Compute offer counts for filter strip
   const offerCounts: Record<OfferType, number> = {
-    DISCOUNT: 0,
-    BOGO: 0,
-    NEW: 0,
-    BESTSELLER: 0,
-    LIMITED: 0,
+    DISCOUNT: 0, BOGO: 0, NEW: 0, BESTSELLER: 0, LIMITED: 0,
   };
   allItems.forEach((item) => {
     (item.offers ?? []).forEach((o: any) => {

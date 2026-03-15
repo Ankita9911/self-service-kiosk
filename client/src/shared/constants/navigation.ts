@@ -10,7 +10,7 @@ import {
   BookOpen,
   ArrowUpDown,
 } from "lucide-react";
-import { PERMISSIONS } from "@/shared/lib/permissions";
+import { PERMISSIONS } from "@/shared/constants/permissions";
 
 export const NAV_ITEMS = [
   {

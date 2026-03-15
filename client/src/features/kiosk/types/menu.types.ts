@@ -1,10 +1,4 @@
-export type OfferType = "DISCOUNT" | "BOGO" | "NEW" | "BESTSELLER" | "LIMITED";
-
-export interface ItemOffer {
-  type: OfferType;
-  discountPercent?: number;
-  label?: string;
-}
+export type { OfferType, ItemOffer, ServiceType, InventoryMode } from "@/shared/types/menu.types";
 
 export interface Category {
   _id: string;
@@ -23,10 +17,10 @@ export interface MenuItem {
   imageUrl?: string;
   price: number;
   stockQuantity: number;
-  inventoryMode?: "RECIPE" | "DIRECT";
+  inventoryMode?: import("@/shared/types/menu.types").InventoryMode;
   isActive: boolean;
-  serviceType?: "DINE_IN" | "TAKE_AWAY" | "BOTH";
-  offers?: ItemOffer[];
+  serviceType?: import("@/shared/types/menu.types").ServiceType;
+  offers?: import("@/shared/types/menu.types").ItemOffer[];
   stockSource?: "MENU" | "RECIPE";
   stockStatus?: "IN_STOCK" | "LOW_STOCK" | "OUT_OF_STOCK" | "NO_RECIPE";
   availableQuantity?: number | null;
@@ -61,6 +55,6 @@ export interface Combo {
   items: ComboItem[];
   originalPrice: number;
   comboPrice: number;
-  serviceType: "DINE_IN" | "TAKE_AWAY" | "BOTH";
+  serviceType: import("@/shared/types/menu.types").ServiceType;
   isActive: boolean;
 }

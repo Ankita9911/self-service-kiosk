@@ -13,8 +13,8 @@ export function usePickup() {
       const data = await getOrders(["IN_KITCHEN", "READY"]);
       setOrders(data);
       setLastUpdated(new Date());
-    } catch (err) {
-      console.error("Failed to fetch orders", err);
+    } catch {
+      // axios interceptor handles error toasts
     }
   }, []);
 
@@ -25,7 +25,7 @@ export function usePickup() {
   }, [fetchOrders]);
 
   const handleNewOrder = useCallback((_order: Order) => {
-    // Pickup doesn't handle CREATED orders//todo->bad me 
+    // Pickup only shows IN_KITCHEN and READY orders — new CREATED orders are ignored
   }, []);
 
   const handleStatusUpdated = useCallback(
@@ -35,11 +35,7 @@ export function usePickup() {
       } else if (status === "READY" || status === "IN_KITCHEN") {
         setOrders((prev) => {
           const exists = prev.find((o) => o._id === orderId);
-          if (exists) {
-            return prev.map((o) =>
-              o._id === orderId ? { ...o, status } : o
-            );
-          }
+          if (exists) return prev.map((o) => (o._id === orderId ? { ...o, status } : o));
           return [order, ...prev];
         });
       } else {
@@ -56,8 +52,8 @@ export function usePickup() {
     try {
       await updateOrderStatus(order._id, "PICKED_UP");
       setOrders((prev) => prev.filter((o) => o._id !== order._id));
-    } catch (err) {
-      console.error("Pickup failed", err);
+    } catch {
+      // axios interceptor handles error toasts
     } finally {
       setLoadingIds((prev) => {
         const next = new Set(prev);
