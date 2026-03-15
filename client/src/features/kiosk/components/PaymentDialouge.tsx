@@ -1,10 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  ChevronLeft,
-  CreditCard,
-  Banknote,
-  Smartphone,
-} from "lucide-react";
+import { ChevronLeft, CreditCard, Banknote, Smartphone } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
 import {
   Dialog,

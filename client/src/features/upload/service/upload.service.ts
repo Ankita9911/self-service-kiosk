@@ -10,7 +10,7 @@ export interface UploadResponse {
 export async function getUploadUrl(
   file: File,
   folder: string,
-  outletId?: string
+  outletId?: string,
 ): Promise<UploadResponse> {
   const response = await axiosInstance.post<{ data: UploadResponse }>(
     "/upload",
@@ -19,7 +19,7 @@ export async function getUploadUrl(
       fileType: file.type,
       folder,
       ...(outletId && { outletId }),
-    }
+    },
   );
 
   return response.data.data;
@@ -27,7 +27,7 @@ export async function getUploadUrl(
 
 export async function uploadFileToS3(
   uploadUrl: string,
-  file: File
+  file: File,
 ): Promise<void> {
   await axios.put(uploadUrl, file, {
     headers: {

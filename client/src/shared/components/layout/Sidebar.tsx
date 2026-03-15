@@ -1,7 +1,13 @@
 import { NavLink, useNavigate } from "react-router-dom";
 import { NAV_ITEMS } from "@/shared/constants/navigation";
 import { usePermission } from "@/shared/hooks/usePermissions";
-import { ChefHat, PanelLeftClose, PanelLeftOpen, Search, X } from "lucide-react";
+import {
+  ChefHat,
+  PanelLeftClose,
+  PanelLeftOpen,
+  Search,
+  X,
+} from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 
 interface NavItem {
@@ -56,12 +62,11 @@ export default function Sidebar({ collapsed, onCollapseChange }: SidebarProps) {
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   const visibleItems = (NAV_ITEMS as NavItem[]).filter(
-    (item) => !item.permission || hasPermission(item.permission)
+    (item) => !item.permission || hasPermission(item.permission),
   );
 
   const groups = buildGroups(visibleItems);
 
- 
   useEffect(() => {
     if (!searchQuery.trim()) {
       setSearchResults([]);
@@ -70,13 +75,12 @@ export default function Sidebar({ collapsed, onCollapseChange }: SidebarProps) {
     }
     const q = searchQuery.toLowerCase();
     const results = visibleItems.filter((item) =>
-      item.label.toLowerCase().includes(q)
+      item.label.toLowerCase().includes(q),
     );
     setSearchResults(results);
     setActiveResultIdx(0);
   }, [searchQuery]);
 
-  
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === "k") {
@@ -125,7 +129,6 @@ export default function Sidebar({ collapsed, onCollapseChange }: SidebarProps) {
         z-40 shrink-0
       `}
     >
-     
       <div className="h-16 flex items-center px-3.5 border-b border-slate-100 dark:border-white/[0.06] gap-2.5 shrink-0">
         <div className="h-8 w-8 rounded-lg bg-indigo-600 flex items-center justify-center shadow-sm shadow-indigo-200 dark:shadow-indigo-900/50 shrink-0">
           <ChefHat className="w-4 h-4 text-white" strokeWidth={2.2} />
@@ -142,7 +145,6 @@ export default function Sidebar({ collapsed, onCollapseChange }: SidebarProps) {
         )}
       </div>
 
-     
       {!collapsed && (
         <div className="px-3 pt-3 pb-1 shrink-0">
           <div className="relative">
@@ -170,7 +172,10 @@ export default function Sidebar({ collapsed, onCollapseChange }: SidebarProps) {
             />
             {searchQuery ? (
               <button
-                onClick={() => { setSearchQuery(""); setSearchOpen(false); }}
+                onClick={() => {
+                  setSearchQuery("");
+                  setSearchOpen(false);
+                }}
                 className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition"
               >
                 <X className="w-3.5 h-3.5" />
@@ -182,7 +187,6 @@ export default function Sidebar({ collapsed, onCollapseChange }: SidebarProps) {
             )}
           </div>
 
-         
           {searchOpen && searchQuery && (
             <div className="mt-1.5 bg-white dark:bg-[#1a1d26] border border-slate-100 dark:border-white/[0.08] rounded-xl shadow-xl shadow-slate-200/60 dark:shadow-black/30 overflow-hidden z-50">
               {searchResults.length === 0 ? (
@@ -199,13 +203,19 @@ export default function Sidebar({ collapsed, onCollapseChange }: SidebarProps) {
                         onClick={() => handleSearchResultClick(item.path)}
                         className={`
                           w-full flex items-center gap-3 px-3 py-2.5 text-[12.5px] font-medium text-left transition
-                          ${i === activeResultIdx
-                            ? "bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400"
-                            : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/[0.04]"
+                          ${
+                            i === activeResultIdx
+                              ? "bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400"
+                              : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/[0.04]"
                           }
                         `}
                       >
-                        {Icon && <Icon className="w-3.5 h-3.5 shrink-0" strokeWidth={1.8} />}
+                        {Icon && (
+                          <Icon
+                            className="w-3.5 h-3.5 shrink-0"
+                            strokeWidth={1.8}
+                          />
+                        )}
                         {item.label}
                       </button>
                     );
@@ -220,7 +230,10 @@ export default function Sidebar({ collapsed, onCollapseChange }: SidebarProps) {
       {collapsed && (
         <div className="px-2 pt-3 pb-1 shrink-0">
           <button
-            onClick={() => { onCollapseChange(false); setTimeout(() => searchInputRef.current?.focus(), 150); }}
+            onClick={() => {
+              onCollapseChange(false);
+              setTimeout(() => searchInputRef.current?.focus(), 150);
+            }}
             className="w-full h-8 flex items-center justify-center rounded-lg bg-slate-50 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.08] text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition"
             title="Search (⌘K)"
           >
@@ -231,7 +244,14 @@ export default function Sidebar({ collapsed, onCollapseChange }: SidebarProps) {
 
       <nav className="flex-1 overflow-y-auto py-2 px-2 space-y-0.5 scrollbar-hide">
         {groups.map((group, gi) => (
-          <div key={gi} className={gi > 0 ? "mt-4 pt-3 border-t border-slate-100 dark:border-white/[0.05]" : ""}>
+          <div
+            key={gi}
+            className={
+              gi > 0
+                ? "mt-4 pt-3 border-t border-slate-100 dark:border-white/[0.05]"
+                : ""
+            }
+          >
             {group.label && !collapsed && (
               <p className="text-[9.5px] font-semibold text-slate-400 dark:text-slate-600 uppercase tracking-widest px-2.5 mb-1.5">
                 {group.label}
@@ -247,9 +267,10 @@ export default function Sidebar({ collapsed, onCollapseChange }: SidebarProps) {
                   className={({ isActive }) => `
                     group flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-[12.5px] font-medium
                     transition-all duration-150 relative
-                    ${isActive
-                      ? "bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400"
-                      : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-white/[0.04]"
+                    ${
+                      isActive
+                        ? "bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400"
+                        : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-white/[0.04]"
                     }
                     ${collapsed ? "justify-center" : ""}
                   `}
@@ -294,17 +315,20 @@ export default function Sidebar({ collapsed, onCollapseChange }: SidebarProps) {
         ))}
       </nav>
 
-    
       <div className="border-t border-slate-100 dark:border-white/[0.06] p-2 shrink-0">
         <button
           onClick={() => onCollapseChange(!collapsed)}
           className="w-full flex items-center justify-center gap-2 px-2.5 py-2 rounded-lg text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/[0.04] transition text-[12px] font-medium"
           title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
-          {collapsed
-            ? <PanelLeftOpen className="w-4 h-4" />
-            : <><PanelLeftClose className="w-4 h-4" /><span>Collapse</span></>
-          }
+          {collapsed ? (
+            <PanelLeftOpen className="w-4 h-4" />
+          ) : (
+            <>
+              <PanelLeftClose className="w-4 h-4" />
+              <span>Collapse</span>
+            </>
+          )}
         </button>
       </div>
     </aside>

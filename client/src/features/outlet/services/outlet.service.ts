@@ -1,5 +1,8 @@
 import axiosInstance from "@/shared/lib/axiosInstance";
-import type { Outlet, OutletAddress } from "@/features/outlet/types/outlet.types";
+import type {
+  Outlet,
+  OutletAddress,
+} from "@/features/outlet/types/outlet.types";
 
 export interface OutletFilterParams {
   search?: string;
@@ -28,12 +31,13 @@ export interface PaginatedOutletsResult {
 
 export async function getOutletsPage(
   params: OutletFilterParams = {},
-  options: CursorPageOptions = {}
+  options: CursorPageOptions = {},
 ): Promise<PaginatedOutletsResult> {
   const query: Record<string, string> = {};
   if (params.search?.trim()) query.search = params.search.trim();
   if (params.status && params.status !== "ALL") query.status = params.status;
-  if (params.franchiseId && params.franchiseId !== "ALL") query.franchiseId = params.franchiseId;
+  if (params.franchiseId && params.franchiseId !== "ALL")
+    query.franchiseId = params.franchiseId;
   if (options.cursor) query.cursor = options.cursor;
   if (typeof options.limit === "number") query.limit = String(options.limit);
 
@@ -66,12 +70,16 @@ export async function getOutletsPage(
     },
     stats: {
       totalItems: stats.totalItems ?? response.data.data.length,
-      activeItems: stats.activeItems ?? response.data.data.filter((o) => o.status === "ACTIVE").length,
+      activeItems:
+        stats.activeItems ??
+        response.data.data.filter((o) => o.status === "ACTIVE").length,
     },
   };
 }
 
-export async function getOutlets(params: OutletFilterParams = {}): Promise<Outlet[]> {
+export async function getOutlets(
+  params: OutletFilterParams = {},
+): Promise<Outlet[]> {
   const allOutlets: Outlet[] = [];
   let cursor: string | undefined;
 
@@ -95,11 +103,8 @@ export async function createOutlet(payload: {
   return response.data.data;
 }
 
-export async function updateOutlet(
-  id: string,
-  payload: Partial<Outlet>
-) {
-  const response = await axiosInstance.put(`/outlets/${id}`,payload);
+export async function updateOutlet(id: string, payload: Partial<Outlet>) {
+  const response = await axiosInstance.put(`/outlets/${id}`, payload);
 
   return response.data.data;
 }
@@ -111,17 +116,16 @@ export async function deleteOutlet(id: string) {
 
 export async function setOutletStatus(
   id: string,
-  status: "ACTIVE" | "INACTIVE"
+  status: "ACTIVE" | "INACTIVE",
 ): Promise<Outlet> {
-  const response = await axiosInstance.patch(`/outlets/${id}/status`, { status });
+  const response = await axiosInstance.patch(`/outlets/${id}/status`, {
+    status,
+  });
   return response.data.data;
 }
 
 export async function getOutletById(id: string) {
-  const response = await axiosInstance.post(
-    "/outlets/get-one",
-    { id }
-  );
+  const response = await axiosInstance.post("/outlets/get-one", { id });
 
   return response.data.data;
 }

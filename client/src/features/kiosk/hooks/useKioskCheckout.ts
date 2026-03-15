@@ -37,7 +37,9 @@ export interface UseKioskCheckoutReturn {
 }
 
 async function fetchOrderStatus(clientOrderId: string) {
-  const response = await kioskAxios.get(`/orders/client/${clientOrderId}/status`);
+  const response = await kioskAxios.get(
+    `/orders/client/${clientOrderId}/status`,
+  );
   return response.data.data as {
     clientOrderId: string;
     orderNumber: number | null;
@@ -49,7 +51,7 @@ async function fetchOrderStatus(clientOrderId: string) {
 function waitForOrderOutcome(
   clientOrderId: string,
   fallbackOrderNumber: number,
-  timeoutMs = 20000
+  timeoutMs = 20000,
 ): Promise<{ status: "SUCCESS"; orderNumber: number }> {
   const kioskToken = getKioskToken();
 
@@ -61,7 +63,7 @@ function waitForOrderOutcome(
       getSocketUrl(),
       kioskToken
         ? { auth: { token: kioskToken }, transports: ["websocket"] }
-        : { withCredentials: true, transports: ["websocket"] }
+        : { withCredentials: true, transports: ["websocket"] },
     );
 
     const cleanup = () => {
@@ -74,7 +76,10 @@ function waitForOrderOutcome(
       if (settled) return;
       settled = true;
       cleanup();
-      resolve({ status: "SUCCESS", orderNumber: resolvedOrderNumber ?? fallbackOrderNumber });
+      resolve({
+        status: "SUCCESS",
+        orderNumber: resolvedOrderNumber ?? fallbackOrderNumber,
+      });
     };
 
     const settleFailure = (message: string) => {
@@ -105,23 +110,34 @@ function waitForOrderOutcome(
       }
     };
 
-    socket.on("order:new", (order: { clientOrderId?: string; orderNumber?: number }) => {
-      if (order?.clientOrderId === clientOrderId) settleSuccess(order.orderNumber);
-    });
+    socket.on(
+      "order:new",
+      (order: { clientOrderId?: string; orderNumber?: number }) => {
+        if (order?.clientOrderId === clientOrderId)
+          settleSuccess(order.orderNumber);
+      },
+    );
 
-    socket.on("order:failed", (payload: { clientOrderId?: string; message?: string }) => {
-      if (payload?.clientOrderId === clientOrderId) {
-        settleFailure(payload.message || "Order could not be completed");
-      }
-    });
+    socket.on(
+      "order:failed",
+      (payload: { clientOrderId?: string; message?: string }) => {
+        if (payload?.clientOrderId === clientOrderId) {
+          settleFailure(payload.message || "Order could not be completed");
+        }
+      },
+    );
 
-    const pollInterval = setInterval(() => { void checkStatus(); }, 2000);
+    const pollInterval = setInterval(() => {
+      void checkStatus();
+    }, 2000);
 
     const timeoutHandle = setTimeout(() => {
       void (async () => {
         await checkStatus();
         if (!settled) {
-          const err = new Error("Unable to confirm your order. Please try again.") as CheckoutFailure;
+          const err = new Error(
+            "Unable to confirm your order. Please try again.",
+          ) as CheckoutFailure;
           err.kind = "ORDER_UNCONFIRMED";
           settled = true;
           cleanup();
@@ -137,7 +153,7 @@ function waitForOrderOutcome(
 export function useKioskCheckout(
   cart: CartItem[],
   setCart: React.Dispatch<React.SetStateAction<CartItem[]>>,
-  reloadMenu: (silent?: boolean) => Promise<void>
+  reloadMenu: (silent?: boolean) => Promise<void>,
 ): UseKioskCheckoutReturn {
   const [showPaymentDialog, setShowPaymentDialog] = useState(false);
   const [showProcessingDialog, setShowProcessingDialog] = useState(false);
@@ -150,14 +166,20 @@ export function useKioskCheckout(
   const [orderNumber, setOrderNumber] = useState("");
 
   const handleOpenCheckout = () => {
-    if (cart.length === 0) { toast.error("Cart is empty"); return; }
+    if (cart.length === 0) {
+      toast.error("Cart is empty");
+      return;
+    }
     setPaymentStep("SELECTION");
     setSelectedMethod("");
     setShowPaymentDialog(true);
   };
 
   const handleConfirmOrder = async () => {
-    if (!selectedMethod) { toast.error("Select a payment method"); return; }
+    if (!selectedMethod) {
+      toast.error("Select a payment method");
+      return;
+    }
 
     setIsProcessing(true);
     setShowPaymentDialog(false);
@@ -171,7 +193,9 @@ export function useKioskCheckout(
         items: cart.map((item) => ({
           itemId: item.itemId,
           quantity: item.quantity,
-          customizationItemIds: (item.selectedCustomizations || []).map((opt) => opt.itemId),
+          customizationItemIds: (item.selectedCustomizations || []).map(
+            (opt) => opt.itemId,
+          ),
         })),
       };
 
@@ -184,7 +208,9 @@ export function useKioskCheckout(
         };
 
         if (queuedOrder.status === "FAILED") {
-          const err = new Error(queuedOrder.errorMessage || "Order could not be completed") as CheckoutFailure;
+          const err = new Error(
+            queuedOrder.errorMessage || "Order could not be completed",
+          ) as CheckoutFailure;
           err.kind = "ORDER_FAILED";
           throw err;
         }
@@ -199,7 +225,10 @@ export function useKioskCheckout(
           return;
         }
 
-        const outcome = await waitForOrderOutcome(clientOrderId, queuedOrder.orderNumber);
+        const outcome = await waitForOrderOutcome(
+          clientOrderId,
+          queuedOrder.orderNumber,
+        );
         setShowProcessingDialog(false);
         setOrderNumber(outcome.orderNumber.toString());
         setShowSuccessDialog(true);
@@ -213,7 +242,10 @@ export function useKioskCheckout(
           kind?: CheckoutFailureKind;
         };
 
-        if (maybeError.kind === "ORDER_FAILED" || maybeError.kind === "ORDER_UNCONFIRMED") {
+        if (
+          maybeError.kind === "ORDER_FAILED" ||
+          maybeError.kind === "ORDER_UNCONFIRMED"
+        ) {
           setShowProcessingDialog(false);
           toast.error(maybeError.message || "Order failed");
           setFailedMessage(maybeError.message || "Order failed");
@@ -229,7 +261,8 @@ export function useKioskCheckout(
           setCart([]);
         } else {
           setShowProcessingDialog(false);
-          const serverMessage = maybeError.response?.data?.message || "Order failed";
+          const serverMessage =
+            maybeError.response?.data?.message || "Order failed";
           toast.error(serverMessage);
           setFailedMessage(serverMessage);
           setShowFailedDialog(true);
@@ -243,13 +276,18 @@ export function useKioskCheckout(
   };
 
   return {
-    showPaymentDialog, setShowPaymentDialog,
+    showPaymentDialog,
+    setShowPaymentDialog,
     showProcessingDialog,
-    showSuccessDialog, setShowSuccessDialog,
-    showFailedDialog, setShowFailedDialog,
+    showSuccessDialog,
+    setShowSuccessDialog,
+    showFailedDialog,
+    setShowFailedDialog,
     failedMessage,
-    paymentStep, setPaymentStep,
-    selectedMethod, setSelectedMethod,
+    paymentStep,
+    setPaymentStep,
+    selectedMethod,
+    setSelectedMethod,
     isProcessing,
     orderNumber,
     handleOpenCheckout,

@@ -21,7 +21,9 @@ export function LoginBranding() {
           <ChefHat className="w-5 h-5 text-white" />
         </div>
         <div>
-          <p className="text-white text-sm font-clash-bold leading-none">Hyper Kitchen</p>
+          <p className="text-white text-sm font-clash-bold leading-none">
+            Hyper Kitchen
+          </p>
           <p className="text-slate-500 text-[10px] font-satoshi tracking-widest uppercase mt-0.5">
             Management Suite
           </p>
@@ -45,14 +47,20 @@ export function LoginBranding() {
             </span>
           </h1>
           <p className="text-slate-400 font-satoshi text-[15px] leading-relaxed max-w-sm">
-            Manage franchises, oversee kiosk outlets, and monitor devices — all from one unified
-            command center.
+            Manage franchises, oversee kiosk outlets, and monitor devices — all
+            from one unified command center.
           </p>
         </div>
 
         <div className="flex flex-col gap-2.5 text-white">
-          <FeaturePill icon={ShieldCheck} text="Secure enterprise-grade access" />
-          <FeaturePill icon={BarChart3} text="Real-time outlet performance tracking" />
+          <FeaturePill
+            icon={ShieldCheck}
+            text="Secure enterprise-grade access"
+          />
+          <FeaturePill
+            icon={BarChart3}
+            text="Real-time outlet performance tracking"
+          />
           <FeaturePill icon={Utensils} text="Multi-franchise management" />
           <FeaturePill icon={Wifi} text="Live device monitoring" />
         </div>

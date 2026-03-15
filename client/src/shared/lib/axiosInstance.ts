@@ -23,12 +23,17 @@ axiosInstance.interceptors.response.use(
       const status = error.response.status;
       const errorCode = error.response.data?.code;
 
-      if (status === 401 || (status === 403 && errorCode === "ACCOUNT_INACTIVE")) {
+      if (
+        status === 401 ||
+        (status === 403 && errorCode === "ACCOUNT_INACTIVE")
+      ) {
         // Session is gone or account was deactivated — trigger logout once
         if (!isLoggingOut) {
           isLoggingOut = true;
           window.dispatchEvent(new Event("auth:logout"));
-          setTimeout(() => { isLoggingOut = false; }, 3000);
+          setTimeout(() => {
+            isLoggingOut = false;
+          }, 3000);
         }
         return Promise.reject(error);
       }
@@ -45,7 +50,7 @@ axiosInstance.interceptors.response.use(
     }
 
     return Promise.reject(error);
-  }
+  },
 );
 
 export default axiosInstance;

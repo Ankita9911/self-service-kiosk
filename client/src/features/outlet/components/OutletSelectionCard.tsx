@@ -1,9 +1,14 @@
 import { Store, ArrowRight, MapPin } from "lucide-react";
-import type { Outlet, OutletAddress } from "@/features/outlet/types/outlet.types";
+import type {
+  Outlet,
+  OutletAddress,
+} from "@/features/outlet/types/outlet.types";
 
 function formatAddress(addr?: OutletAddress): string {
   if (!addr) return "";
-  return [addr.line1, addr.city, addr.state, addr.pincode, addr.country].filter(Boolean).join(", ");
+  return [addr.line1, addr.city, addr.state, addr.pincode, addr.country]
+    .filter(Boolean)
+    .join(", ");
 }
 
 interface Props {
@@ -45,14 +50,18 @@ export function OutletSelectionCard({ outlet, onClick }: Props) {
         )}
 
         <div className="mt-2">
-          <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${
-            isActive
-              ? "bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20"
-              : "bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-white/8"
-          }`}>
-            <span className={`w-1.5 h-1.5 rounded-full ${
-              isActive ? "bg-emerald-500" : "bg-slate-400"
-            }`} />
+          <span
+            className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${
+              isActive
+                ? "bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20"
+                : "bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-white/8"
+            }`}
+          >
+            <span
+              className={`w-1.5 h-1.5 rounded-full ${
+                isActive ? "bg-emerald-500" : "bg-slate-400"
+              }`}
+            />
             {outlet.status ?? "Active"}
           </span>
         </div>

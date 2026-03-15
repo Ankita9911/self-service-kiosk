@@ -18,10 +18,7 @@ export default function ProtectedRoute({
   if (!user) {
     return <Navigate to="/login" replace />;
   }
-  if (
-    user.mustChangePassword &&
-    location.pathname !== "/force-reset"
-  ) {
+  if (user.mustChangePassword && location.pathname !== "/force-reset") {
     return <Navigate to="/force-reset" replace />;
   }
   if (requiredPermission && !hasPermission(requiredPermission)) {

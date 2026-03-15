@@ -5,26 +5,51 @@ import KioskProtectedRoute from "./KioskProtectedRoute";
 import { PageLoader } from "./PageLoader";
 import AppLayout from "@/shared/components/layout/AppLayout";
 import { PERMISSIONS } from "@/shared/constants/permissions";
-
 const Login = lazy(() => import("@/features/auth/pages/Login"));
-const ForceReset = lazy(() => import("@/features/auth/pages/ForceReset").then(m => ({ default: m.ForceReset })));
-const ResetPassword = lazy(() => import("@/features/auth/pages/ResetPassword").then(m => ({ default: m.ResetPassword })));
-const FranchisePage = lazy(() => import("@/features/franchise/pages/FranchisePage"));
+const ForceReset = lazy(() =>
+  import("@/features/auth/pages/ForceReset").then((m) => ({
+    default: m.ForceReset,
+  })),
+);
+const ResetPassword = lazy(() =>
+  import("@/features/auth/pages/ResetPassword").then((m) => ({
+    default: m.ResetPassword,
+  })),
+);
+const FranchisePage = lazy(
+  () => import("@/features/franchise/pages/FranchisePage"),
+);
 const OutletPage = lazy(() => import("@/features/outlet/pages/OutletPage"));
-const OutletMenuPage = lazy(() => import("@/features/outlet/pages/OutletMenuPage"));
-const MenuLandingPage = lazy(() => import("@/features/outlet/pages/MenuLandingPage"));
+const OutletMenuPage = lazy(
+  () => import("@/features/outlet/pages/OutletMenuPage"),
+);
+const MenuLandingPage = lazy(
+  () => import("@/features/outlet/pages/MenuLandingPage"),
+);
 const DevicePage = lazy(() => import("@/features/device/pages/Devicepage"));
 const KioskPage = lazy(() => import("@/features/kiosk/pages/KioskPage"));
-const KioskLoginPage = lazy(() => import("@/features/kiosk/pages/KioskLoginPage"));
-const KioskOrderTypePage = lazy(() => import("@/features/kiosk/pages/KioskOrderTypePage"));
-const KioskLandingPage = lazy(() => import("@/features/kiosk/pages/KioskLandingPage"));
+const KioskLoginPage = lazy(
+  () => import("@/features/kiosk/pages/KioskLoginPage"),
+);
+const KioskOrderTypePage = lazy(
+  () => import("@/features/kiosk/pages/KioskOrderTypePage"),
+);
+const KioskLandingPage = lazy(
+  () => import("@/features/kiosk/pages/KioskLandingPage"),
+);
 const KitchenPage = lazy(() => import("@/features/kitchen/pages/Kitchenpage"));
 const PickupPage = lazy(() => import("@/features/pickup/pages/PickupPage"));
 const UserPage = lazy(() => import("@/features/users/pages/UserPage"));
-const AnalyticsPage = lazy(() => import("@/features/analytics/pages/AnalyticsPage"));
-const IngredientsPage = lazy(() => import("@/features/ingredients/pages/IngredientsPage"));
+const AnalyticsPage = lazy(
+  () => import("@/features/analytics/pages/AnalyticsPage"),
+);
+const IngredientsPage = lazy(
+  () => import("@/features/ingredients/pages/IngredientsPage"),
+);
 const RecipesPage = lazy(() => import("@/features/recipes/pages/RecipesPage"));
-const StockTransactionsPage = lazy(() => import("@/features/stockTransactions/pages/StockTransactionsPage"));
+const StockTransactionsPage = lazy(
+  () => import("@/features/stockTransactions/pages/StockTransactionsPage"),
+);
 
 export default function AppRoutes() {
   return (
@@ -123,7 +148,9 @@ export default function AppRoutes() {
           <Route
             path="/ingredients"
             element={
-              <ProtectedRoute requiredPermission={PERMISSIONS.INGREDIENT_MANAGE}>
+              <ProtectedRoute
+                requiredPermission={PERMISSIONS.INGREDIENT_MANAGE}
+              >
                 <IngredientsPage />
               </ProtectedRoute>
             }
@@ -155,7 +182,9 @@ export default function AppRoutes() {
           <Route
             path="/kitchen"
             element={
-              <ProtectedRoute requiredPermission={PERMISSIONS.ORDERS_KITCHEN_VIEW}>
+              <ProtectedRoute
+                requiredPermission={PERMISSIONS.ORDERS_KITCHEN_VIEW}
+              >
                 <KitchenPage />
               </ProtectedRoute>
             }
@@ -163,7 +192,9 @@ export default function AppRoutes() {
           <Route
             path="/pickup"
             element={
-              <ProtectedRoute requiredPermission={PERMISSIONS.ORDERS_PICKUP_VIEW}>
+              <ProtectedRoute
+                requiredPermission={PERMISSIONS.ORDERS_PICKUP_VIEW}
+              >
                 <PickupPage />
               </ProtectedRoute>
             }

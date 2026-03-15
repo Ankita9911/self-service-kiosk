@@ -1,5 +1,8 @@
 import { useEffect, useState } from "react";
-import type { Ingredient, IngredientFormState } from "@/features/ingredients/types/ingredient.types";
+import type {
+  Ingredient,
+  IngredientFormState,
+} from "@/features/ingredients/types/ingredient.types";
 import { Loader2, Package, Pencil, Plus, X } from "lucide-react";
 import {
   Select,
@@ -23,10 +26,19 @@ interface Props {
   onClose: () => void;
   ingredient: Ingredient | null;
   onCreate: (data: IngredientFormState) => Promise<unknown>;
-  onUpdate: (id: string, data: Partial<IngredientFormState>) => Promise<unknown>;
+  onUpdate: (
+    id: string,
+    data: Partial<IngredientFormState>,
+  ) => Promise<unknown>;
 }
 
-export function IngredientFormModal({ open, onClose, ingredient, onCreate, onUpdate }: Props) {
+export function IngredientFormModal({
+  open,
+  onClose,
+  ingredient,
+  onCreate,
+  onUpdate,
+}: Props) {
   const isEdit = Boolean(ingredient);
 
   const [form, setForm] = useState<IngredientFormState>({
@@ -132,14 +144,23 @@ export function IngredientFormModal({ open, onClose, ingredient, onCreate, onUpd
             </label>
             <Select
               value={form.unit}
-              onValueChange={(v) => setForm((p) => ({ ...p, unit: v as IngredientFormState["unit"] }))}
+              onValueChange={(v) =>
+                setForm((p) => ({
+                  ...p,
+                  unit: v as IngredientFormState["unit"],
+                }))
+              }
             >
               <SelectTrigger className="h-10 rounded-xl bg-slate-50 dark:bg-white/4 border-slate-200 dark:border-white/8 text-sm text-slate-700 dark:text-slate-200 focus:ring-indigo-400/20">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent className="rounded-xl border-slate-100 dark:border-white/8 bg-white dark:bg-[#1a1d26]">
                 {UNITS.map((u) => (
-                  <SelectItem key={u.value} value={u.value} className="text-[13px] rounded-lg">
+                  <SelectItem
+                    key={u.value}
+                    value={u.value}
+                    className="text-[13px] rounded-lg"
+                  >
                     {u.label}
                   </SelectItem>
                 ))}
@@ -157,7 +178,12 @@ export function IngredientFormModal({ open, onClose, ingredient, onCreate, onUpd
                 type="number"
                 min={0}
                 value={form.currentStock}
-                onChange={(e) => setForm((p) => ({ ...p, currentStock: Number(e.target.value) }))}
+                onChange={(e) =>
+                  setForm((p) => ({
+                    ...p,
+                    currentStock: Number(e.target.value),
+                  }))
+                }
                 disabled={isEdit}
                 className="w-full h-10 px-3.5 rounded-xl border border-slate-200 dark:border-white/8 bg-slate-50 dark:bg-white/4 text-sm text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-400/15 focus:border-indigo-300 dark:focus:border-indigo-500/40 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
               />
@@ -170,7 +196,12 @@ export function IngredientFormModal({ open, onClose, ingredient, onCreate, onUpd
                 type="number"
                 min={0}
                 value={form.minThreshold}
-                onChange={(e) => setForm((p) => ({ ...p, minThreshold: Number(e.target.value) }))}
+                onChange={(e) =>
+                  setForm((p) => ({
+                    ...p,
+                    minThreshold: Number(e.target.value),
+                  }))
+                }
                 className="w-full h-10 px-3.5 rounded-xl border border-slate-200 dark:border-white/8 bg-slate-50 dark:bg-white/4 text-sm text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-400/15 focus:border-indigo-300 dark:focus:border-indigo-500/40 transition-all"
               />
             </div>
@@ -212,7 +243,13 @@ export function IngredientFormModal({ open, onClose, ingredient, onCreate, onUpd
             disabled={submitting || !form.name.trim()}
             className="flex-1 h-10 rounded-xl bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white text-[13px] font-semibold transition-all flex items-center justify-center gap-2 shadow-lg shadow-indigo-500/20"
           >
-            {submitting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : (isEdit ? "Save Changes" : "Add Ingredient")}
+            {submitting ? (
+              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+            ) : isEdit ? (
+              "Save Changes"
+            ) : (
+              "Add Ingredient"
+            )}
           </button>
         </div>
       </div>

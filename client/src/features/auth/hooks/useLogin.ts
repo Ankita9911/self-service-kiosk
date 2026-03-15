@@ -38,7 +38,7 @@ export function useLogin() {
     try {
       const { user, mustChangePassword } = await loginRequest(
         result.data.email,
-        password
+        password,
       );
       const enrichedUser = { ...user, mustChangePassword };
       setSession(enrichedUser);
@@ -51,9 +51,15 @@ export function useLogin() {
 
   return {
     email,
-    setEmail: (v: string) => { setEmail(v); clearFieldError("email"); },
+    setEmail: (v: string) => {
+      setEmail(v);
+      clearFieldError("email");
+    },
     password,
-    setPassword: (v: string) => { setPassword(v); clearFieldError("password"); },
+    setPassword: (v: string) => {
+      setPassword(v);
+      clearFieldError("password");
+    },
     loading,
     error,
     fieldErrors,

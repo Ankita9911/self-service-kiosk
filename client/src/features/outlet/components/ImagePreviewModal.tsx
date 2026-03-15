@@ -41,14 +41,20 @@ export function ImagePreviewModal({ src, alt, onClose }: Props) {
             className="w-full h-auto max-h-[80vh] object-contain bg-black"
           />
         </div>
-        <p className="mt-3 text-center text-sm text-white/60 font-medium">{alt}</p>
+        <p className="mt-3 text-center text-sm text-white/60 font-medium">
+          {alt}
+        </p>
       </div>
     </div>
   );
 }
 
 /** Small button used inside card/row hover overlays */
-export function ImageZoomButton({ onClick }: { onClick: (e: React.MouseEvent) => void }) {
+export function ImageZoomButton({
+  onClick,
+}: {
+  onClick: (e: React.MouseEvent) => void;
+}) {
   return (
     <button
       onClick={onClick}

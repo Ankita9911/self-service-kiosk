@@ -1,5 +1,12 @@
 import { useState, useEffect, useRef } from "react";
-import { MoreVertical, UtensilsCrossed, Pencil, Trash2, ToggleLeft, ToggleRight } from "lucide-react";
+import {
+  MoreVertical,
+  UtensilsCrossed,
+  Pencil,
+  Trash2,
+  ToggleLeft,
+  ToggleRight,
+} from "lucide-react";
 
 export function RowMenu({
   onEdit,
@@ -58,16 +65,21 @@ export function RowMenu({
       </button>
 
       {open && (
-        <div className={[
-          "absolute right-0 w-44 z-20 overflow-hidden",
-          "bg-white dark:bg-[#1a1d26]",
-          "border border-slate-100 dark:border-white/[0.08]",
-          "rounded-xl shadow-xl shadow-slate-200/50 dark:shadow-black/30",
-          openAbove ? "bottom-full mb-1.5" : "top-full mt-1.5",
-        ].join(" ")}>
+        <div
+          className={[
+            "absolute right-0 w-44 z-20 overflow-hidden",
+            "bg-white dark:bg-[#1a1d26]",
+            "border border-slate-100 dark:border-white/[0.08]",
+            "rounded-xl shadow-xl shadow-slate-200/50 dark:shadow-black/30",
+            openAbove ? "bottom-full mb-1.5" : "top-full mt-1.5",
+          ].join(" ")}
+        >
           {showMenu && (
             <button
-              onClick={() => { setOpen(false); onMenu?.(); }}
+              onClick={() => {
+                setOpen(false);
+                onMenu?.();
+              }}
               className="w-full flex items-center gap-3 px-4 py-2.5 text-[12.5px] text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/[0.04] transition"
             >
               <UtensilsCrossed className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
@@ -76,7 +88,10 @@ export function RowMenu({
           )}
           {showEdit && (
             <button
-              onClick={() => { setOpen(false); onEdit?.(); }}
+              onClick={() => {
+                setOpen(false);
+                onEdit?.();
+              }}
               className="w-full flex items-center gap-3 px-4 py-2.5 text-[12.5px] text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/[0.04] transition"
             >
               <Pencil className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
@@ -85,7 +100,10 @@ export function RowMenu({
           )}
           {showToggleStatus && (
             <button
-              onClick={() => { setOpen(false); onToggleStatus?.(); }}
+              onClick={() => {
+                setOpen(false);
+                onToggleStatus?.();
+              }}
               className="w-full flex items-center gap-3 px-4 py-2.5 text-[12.5px] text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/[0.04] transition"
             >
               {status === "ACTIVE" ? (
@@ -101,7 +119,10 @@ export function RowMenu({
           )}
           {showDelete && (
             <button
-              onClick={() => { setOpen(false); onDelete?.(); }}
+              onClick={() => {
+                setOpen(false);
+                onDelete?.();
+              }}
               className="w-full flex items-center gap-3 px-4 py-2.5 text-[12.5px] text-red-500 hover:bg-red-50 dark:hover:bg-red-500/[0.06] transition"
             >
               <Trash2 className="w-3.5 h-3.5" />

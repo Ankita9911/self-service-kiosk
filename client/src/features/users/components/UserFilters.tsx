@@ -40,14 +40,23 @@ interface UserFiltersProps {
 }
 
 export function UserFilters({
-  searchTerm, roleFilter, statusFilter,
-  franchiseFilter, outletFilter,
-  franchises, outlets,
-  isSuperAdmin, isFranchiseAdmin,
+  searchTerm,
+  roleFilter,
+  statusFilter,
+  franchiseFilter,
+  outletFilter,
+  franchises,
+  outlets,
+  isSuperAdmin,
+  isFranchiseAdmin,
   isFiltered,
-  onSearchChange, onRoleChange, onStatusChange,
-  onFranchiseChange, onOutletChange,
-  onClearFilters, onResetPage,
+  onSearchChange,
+  onRoleChange,
+  onStatusChange,
+  onFranchiseChange,
+  onOutletChange,
+  onClearFilters,
+  onResetPage,
 }: UserFiltersProps) {
   return (
     <div className="flex flex-col sm:flex-row gap-3 flex-wrap">
@@ -57,12 +66,21 @@ export function UserFilters({
           placeholder="Search by name or email…"
           className="w-full h-9 pl-9 pr-3.5 rounded-xl bg-white dark:bg-[#161920] border border-slate-100 dark:border-white/8 text-[13px] text-slate-700 dark:text-slate-200 placeholder:text-slate-400 dark:placeholder:text-slate-600 focus:outline-none focus:border-indigo-400 dark:focus:border-indigo-500/60 focus:ring-2 focus:ring-indigo-400/15 dark:focus:ring-indigo-500/10 transition-all"
           value={searchTerm}
-          onChange={(e) => { onSearchChange(e.target.value); onResetPage(); }}
+          onChange={(e) => {
+            onSearchChange(e.target.value);
+            onResetPage();
+          }}
         />
       </div>
 
       {isSuperAdmin && (
-        <Select value={franchiseFilter} onValueChange={(v) => { onFranchiseChange(v); onResetPage(); }}>
+        <Select
+          value={franchiseFilter}
+          onValueChange={(v) => {
+            onFranchiseChange(v);
+            onResetPage();
+          }}
+        >
           <SelectTrigger className="h-9 w-44 rounded-xl border-slate-100 dark:border-white/8 bg-white dark:bg-[#161920] text-[13px] text-slate-700 dark:text-slate-200 focus:ring-indigo-400/20 overflow-hidden">
             <div className="flex items-center gap-1.5 min-w-0 overflow-hidden">
               <Building2 className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 shrink-0" />
@@ -72,9 +90,18 @@ export function UserFilters({
             </div>
           </SelectTrigger>
           <SelectContent className="rounded-xl border-slate-100 dark:border-white/8 bg-white dark:bg-[#1a1d26] max-w-50">
-            <SelectItem value="ALL" className="text-[13px] rounded-lg px-2 py-1.5">All Franchises</SelectItem>
+            <SelectItem
+              value="ALL"
+              className="text-[13px] rounded-lg px-2 py-1.5"
+            >
+              All Franchises
+            </SelectItem>
             {franchises.map((f) => (
-              <SelectItem key={f._id} value={f._id} className="text-[13px] rounded-lg px-2 py-1.5">
+              <SelectItem
+                key={f._id}
+                value={f._id}
+                className="text-[13px] rounded-lg px-2 py-1.5"
+              >
                 <span className="truncate block max-w-40">{f.name}</span>
               </SelectItem>
             ))}
@@ -83,7 +110,13 @@ export function UserFilters({
       )}
 
       {(isSuperAdmin || isFranchiseAdmin) && (
-        <Select value={outletFilter} onValueChange={(v) => { onOutletChange(v); onResetPage(); }}>
+        <Select
+          value={outletFilter}
+          onValueChange={(v) => {
+            onOutletChange(v);
+            onResetPage();
+          }}
+        >
           <SelectTrigger className="h-9 w-44 rounded-xl border-slate-100 dark:border-white/8 bg-white dark:bg-[#161920] text-[13px] text-slate-700 dark:text-slate-200 focus:ring-indigo-400/20 overflow-hidden">
             <div className="flex items-center gap-1.5 min-w-0 overflow-hidden">
               <Store className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 shrink-0" />
@@ -93,9 +126,18 @@ export function UserFilters({
             </div>
           </SelectTrigger>
           <SelectContent className="rounded-xl border-slate-100 dark:border-white/8 bg-white dark:bg-[#1a1d26] max-w-50">
-            <SelectItem value="ALL" className="text-[13px] rounded-lg px-2 py-1.5">All Outlets</SelectItem>
+            <SelectItem
+              value="ALL"
+              className="text-[13px] rounded-lg px-2 py-1.5"
+            >
+              All Outlets
+            </SelectItem>
             {outlets.map((o) => (
-              <SelectItem key={o._id} value={o._id} className="text-[13px] rounded-lg px-2 py-1.5">
+              <SelectItem
+                key={o._id}
+                value={o._id}
+                className="text-[13px] rounded-lg px-2 py-1.5"
+              >
                 <span className="truncate block max-w-40">{o.name}</span>
               </SelectItem>
             ))}
@@ -103,7 +145,13 @@ export function UserFilters({
         </Select>
       )}
 
-      <Select value={roleFilter} onValueChange={(v) => { onRoleChange(v); onResetPage(); }}>
+      <Select
+        value={roleFilter}
+        onValueChange={(v) => {
+          onRoleChange(v);
+          onResetPage();
+        }}
+      >
         <SelectTrigger className="h-9 w-40 rounded-xl border-slate-100 dark:border-white/8 bg-white dark:bg-[#161920] text-[13px] text-slate-700 dark:text-slate-200 focus:ring-indigo-400/20">
           <SelectValue placeholder="All Roles" />
         </SelectTrigger>

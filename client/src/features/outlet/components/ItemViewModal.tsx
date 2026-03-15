@@ -1,4 +1,11 @@
-import { X, ImageOff, Package, AlertTriangle, Tag, BookOpen } from "lucide-react";
+import {
+  X,
+  ImageOff,
+  Package,
+  AlertTriangle,
+  Tag,
+  BookOpen,
+} from "lucide-react";
 import type { MenuItem, Category } from "@/features/kiosk/types/menu.types";
 
 interface Props {
@@ -8,7 +15,12 @@ interface Props {
   onCreateRecipe?: () => void;
 }
 
-export function ItemViewModal({ item, categories, onClose, onCreateRecipe }: Props) {
+export function ItemViewModal({
+  item,
+  categories,
+  onClose,
+  onCreateRecipe,
+}: Props) {
   const category = categories.find((c) => c._id === item.categoryId);
   const isLowStock = item.stockStatus === "LOW_STOCK";
   const isOutOfStock = item.stockStatus === "OUT_OF_STOCK";
@@ -26,7 +38,9 @@ export function ItemViewModal({ item, categories, onClose, onCreateRecipe }: Pro
 
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-white/8">
-          <h3 className="font-semibold text-slate-900 dark:text-white text-sm">Item Details</h3>
+          <h3 className="font-semibold text-slate-900 dark:text-white text-sm">
+            Item Details
+          </h3>
           <button
             onClick={onClose}
             className="h-7 w-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/6 transition-colors"
@@ -87,7 +101,9 @@ export function ItemViewModal({ item, categories, onClose, onCreateRecipe }: Pro
               {item.description}
             </p>
           ) : (
-            <p className="text-sm text-slate-400 dark:text-slate-600 italic">No description provided.</p>
+            <p className="text-sm text-slate-400 dark:text-slate-600 italic">
+              No description provided.
+            </p>
           )}
 
           {/* Stock + Status pills */}
@@ -99,7 +115,10 @@ export function ItemViewModal({ item, categories, onClose, onCreateRecipe }: Pro
               </span>
             ) : isLowStock ? (
               <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-amber-50 dark:bg-amber-400/10 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-400/20">
-                <Package className="w-3 h-3" /> {item.inventoryMode === "DIRECT" ? `${item.availableQuantity ?? 0} units left` : `${item.availableQuantity ?? 0} servings left`}
+                <Package className="w-3 h-3" />{" "}
+                {item.inventoryMode === "DIRECT"
+                  ? `${item.availableQuantity ?? 0} units left`
+                  : `${item.availableQuantity ?? 0} servings left`}
               </span>
             ) : item.stockStatus === "NO_RECIPE" ? (
               <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-50 dark:bg-white/5 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-white/8">
@@ -107,18 +126,23 @@ export function ItemViewModal({ item, categories, onClose, onCreateRecipe }: Pro
               </span>
             ) : (
               <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-50 dark:bg-white/5 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-white/8">
-                <Package className="w-3 h-3" /> {item.inventoryMode === "DIRECT" ? `${item.availableQuantity ?? 0} units available` : `${item.availableQuantity ?? 0} servings available`}
+                <Package className="w-3 h-3" />{" "}
+                {item.inventoryMode === "DIRECT"
+                  ? `${item.availableQuantity ?? 0} units available`
+                  : `${item.availableQuantity ?? 0} servings available`}
               </span>
             )}
 
             {/* Active/Inactive */}
             {isActive ? (
               <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-emerald-50 dark:bg-emerald-400/10 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-400/20">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" /> Active
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />{" "}
+                Active
               </span>
             ) : (
               <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-white/8">
-                <span className="w-1.5 h-1.5 rounded-full bg-slate-400" /> Inactive
+                <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />{" "}
+                Inactive
               </span>
             )}
           </div>
@@ -126,14 +150,16 @@ export function ItemViewModal({ item, categories, onClose, onCreateRecipe }: Pro
 
         {/* Footer */}
         <div className="px-5 pb-5 flex gap-2">
-          {item.inventoryMode === "RECIPE" && item.stockStatus === "NO_RECIPE" && onCreateRecipe && (
-            <button
-              onClick={onCreateRecipe}
-              className="flex-1 h-10 rounded-xl bg-indigo-600 text-sm font-semibold text-white transition-colors hover:bg-indigo-700"
-            >
-              Create Recipe
-            </button>
-          )}
+          {item.inventoryMode === "RECIPE" &&
+            item.stockStatus === "NO_RECIPE" &&
+            onCreateRecipe && (
+              <button
+                onClick={onCreateRecipe}
+                className="flex-1 h-10 rounded-xl bg-indigo-600 text-sm font-semibold text-white transition-colors hover:bg-indigo-700"
+              >
+                Create Recipe
+              </button>
+            )}
           <button
             onClick={onClose}
             className="flex-1 h-10 rounded-xl border border-slate-200 dark:border-white/8 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/4 transition-colors"

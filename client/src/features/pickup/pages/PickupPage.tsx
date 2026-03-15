@@ -8,7 +8,9 @@ import { PickupOrderGrid } from "../components/PickupOrderGrid";
 import type { Order } from "@/features/kiosk/types/order.types";
 
 function SectionHeader({
-  title, count, accent,
+  title,
+  count,
+  accent,
 }: {
   title: string;
   count: number;
@@ -17,7 +19,9 @@ function SectionHeader({
   return (
     <div className={`flex items-center gap-2 mb-3 ${accent}`}>
       <span className="text-sm font-bold">{title}</span>
-      <span className="text-xs font-black bg-current/10 px-1.5 py-0.5 rounded-full">{count}</span>
+      <span className="text-xs font-black bg-current/10 px-1.5 py-0.5 rounded-full">
+        {count}
+      </span>
       <ChevronRight className="w-3.5 h-3.5 ml-auto opacity-40" />
     </div>
   );
@@ -28,8 +32,15 @@ function sortByTime(a: Order, b: Order) {
 }
 
 export default function PickupPage() {
-  const { orders, readyOrders, pendingOrders, loadingIds, lastUpdated, fetchOrders, handlePickup } =
-    usePickup();
+  const {
+    orders,
+    readyOrders,
+    pendingOrders,
+    loadingIds,
+    lastUpdated,
+    fetchOrders,
+    handlePickup,
+  } = usePickup();
 
   const [tab, setTab] = useState<"READY" | "ALL">("READY");
 
@@ -62,10 +73,16 @@ export default function PickupPage() {
               <div className="flex items-center gap-3 mb-5 px-4 py-3 rounded-xl bg-emerald-50 dark:bg-emerald-400/8 border border-emerald-200 dark:border-emerald-400/20">
                 <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shrink-0" />
                 <p className="text-sm font-semibold text-emerald-700 dark:text-emerald-400">
-                  {sortedReady.length} {sortedReady.length === 1 ? "order" : "orders"} waiting for pickup
+                  {sortedReady.length}{" "}
+                  {sortedReady.length === 1 ? "order" : "orders"} waiting for
+                  pickup
                 </p>
               </div>
-              <PickupOrderGrid orders={sortedReady} onPickup={handlePickup} loadingIds={loadingIds} />
+              <PickupOrderGrid
+                orders={sortedReady}
+                onPickup={handlePickup}
+                loadingIds={loadingIds}
+              />
             </>
           )
         ) : sortedAll.length === 0 ? (
@@ -79,7 +96,11 @@ export default function PickupPage() {
                   count={sortedReady.length}
                   accent="text-emerald-600 dark:text-emerald-400"
                 />
-                <PickupOrderGrid orders={sortedReady} onPickup={handlePickup} loadingIds={loadingIds} />
+                <PickupOrderGrid
+                  orders={sortedReady}
+                  onPickup={handlePickup}
+                  loadingIds={loadingIds}
+                />
               </section>
             )}
             {sortedPending.length > 0 && (
@@ -89,7 +110,11 @@ export default function PickupPage() {
                   count={sortedPending.length}
                   accent="text-amber-600 dark:text-amber-400"
                 />
-                <PickupOrderGrid orders={sortedPending} onPickup={handlePickup} loadingIds={loadingIds} />
+                <PickupOrderGrid
+                  orders={sortedPending}
+                  onPickup={handlePickup}
+                  loadingIds={loadingIds}
+                />
               </section>
             )}
           </div>

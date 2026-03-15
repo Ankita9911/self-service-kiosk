@@ -16,14 +16,22 @@ interface ComboGridProps {
   onUpdateQuantity: (itemId: string, delta: number) => void;
 }
 
-export default function ComboGrid({ combos, cart, onAddToCart, onUpdateQuantity }: ComboGridProps) {
+export default function ComboGrid({
+  combos,
+  cart,
+  onAddToCart,
+  onUpdateQuantity,
+}: ComboGridProps) {
   if (combos.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-96 text-gray-400">
         <div className="w-32 h-32 bg-linear-to-br from-orange-50 to-amber-100 rounded-full flex items-center justify-center mb-6">
           <Package className="w-16 h-16 text-orange-200" strokeWidth={1.5} />
         </div>
-        <p className="text-2xl font-bold text-gray-500" style={{ fontFamily: "var(--font-display)" }}>
+        <p
+          className="text-2xl font-bold text-gray-500"
+          style={{ fontFamily: "var(--font-display)" }}
+        >
           No Combos Available
         </p>
       </div>
@@ -35,7 +43,8 @@ export default function ComboGrid({ combos, cart, onAddToCart, onUpdateQuantity 
       {combos.map((combo) => {
         const cartItem = cart.find((c) => c.itemId === String(combo._id));
         const quantity = cartItem?.quantity ?? 0;
-        const savings = combo.originalPrice > 0 ? combo.originalPrice - combo.comboPrice : 0;
+        const savings =
+          combo.originalPrice > 0 ? combo.originalPrice - combo.comboPrice : 0;
 
         return (
           <motion.div
@@ -85,7 +94,10 @@ export default function ComboGrid({ combos, cart, onAddToCart, onUpdateQuantity 
               </h3>
 
               {combo.description && (
-                <p className="text-sm text-gray-500 mb-2" style={{ fontFamily: "var(--font-body)" }}>
+                <p
+                  className="text-sm text-gray-500 mb-2"
+                  style={{ fontFamily: "var(--font-body)" }}
+                >
                   {combo.description}
                 </p>
               )}
@@ -102,7 +114,8 @@ export default function ComboGrid({ combos, cart, onAddToCart, onUpdateQuantity 
                         key={idx}
                         className="text-[10px] bg-orange-50 text-orange-700 border border-orange-100 px-2 py-0.5 rounded-full font-semibold"
                       >
-                        {ci.quantity > 1 ? `${ci.quantity}× ` : ""}{ci.name}
+                        {ci.quantity > 1 ? `${ci.quantity}× ` : ""}
+                        {ci.name}
                       </span>
                     ))}
                   </div>
@@ -120,11 +133,15 @@ export default function ComboGrid({ combos, cart, onAddToCart, onUpdateQuantity 
                     COMBO PRICE
                   </span>
                   <div className="flex items-baseline gap-2">
-                    {combo.originalPrice > 0 && combo.originalPrice > combo.comboPrice && (
-                      <span className="text-sm line-through text-gray-400" style={{ fontFamily: "var(--font-display)" }}>
-                        ₹{combo.originalPrice.toFixed(2)}
-                      </span>
-                    )}
+                    {combo.originalPrice > 0 &&
+                      combo.originalPrice > combo.comboPrice && (
+                        <span
+                          className="text-sm line-through text-gray-400"
+                          style={{ fontFamily: "var(--font-display)" }}
+                        >
+                          ₹{combo.originalPrice.toFixed(2)}
+                        </span>
+                      )}
                     <span
                       className="text-2xl font-black text-orange-600"
                       style={{ fontFamily: "var(--font-display)" }}
@@ -136,7 +153,15 @@ export default function ComboGrid({ combos, cart, onAddToCart, onUpdateQuantity 
 
                 {quantity === 0 ? (
                   <motion.button
-                    onClick={() => onAddToCart({ ...combo, _id: combo._id, price: combo.comboPrice, comboPrice: combo.comboPrice, stockQuantity: 999 })}
+                    onClick={() =>
+                      onAddToCart({
+                        ...combo,
+                        _id: combo._id,
+                        price: combo.comboPrice,
+                        comboPrice: combo.comboPrice,
+                        stockQuantity: 999,
+                      })
+                    }
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     className="p-4 rounded-2xl font-black flex items-center justify-center shadow-lg transition-all bg-linear-to-br from-orange-500 via-orange-600 to-orange-500 hover:from-orange-600 hover:via-orange-700 hover:to-orange-600 text-white shadow-orange-300"
@@ -156,11 +181,22 @@ export default function ComboGrid({ combos, cart, onAddToCart, onUpdateQuantity 
                     >
                       <Minus className="w-4 h-4" strokeWidth={2.5} />
                     </motion.button>
-                    <span className="text-xl font-black text-gray-900 min-w-10 text-center" style={{ fontFamily: "var(--font-display)" }}>
+                    <span
+                      className="text-xl font-black text-gray-900 min-w-10 text-center"
+                      style={{ fontFamily: "var(--font-display)" }}
+                    >
                       {quantity}
                     </span>
                     <motion.button
-                      onClick={() => onAddToCart({ ...combo, _id: combo._id, price: combo.comboPrice, comboPrice: combo.comboPrice, stockQuantity: 999 })}
+                      onClick={() =>
+                        onAddToCart({
+                          ...combo,
+                          _id: combo._id,
+                          price: combo.comboPrice,
+                          comboPrice: combo.comboPrice,
+                          stockQuantity: 999,
+                        })
+                      }
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.9 }}
                       className="w-9 h-9 rounded-xl bg-linear-to-br from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-md flex items-center justify-center transition-all"

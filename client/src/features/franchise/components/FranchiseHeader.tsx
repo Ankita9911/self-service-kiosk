@@ -34,7 +34,9 @@ export function FranchiseHeader({ refreshing, onRefresh, onNew }: Props) {
             transition-all disabled:opacity-50
           "
         >
-          <RefreshCcw className={`w-3.5 h-3.5 ${refreshing ? "animate-spin" : ""}`} />
+          <RefreshCcw
+            className={`w-3.5 h-3.5 ${refreshing ? "animate-spin" : ""}`}
+          />
         </button>
 
         <button

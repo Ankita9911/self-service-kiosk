@@ -1,7 +1,10 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { kioskLogin } from "@/features/device/services/device.service";
-import { setKioskToken, setKioskLandingConfig } from "@/shared/lib/kioskSession";
+import {
+  setKioskToken,
+  setKioskLandingConfig,
+} from "@/shared/lib/kioskSession";
 
 export function useKioskLogin() {
   const navigate = useNavigate();
@@ -22,18 +25,15 @@ export function useKioskLogin() {
     setLoading(true);
 
     try {
-      const { token, landingImage, landingTitle, landingSubtitle } = await kioskLogin(
-        deviceId.trim().toUpperCase(),
-        secret.trim()
-      );
+      const { token, landingImage, landingTitle, landingSubtitle } =
+        await kioskLogin(deviceId.trim().toUpperCase(), secret.trim());
 
       setKioskToken(token);
       setKioskLandingConfig({ landingImage, landingTitle, landingSubtitle });
       navigate("/kiosk/landing", { replace: true });
     } catch (err: any) {
       const msg =
-        err?.response?.data?.message ||
-        "Invalid Device ID or Secret Key.";
+        err?.response?.data?.message || "Invalid Device ID or Secret Key.";
       setError(msg);
     } finally {
       setLoading(false);

@@ -61,7 +61,7 @@ export default function TrendingStrip({
                   .reduce((sum, c) => sum + c.quantity, 0);
 
                 const discountOffer = (item.offers ?? []).find(
-                  (o) => o.type === "DISCOUNT" && o.discountPercent
+                  (o) => o.type === "DISCOUNT" && o.discountPercent,
                 );
                 const effectivePrice = discountOffer?.discountPercent
                   ? item.price * (1 - discountOffer.discountPercent / 100)
@@ -88,7 +88,10 @@ export default function TrendingStrip({
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
-                          <ImageOff className="w-8 h-8 text-gray-300" strokeWidth={1.5} />
+                          <ImageOff
+                            className="w-8 h-8 text-gray-300"
+                            strokeWidth={1.5}
+                          />
                         </div>
                       )}
 
@@ -111,7 +114,10 @@ export default function TrendingStrip({
                       {/* Add overlay */}
                       <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100">
                         <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center shadow-lg">
-                          <Plus className="w-4 h-4 text-white" strokeWidth={3} />
+                          <Plus
+                            className="w-4 h-4 text-white"
+                            strokeWidth={3}
+                          />
                         </div>
                       </div>
                     </div>

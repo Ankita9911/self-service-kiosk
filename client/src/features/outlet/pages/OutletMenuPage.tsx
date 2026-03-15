@@ -48,14 +48,17 @@ export default function OutletMenuPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { hasPermission } = usePermission();
-  const { ingredients, handleCreate: createIngredient } = useIngredients(outletId);
+  const { ingredients, handleCreate: createIngredient } =
+    useIngredients(outletId);
   const { handleCreate: createRecipe } = useRecipes(outletId);
 
   const canManage = hasPermission(PERMISSIONS.MENU_MANAGE);
 
   // Declare filter state first so they can be passed into the hook
   const [search, setSearch] = useState("");
-  const [itemStatusFilter, setItemStatusFilter] = useState<"ALL" | "ACTIVE" | "INACTIVE">("ALL");
+  const [itemStatusFilter, setItemStatusFilter] = useState<
+    "ALL" | "ACTIVE" | "INACTIVE"
+  >("ALL");
 
   const {
     categories,
@@ -97,7 +100,10 @@ export default function OutletMenuPage() {
     addCombo,
     editCombo,
     removeCombo,
-  } = useOutletMenu(outletId, user?.role, canManage, { search, status: itemStatusFilter });
+  } = useOutletMenu(outletId, user?.role, canManage, {
+    search,
+    status: itemStatusFilter,
+  });
 
   const [addCategoryOpen, setAddCategoryOpen] = useState(false);
   const [addItemOpen, setAddItemOpen] = useState(false);
@@ -109,7 +115,7 @@ export default function OutletMenuPage() {
   const [stockInput, setStockInput] = useState("");
   const [viewItem, setViewItem] = useState<MenuItem | null>(null);
   const [layout, setLayout] = useState<Layout>(
-    () => (localStorage.getItem("menu-layout") as Layout) ?? "grid"
+    () => (localStorage.getItem("menu-layout") as Layout) ?? "grid",
   );
   const [activeTab, setActiveTab] = useState<ActiveTab>("items");
   const [addComboOpen, setAddComboOpen] = useState(false);
@@ -121,8 +127,8 @@ export default function OutletMenuPage() {
       [...items, ...customizationItems].map((item) => [
         item._id,
         { _id: item._id, name: item.name },
-      ])
-    ).values()
+      ]),
+    ).values(),
   );
 
   const saveLayout = (l: Layout) => {
@@ -131,20 +137,41 @@ export default function OutletMenuPage() {
   };
 
   useEffect(() => {
-    if (!canManage) { navigate("/"); return; }
-    if (user?.role === "OUTLET_MANAGER" && !user?.outletId) { navigate("/"); return; }
-    if ((user?.role === "FRANCHISE_ADMIN" || user?.role === "SUPER_ADMIN") && !outletId) {
+    if (!canManage) {
+      navigate("/");
+      return;
+    }
+    if (user?.role === "OUTLET_MANAGER" && !user?.outletId) {
+      navigate("/");
+      return;
+    }
+    if (
+      (user?.role === "FRANCHISE_ADMIN" || user?.role === "SUPER_ADMIN") &&
+      !outletId
+    ) {
       navigate("/outlets");
     }
   }, [user?.role, user?.outletId, outletId, canManage, navigate]);
 
   const activeCount = activeItems;
 
-  const isFiltered = search !== "" || itemStatusFilter !== "ALL" || selectedCategoryId !== "ALL";
+  const isFiltered =
+    search !== "" || itemStatusFilter !== "ALL" || selectedCategoryId !== "ALL";
 
-  const handleSearchChange = (v: string) => { setSearch(v); resetToFirstPage(); };
-  const handleStatusChange = (v: "ALL" | "ACTIVE" | "INACTIVE") => { setItemStatusFilter(v); resetToFirstPage(); };
-  const clearFilters = () => { setSearch(""); setItemStatusFilter("ALL"); setSelectedCategoryId("ALL"); resetToFirstPage(); };
+  const handleSearchChange = (v: string) => {
+    setSearch(v);
+    resetToFirstPage();
+  };
+  const handleStatusChange = (v: "ALL" | "ACTIVE" | "INACTIVE") => {
+    setItemStatusFilter(v);
+    resetToFirstPage();
+  };
+  const clearFilters = () => {
+    setSearch("");
+    setItemStatusFilter("ALL");
+    setSelectedCategoryId("ALL");
+    resetToFirstPage();
+  };
 
   const openEdit = (item: MenuItem) => {
     setEditItem(item);
@@ -181,8 +208,12 @@ export default function OutletMenuPage() {
   if (!canManage) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[40vh] gap-3 text-center">
-        <p className="font-semibold text-slate-700 dark:text-white">Access Restricted</p>
-        <p className="text-slate-400 text-sm">You don’t have permission to manage menu.</p>
+        <p className="font-semibold text-slate-700 dark:text-white">
+          Access Restricted
+        </p>
+        <p className="text-slate-400 text-sm">
+          You don’t have permission to manage menu.
+        </p>
       </div>
     );
   }
@@ -193,7 +224,9 @@ export default function OutletMenuPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <button
-            onClick={() => navigate(user?.role === "OUTLET_MANAGER" ? "/" : "/menu")}
+            onClick={() =>
+              navigate(user?.role === "OUTLET_MANAGER" ? "/" : "/menu")
+            }
             className="h-9 w-9 rounded-xl border border-slate-200 dark:border-white/8 bg-white dark:bg-[#1e2130] flex items-center justify-center text-slate-500 hover:text-indigo-600 hover:border-indigo-300 dark:hover:border-indigo-500/40 transition-all shadow-sm"
           >
             <ArrowLeft className="w-4 h-4" />
@@ -208,7 +241,9 @@ export default function OutletMenuPage() {
                 Menu Management
               </span>
             </div> */}
-            <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Outlet Menu</h1>
+            <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
+              Outlet Menu
+            </h1>
             <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">
               Manage items — changes reflect on all kiosks in this outlet.
             </p>
@@ -259,7 +294,18 @@ export default function OutletMenuPage() {
               <Button
                 size="sm"
                 onClick={() => {
-                  setItemForm({ categoryId: categories[0]?._id ?? "", name: "", description: "", imageFile: null, price: "", stockQuantity: "", inventoryMode: "RECIPE", serviceType: "BOTH", offers: [], customizationItemIds: [] });
+                  setItemForm({
+                    categoryId: categories[0]?._id ?? "",
+                    name: "",
+                    description: "",
+                    imageFile: null,
+                    price: "",
+                    stockQuantity: "",
+                    inventoryMode: "RECIPE",
+                    serviceType: "BOTH",
+                    offers: [],
+                    customizationItemIds: [],
+                  });
                   setAddItemOpen(true);
                 }}
                 className="rounded-xl h-9 text-xs bg-indigo-600 hover:bg-indigo-700 text-white"
@@ -284,24 +330,57 @@ export default function OutletMenuPage() {
       {/* ── Stats bar ── */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[
-          { label: "Total Items", value: totalItems, icon: Package, color: "indigo" },
-          { label: "Active", value: activeCount, icon: CheckCircle2, color: "emerald" },
-          { label: "Categories", value: categories.length, icon: Tag, color: "violet" },
-          { label: "Combos", value: combos.length, icon: Layers, color: "orange" },
+          {
+            label: "Total Items",
+            value: totalItems,
+            icon: Package,
+            color: "indigo",
+          },
+          {
+            label: "Active",
+            value: activeCount,
+            icon: CheckCircle2,
+            color: "emerald",
+          },
+          {
+            label: "Categories",
+            value: categories.length,
+            icon: Tag,
+            color: "violet",
+          },
+          {
+            label: "Combos",
+            value: combos.length,
+            icon: Layers,
+            color: "orange",
+          },
         ].map(({ label, value, icon: Icon, color }) => (
-          <div key={label} className="flex items-center gap-3 p-3.5 rounded-2xl bg-white dark:bg-[#1e2130] border border-slate-100 dark:border-white/[0.07] shadow-sm">
-            <div className={`h-9 w-9 rounded-xl flex items-center justify-center ${
-              color === "indigo" ? "bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400"
-              : color === "emerald" ? "bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
-              : color === "violet" ? "bg-violet-50 dark:bg-violet-500/10 text-violet-600 dark:text-violet-400"
-              : color === "orange" ? "bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400"
-              : "bg-red-50 dark:bg-red-500/10 text-red-500 dark:text-red-400"
-            }`}>
+          <div
+            key={label}
+            className="flex items-center gap-3 p-3.5 rounded-2xl bg-white dark:bg-[#1e2130] border border-slate-100 dark:border-white/[0.07] shadow-sm"
+          >
+            <div
+              className={`h-9 w-9 rounded-xl flex items-center justify-center ${
+                color === "indigo"
+                  ? "bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400"
+                  : color === "emerald"
+                    ? "bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                    : color === "violet"
+                      ? "bg-violet-50 dark:bg-violet-500/10 text-violet-600 dark:text-violet-400"
+                      : color === "orange"
+                        ? "bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400"
+                        : "bg-red-50 dark:bg-red-500/10 text-red-500 dark:text-red-400"
+              }`}
+            >
               <Icon className="w-4 h-4" />
             </div>
             <div>
-              <p className="text-xl font-black text-slate-800 dark:text-white leading-none">{value}</p>
-              <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5 font-medium">{label}</p>
+              <p className="text-xl font-black text-slate-800 dark:text-white leading-none">
+                {value}
+              </p>
+              <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5 font-medium">
+                {label}
+              </p>
             </div>
           </div>
         ))}
@@ -313,14 +392,21 @@ export default function OutletMenuPage() {
           {loading ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {Array.from({ length: 4 }).map((_, i) => (
-                <div key={i} className="bg-slate-100 dark:bg-white/4 rounded-2xl h-40 animate-pulse" />
+                <div
+                  key={i}
+                  className="bg-slate-100 dark:bg-white/4 rounded-2xl h-40 animate-pulse"
+                />
               ))}
             </div>
           ) : combos.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 bg-white dark:bg-[#1e2130] rounded-2xl border border-slate-100 dark:border-white/[0.07]">
               <Layers className="w-12 h-12 text-slate-300 dark:text-slate-600 mb-3" />
-              <p className="font-semibold text-slate-600 dark:text-white">No combos yet</p>
-              <p className="text-slate-400 text-sm mt-1">Create a combo to bundle items at a special price</p>
+              <p className="font-semibold text-slate-600 dark:text-white">
+                No combos yet
+              </p>
+              <p className="text-slate-400 text-sm mt-1">
+                Create a combo to bundle items at a special price
+              </p>
               <button
                 onClick={() => setAddComboOpen(true)}
                 className="mt-4 h-9 px-4 rounded-xl bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold flex items-center gap-2 transition-colors"
@@ -338,7 +424,11 @@ export default function OutletMenuPage() {
                   {/* Image / header */}
                   <div className="relative aspect-video bg-linear-to-br from-orange-50 to-amber-50 dark:from-orange-900/20 dark:to-amber-900/20 flex items-center justify-center">
                     {combo.imageUrl ? (
-                      <img src={combo.imageUrl} alt={combo.name} className="w-full h-full object-cover" />
+                      <img
+                        src={combo.imageUrl}
+                        alt={combo.name}
+                        className="w-full h-full object-cover"
+                      />
                     ) : (
                       <Layers className="w-10 h-10 text-orange-300 dark:text-orange-600" />
                     )}
@@ -347,7 +437,8 @@ export default function OutletMenuPage() {
                     </span>
                     {combo.originalPrice > combo.comboPrice && (
                       <span className="absolute top-2 right-2 text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500 text-white">
-                        SAVE ₹{(combo.originalPrice - combo.comboPrice).toFixed(0)}
+                        SAVE ₹
+                        {(combo.originalPrice - combo.comboPrice).toFixed(0)}
                       </span>
                     )}
                   </div>
@@ -356,23 +447,34 @@ export default function OutletMenuPage() {
                   <div className="p-4">
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0">
-                        <p className="font-bold text-sm text-slate-800 dark:text-white truncate">{combo.name}</p>
+                        <p className="font-bold text-sm text-slate-800 dark:text-white truncate">
+                          {combo.name}
+                        </p>
                         {combo.description && (
-                          <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5 line-clamp-1">{combo.description}</p>
+                          <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5 line-clamp-1">
+                            {combo.description}
+                          </p>
                         )}
                       </div>
                       <div className="text-right shrink-0">
                         {combo.originalPrice > combo.comboPrice && (
-                          <p className="text-[10px] text-slate-400 line-through">₹{combo.originalPrice.toFixed(0)}</p>
+                          <p className="text-[10px] text-slate-400 line-through">
+                            ₹{combo.originalPrice.toFixed(0)}
+                          </p>
                         )}
-                        <p className="text-base font-black text-orange-600 dark:text-orange-400">₹{combo.comboPrice.toFixed(0)}</p>
+                        <p className="text-base font-black text-orange-600 dark:text-orange-400">
+                          ₹{combo.comboPrice.toFixed(0)}
+                        </p>
                       </div>
                     </div>
 
                     {/* Items list */}
                     <div className="mt-2.5 flex flex-wrap gap-1">
                       {combo.items.map((ci, idx) => (
-                        <span key={idx} className="text-[10px] font-semibold px-2 py-0.5 rounded-lg bg-slate-100 dark:bg-white/8 text-slate-600 dark:text-slate-400">
+                        <span
+                          key={idx}
+                          className="text-[10px] font-semibold px-2 py-0.5 rounded-lg bg-slate-100 dark:bg-white/8 text-slate-600 dark:text-slate-400"
+                        >
                           {ci.quantity}× {ci.name}
                         </span>
                       ))}
@@ -380,14 +482,20 @@ export default function OutletMenuPage() {
 
                     {/* Service type + actions */}
                     <div className="mt-3 flex items-center justify-between">
-                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${
-                        combo.serviceType === "DINE_IN"
-                          ? "bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400"
+                      <span
+                        className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${
+                          combo.serviceType === "DINE_IN"
+                            ? "bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400"
+                            : combo.serviceType === "TAKE_AWAY"
+                              ? "bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400"
+                              : "bg-slate-100 text-slate-500 dark:bg-white/6 dark:text-slate-400"
+                        }`}
+                      >
+                        {combo.serviceType === "DINE_IN"
+                          ? "Dine In"
                           : combo.serviceType === "TAKE_AWAY"
-                            ? "bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400"
-                            : "bg-slate-100 text-slate-500 dark:bg-white/6 dark:text-slate-400"
-                      }`}>
-                        {combo.serviceType === "DINE_IN" ? "Dine In" : combo.serviceType === "TAKE_AWAY" ? "Take Away" : "Both"}
+                            ? "Take Away"
+                            : "Both"}
                       </span>
                       <div className="flex gap-1.5">
                         <button
@@ -398,7 +506,9 @@ export default function OutletMenuPage() {
                           <Pencil className="w-3 h-3" />
                         </button>
                         <button
-                          onClick={async () => { await removeCombo(combo._id); }}
+                          onClick={async () => {
+                            await removeCombo(combo._id);
+                          }}
                           className="h-7 w-7 rounded-lg bg-slate-100 dark:bg-white/6 flex items-center justify-center text-slate-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-400/10 transition-colors"
                           title="Delete combo"
                         >
@@ -417,194 +527,228 @@ export default function OutletMenuPage() {
       {/* ── Toolbar: filter + search + layout toggle ── */}
       {activeTab === "items" && (
         <div className="flex flex-col sm:flex-row sm:items-center gap-3 min-w-0">
-        <div className="flex items-center gap-2 flex-1 min-w-0">
-          {/* Search */}
-          <div className="relative flex-1 min-w-0">
-            {filterLoading
-              ? <Loader2 className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-indigo-400 animate-spin pointer-events-none" />
-              : <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
-            }
-            <input
-              value={search}
-              onChange={(e) => handleSearchChange(e.target.value)}
-              placeholder="Search items…"
-              className="pl-8 pr-8 h-9 w-full text-sm rounded-xl border border-slate-200 dark:border-white/8 bg-white dark:bg-[#161920] text-slate-700 dark:text-slate-300 placeholder:text-slate-400 dark:placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-400 transition-all"
-            />
-            {search && (
+          <div className="flex items-center gap-2 flex-1 min-w-0">
+            {/* Search */}
+            <div className="relative flex-1 min-w-0">
+              {filterLoading ? (
+                <Loader2 className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-indigo-400 animate-spin pointer-events-none" />
+              ) : (
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
+              )}
+              <input
+                value={search}
+                onChange={(e) => handleSearchChange(e.target.value)}
+                placeholder="Search items…"
+                className="pl-8 pr-8 h-9 w-full text-sm rounded-xl border border-slate-200 dark:border-white/8 bg-white dark:bg-[#161920] text-slate-700 dark:text-slate-300 placeholder:text-slate-400 dark:placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-400 transition-all"
+              />
+              {search && (
+                <button
+                  onClick={() => handleSearchChange("")}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 h-4 w-4 rounded-full bg-slate-200 dark:bg-white/10 hover:bg-slate-300 dark:hover:bg-white/15 flex items-center justify-center transition-colors"
+                >
+                  <X className="w-2.5 h-2.5 text-slate-500 dark:text-slate-400" />
+                </button>
+              )}
+            </div>
+            <div className="inline-flex shrink-0 items-center bg-white dark:bg-[#161920] border border-slate-200 dark:border-white/8 rounded-xl p-1 gap-0.5">
+              {(["ALL", "ACTIVE", "INACTIVE"] as const).map((s) => (
+                <button
+                  key={s}
+                  onClick={() => handleStatusChange(s)}
+                  className={`h-7 px-2.5 rounded-lg text-[11px] font-semibold transition-all ${
+                    itemStatusFilter === s
+                      ? "bg-indigo-600 text-white shadow-sm"
+                      : "text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                  }`}
+                >
+                  {s === "ALL" ? "All" : s === "ACTIVE" ? "Active" : "Inactive"}
+                </button>
+              ))}
+            </div>
+
+            {/* Clear filters */}
+            {isFiltered && (
               <button
-                onClick={() => handleSearchChange("")}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 h-4 w-4 rounded-full bg-slate-200 dark:bg-white/10 hover:bg-slate-300 dark:hover:bg-white/15 flex items-center justify-center transition-colors"
+                onClick={clearFilters}
+                className="inline-flex shrink-0 items-center gap-1 h-9 px-3 rounded-xl border border-slate-200 dark:border-white/8 bg-white dark:bg-[#161920] text-[12px] font-medium text-slate-500 dark:text-slate-400 hover:text-red-500 dark:hover:text-red-400 hover:border-red-200 dark:hover:border-red-500/30 transition-all"
               >
-                <X className="w-2.5 h-2.5 text-slate-500 dark:text-slate-400" />
+                <X className="w-3 h-3" />
+                Clear
               </button>
             )}
-          </div>
-          <div className="inline-flex shrink-0 items-center bg-white dark:bg-[#161920] border border-slate-200 dark:border-white/8 rounded-xl p-1 gap-0.5">
-            {(["ALL", "ACTIVE", "INACTIVE"] as const).map((s) => (
+
+            {/* Layout toggle */}
+            <div className="inline-flex shrink-0 items-center bg-white dark:bg-[#161920] border border-slate-200 dark:border-white/8 rounded-xl p-1 gap-0.5">
               <button
-                key={s}
-                onClick={() => handleStatusChange(s)}
-                className={`h-7 px-2.5 rounded-lg text-[11px] font-semibold transition-all ${
-                  itemStatusFilter === s
+                onClick={() => saveLayout("grid")}
+                className={`h-7 w-7 rounded-lg flex items-center justify-center transition-all ${
+                  layout === "grid"
                     ? "bg-indigo-600 text-white shadow-sm"
                     : "text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
                 }`}
+                title="Grid view"
               >
-                {s === "ALL" ? "All" : s === "ACTIVE" ? "Active" : "Inactive"}
+                <LayoutGrid className="w-3.5 h-3.5" />
               </button>
-            ))}
+              <button
+                onClick={() => saveLayout("table")}
+                className={`h-7 w-7 rounded-lg flex items-center justify-center transition-all ${
+                  layout === "table"
+                    ? "bg-indigo-600 text-white shadow-sm"
+                    : "text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                }`}
+                title="Table view"
+              >
+                <Table2 className="w-3.5 h-3.5" />
+              </button>
+            </div>
           </div>
-
-          {/* Clear filters */}
-          {isFiltered && (
-            <button
-              onClick={clearFilters}
-              className="inline-flex shrink-0 items-center gap-1 h-9 px-3 rounded-xl border border-slate-200 dark:border-white/8 bg-white dark:bg-[#161920] text-[12px] font-medium text-slate-500 dark:text-slate-400 hover:text-red-500 dark:hover:text-red-400 hover:border-red-200 dark:hover:border-red-500/30 transition-all"
-            >
-              <X className="w-3 h-3" />
-              Clear
-            </button>
-          )}
-
-          {/* Layout toggle */}
-          <div className="inline-flex shrink-0 items-center bg-white dark:bg-[#161920] border border-slate-200 dark:border-white/8 rounded-xl p-1 gap-0.5">
-            <button
-              onClick={() => saveLayout("grid")}
-              className={`h-7 w-7 rounded-lg flex items-center justify-center transition-all ${
-                layout === "grid"
-                  ? "bg-indigo-600 text-white shadow-sm"
-                  : "text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
-              }`}
-              title="Grid view"
-            >
-              <LayoutGrid className="w-3.5 h-3.5" />
-            </button>
-            <button
-              onClick={() => saveLayout("table")}
-              className={`h-7 w-7 rounded-lg flex items-center justify-center transition-all ${
-                layout === "table"
-                  ? "bg-indigo-600 text-white shadow-sm"
-                  : "text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
-              }`}
-              title="Table view"
-            >
-              <Table2 className="w-3.5 h-3.5" />
-            </button>
-          </div>
-        </div>
         </div>
       )}
 
       <CategoryFilter
-          categories={categories}
-          selectedCategoryId={selectedCategoryId}
-          onSelect={(id) => { setSelectedCategoryId(id); resetToFirstPage(); }}
-          onEditCategory={(category) => {
-            setEditingCategoryId(category._id);
-            setEditCatForm({
-              name: category.name,
-              description: category.description ?? "",
-              imageFile: null,
-              imageUrl: category.imageUrl,
-            });
-          }}
-          onDeleteCategory={async (id) => {
-            await removeCategory(id);
-            if (selectedCategoryId === id) setSelectedCategoryId("ALL");
-          }}
-        />
+        categories={categories}
+        selectedCategoryId={selectedCategoryId}
+        onSelect={(id) => {
+          setSelectedCategoryId(id);
+          resetToFirstPage();
+        }}
+        onEditCategory={(category) => {
+          setEditingCategoryId(category._id);
+          setEditCatForm({
+            name: category.name,
+            description: category.description ?? "",
+            imageFile: null,
+            imageUrl: category.imageUrl,
+          });
+        }}
+        onDeleteCategory={async (id) => {
+          await removeCategory(id);
+          if (selectedCategoryId === id) setSelectedCategoryId("ALL");
+        }}
+      />
 
       {/* ── Content ── */}
-      {activeTab === "items" && (loading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {Array.from({ length: 8 }).map((_, i) => (
-            <div key={i} className="bg-slate-100 dark:bg-white/4 rounded-2xl h-48 animate-pulse" />
-          ))}
-        </div>
-      ) : items.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-16 bg-white dark:bg-[#1e2130] rounded-2xl border border-slate-100 dark:border-white/[0.07]">
-          <Package className="w-12 h-12 text-slate-300 dark:text-slate-600 mb-3" />
-          <p className="font-semibold text-slate-600 dark:text-white">No items found</p>
-          <p className="text-slate-400 text-sm mt-1">
-            {isFiltered ? "Try a different search term or filter" : "Add your first item"}
-          </p>
-        </div>
-      ) : layout === "grid" ? (
-        <>
+      {activeTab === "items" &&
+        (loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {items.map((item) => (
-              <MenuItemCard
-                key={item._id}
-                item={item}
-                onEdit={() => openEdit(item)}
-                onDelete={() => setDeleteItem(item)}
-                onToggleStatus={() => toggleItemStatus(item._id)}
-                onView={() => setViewItem(item)}
-                onCreateRecipe={() => openCreateRecipe(item)}
+            {Array.from({ length: 8 }).map((_, i) => (
+              <div
+                key={i}
+                className="bg-slate-100 dark:bg-white/4 rounded-2xl h-48 animate-pulse"
               />
             ))}
           </div>
-          <CursorPagination
-            total={totalMatching}
-            page={page}
-            pageSize={pageSize}
-            hasPrevPage={hasPrevPage}
-            hasNextPage={hasNextPage}
-            onPrevPage={goToPrevPage}
-            onNextPage={goToNextPage}
-            onPageSizeChange={setPageSize}
-          />
-        </>
-      ) : (
-        /* Table view */
-        <div className="rounded-2xl border border-slate-100 dark:border-white/[0.07] bg-white dark:bg-[#1e2130] shadow-sm">
-          <div>
-            <table className="w-full min-w-175 text-sm">
-              <thead>
-                <tr className="border-b border-slate-100 dark:border-white/7 bg-slate-50/80 dark:bg-white/2">
-                  {["#", "Item", "Category", "Price", "Availability", "Status", ""].map((h) => (
-                    <th
-                      key={h}
-                      className={`px-4 py-3 text-left text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider ${
-                        h === "#" ? "w-10" : h === "Actions" ? "w-24 text-right" : ""
-                      }`}
-                    >
-                      {h}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {items.map((item, idx) => (
-                  <MenuItemTableRow
-                    key={item._id}
-                    item={item}
-                    categories={categories}
-                    index={(page - 1) * pageSize + idx + 1}
-                    onEdit={() => openEdit(item)}
-                    onDelete={() => setDeleteItem(item)}
-                    onUpdatePrice={() => { setPriceItem(item); setPriceInput(String(item.price)); }}
-                    onUpdateStock={item.inventoryMode === "DIRECT" ? () => { setStockItem(item); setStockInput(String(item.stockQuantity)); } : undefined}
-                    onToggleStatus={() => toggleItemStatus(item._id)}
-                    onView={() => setViewItem(item)}
-                    onCreateRecipe={() => openCreateRecipe(item)}
-                  />
-                ))}
-              </tbody>
-            </table>
+        ) : items.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-16 bg-white dark:bg-[#1e2130] rounded-2xl border border-slate-100 dark:border-white/[0.07]">
+            <Package className="w-12 h-12 text-slate-300 dark:text-slate-600 mb-3" />
+            <p className="font-semibold text-slate-600 dark:text-white">
+              No items found
+            </p>
+            <p className="text-slate-400 text-sm mt-1">
+              {isFiltered
+                ? "Try a different search term or filter"
+                : "Add your first item"}
+            </p>
           </div>
-          <CursorPagination
-            total={totalMatching}
-            page={page}
-            pageSize={pageSize}
-            hasPrevPage={hasPrevPage}
-            hasNextPage={hasNextPage}
-            onPrevPage={goToPrevPage}
-            onNextPage={goToNextPage}
-            onPageSizeChange={setPageSize}
-          />
-        </div>
-      ))}
+        ) : layout === "grid" ? (
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {items.map((item) => (
+                <MenuItemCard
+                  key={item._id}
+                  item={item}
+                  onEdit={() => openEdit(item)}
+                  onDelete={() => setDeleteItem(item)}
+                  onToggleStatus={() => toggleItemStatus(item._id)}
+                  onView={() => setViewItem(item)}
+                  onCreateRecipe={() => openCreateRecipe(item)}
+                />
+              ))}
+            </div>
+            <CursorPagination
+              total={totalMatching}
+              page={page}
+              pageSize={pageSize}
+              hasPrevPage={hasPrevPage}
+              hasNextPage={hasNextPage}
+              onPrevPage={goToPrevPage}
+              onNextPage={goToNextPage}
+              onPageSizeChange={setPageSize}
+            />
+          </>
+        ) : (
+          /* Table view */
+          <div className="rounded-2xl border border-slate-100 dark:border-white/[0.07] bg-white dark:bg-[#1e2130] shadow-sm">
+            <div>
+              <table className="w-full min-w-175 text-sm">
+                <thead>
+                  <tr className="border-b border-slate-100 dark:border-white/7 bg-slate-50/80 dark:bg-white/2">
+                    {[
+                      "#",
+                      "Item",
+                      "Category",
+                      "Price",
+                      "Availability",
+                      "Status",
+                      "",
+                    ].map((h) => (
+                      <th
+                        key={h}
+                        className={`px-4 py-3 text-left text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider ${
+                          h === "#"
+                            ? "w-10"
+                            : h === "Actions"
+                              ? "w-24 text-right"
+                              : ""
+                        }`}
+                      >
+                        {h}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {items.map((item, idx) => (
+                    <MenuItemTableRow
+                      key={item._id}
+                      item={item}
+                      categories={categories}
+                      index={(page - 1) * pageSize + idx + 1}
+                      onEdit={() => openEdit(item)}
+                      onDelete={() => setDeleteItem(item)}
+                      onUpdatePrice={() => {
+                        setPriceItem(item);
+                        setPriceInput(String(item.price));
+                      }}
+                      onUpdateStock={
+                        item.inventoryMode === "DIRECT"
+                          ? () => {
+                              setStockItem(item);
+                              setStockInput(String(item.stockQuantity));
+                            }
+                          : undefined
+                      }
+                      onToggleStatus={() => toggleItemStatus(item._id)}
+                      onView={() => setViewItem(item)}
+                      onCreateRecipe={() => openCreateRecipe(item)}
+                    />
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <CursorPagination
+              total={totalMatching}
+              page={page}
+              pageSize={pageSize}
+              hasPrevPage={hasPrevPage}
+              hasNextPage={hasNextPage}
+              onPrevPage={goToPrevPage}
+              onNextPage={goToNextPage}
+              onPageSizeChange={setPageSize}
+            />
+          </div>
+        ))}
 
       {/* ── Quick price update ── */}
       {priceItem && (
@@ -617,7 +761,9 @@ export default function OutletMenuPage() {
               {priceItem.name} — current: ₹{priceItem.price}
             </p>
             <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-semibold text-slate-400">₹</span>
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-semibold text-slate-400">
+                ₹
+              </span>
               <input
                 type="number"
                 min="0"
@@ -673,7 +819,8 @@ export default function OutletMenuPage() {
             />
             <div className="mt-3 rounded-xl border border-slate-200 dark:border-white/8 bg-slate-50/80 dark:bg-white/[0.03] px-3 py-2">
               <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                Use this only for direct-stock items like bottled drinks. Recipe-based items are controlled from ingredients.
+                Use this only for direct-stock items like bottled drinks.
+                Recipe-based items are controlled from ingredients.
               </p>
             </div>
             <div className="flex gap-2 mt-4">
@@ -706,7 +853,10 @@ export default function OutletMenuPage() {
         onClose={() => setAddCategoryOpen(false)}
         form={catForm}
         setForm={setCatForm}
-        onSubmit={async () => { await addCategory(); setAddCategoryOpen(false); }}
+        onSubmit={async () => {
+          await addCategory();
+          setAddCategoryOpen(false);
+        }}
       />
       <EditCategoryModal
         open={!!editingCategoryId}
@@ -726,7 +876,10 @@ export default function OutletMenuPage() {
         items={customizationItems}
         form={itemForm}
         setForm={setItemForm}
-        onSubmit={async () => { await addItem(); setAddItemOpen(false); }}
+        onSubmit={async () => {
+          await addItem();
+          setAddItemOpen(false);
+        }}
       />
       {editItem && (
         <EditItemModal
@@ -736,7 +889,10 @@ export default function OutletMenuPage() {
           editingItemId={editItem._id}
           form={itemForm}
           setForm={setItemForm}
-          onSubmit={async () => { await updateItem(editItem._id); setEditItem(null); }}
+          onSubmit={async () => {
+            await updateItem(editItem._id);
+            setEditItem(null);
+          }}
         />
       )}
       {deleteItem && (
@@ -744,7 +900,10 @@ export default function OutletMenuPage() {
           open
           item={deleteItem}
           onClose={() => setDeleteItem(null)}
-          onConfirm={async () => { await removeItem(deleteItem._id); setDeleteItem(null); }}
+          onConfirm={async () => {
+            await removeItem(deleteItem._id);
+            setDeleteItem(null);
+          }}
         />
       )}
       {viewItem && (
@@ -772,7 +931,10 @@ export default function OutletMenuPage() {
         open={addComboOpen}
         onClose={() => setAddComboOpen(false)}
         items={items}
-        onSubmit={async (data) => { await addCombo(data); setAddComboOpen(false); }}
+        onSubmit={async (data) => {
+          await addCombo(data);
+          setAddComboOpen(false);
+        }}
       />
       {editComboData && (
         <EditComboModal
@@ -780,7 +942,10 @@ export default function OutletMenuPage() {
           onClose={() => setEditComboData(null)}
           combo={editComboData}
           items={items}
-          onSubmit={async (data) => { await editCombo(editComboData._id, data); setEditComboData(null); }}
+          onSubmit={async (data) => {
+            await editCombo(editComboData._id, data);
+            setEditComboData(null);
+          }}
         />
       )}
     </div>

@@ -41,16 +41,22 @@ export function PickupCard({ order, onPickup, loading }: PickupCardProps) {
           {isReady ? (
             <>
               <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
-              <span className="text-xs font-bold text-white tracking-wide uppercase">Ready for Pickup</span>
+              <span className="text-xs font-bold text-white tracking-wide uppercase">
+                Ready for Pickup
+              </span>
             </>
           ) : (
             <>
               <span className="w-2 h-2 rounded-full bg-amber-400" />
-              <span className="text-xs font-semibold text-amber-700 dark:text-amber-400 tracking-wide uppercase">Preparing</span>
+              <span className="text-xs font-semibold text-amber-700 dark:text-amber-400 tracking-wide uppercase">
+                Preparing
+              </span>
             </>
           )}
         </div>
-        <div className={`flex items-center gap-1 text-[11px] font-bold ${isReady ? "text-white/80" : elapsedColor}`}>
+        <div
+          className={`flex items-center gap-1 text-[11px] font-bold ${isReady ? "text-white/80" : elapsedColor}`}
+        >
           <Clock className="w-3 h-3" />
           {elapsed}m
         </div>
@@ -61,10 +67,16 @@ export function PickupCard({ order, onPickup, loading }: PickupCardProps) {
         {/* order number + meta */}
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-2">
-            <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${
-              isReady ? "bg-emerald-50 dark:bg-emerald-400/10" : "bg-amber-50 dark:bg-amber-400/10"
-            }`}>
-              <ShoppingBag className={`w-4 h-4 ${isReady ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600 dark:text-amber-400"}`} />
+            <div
+              className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${
+                isReady
+                  ? "bg-emerald-50 dark:bg-emerald-400/10"
+                  : "bg-amber-50 dark:bg-amber-400/10"
+              }`}
+            >
+              <ShoppingBag
+                className={`w-4 h-4 ${isReady ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600 dark:text-amber-400"}`}
+              />
             </div>
             <div>
               <p className="text-2xl font-black tracking-tight text-slate-800 dark:text-white leading-none">
@@ -95,7 +107,9 @@ export function PickupCard({ order, onPickup, loading }: PickupCardProps) {
               }`}
             >
               <span className="text-sm text-slate-700 dark:text-slate-300">
-                <span className="font-black text-slate-900 dark:text-white mr-1">{item.quantity}×</span>
+                <span className="font-black text-slate-900 dark:text-white mr-1">
+                  {item.quantity}×
+                </span>
                 {item.nameSnapshot}
               </span>
               <span className="text-[11px] font-medium text-slate-400 dark:text-slate-500 shrink-0">

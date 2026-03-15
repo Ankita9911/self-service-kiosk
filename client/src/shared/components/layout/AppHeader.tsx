@@ -17,7 +17,9 @@ export function AppHeader({ user, onLogoutRequest }: AppHeaderProps) {
       <div className="flex items-center gap-1.5">
         <VDivider />
 
-        <span className={`hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-[10.5px] font-semibold uppercase tracking-wide ${getRoleBadgeStyle(user?.role)}`}>
+        <span
+          className={`hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-[10.5px] font-semibold uppercase tracking-wide ${getRoleBadgeStyle(user?.role)}`}
+        >
           {getRoleIcon(user?.role)}
           {user?.role?.replace(/_/g, " ")}
         </span>

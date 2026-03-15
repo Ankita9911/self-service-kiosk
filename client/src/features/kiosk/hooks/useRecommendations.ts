@@ -44,7 +44,7 @@ export interface UseRecommendationsReturn {
 
 export function useRecommendations(
   cart: CartItem[],
-  menu: MenuCategory[]
+  menu: MenuCategory[],
 ): UseRecommendationsReturn {
   // ── Trending ──────────────────────────────────────────────────────────────
   const [trending, setTrending] = useState<RecommendedItem[]>([]);
@@ -55,15 +55,25 @@ export function useRecommendations(
     setIsTrendingLoading(true);
 
     fetchTrending({ windowHours: 4, limit: 8 })
-      .then((data) => { if (!cancelled) setTrending(data); })
-      .catch(() => { if (!cancelled) setTrending([]); })
-      .finally(() => { if (!cancelled) setIsTrendingLoading(false); });
+      .then((data) => {
+        if (!cancelled) setTrending(data);
+      })
+      .catch(() => {
+        if (!cancelled) setTrending([]);
+      })
+      .finally(() => {
+        if (!cancelled) setIsTrendingLoading(false);
+      });
 
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   // ── Frequently Bought Together ────────────────────────────────────────────
-  const [frequentlyBoughtTogether, setFrequentlyBoughtTogether] = useState<RecommendedItem[]>([]);
+  const [frequentlyBoughtTogether, setFrequentlyBoughtTogether] = useState<
+    RecommendedItem[]
+  >([]);
   const [isFbtLoading, setIsFbtLoading] = useState(false);
 
   const fbtTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -90,11 +100,19 @@ export function useRecommendations(
       setIsFbtLoading(true);
 
       fetchFrequentlyBoughtTogether(itemIds, { limit: 5 })
-        .then((data) => { if (!cancelled) setFrequentlyBoughtTogether(data); })
-        .catch(() => { if (!cancelled) setFrequentlyBoughtTogether([]); })
-        .finally(() => { if (!cancelled) setIsFbtLoading(false); });
+        .then((data) => {
+          if (!cancelled) setFrequentlyBoughtTogether(data);
+        })
+        .catch(() => {
+          if (!cancelled) setFrequentlyBoughtTogether([]);
+        })
+        .finally(() => {
+          if (!cancelled) setIsFbtLoading(false);
+        });
 
-      return () => { cancelled = true; };
+      return () => {
+        cancelled = true;
+      };
     }, FBT_DEBOUNCE_MS);
 
     return () => {
@@ -104,7 +122,8 @@ export function useRecommendations(
 
   // ── Complete Meal ─────────────────────────────────────────────────────────
   const emptyMeal: CompleteMealResult = { suggestions: [], comboDeal: null };
-  const [completeMeal, setCompleteMeal] = useState<CompleteMealResult>(emptyMeal);
+  const [completeMeal, setCompleteMeal] =
+    useState<CompleteMealResult>(emptyMeal);
   const [isMealLoading, setIsMealLoading] = useState(false);
 
   const prevMealKeyRef = useRef<string>("");
@@ -126,11 +145,19 @@ export function useRecommendations(
     setIsMealLoading(true);
 
     fetchCompleteMeal(itemIds, categoryIds, { limit: 4 })
-      .then((data) => { if (!cancelled) setCompleteMeal(data); })
-      .catch(() => { if (!cancelled) setCompleteMeal(emptyMeal); })
-      .finally(() => { if (!cancelled) setIsMealLoading(false); });
+      .then((data) => {
+        if (!cancelled) setCompleteMeal(data);
+      })
+      .catch(() => {
+        if (!cancelled) setCompleteMeal(emptyMeal);
+      })
+      .finally(() => {
+        if (!cancelled) setIsMealLoading(false);
+      });
 
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [cart, menu]);
 
   useEffect(() => {

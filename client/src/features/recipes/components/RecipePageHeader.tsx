@@ -9,7 +9,11 @@ interface RecipePageHeaderProps {
 }
 
 export function RecipePageHeader({
-  refreshing, canAdd, onRefresh, onAIGenerate, onAdd,
+  refreshing,
+  canAdd,
+  onRefresh,
+  onAIGenerate,
+  onAdd,
 }: RecipePageHeaderProps) {
   return (
     <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2">
@@ -18,7 +22,8 @@ export function RecipePageHeader({
           Recipes
         </h1>
         <p className="text-sm text-slate-500 dark:text-slate-400">
-          Link menu items to ingredients so outlet availability comes from live inventory.
+          Link menu items to ingredients so outlet availability comes from live
+          inventory.
         </p>
       </div>
       <div className="flex items-center gap-2">
@@ -27,7 +32,9 @@ export function RecipePageHeader({
           disabled={refreshing}
           className="h-9 w-9 rounded-xl border border-slate-200 dark:border-white/[0.08] bg-white dark:bg-white/[0.04] flex items-center justify-center text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:border-indigo-200 dark:hover:border-indigo-500/40 transition-all disabled:opacity-50"
         >
-          <RefreshCcw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
+          <RefreshCcw
+            className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`}
+          />
         </button>
         <button
           onClick={onAIGenerate}

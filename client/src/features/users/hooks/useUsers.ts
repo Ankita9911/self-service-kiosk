@@ -84,7 +84,7 @@ export function useUsers(filters: UserFilters) {
           {
             cursor: currentCursor ?? undefined,
             limit: pageSize,
-          }
+          },
         );
 
         if (cancelled) return;
@@ -141,20 +141,28 @@ export function useUsers(filters: UserFilters) {
     setHasNextPage(false);
   }
 
-  const refreshAll = useCallback(async (silent = false) => {
-    if (silent) setRefreshing(true);
-    await fetchLookupData();
-    resetToFirstPage();
-    setRefreshTick((n) => n + 1);
-  }, [fetchLookupData]);
+  const refreshAll = useCallback(
+    async (silent = false) => {
+      if (silent) setRefreshing(true);
+      await fetchLookupData();
+      resetToFirstPage();
+      setRefreshTick((n) => n + 1);
+    },
+    [fetchLookupData],
+  );
 
-  async function handleCreate(payload: Parameters<typeof createUser>[0]): Promise<string> {
+  async function handleCreate(
+    payload: Parameters<typeof createUser>[0],
+  ): Promise<string> {
     const result = await createUser(payload);
     await refreshAll(true);
     return result.tempPassword;
   }
 
-  async function handleUpdate(id: string, payload: { name?: string; email?: string }) {
+  async function handleUpdate(
+    id: string,
+    payload: { name?: string; email?: string },
+  ) {
     await updateUser(id, payload);
     await refreshAll(true);
   }

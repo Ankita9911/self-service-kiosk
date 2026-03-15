@@ -27,7 +27,10 @@ export function UserDropdown({ user, onLogoutRequest }: UserDropdownProps) {
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(e.target as Node)
+      ) {
         setOpen(false);
       }
     };
@@ -79,18 +82,26 @@ export function UserDropdown({ user, onLogoutRequest }: UserDropdownProps) {
               onClick={toggleTheme}
               className="w-full flex items-center gap-3 px-4 py-2.5 text-[12.5px] text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/[0.04] hover:text-slate-900 dark:hover:text-slate-200 transition group"
             >
-              {isDark
-                ? <Sun className="w-4 h-4 text-amber-400" />
-                : <Moon className="w-4 h-4 text-indigo-400 dark:text-indigo-300" />
-              }
+              {isDark ? (
+                <Sun className="w-4 h-4 text-amber-400" />
+              ) : (
+                <Moon className="w-4 h-4 text-indigo-400 dark:text-indigo-300" />
+              )}
               <span className="flex-1 text-left">Dark Mode</span>
-              <span className={`flex items-center justify-center w-8 h-4 rounded-full transition-colors duration-300 ${isDark ? "bg-indigo-500" : "bg-slate-200 dark:bg-slate-700"}`}>
-                <span className={`w-3 h-3 bg-white rounded-full shadow transition-transform duration-300 ${isDark ? "translate-x-2" : "-translate-x-2"}`} />
+              <span
+                className={`flex items-center justify-center w-8 h-4 rounded-full transition-colors duration-300 ${isDark ? "bg-indigo-500" : "bg-slate-200 dark:bg-slate-700"}`}
+              >
+                <span
+                  className={`w-3 h-3 bg-white rounded-full shadow transition-transform duration-300 ${isDark ? "translate-x-2" : "-translate-x-2"}`}
+                />
               </span>
             </button>
 
             <button
-              onClick={() => { setOpen(false); navigate("/reset-password"); }}
+              onClick={() => {
+                setOpen(false);
+                navigate("/reset-password");
+              }}
               className="w-full flex items-center gap-3 px-4 py-2.5 text-[12.5px] text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/[0.04] hover:text-slate-900 dark:hover:text-slate-200 transition"
             >
               <KeyRound className="w-4 h-4 text-slate-400 dark:text-slate-500" />
@@ -100,7 +111,10 @@ export function UserDropdown({ user, onLogoutRequest }: UserDropdownProps) {
 
           <div className="border-t border-slate-100 dark:border-white/[0.06] py-1.5">
             <button
-              onClick={() => { setOpen(false); onLogoutRequest(); }}
+              onClick={() => {
+                setOpen(false);
+                onLogoutRequest();
+              }}
               className="w-full flex items-center gap-3 px-4 py-2.5 text-[12.5px] text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/[0.08] transition"
             >
               <LogOut className="w-4 h-4" />

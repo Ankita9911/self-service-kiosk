@@ -65,9 +65,15 @@ export function RecipeFilters({
             </div>
           </SelectTrigger>
           <SelectContent className="rounded-xl border-slate-100 dark:border-white/8 bg-white dark:bg-[#1a1d26]">
-            <SelectItem value="ALL" className="text-[13px] rounded-lg">All Outlets</SelectItem>
+            <SelectItem value="ALL" className="text-[13px] rounded-lg">
+              All Outlets
+            </SelectItem>
             {filterableOutlets.map((o) => (
-              <SelectItem key={o._id} value={o._id} className="text-[13px] rounded-lg">
+              <SelectItem
+                key={o._id}
+                value={o._id}
+                className="text-[13px] rounded-lg"
+              >
                 {o.name}
               </SelectItem>
             ))}

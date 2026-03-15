@@ -1,5 +1,9 @@
 import { useMemo, useState } from "react";
-import { Dialog, DialogContent, DialogTitle } from "@/shared/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+} from "@/shared/components/ui/dialog";
 import { Button } from "@/shared/components/ui/button";
 import type { MenuItem } from "../types/menu.types";
 
@@ -38,13 +42,19 @@ export default function CustomizeItemDialog({
     >
       <DialogContent className="sm:max-w-lg rounded-3xl border-4 border-orange-500 p-0 overflow-hidden">
         <div className="p-6 border-b border-orange-100 bg-gradient-to-r from-orange-500 to-orange-600">
-          <DialogTitle className="text-2xl font-black text-white">Customize Item</DialogTitle>
-          <p className="text-orange-100 text-sm font-semibold mt-1">{item?.name}</p>
+          <DialogTitle className="text-2xl font-black text-white">
+            Customize Item
+          </DialogTitle>
+          <p className="text-orange-100 text-sm font-semibold mt-1">
+            {item?.name}
+          </p>
         </div>
 
         <div className="p-6 space-y-4 max-h-[60vh] overflow-y-auto">
           {options.length === 0 ? (
-            <p className="text-sm text-gray-500">No customization options available.</p>
+            <p className="text-sm text-gray-500">
+              No customization options available.
+            </p>
           ) : (
             options.map((opt) => {
               const checked = selectedIds.includes(opt.itemId);
@@ -67,7 +77,9 @@ export default function CustomizeItemDialog({
                       disabled={disabled}
                       onChange={() => {
                         if (checked) {
-                          setSelectedIds((prev) => prev.filter((id) => id !== opt.itemId));
+                          setSelectedIds((prev) =>
+                            prev.filter((id) => id !== opt.itemId),
+                          );
                         } else {
                           setSelectedIds((prev) => [...prev, opt.itemId]);
                         }
@@ -75,13 +87,19 @@ export default function CustomizeItemDialog({
                       className="h-4 w-4 accent-orange-500"
                     />
                     <div>
-                      <p className="text-sm font-bold text-gray-900">{opt.name}</p>
+                      <p className="text-sm font-bold text-gray-900">
+                        {opt.name}
+                      </p>
                       <p className="text-xs text-gray-500">
-                        {disabled ? "Out of stock" : `Stock: ${opt.stockQuantity}`}
+                        {disabled
+                          ? "Out of stock"
+                          : `Stock: ${opt.stockQuantity}`}
                       </p>
                     </div>
                   </div>
-                  <p className="text-sm font-black text-orange-600">+ Rs {opt.price.toFixed(2)}</p>
+                  <p className="text-sm font-black text-orange-600">
+                    + Rs {opt.price.toFixed(2)}
+                  </p>
                 </label>
               );
             })

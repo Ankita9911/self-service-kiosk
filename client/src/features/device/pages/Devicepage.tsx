@@ -18,30 +18,43 @@ export default function DevicePage() {
   const { hasPermission } = usePermission();
   const { user } = useAuth();
 
-  const canView         = hasPermission(PERMISSIONS.DEVICE_VIEW);
-  const canCreate       = hasPermission(PERMISSIONS.DEVICE_CREATE);
-  const canUpdate       = hasPermission(PERMISSIONS.DEVICE_UPDATE);
-  const canDelete       = hasPermission(PERMISSIONS.DEVICE_DELETE);
+  const canView = hasPermission(PERMISSIONS.DEVICE_VIEW);
+  const canCreate = hasPermission(PERMISSIONS.DEVICE_CREATE);
+  const canUpdate = hasPermission(PERMISSIONS.DEVICE_UPDATE);
+  const canDelete = hasPermission(PERMISSIONS.DEVICE_DELETE);
   const canChangeStatus = hasPermission(PERMISSIONS.DEVICE_CHANGE_STATUS);
 
-  const isSuperAdmin    = user?.role === "SUPER_ADMIN";
+  const isSuperAdmin = user?.role === "SUPER_ADMIN";
   const isFranchiseAdmin = user?.role === "FRANCHISE_ADMIN";
 
-  const [open, setOpen]                 = useState(false);
+  const [open, setOpen] = useState(false);
   const [createdSecret, setCreatedSecret] = useState<string | null>(null);
-  const [franchises, setFranchises]     = useState<Franchise[]>([]);
-  const [searchTerm, setSearchTerm]     = useState("");
-  const [statusFilter, setStatusFilter] = useState<"ALL" | "ACTIVE" | "INACTIVE">("ALL");
+  const [franchises, setFranchises] = useState<Franchise[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState<
+    "ALL" | "ACTIVE" | "INACTIVE"
+  >("ALL");
   const [franchiseFilter, setFranchiseFilter] = useState("ALL");
   const [outletFilter, setOutletFilter] = useState("ALL");
 
   const {
-    devices, outlets,
-    loading, refreshing,
-    totalDevices, activeDevices, totalMatching,
-    page, pageSize, hasPrevPage, hasNextPage,
-    goToNextPage, goToPrevPage, setPageSize, resetToFirstPage,
-    fetchData, handleCreate,
+    devices,
+    outlets,
+    loading,
+    refreshing,
+    totalDevices,
+    activeDevices,
+    totalMatching,
+    page,
+    pageSize,
+    hasPrevPage,
+    hasNextPage,
+    goToNextPage,
+    goToPrevPage,
+    setPageSize,
+    resetToFirstPage,
+    fetchData,
+    handleCreate,
     handleUpdate,
     handleDelete: deleteDeviceHook,
     handleStatusChange,
@@ -54,7 +67,9 @@ export default function DevicePage() {
 
   useEffect(() => {
     if (isSuperAdmin && canView) {
-      getFranchises().then(setFranchises).catch(() => {});
+      getFranchises()
+        .then(setFranchises)
+        .catch(() => {});
     }
   }, [isSuperAdmin, canView]);
 
@@ -80,7 +95,10 @@ export default function DevicePage() {
   };
 
   const handleToggleStatus = async (device: Device) => {
-    await handleStatusChange(device.deviceId, device.status === "ACTIVE" ? "INACTIVE" : "ACTIVE");
+    await handleStatusChange(
+      device.deviceId,
+      device.status === "ACTIVE" ? "INACTIVE" : "ACTIVE",
+    );
   };
 
   const handleDelete = async (device: Device) => {
@@ -91,7 +109,9 @@ export default function DevicePage() {
     return (
       <div className="flex flex-col items-center justify-center min-h-[40vh] gap-3 text-center">
         <ShieldAlert className="w-10 h-10 text-slate-300 dark:text-slate-600" />
-        <p className="font-medium text-slate-600 dark:text-slate-300">Access Restricted</p>
+        <p className="font-medium text-slate-600 dark:text-slate-300">
+          Access Restricted
+        </p>
         <p className="text-slate-400 dark:text-slate-500 text-sm">
           You don't have permission to view devices.
         </p>
@@ -117,15 +137,30 @@ export default function DevicePage() {
       <DeviceFilters
         searchTerm={searchTerm}
         statusFilter={statusFilter}
-        onSearchChange={(v) => { setSearchTerm(v); resetToFirstPage(); }}
-        onStatusChange={(v) => { setStatusFilter(v); resetToFirstPage(); }}
+        onSearchChange={(v) => {
+          setSearchTerm(v);
+          resetToFirstPage();
+        }}
+        onStatusChange={(v) => {
+          setStatusFilter(v);
+          resetToFirstPage();
+        }}
         isSuperAdmin={isSuperAdmin}
         franchises={franchises}
         franchiseFilter={franchiseFilter}
-        onFranchiseChange={(v) => { setFranchiseFilter(v); setOutletFilter("ALL"); resetToFirstPage(); }}
-        filterableOutlets={(isSuperAdmin || isFranchiseAdmin) ? filterableOutlets : undefined}
+        onFranchiseChange={(v) => {
+          setFranchiseFilter(v);
+          setOutletFilter("ALL");
+          resetToFirstPage();
+        }}
+        filterableOutlets={
+          isSuperAdmin || isFranchiseAdmin ? filterableOutlets : undefined
+        }
         outletFilter={outletFilter}
-        onOutletChange={(v) => { setOutletFilter(v); resetToFirstPage(); }}
+        onOutletChange={(v) => {
+          setOutletFilter(v);
+          resetToFirstPage();
+        }}
         hasActiveFilters={hasActiveFilters}
         onClearFilters={clearFilters}
       />

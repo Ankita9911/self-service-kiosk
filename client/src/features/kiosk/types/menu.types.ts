@@ -1,4 +1,9 @@
-export type { OfferType, ItemOffer, ServiceType, InventoryMode } from "@/shared/types/menu.types";
+export type {
+  OfferType,
+  ItemOffer,
+  ServiceType,
+  InventoryMode,
+} from "@/shared/types/menu.types";
 
 export interface Category {
   _id: string;

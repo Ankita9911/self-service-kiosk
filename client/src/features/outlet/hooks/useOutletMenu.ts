@@ -20,23 +20,26 @@ import {
 import { getRecipes } from "@/features/recipes/services/recipe.service";
 import type { Recipe } from "@/features/recipes/types/recipe.types";
 import { getOutlets } from "@/features/outlet/services/outlet.service";
-import type { Category, MenuItem, Combo } from "@/features/kiosk/types/menu.types";
+import type {
+  Category,
+  MenuItem,
+  Combo,
+} from "@/features/kiosk/types/menu.types";
 import type {
   Outlet,
   ItemFormState,
   CategoryFormState,
 } from "@/features/outlet/types/outlet.types";
-import {
-  getUploadUrl,
-  uploadFileToS3,
-} from "@/features/upload/index";
+import { getUploadUrl, uploadFileToS3 } from "@/features/upload/index";
 import { useMenuSocket } from "@/shared/hooks/useMenuSocket";
 
 const DEFAULT_PAGE_SIZE = 12;
 const LOW_STOCK_THRESHOLD = 5;
 
 function getRecipeAvailability(recipe: Recipe) {
-  const ingredients = Array.isArray(recipe?.ingredients) ? recipe.ingredients : [];
+  const ingredients = Array.isArray(recipe?.ingredients)
+    ? recipe.ingredients
+    : [];
 
   if (!ingredients.length) {
     return {
@@ -51,7 +54,9 @@ function getRecipeAvailability(recipe: Recipe) {
   for (const row of ingredients) {
     const quantityNeeded = Number(row?.quantity ?? 0);
     const ingredient =
-      row?.ingredientId && typeof row.ingredientId === "object" ? row.ingredientId : null;
+      row?.ingredientId && typeof row.ingredientId === "object"
+        ? row.ingredientId
+        : null;
     const currentStock = Number(ingredient?.currentStock ?? 0);
 
     if (!ingredient || quantityNeeded <= 0) {
@@ -65,7 +70,9 @@ function getRecipeAvailability(recipe: Recipe) {
     servings = Math.min(servings, Math.floor(currentStock / quantityNeeded));
   }
 
-  const availableQuantity = Number.isFinite(servings) ? Math.max(0, servings) : 0;
+  const availableQuantity = Number.isFinite(servings)
+    ? Math.max(0, servings)
+    : 0;
 
   return {
     stockSource: "RECIPE" as const,
@@ -81,7 +88,10 @@ function getRecipeAvailability(recipe: Recipe) {
 
 function decorateMenuItems(
   rawItems: MenuItem[],
-  availabilityByItemId: Record<string, ReturnType<typeof getRecipeAvailability>>
+  availabilityByItemId: Record<
+    string,
+    ReturnType<typeof getRecipeAvailability>
+  >,
 ) {
   return rawItems.map((item) => {
     const inventoryMode = item.inventoryMode ?? "RECIPE";
@@ -169,7 +179,9 @@ export function useOutletMenu(
     imageFile: null,
     imageUrl: undefined,
   });
-  const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null);
+  const [editingCategoryId, setEditingCategoryId] = useState<string | null>(
+    null,
+  );
   const [itemForm, setItemForm] = useState<ItemFormState>({
     categoryId: "",
     name: "",
@@ -208,17 +220,35 @@ export function useOutletMenu(
 
     setStaticLoading(true);
     try {
-      const [catList, outletList, comboList, recipeList, customizationItemsResult] = await Promise.all([
+      const [
+        catList,
+        outletList,
+        comboList,
+        recipeList,
+        customizationItemsResult,
+      ] = await Promise.all([
         getCategories(oidForApi),
         needsOutletId ? getOutlets() : Promise.resolve([]),
         getCombos(oidForApi),
         getRecipes(oidForApi, { limit: 500 }).catch(() => ({
           items: [],
-          pagination: { limit: 500, hasNext: false, nextCursor: null, totalMatching: 0 },
+          pagination: {
+            limit: 500,
+            hasNext: false,
+            nextCursor: null,
+            totalMatching: 0,
+          },
         })),
-        getMenuItems(oidForApi, undefined, undefined, "ALL", { limit: 100 }).catch(() => ({
+        getMenuItems(oidForApi, undefined, undefined, "ALL", {
+          limit: 100,
+        }).catch(() => ({
           items: [],
-          pagination: { limit: 100, hasNext: false, nextCursor: null, totalMatching: 0 },
+          pagination: {
+            limit: 100,
+            hasNext: false,
+            nextCursor: null,
+            totalMatching: 0,
+          },
           stats: { totalItems: 0, activeItems: 0 },
         })),
       ]);
@@ -228,18 +258,21 @@ export function useOutletMenu(
       setCombos(comboList);
       setCustomizationItems(customizationItemsResult.items);
       setAvailabilityByItemId(
-        recipeList.items.reduce((acc, recipe) => {
-          const menuItemId =
-            recipe?.menuItemId && typeof recipe.menuItemId === "object"
-              ? recipe.menuItemId._id
-              : recipe?.menuItemId;
+        recipeList.items.reduce(
+          (acc, recipe) => {
+            const menuItemId =
+              recipe?.menuItemId && typeof recipe.menuItemId === "object"
+                ? recipe.menuItemId._id
+                : recipe?.menuItemId;
 
-          if (menuItemId) {
-            acc[String(menuItemId)] = getRecipeAvailability(recipe);
-          }
+            if (menuItemId) {
+              acc[String(menuItemId)] = getRecipeAvailability(recipe);
+            }
 
-          return acc;
-        }, {} as Record<string, ReturnType<typeof getRecipeAvailability>>)
+            return acc;
+          },
+          {} as Record<string, ReturnType<typeof getRecipeAvailability>>,
+        ),
       );
     } finally {
       setStaticLoading(false);
@@ -344,7 +377,11 @@ export function useOutletMenu(
   async function addCategory() {
     let imageUrl: string | undefined;
     if (catForm.imageFile) {
-      const upload = await getUploadUrl(catForm.imageFile, "category", oidForApi);
+      const upload = await getUploadUrl(
+        catForm.imageFile,
+        "category",
+        oidForApi,
+      );
       await uploadFileToS3(upload.uploadUrl, catForm.imageFile);
       imageUrl = upload.publicUrl;
     }
@@ -357,14 +394,23 @@ export function useOutletMenu(
       },
       oidForApi,
     );
-    setCatForm({ name: "", description: "", imageFile: null, imageUrl: undefined });
+    setCatForm({
+      name: "",
+      description: "",
+      imageFile: null,
+      imageUrl: undefined,
+    });
     await refreshMenuData();
   }
 
   async function editCategory(id: string) {
     let imageUrl = editCatForm.imageUrl;
     if (editCatForm.imageFile) {
-      const upload = await getUploadUrl(editCatForm.imageFile, "category", oidForApi);
+      const upload = await getUploadUrl(
+        editCatForm.imageFile,
+        "category",
+        oidForApi,
+      );
       await uploadFileToS3(upload.uploadUrl, editCatForm.imageFile);
       imageUrl = upload.publicUrl;
     }
@@ -376,11 +422,16 @@ export function useOutletMenu(
         description: editCatForm.description || undefined,
         imageUrl,
       },
-      oidForApi
+      oidForApi,
     );
 
     setEditingCategoryId(null);
-    setEditCatForm({ name: "", description: "", imageFile: null, imageUrl: undefined });
+    setEditCatForm({
+      name: "",
+      description: "",
+      imageFile: null,
+      imageUrl: undefined,
+    });
     await refreshMenuData();
   }
 
@@ -434,7 +485,10 @@ export function useOutletMenu(
   }
 
   async function updateItem(id: string) {
-    const payload: Partial<MenuItem> & { customizationItemIds?: string[]; imageUrl?: string } = {
+    const payload: Partial<MenuItem> & {
+      customizationItemIds?: string[];
+      imageUrl?: string;
+    } = {
       name: itemForm.name,
       description: itemForm.description || undefined,
       price: parseFloat(itemForm.price),

@@ -1,5 +1,12 @@
 import { useState } from "react";
-import { ArrowUpDown, Loader2, X, PackagePlus, PackageMinus, ArrowRightLeft } from "lucide-react";
+import {
+  ArrowUpDown,
+  Loader2,
+  X,
+  PackagePlus,
+  PackageMinus,
+  ArrowRightLeft,
+} from "lucide-react";
 import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
 import {
@@ -14,9 +21,21 @@ import type { ManualTransactionPayload } from "../types/stockTransaction.types";
 import { shortUnit } from "../utils/stockTransaction.utils";
 
 const TRANSACTION_TYPES = [
-  { value: "PURCHASE" as const, label: "Purchase", icon: <PackagePlus className="w-3.5 h-3.5" /> },
-  { value: "WASTAGE" as const, label: "Wastage", icon: <PackageMinus className="w-3.5 h-3.5" /> },
-  { value: "ADJUSTMENT" as const, label: "Adjustment", icon: <ArrowRightLeft className="w-3.5 h-3.5" /> },
+  {
+    value: "PURCHASE" as const,
+    label: "Purchase",
+    icon: <PackagePlus className="w-3.5 h-3.5" />,
+  },
+  {
+    value: "WASTAGE" as const,
+    label: "Wastage",
+    icon: <PackageMinus className="w-3.5 h-3.5" />,
+  },
+  {
+    value: "ADJUSTMENT" as const,
+    label: "Adjustment",
+    icon: <ArrowRightLeft className="w-3.5 h-3.5" />,
+  },
 ];
 
 interface LogTransactionModalProps {
@@ -25,7 +44,11 @@ interface LogTransactionModalProps {
   onSubmit: (payload: ManualTransactionPayload) => Promise<void>;
 }
 
-export function LogTransactionModal({ allIngredients, onClose, onSubmit }: LogTransactionModalProps) {
+export function LogTransactionModal({
+  allIngredients,
+  onClose,
+  onSubmit,
+}: LogTransactionModalProps) {
   const [formData, setFormData] = useState<ManualTransactionPayload>({
     ingredientId: "",
     type: "PURCHASE",
@@ -42,14 +65,22 @@ export function LogTransactionModal({ allIngredients, onClose, onSubmit }: LogTr
 
   const handleSubmit = async () => {
     setError("");
-    if (!formData.ingredientId) { setError("Please select an ingredient."); return; }
-    if (!formData.quantity || formData.quantity === 0) { setError("Quantity must be non-zero."); return; }
+    if (!formData.ingredientId) {
+      setError("Please select an ingredient.");
+      return;
+    }
+    if (!formData.quantity || formData.quantity === 0) {
+      setError("Quantity must be non-zero.");
+      return;
+    }
     setSaving(true);
     try {
       await onSubmit(formData);
       onClose();
     } catch (err: unknown) {
-      setError((err as { message?: string })?.message ?? "Failed to log transaction.");
+      setError(
+        (err as { message?: string })?.message ?? "Failed to log transaction.",
+      );
     } finally {
       setSaving(false);
     }
@@ -68,7 +99,9 @@ export function LogTransactionModal({ allIngredients, onClose, onSubmit }: LogTr
               <ArrowUpDown className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
             </div>
             <div>
-              <h3 className="text-sm font-bold text-slate-800 dark:text-white">Log Stock Transaction</h3>
+              <h3 className="text-sm font-bold text-slate-800 dark:text-white">
+                Log Stock Transaction
+              </h3>
               <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">
                 Create a manual purchase, wastage, or adjustment entry.
               </p>
@@ -90,17 +123,25 @@ export function LogTransactionModal({ allIngredients, onClose, onSubmit }: LogTr
           )}
 
           <div className="space-y-1.5">
-            <Label className="text-xs font-semibold text-slate-600 dark:text-slate-300">Ingredient</Label>
+            <Label className="text-xs font-semibold text-slate-600 dark:text-slate-300">
+              Ingredient
+            </Label>
             <Select
               value={formData.ingredientId}
-              onValueChange={(v) => setFormData((prev) => ({ ...prev, ingredientId: v }))}
+              onValueChange={(v) =>
+                setFormData((prev) => ({ ...prev, ingredientId: v }))
+              }
             >
               <SelectTrigger className="h-10 rounded-xl bg-slate-50 dark:bg-white/5 border-slate-200 dark:border-white/8 text-[13px]">
                 <SelectValue placeholder="Select ingredient…" />
               </SelectTrigger>
               <SelectContent className="rounded-xl border-slate-100 dark:border-white/8 bg-white dark:bg-[#1a1d26]">
                 {allIngredients.map((ing) => (
-                  <SelectItem key={ing._id} value={ing._id} className="text-[13px] rounded-lg">
+                  <SelectItem
+                    key={ing._id}
+                    value={ing._id}
+                    className="text-[13px] rounded-lg"
+                  >
                     {ing.name}
                     <span className="ml-1.5 text-slate-400 text-[11px]">
                       ({ing.currentStock} {shortUnit(ing.unit)})
@@ -122,14 +163,20 @@ export function LogTransactionModal({ allIngredients, onClose, onSubmit }: LogTr
                   <button
                     key={value}
                     type="button"
-                    onClick={() => setFormData((prev) => ({ ...prev, type: value }))}
+                    onClick={() =>
+                      setFormData((prev) => ({ ...prev, type: value }))
+                    }
                     className={`flex flex-col items-center gap-1.5 py-3 px-2 rounded-xl border text-[11px] font-semibold transition-all ${
                       active
                         ? "border-indigo-400 dark:border-indigo-500/60 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-300"
                         : "border-slate-200 dark:border-white/8 bg-white dark:bg-white/3 text-slate-500 dark:text-slate-400 hover:border-slate-300 dark:hover:border-white/15"
                     }`}
                   >
-                    <span className={active ? "text-indigo-500" : "text-slate-400"}>{icon}</span>
+                    <span
+                      className={active ? "text-indigo-500" : "text-slate-400"}
+                    >
+                      {icon}
+                    </span>
                     <span>{label}</span>
                   </button>
                 );
@@ -141,16 +188,23 @@ export function LogTransactionModal({ allIngredients, onClose, onSubmit }: LogTr
             <Label className="text-xs font-semibold text-slate-600 dark:text-slate-300">
               Quantity
               {formData.type === "ADJUSTMENT" && (
-                <span className="ml-1.5 font-normal text-slate-400">(negative to deduct)</span>
+                <span className="ml-1.5 font-normal text-slate-400">
+                  (negative to deduct)
+                </span>
               )}
             </Label>
             <Input
               type="number"
               step="any"
-              placeholder={formData.type === "ADJUSTMENT" ? "e.g. −5 or +10" : "e.g. 25"}
+              placeholder={
+                formData.type === "ADJUSTMENT" ? "e.g. −5 or +10" : "e.g. 25"
+              }
               value={formData.quantity || ""}
               onChange={(e) =>
-                setFormData((prev) => ({ ...prev, quantity: Number(e.target.value) }))
+                setFormData((prev) => ({
+                  ...prev,
+                  quantity: Number(e.target.value),
+                }))
               }
               className="h-10 rounded-xl bg-slate-50 dark:bg-white/5 border-slate-200 dark:border-white/8"
             />
@@ -163,7 +217,9 @@ export function LogTransactionModal({ allIngredients, onClose, onSubmit }: LogTr
             <Input
               placeholder="Reason for transaction…"
               value={formData.note}
-              onChange={(e) => setFormData((prev) => ({ ...prev, note: e.target.value }))}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, note: e.target.value }))
+              }
               className="h-10 rounded-xl bg-slate-50 dark:bg-white/5 border-slate-200 dark:border-white/8"
             />
           </div>

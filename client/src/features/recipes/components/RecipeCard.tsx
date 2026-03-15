@@ -12,12 +12,17 @@ interface Props {
 function getServingsInfo(recipe: Recipe) {
   const availableServings = recipe.ingredients.reduce((min, row) => {
     if (typeof row.ingredientId !== "object" || row.quantity <= 0) return min;
-    return Math.min(min, Math.floor(row.ingredientId.currentStock / row.quantity));
+    return Math.min(
+      min,
+      Math.floor(row.ingredientId.currentStock / row.quantity),
+    );
   }, Number.POSITIVE_INFINITY);
 
-  if (!Number.isFinite(availableServings)) return { label: "Recipe linked", color: "slate" };
+  if (!Number.isFinite(availableServings))
+    return { label: "Recipe linked", color: "slate" };
   if (availableServings <= 0) return { label: "Out of stock", color: "red" };
-  if (availableServings <= 5) return { label: `${availableServings} servings`, color: "amber" };
+  if (availableServings <= 5)
+    return { label: `${availableServings} servings`, color: "amber" };
   return { label: `${availableServings} servings`, color: "emerald" };
 }
 
@@ -25,10 +30,16 @@ const stockColors = {
   slate: "bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400",
   red: "bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400",
   amber: "bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400",
-  emerald: "bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
+  emerald:
+    "bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
 };
 
-export function RecipeCard({ recipe, onEdit, onDelete, showActions = true }: Props) {
+export function RecipeCard({
+  recipe,
+  onEdit,
+  onDelete,
+  showActions = true,
+}: Props) {
   const menuItemName =
     typeof recipe.menuItemId === "object"
       ? recipe.menuItemId.name
@@ -55,7 +66,10 @@ export function RecipeCard({ recipe, onEdit, onDelete, showActions = true }: Pro
             </span>
           )}
           {showActions && (
-            <RecipeRowMenu onEdit={() => onEdit(recipe)} onDelete={() => onDelete(recipe)} />
+            <RecipeRowMenu
+              onEdit={() => onEdit(recipe)}
+              onDelete={() => onDelete(recipe)}
+            />
           )}
         </div>
       </div>
@@ -67,9 +81,12 @@ export function RecipeCard({ recipe, onEdit, onDelete, showActions = true }: Pro
           {recipe.prepTime} min
         </span>
         <span className="text-[11px] text-slate-400 bg-slate-50 dark:bg-white/5 px-2 py-0.5 rounded-full border border-slate-100 dark:border-white/5">
-          {recipe.ingredients.length} ingredient{recipe.ingredients.length !== 1 ? "s" : ""}
+          {recipe.ingredients.length} ingredient
+          {recipe.ingredients.length !== 1 ? "s" : ""}
         </span>
-        <span className={`inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full ${stockColors[stockColor]}`}>
+        <span
+          className={`inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full ${stockColors[stockColor]}`}
+        >
           <Package className="w-3 h-3" />
           {stockLabel}
         </span>
@@ -106,7 +123,6 @@ export function RecipeCard({ recipe, onEdit, onDelete, showActions = true }: Pro
           {recipe.instructions}
         </p>
       )}
-
     </div>
   );
 }

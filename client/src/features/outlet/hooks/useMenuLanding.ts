@@ -15,7 +15,7 @@ export interface MenuLandingFilters {
 export function useMenuLanding(
   user: any,
   hasPermission: (permission: string) => boolean,
-  filters: MenuLandingFilters
+  filters: MenuLandingFilters,
 ) {
   const navigate = useNavigate();
   const [outlets, setOutlets] = useState<Outlet[]>([]);
@@ -71,7 +71,7 @@ export function useMenuLanding(
           {
             cursor: currentCursor ?? undefined,
             limit: PAGE_SIZE,
-          }
+          },
         );
 
         if (cancelled) return;

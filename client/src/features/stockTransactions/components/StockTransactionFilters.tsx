@@ -34,10 +34,17 @@ interface StockTransactionFiltersProps {
 }
 
 export function StockTransactionFilters({
-  filters, allIngredients, outlets, outletFilter,
-  isFranchiseAdmin, hasOutletId,
+  filters,
+  allIngredients,
+  outlets,
+  outletFilter,
+  isFranchiseAdmin,
+  hasOutletId,
   hasActiveFilters,
-  onFilterChange, onOutletChange, onClearFilters, onResetPage,
+  onFilterChange,
+  onOutletChange,
+  onClearFilters,
+  onResetPage,
 }: StockTransactionFiltersProps) {
   return (
     <div className="flex flex-col sm:flex-row gap-3 flex-wrap">
@@ -60,7 +67,13 @@ export function StockTransactionFilters({
       </div>
 
       {isFranchiseAdmin && !hasOutletId && (
-        <Select value={outletFilter} onValueChange={(v) => { onOutletChange(v); onResetPage(); }}>
+        <Select
+          value={outletFilter}
+          onValueChange={(v) => {
+            onOutletChange(v);
+            onResetPage();
+          }}
+        >
           <SelectTrigger className="h-9 w-44 rounded-xl border-slate-100 dark:border-white/8 bg-white dark:bg-[#161920] text-[13px] text-slate-700 dark:text-slate-200 focus:ring-indigo-400/20">
             <div className="flex items-center gap-2 min-w-0">
               <Store className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 shrink-0" />
@@ -68,9 +81,17 @@ export function StockTransactionFilters({
             </div>
           </SelectTrigger>
           <SelectContent className="rounded-xl border-slate-100 dark:border-white/8 bg-white dark:bg-[#1a1d26]">
-            <SelectItem value="ALL" className="text-[13px] rounded-lg">All Outlets</SelectItem>
+            <SelectItem value="ALL" className="text-[13px] rounded-lg">
+              All Outlets
+            </SelectItem>
             {outlets.map((o) => (
-              <SelectItem key={o._id} value={o._id} className="text-[13px] rounded-lg">{o.name}</SelectItem>
+              <SelectItem
+                key={o._id}
+                value={o._id}
+                className="text-[13px] rounded-lg"
+              >
+                {o.name}
+              </SelectItem>
             ))}
           </SelectContent>
         </Select>
@@ -78,7 +99,9 @@ export function StockTransactionFilters({
 
       <Select
         value={filters.ingredientId || "ALL"}
-        onValueChange={(v) => onFilterChange({ ingredientId: v === "ALL" ? "" : v })}
+        onValueChange={(v) =>
+          onFilterChange({ ingredientId: v === "ALL" ? "" : v })
+        }
       >
         <SelectTrigger className="h-9 w-52 rounded-xl border-slate-100 dark:border-white/8 bg-white dark:bg-[#161920] text-[13px] text-slate-700 dark:text-slate-200 focus:ring-indigo-400/20 overflow-hidden">
           <div className="flex items-center gap-1.5 min-w-0 overflow-hidden">
@@ -89,9 +112,18 @@ export function StockTransactionFilters({
           </div>
         </SelectTrigger>
         <SelectContent className="rounded-xl border-slate-100 dark:border-white/8 bg-white dark:bg-[#1a1d26] max-w-56">
-          <SelectItem value="ALL" className="text-[13px] rounded-lg px-2 py-1.5">All Ingredients</SelectItem>
+          <SelectItem
+            value="ALL"
+            className="text-[13px] rounded-lg px-2 py-1.5"
+          >
+            All Ingredients
+          </SelectItem>
           {allIngredients.map((ing) => (
-            <SelectItem key={ing._id} value={ing._id} className="text-[13px] rounded-lg px-2 py-1.5">
+            <SelectItem
+              key={ing._id}
+              value={ing._id}
+              className="text-[13px] rounded-lg px-2 py-1.5"
+            >
               <span className="truncate block max-w-44">
                 {ing.name} ({shortUnit(ing.unit)})
               </span>

@@ -6,7 +6,10 @@ import { IngredientStats } from "@/features/ingredients/components/IngredientSta
 import { IngredientFilters } from "@/features/ingredients/components/IngredientFilters";
 import { IngredientHeader } from "@/features/ingredients/components/IngredientHeader";
 import { IngredientStockBadge } from "@/features/ingredients/components/IngredientStockBadge";
-import { IngredientFormModal, UNITS } from "@/features/ingredients/components/IngredientFormModal";
+import {
+  IngredientFormModal,
+  UNITS,
+} from "@/features/ingredients/components/IngredientFormModal";
 import { IngredientRowMenu } from "@/features/ingredients/components/IngredientRowMenu";
 import { StockAdjustModal } from "@/features/ingredients/components/StockAdjustModal";
 import { CursorPagination } from "@/shared/components/ui/CursorPagination";
@@ -16,7 +19,12 @@ import type { Outlet } from "@/features/outlet/types/outlet.types";
 import { Package, ShieldAlert } from "lucide-react";
 
 const UNIT_LABEL: Record<string, string> = {
-  gram: "g", kg: "kg", ml: "ml", liter: "L", piece: "pcs", dozen: "doz",
+  gram: "g",
+  kg: "kg",
+  ml: "ml",
+  liter: "L",
+  piece: "pcs",
+  dozen: "doz",
 };
 
 function getUnitLabel(unit: string): string {
@@ -31,8 +39,10 @@ export default function IngredientsPage() {
   const [outletFilter, setOutletFilter] = useState(user?.outletId ?? "ALL");
   const [outlets, setOutlets] = useState<Outlet[]>([]);
 
-  const listOutletId = user?.outletId ?? (outletFilter !== "ALL" ? outletFilter : undefined);
-  const actionOutletId = user?.outletId ?? (outletFilter !== "ALL" ? outletFilter : undefined);
+  const listOutletId =
+    user?.outletId ?? (outletFilter !== "ALL" ? outletFilter : undefined);
+  const actionOutletId =
+    user?.outletId ?? (outletFilter !== "ALL" ? outletFilter : undefined);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [unitFilter, setUnitFilter] = useState("ALL");
@@ -41,29 +51,65 @@ export default function IngredientsPage() {
   const [sortOrder, setSortOrder] = useState("desc");
 
   const {
-    ingredients, loading, refreshing,
-    totalItems, lowStockItems, totalMatching,
-    page, pageSize, hasPrevPage, hasNextPage,
-    goToNextPage, goToPrevPage, setPageSize, resetToFirstPage,
-    fetchData, handleCreate, handleUpdate, handleDelete, handleAdjustStock,
-  } = useIngredients(listOutletId, { search: searchTerm, unit: unitFilter, lowStock: lowStockOnly, sortBy, sortOrder }, actionOutletId, isFranchiseAdmin && !user?.outletId);
+    ingredients,
+    loading,
+    refreshing,
+    totalItems,
+    lowStockItems,
+    totalMatching,
+    page,
+    pageSize,
+    hasPrevPage,
+    hasNextPage,
+    goToNextPage,
+    goToPrevPage,
+    setPageSize,
+    resetToFirstPage,
+    fetchData,
+    handleCreate,
+    handleUpdate,
+    handleDelete,
+    handleAdjustStock,
+  } = useIngredients(
+    listOutletId,
+    {
+      search: searchTerm,
+      unit: unitFilter,
+      lowStock: lowStockOnly,
+      sortBy,
+      sortOrder,
+    },
+    actionOutletId,
+    isFranchiseAdmin && !user?.outletId,
+  );
 
   const [showForm, setShowForm] = useState(false);
-  const [editingIngredient, setEditingIngredient] = useState<Ingredient | null>(null);
-  const [adjustingIngredient, setAdjustingIngredient] = useState<Ingredient | null>(null);
+  const [editingIngredient, setEditingIngredient] = useState<Ingredient | null>(
+    null,
+  );
+  const [adjustingIngredient, setAdjustingIngredient] =
+    useState<Ingredient | null>(null);
 
   useEffect(() => {
     if (!isFranchiseAdmin || user?.outletId) return;
-    void getOutlets().then(setOutlets).catch(() => setOutlets([]));
+    void getOutlets()
+      .then(setOutlets)
+      .catch(() => setOutlets([]));
   }, [isFranchiseAdmin, user?.outletId]);
 
   const hasActiveFilters =
-    searchTerm !== "" || unitFilter !== "ALL" || lowStockOnly ||
-    sortBy !== "createdAt" || sortOrder !== "desc";
+    searchTerm !== "" ||
+    unitFilter !== "ALL" ||
+    lowStockOnly ||
+    sortBy !== "createdAt" ||
+    sortOrder !== "desc";
 
   const clearFilters = () => {
-    setSearchTerm(""); setUnitFilter("ALL"); setLowStockOnly(false);
-    setSortBy("createdAt"); setSortOrder("desc");
+    setSearchTerm("");
+    setUnitFilter("ALL");
+    setLowStockOnly(false);
+    setSortBy("createdAt");
+    setSortOrder("desc");
     if (isFranchiseAdmin && !user?.outletId) setOutletFilter("ALL");
     resetToFirstPage();
   };
@@ -74,7 +120,9 @@ export default function IngredientsPage() {
     return (
       <div className="flex flex-col items-center justify-center min-h-[40vh] gap-3 text-center">
         <ShieldAlert className="w-10 h-10 text-slate-300 dark:text-slate-600" />
-        <p className="font-medium text-slate-600 dark:text-slate-300">No Outlet Assigned</p>
+        <p className="font-medium text-slate-600 dark:text-slate-300">
+          No Outlet Assigned
+        </p>
         <p className="text-slate-400 dark:text-slate-500 text-sm">
           You must be assigned to an outlet to manage ingredients.
         </p>
@@ -103,14 +151,35 @@ export default function IngredientsPage() {
         lowStockOnly={lowStockOnly}
         sortBy={sortBy}
         sortOrder={sortOrder}
-        onSearchChange={(v) => { setSearchTerm(v); resetToFirstPage(); }}
-        onUnitChange={(v) => { setUnitFilter(v); resetToFirstPage(); }}
-        onLowStockChange={(v) => { setLowStockOnly(v); resetToFirstPage(); }}
-        onSortChange={(by, order) => { setSortBy(by); setSortOrder(order); resetToFirstPage(); }}
-        filterableOutlets={isFranchiseAdmin && !user?.outletId ? outlets : undefined}
+        onSearchChange={(v) => {
+          setSearchTerm(v);
+          resetToFirstPage();
+        }}
+        onUnitChange={(v) => {
+          setUnitFilter(v);
+          resetToFirstPage();
+        }}
+        onLowStockChange={(v) => {
+          setLowStockOnly(v);
+          resetToFirstPage();
+        }}
+        onSortChange={(by, order) => {
+          setSortBy(by);
+          setSortOrder(order);
+          resetToFirstPage();
+        }}
+        filterableOutlets={
+          isFranchiseAdmin && !user?.outletId ? outlets : undefined
+        }
         outletFilter={outletFilter}
-        onOutletChange={(v) => { setOutletFilter(v); resetToFirstPage(); }}
-        hasActiveFilters={hasActiveFilters || (isFranchiseAdmin && !user?.outletId && outletFilter !== "ALL")}
+        onOutletChange={(v) => {
+          setOutletFilter(v);
+          resetToFirstPage();
+        }}
+        hasActiveFilters={
+          hasActiveFilters ||
+          (isFranchiseAdmin && !user?.outletId && outletFilter !== "ALL")
+        }
         onClearFilters={clearFilters}
       />
 
@@ -133,12 +202,24 @@ export default function IngredientsPage() {
             {showShimmer ? (
               Array.from({ length: 6 }).map((_, i) => (
                 <tr key={i}>
-                  <td className="px-5 py-4"><Shimmer w="w-32" /></td>
-                  <td className="px-5 py-4"><Shimmer w="w-12" h="h-6" rounded="rounded-lg" /></td>
-                  <td className="px-5 py-4"><Shimmer w="w-14" /></td>
-                  <td className="px-5 py-4"><Shimmer w="w-14" /></td>
-                  <td className="px-5 py-4"><Shimmer w="w-16" h="h-6" rounded="rounded-full" /></td>
-                  <td className="px-5 py-4"><Shimmer w="w-6" h="h-6" rounded="rounded-md" /></td>
+                  <td className="px-5 py-4">
+                    <Shimmer w="w-32" />
+                  </td>
+                  <td className="px-5 py-4">
+                    <Shimmer w="w-12" h="h-6" rounded="rounded-lg" />
+                  </td>
+                  <td className="px-5 py-4">
+                    <Shimmer w="w-14" />
+                  </td>
+                  <td className="px-5 py-4">
+                    <Shimmer w="w-14" />
+                  </td>
+                  <td className="px-5 py-4">
+                    <Shimmer w="w-16" h="h-6" rounded="rounded-full" />
+                  </td>
+                  <td className="px-5 py-4">
+                    <Shimmer w="w-6" h="h-6" rounded="rounded-md" />
+                  </td>
                 </tr>
               ))
             ) : ingredients.length === 0 ? (
@@ -149,17 +230,22 @@ export default function IngredientsPage() {
                       <Package className="w-5 h-5 text-slate-400 dark:text-slate-500" />
                     </div>
                     <p className="font-medium text-slate-600 dark:text-slate-300">
-                      {hasActiveFilters ? "No ingredients match your filters" : "No ingredients found"}
+                      {hasActiveFilters
+                        ? "No ingredients match your filters"
+                        : "No ingredients found"}
                     </p>
                     <p className="text-slate-400 dark:text-slate-500 text-sm">
-                      {hasActiveFilters ? "Try clearing filters or a different search" : "Add your first ingredient to get started"}
+                      {hasActiveFilters
+                        ? "Try clearing filters or a different search"
+                        : "Add your first ingredient to get started"}
                     </p>
                   </div>
                 </td>
               </tr>
             ) : (
               ingredients.map((ing) => {
-                const unitFullLabel = UNITS.find((u) => u.value === ing.unit)?.label ?? ing.unit;
+                const unitFullLabel =
+                  UNITS.find((u) => u.value === ing.unit)?.label ?? ing.unit;
                 return (
                   <tr
                     key={ing._id}
@@ -195,7 +281,10 @@ export default function IngredientsPage() {
                       {actionOutletId && (
                         <IngredientRowMenu
                           ingredient={ing}
-                          onEdit={(i) => { setEditingIngredient(i); setShowForm(true); }}
+                          onEdit={(i) => {
+                            setEditingIngredient(i);
+                            setShowForm(true);
+                          }}
                           onDelete={() => handleDelete(ing._id)}
                           onAdjustStock={setAdjustingIngredient}
                         />
@@ -224,7 +313,10 @@ export default function IngredientsPage() {
 
       <IngredientFormModal
         open={showForm}
-        onClose={() => { setShowForm(false); setEditingIngredient(null); }}
+        onClose={() => {
+          setShowForm(false);
+          setEditingIngredient(null);
+        }}
         ingredient={editingIngredient}
         onCreate={handleCreate}
         onUpdate={handleUpdate}

@@ -7,7 +7,11 @@ interface OutletStatsProps {
 }
 
 function StatPill({
-  icon, label, value, iconBg, loading,
+  icon,
+  label,
+  value,
+  iconBg,
+  loading,
 }: {
   icon: React.ReactNode;
   label: string;
@@ -35,18 +39,28 @@ function StatPill({
 
   return (
     <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-white dark:bg-[#1e2130] border border-slate-100 dark:border-white/7 shadow-sm">
-      <div className={`h-9 w-9 rounded-xl ${iconBg} flex items-center justify-center shrink-0`}>
+      <div
+        className={`h-9 w-9 rounded-xl ${iconBg} flex items-center justify-center shrink-0`}
+      >
         {icon}
       </div>
       <div>
-        <p className="text-xl font-black text-slate-800 dark:text-white leading-none">{value}</p>
-        <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5 font-medium">{label}</p>
+        <p className="text-xl font-black text-slate-800 dark:text-white leading-none">
+          {value}
+        </p>
+        <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5 font-medium">
+          {label}
+        </p>
       </div>
     </div>
   );
 }
 
-export function OutletStats({ totalOutlets, activeOutlets, loading }: OutletStatsProps) {
+export function OutletStats({
+  totalOutlets,
+  activeOutlets,
+  loading,
+}: OutletStatsProps) {
   return (
     <div className="grid grid-cols-3 gap-3">
       <StatPill

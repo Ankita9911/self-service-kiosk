@@ -18,7 +18,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const navigate = useNavigate();
   const isKioskRoute = window.location.pathname.startsWith("/kiosk");
 
-  const [user, setUser] = useState<(User & { mustChangePassword?: boolean }) | null>(null);
+  const [user, setUser] = useState<
+    (User & { mustChangePassword?: boolean }) | null
+  >(null);
   const [loading, setLoading] = useState(true);
   const socketRef = useRef<Socket | null>(null);
 

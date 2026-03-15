@@ -52,7 +52,7 @@ export function DeviceFilters({
           placeholder="Search by device ID or name…"
           className="w-full h-9 pl-9 pr-9 rounded-xl bg-white dark:bg-[#161920] border border-slate-100 dark:border-white/8 text-[13px] text-slate-700 dark:text-slate-200 placeholder:text-slate-400 dark:placeholder:text-slate-600 focus:outline-none focus:border-indigo-400 dark:focus:border-indigo-500/60 focus:ring-2 focus:ring-indigo-400/15 dark:focus:ring-indigo-500/10 transition-all"
           value={searchTerm}
-          onChange={e => onSearchChange(e.target.value)}
+          onChange={(e) => onSearchChange(e.target.value)}
         />
         {searchTerm && (
           <button
@@ -66,7 +66,10 @@ export function DeviceFilters({
 
       {/* Franchise filter — super admin only */}
       {isSuperAdmin && franchises && onFranchiseChange && (
-        <Select value={franchiseFilter ?? "ALL"} onValueChange={onFranchiseChange}>
+        <Select
+          value={franchiseFilter ?? "ALL"}
+          onValueChange={onFranchiseChange}
+        >
           <SelectTrigger className="h-9 w-44 rounded-xl border-slate-100 dark:border-white/8 bg-white dark:bg-[#161920] text-[13px] text-slate-700 dark:text-slate-200 focus:ring-indigo-400/20 overflow-hidden">
             <div className="flex items-center gap-1.5 min-w-0 overflow-hidden">
               <Building2 className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 shrink-0" />
@@ -76,9 +79,18 @@ export function DeviceFilters({
             </div>
           </SelectTrigger>
           <SelectContent className="rounded-xl border-slate-100 dark:border-white/8 bg-white dark:bg-[#1a1d26] max-w-50">
-            <SelectItem value="ALL" className="text-[13px] rounded-lg px-2 py-1.5">All Franchises</SelectItem>
+            <SelectItem
+              value="ALL"
+              className="text-[13px] rounded-lg px-2 py-1.5"
+            >
+              All Franchises
+            </SelectItem>
             {franchises.map((f) => (
-              <SelectItem key={f._id} value={f._id} className="text-[13px] rounded-lg px-2 py-1.5">
+              <SelectItem
+                key={f._id}
+                value={f._id}
+                className="text-[13px] rounded-lg px-2 py-1.5"
+              >
                 <span className="truncate block max-w-40">{f.name}</span>
               </SelectItem>
             ))}
@@ -96,9 +108,17 @@ export function DeviceFilters({
             </div>
           </SelectTrigger>
           <SelectContent className="rounded-xl border-slate-100 dark:border-white/8 bg-white dark:bg-[#1a1d26]">
-            <SelectItem value="ALL" className="text-[13px] rounded-lg">All Outlets</SelectItem>
+            <SelectItem value="ALL" className="text-[13px] rounded-lg">
+              All Outlets
+            </SelectItem>
             {filterableOutlets.map((o) => (
-              <SelectItem key={o._id} value={o._id} className="text-[13px] rounded-lg">{o.name}</SelectItem>
+              <SelectItem
+                key={o._id}
+                value={o._id}
+                className="text-[13px] rounded-lg"
+              >
+                {o.name}
+              </SelectItem>
             ))}
           </SelectContent>
         </Select>
@@ -106,7 +126,7 @@ export function DeviceFilters({
 
       {/* Status toggle */}
       <div className="flex gap-1 bg-white dark:bg-[#161920] border border-slate-100 dark:border-white/8 rounded-xl p-1">
-        {(["ALL", "ACTIVE", "INACTIVE"] as const).map(s => (
+        {(["ALL", "ACTIVE", "INACTIVE"] as const).map((s) => (
           <button
             key={s}
             onClick={() => onStatusChange(s)}

@@ -6,7 +6,11 @@ import {
   deleteRecipe,
   aiGenerateRecipe,
 } from "@/features/recipes/services/recipe.service";
-import type { Recipe, RecipeFormState, AISuggestion } from "@/features/recipes/types/recipe.types";
+import type {
+  Recipe,
+  RecipeFormState,
+  AISuggestion,
+} from "@/features/recipes/types/recipe.types";
 import { useDebounce } from "@/shared/hooks/useDebounce";
 import { useOutletEvents } from "@/shared/hooks/useOutletEvents";
 
@@ -26,7 +30,7 @@ export function useRecipes(
   outletId: string | undefined,
   filters: RecipeFilters = DEFAULT_FILTERS,
   actionOutletId?: string,
-  allowFranchiseScope = false
+  allowFranchiseScope = false,
 ) {
   const mutationOutletId = actionOutletId ?? outletId;
   const [recipes, setRecipes] = useState<Recipe[]>([]);
@@ -82,16 +86,27 @@ export function useRecipes(
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [outletId, debouncedSearch, filters.aiOnly, currentCursor, pageSize, refreshTick]
+    [
+      outletId,
+      debouncedSearch,
+      filters.aiOnly,
+      currentCursor,
+      pageSize,
+      refreshTick,
+    ],
   );
 
   useEffect(() => {
     fetchRecipes();
   }, [fetchRecipes]);
 
-  useOutletEvents(["recipe:updated", "inventory:updated"], () => {
-    void fetchRecipes(true);
-  }, outletId);
+  useOutletEvents(
+    ["recipe:updated", "inventory:updated"],
+    () => {
+      void fetchRecipes(true);
+    },
+    outletId,
+  );
 
   // ── Navigation ──
   function goToNextPage() {
@@ -123,7 +138,7 @@ export function useRecipes(
       resetToFirstPage();
       setRefreshTick((n) => n + 1);
     },
-    [allowFranchiseScope, outletId]
+    [allowFranchiseScope, outletId],
   );
 
   // ── CRUD ──
@@ -133,11 +148,15 @@ export function useRecipes(
     }
     const cleanIngredients = data.ingredients
       .filter((i) => i.ingredientId)
-      .map(({ ingredientId, quantity, unit }) => ({ ingredientId, quantity, unit }));
+      .map(({ ingredientId, quantity, unit }) => ({
+        ingredientId,
+        quantity,
+        unit,
+      }));
 
     const result = await createRecipe(
       { ...data, ingredients: cleanIngredients },
-      mutationOutletId
+      mutationOutletId,
     );
     refreshAll(true);
     return result;
@@ -150,7 +169,11 @@ export function useRecipes(
     if (data.ingredients) {
       data.ingredients = data.ingredients
         .filter((i) => i.ingredientId)
-        .map(({ ingredientId, quantity, unit }) => ({ ingredientId, quantity, unit }));
+        .map(({ ingredientId, quantity, unit }) => ({
+          ingredientId,
+          quantity,
+          unit,
+        }));
     }
     const result = await updateRecipe(id, data, mutationOutletId);
     refreshAll(true);

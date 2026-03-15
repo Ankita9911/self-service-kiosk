@@ -1,7 +1,7 @@
 import { ZodError } from "zod";
 
 export function getZodFieldErrors<T extends Record<string, unknown>>(
-  error: ZodError
+  error: ZodError,
 ): Partial<Record<keyof T, string>> {
   const fieldErrors: Partial<Record<keyof T, string>> = {};
 

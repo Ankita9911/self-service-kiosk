@@ -29,16 +29,21 @@ export default function StockTransactionsPage() {
   const [outletFilter, setOutletFilter] = useState(user?.outletId ?? "ALL");
   const [outlets, setOutlets] = useState<Outlet[]>([]);
 
-  const listOutletId = user?.outletId ?? (outletFilter !== "ALL" ? outletFilter : undefined);
-  const actionOutletId = user?.outletId ?? (outletFilter !== "ALL" ? outletFilter : undefined);
+  const listOutletId =
+    user?.outletId ?? (outletFilter !== "ALL" ? outletFilter : undefined);
+  const actionOutletId =
+    user?.outletId ?? (outletFilter !== "ALL" ? outletFilter : undefined);
 
-  const [filters, setFilters] = useState<StockTransactionFilters>(DEFAULT_FILTERS);
+  const [filters, setFilters] =
+    useState<StockTransactionFilters>(DEFAULT_FILTERS);
   const [allIngredients, setAllIngredients] = useState<Ingredient[]>([]);
   const [showForm, setShowForm] = useState(false);
 
   useEffect(() => {
     if (!isFranchiseAdmin || user?.outletId) return;
-    void getOutlets().then(setOutlets).catch(() => setOutlets([]));
+    void getOutlets()
+      .then(setOutlets)
+      .catch(() => setOutlets([]));
   }, [isFranchiseAdmin, user?.outletId]);
 
   const fetchIngredients = useCallback(async () => {
@@ -55,13 +60,27 @@ export default function StockTransactionsPage() {
   }, [fetchIngredients]);
 
   const {
-    transactions, loading, refreshing, filterLoading,
-    stats, totalMatching,
-    page, pageSize, hasPrevPage, hasNextPage,
-    goToNextPage, goToPrevPage, setPageSize, resetToFirstPage,
-    refreshAll, handleCreate,
+    transactions,
+    loading,
+    refreshing,
+    filterLoading,
+    stats,
+    totalMatching,
+    page,
+    pageSize,
+    hasPrevPage,
+    hasNextPage,
+    goToNextPage,
+    goToPrevPage,
+    setPageSize,
+    resetToFirstPage,
+    refreshAll,
+    handleCreate,
   } = useStockTransactions(
-    listOutletId, filters, actionOutletId, isFranchiseAdmin && !user?.outletId
+    listOutletId,
+    filters,
+    actionOutletId,
+    isFranchiseAdmin && !user?.outletId,
   );
 
   const prevFiltersRef = useRef(filters);
@@ -75,14 +94,21 @@ export default function StockTransactionsPage() {
       prev.sortOrder !== filters.sortOrder;
     if (changed) resetToFirstPage();
     prevFiltersRef.current = filters;
-  }, [filters.search, filters.ingredientId, filters.type, filters.sortBy, filters.sortOrder]);
+  }, [
+    filters.search,
+    filters.ingredientId,
+    filters.type,
+    filters.sortBy,
+    filters.sortOrder,
+  ]);
 
   const handleSort = (col: StockTransactionSortBy) => {
     resetToFirstPage();
     setFilters((prev) => ({
       ...prev,
       sortBy: col,
-      sortOrder: prev.sortBy === col && prev.sortOrder === "desc" ? "asc" : "desc",
+      sortOrder:
+        prev.sortBy === col && prev.sortOrder === "desc" ? "asc" : "desc",
     }));
   };
 
@@ -97,7 +123,9 @@ export default function StockTransactionsPage() {
     setFilters((prev) => ({ ...prev, search: "", ingredientId: "", type: "" }));
   };
 
-  const handleSubmitTransaction = async (payload: Parameters<typeof handleCreate>[0]) => {
+  const handleSubmitTransaction = async (
+    payload: Parameters<typeof handleCreate>[0],
+  ) => {
     await handleCreate(payload);
   };
 
@@ -107,7 +135,9 @@ export default function StockTransactionsPage() {
     return (
       <div className="flex flex-col items-center justify-center min-h-[40vh] gap-3 text-center">
         <ShieldAlert className="w-10 h-10 text-slate-300 dark:text-slate-600" />
-        <p className="font-medium text-slate-600 dark:text-slate-300">No Outlet Assigned</p>
+        <p className="font-medium text-slate-600 dark:text-slate-300">
+          No Outlet Assigned
+        </p>
         <p className="text-slate-400 dark:text-slate-500 text-sm">
           You must be assigned to an outlet to manage stock transactions.
         </p>
@@ -132,7 +162,9 @@ export default function StockTransactionsPage() {
             disabled={refreshing}
             className="h-9 w-9 rounded-xl border border-slate-200 dark:border-white/8 bg-white dark:bg-[#161920] flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors disabled:opacity-40"
           >
-            <RefreshCcw className={`w-3.5 h-3.5 ${refreshing ? "animate-spin" : ""}`} />
+            <RefreshCcw
+              className={`w-3.5 h-3.5 ${refreshing ? "animate-spin" : ""}`}
+            />
           </button>
           <button
             onClick={() => setShowForm(true)}
@@ -155,7 +187,9 @@ export default function StockTransactionsPage() {
         isFranchiseAdmin={isFranchiseAdmin}
         hasOutletId={Boolean(user?.outletId)}
         hasActiveFilters={hasActiveFilters}
-        onFilterChange={(patch) => setFilters((prev) => ({ ...prev, ...patch }))}
+        onFilterChange={(patch) =>
+          setFilters((prev) => ({ ...prev, ...patch }))
+        }
         onOutletChange={setOutletFilter}
         onClearFilters={clearFilters}
         onResetPage={resetToFirstPage}

@@ -31,7 +31,9 @@ export function TempPasswordModal({
               <KeyRound className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h3 className="font-semibold text-white text-base">User Created!</h3>
+              <h3 className="font-semibold text-white text-base">
+                User Created!
+              </h3>
               <p className="text-indigo-200 text-xs">
                 {emailSent
                   ? "Login instructions have been sent to the user"
@@ -64,7 +66,11 @@ export function TempPasswordModal({
                   onClick={copy}
                   className="absolute top-2.5 right-2.5 flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-[11px] font-medium text-slate-300 transition-all"
                 >
-                  {copied ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                  {copied ? (
+                    <Check className="w-3 h-3 text-emerald-400" />
+                  ) : (
+                    <Copy className="w-3 h-3" />
+                  )}
                   {copied ? "Copied!" : "Copy"}
                 </button>
               </div>
@@ -72,7 +78,8 @@ export function TempPasswordModal({
               <div className="bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 rounded-xl p-3.5 flex items-start gap-2.5">
                 <ShieldAlert className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
                 <p className="text-xs text-amber-700 dark:text-amber-400 leading-relaxed">
-                  The user must change this password on first login. This is a one-time display.
+                  The user must change this password on first login. This is a
+                  one-time display.
                 </p>
               </div>
             </>

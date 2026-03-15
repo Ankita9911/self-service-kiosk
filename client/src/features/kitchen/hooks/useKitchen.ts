@@ -1,5 +1,8 @@
 import { useEffect, useState, useCallback } from "react";
-import { getOrders, updateOrderStatus } from "@/features/kiosk/services/order.service";
+import {
+  getOrders,
+  updateOrderStatus,
+} from "@/features/kiosk/services/order.service";
 import { useSocket } from "@/shared/hooks/useSocket";
 import type { Order, OrderStatus } from "@/features/kiosk/types/order.types";
 import { COLUMN_ORDER } from "../config/kitchen.constants";
@@ -39,11 +42,11 @@ export function useKitchen() {
         setOrders((prev) => prev.filter((o) => o._id !== orderId));
       } else {
         setOrders((prev) =>
-          prev.map((o) => (o._id === orderId ? { ...o, status } : o))
+          prev.map((o) => (o._id === orderId ? { ...o, status } : o)),
         );
       }
     },
-    []
+    [],
   );
 
   useSocket(handleNewOrder, handleStatusUpdated);
@@ -53,7 +56,7 @@ export function useKitchen() {
     try {
       const updated = await updateOrderStatus(order._id, next);
       setOrders((prev) =>
-        prev.map((o) => (o._id === updated._id ? updated : o))
+        prev.map((o) => (o._id === updated._id ? updated : o)),
       );
     } catch {
       // axios interceptor handles error toasts
@@ -71,7 +74,7 @@ export function useKitchen() {
       acc[s] = orders.filter((o) => o.status === s);
       return acc;
     },
-    { CREATED: [], IN_KITCHEN: [], READY: [] }
+    { CREATED: [], IN_KITCHEN: [], READY: [] },
   );
 
   return {

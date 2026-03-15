@@ -1,5 +1,13 @@
 import { useState } from "react";
-import { Settings2, X, RotateCcw, Eye, EyeOff, ChevronUp, ChevronDown } from "lucide-react";
+import {
+  Settings2,
+  X,
+  RotateCcw,
+  Eye,
+  EyeOff,
+  ChevronUp,
+  ChevronDown,
+} from "lucide-react";
 import type { LayoutItem } from "../hooks/useAnalyticsLayout";
 
 interface Props {
@@ -10,7 +18,13 @@ interface Props {
   onReset: () => void;
 }
 
-export function LayoutCustomizer({ layout, widgetLabels, onToggle, onMove, onReset }: Props) {
+export function LayoutCustomizer({
+  layout,
+  widgetLabels,
+  onToggle,
+  onMove,
+  onReset,
+}: Props) {
   const [open, setOpen] = useState(false);
   const sorted = [...layout].sort((a, b) => a.order - b.order);
 
@@ -37,18 +51,24 @@ export function LayoutCustomizer({ layout, widgetLabels, onToggle, onMove, onRes
           {/* Backdrop */}
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
 
-          <div className="
+          <div
+            className="
             absolute right-0 top-full mt-2 w-72 z-50
             bg-white dark:bg-[#1a1d26]
             border border-slate-100 dark:border-white/[0.08]
             rounded-2xl shadow-xl shadow-slate-200/50 dark:shadow-black/30
             overflow-hidden animate-scale-in
-          ">
+          "
+          >
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-3.5 border-b border-slate-50 dark:border-white/[0.06]">
               <div>
-                <p className="text-[13px] font-semibold text-slate-800 dark:text-white">Customize Layout</p>
-                <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">Show or reorder widgets</p>
+                <p className="text-[13px] font-semibold text-slate-800 dark:text-white">
+                  Customize Layout
+                </p>
+                <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">
+                  Show or reorder widgets
+                </p>
               </div>
               <div className="flex items-center gap-1">
                 <button
@@ -74,9 +94,10 @@ export function LayoutCustomizer({ layout, widgetLabels, onToggle, onMove, onRes
                   key={item.id}
                   className={`
                     flex items-center justify-between px-3 py-2.5 rounded-xl transition-colors
-                    ${item.visible
-                      ? "bg-slate-50 dark:bg-white/[0.04]"
-                      : "opacity-50 hover:bg-slate-50 dark:hover:bg-white/[0.03]"
+                    ${
+                      item.visible
+                        ? "bg-slate-50 dark:bg-white/[0.04]"
+                        : "opacity-50 hover:bg-slate-50 dark:hover:bg-white/[0.03]"
                     }
                   `}
                 >
@@ -107,10 +128,11 @@ export function LayoutCustomizer({ layout, widgetLabels, onToggle, onMove, onRes
                           : "text-slate-400 dark:text-slate-600 hover:bg-slate-100 dark:hover:bg-white/[0.05]"
                       }`}
                     >
-                      {item.visible
-                        ? <Eye className="w-3.5 h-3.5" />
-                        : <EyeOff className="w-3.5 h-3.5" />
-                      }
+                      {item.visible ? (
+                        <Eye className="w-3.5 h-3.5" />
+                      ) : (
+                        <EyeOff className="w-3.5 h-3.5" />
+                      )}
                     </button>
                   </div>
                 </div>

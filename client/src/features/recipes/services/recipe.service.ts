@@ -1,5 +1,9 @@
 import axiosInstance from "@/shared/lib/axiosInstance";
-import type { Recipe, RecipeFormState, AISuggestion } from "../types/recipe.types";
+import type {
+  Recipe,
+  RecipeFormState,
+  AISuggestion,
+} from "../types/recipe.types";
 
 function outletParams(outletId?: string) {
   return outletId ? { params: { outletId } } : {};
@@ -7,10 +11,20 @@ function outletParams(outletId?: string) {
 
 export async function getRecipes(
   outletId?: string,
-  options?: { cursor?: string; limit?: number; search?: string; aiOnly?: boolean }
+  options?: {
+    cursor?: string;
+    limit?: number;
+    search?: string;
+    aiOnly?: boolean;
+  },
 ): Promise<{
   items: Recipe[];
-  pagination: { limit: number; hasNext: boolean; nextCursor: string | null; totalMatching: number };
+  pagination: {
+    limit: number;
+    hasNext: boolean;
+    nextCursor: string | null;
+    totalMatching: number;
+  };
   stats: { totalRecipes: number; aiGeneratedCount: number };
 }> {
   const p: Record<string, string> = {};
@@ -54,53 +68,65 @@ export async function getRecipes(
   };
 }
 
-export async function getRecipeById(id: string, outletId?: string): Promise<Recipe> {
+export async function getRecipeById(
+  id: string,
+  outletId?: string,
+): Promise<Recipe> {
   const response = await axiosInstance.get<{ data: Recipe }>(
     `/recipes/${id}`,
-    outletParams(outletId)
+    outletParams(outletId),
   );
   return response.data.data;
 }
 
-export async function getRecipeByMenuItem(menuItemId: string, outletId?: string): Promise<Recipe | null> {
+export async function getRecipeByMenuItem(
+  menuItemId: string,
+  outletId?: string,
+): Promise<Recipe | null> {
   const response = await axiosInstance.get<{ data: Recipe | null }>(
     `/recipes/by-item/${menuItemId}`,
-    outletParams(outletId)
+    outletParams(outletId),
   );
   return response.data.data;
 }
 
 export async function createRecipe(
   data: Omit<RecipeFormState, "_aiName">,
-  outletId?: string
+  outletId?: string,
 ): Promise<Recipe> {
-  const response = await axiosInstance.post<{ data: Recipe }>(
-    "/recipes",
-    { ...data, ...(outletId && { outletId }) }
-  );
+  const response = await axiosInstance.post<{ data: Recipe }>("/recipes", {
+    ...data,
+    ...(outletId && { outletId }),
+  });
   return response.data.data;
 }
 
 export async function updateRecipe(
   id: string,
   data: Partial<RecipeFormState>,
-  outletId?: string
+  outletId?: string,
 ): Promise<Recipe> {
   const response = await axiosInstance.patch<{ data: Recipe }>(
     `/recipes/${id}`,
-    { ...data, ...(outletId && { outletId }) }
+    { ...data, ...(outletId && { outletId }) },
   );
   return response.data.data;
 }
 
-export async function deleteRecipe(id: string, outletId?: string): Promise<void> {
+export async function deleteRecipe(
+  id: string,
+  outletId?: string,
+): Promise<void> {
   await axiosInstance.delete(`/recipes/${id}`, outletParams(outletId));
 }
 
-export async function aiGenerateRecipe(description: string, outletId?: string): Promise<AISuggestion> {
+export async function aiGenerateRecipe(
+  description: string,
+  outletId?: string,
+): Promise<AISuggestion> {
   const response = await axiosInstance.post<{ data: AISuggestion }>(
     "/recipes/ai-generate",
-    { description, ...(outletId && { outletId }) }
+    { description, ...(outletId && { outletId }) },
   );
   return response.data.data;
 }

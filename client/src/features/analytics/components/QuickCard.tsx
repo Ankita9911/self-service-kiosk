@@ -10,7 +10,14 @@ interface QuickCardProps {
   onClick: () => void;
 }
 
-export function QuickCard({ title, description, icon, badge, loading, onClick }: QuickCardProps) {
+export function QuickCard({
+  title,
+  description,
+  icon,
+  badge,
+  loading,
+  onClick,
+}: QuickCardProps) {
   if (loading) {
     return (
       <div className="bg-white dark:bg-[#161920] rounded-2xl border border-slate-100 dark:border-white/6 p-6 space-y-4">

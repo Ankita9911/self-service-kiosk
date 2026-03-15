@@ -1,5 +1,8 @@
 import axiosInstance from "@/shared/lib/axiosInstance";
-import type { Ingredient, IngredientFormState } from "../types/ingredient.types";
+import type {
+  Ingredient,
+  IngredientFormState,
+} from "../types/ingredient.types";
 
 function outletParams(outletId?: string) {
   return outletId ? { params: { outletId } } : {};
@@ -31,7 +34,7 @@ export interface IngredientListResult {
 
 export async function getIngredients(
   outletId?: string,
-  options?: IngredientQueryOptions
+  options?: IngredientQueryOptions,
 ): Promise<IngredientListResult> {
   const p: Record<string, string> = {};
   if (outletId) p.outletId = outletId;
@@ -77,7 +80,9 @@ export async function getIngredients(
   };
 }
 
-export async function getAllIngredients(outletId?: string): Promise<Ingredient[]> {
+export async function getAllIngredients(
+  outletId?: string,
+): Promise<Ingredient[]> {
   const allItems: Ingredient[] = [];
   const seenIds = new Set<string>();
   let cursor: string | undefined;
@@ -96,24 +101,32 @@ export async function getAllIngredients(outletId?: string): Promise<Ingredient[]
       allItems.push(item);
     }
 
-    cursor = result.pagination.hasNext ? result.pagination.nextCursor ?? undefined : undefined;
+    cursor = result.pagination.hasNext
+      ? (result.pagination.nextCursor ?? undefined)
+      : undefined;
   } while (cursor);
 
   return allItems;
 }
 
-export async function getIngredientById(id: string, outletId?: string): Promise<Ingredient> {
+export async function getIngredientById(
+  id: string,
+  outletId?: string,
+): Promise<Ingredient> {
   const response = await axiosInstance.get<{ data: Ingredient }>(
     `/ingredients/${id}`,
-    outletParams(outletId)
+    outletParams(outletId),
   );
   return response.data.data;
 }
 
-export async function createIngredient(data: IngredientFormState, outletId?: string): Promise<Ingredient> {
+export async function createIngredient(
+  data: IngredientFormState,
+  outletId?: string,
+): Promise<Ingredient> {
   const response = await axiosInstance.post<{ data: Ingredient }>(
     "/ingredients",
-    { ...data, ...(outletId && { outletId }) }
+    { ...data, ...(outletId && { outletId }) },
   );
   return response.data.data;
 }
@@ -121,15 +134,18 @@ export async function createIngredient(data: IngredientFormState, outletId?: str
 export async function updateIngredient(
   id: string,
   data: Partial<IngredientFormState>,
-  outletId?: string
+  outletId?: string,
 ): Promise<Ingredient> {
   const response = await axiosInstance.patch<{ data: Ingredient }>(
     `/ingredients/${id}`,
-    { ...data, ...(outletId && { outletId }) }
+    { ...data, ...(outletId && { outletId }) },
   );
   return response.data.data;
 }
 
-export async function deleteIngredient(id: string, outletId?: string): Promise<void> {
+export async function deleteIngredient(
+  id: string,
+  outletId?: string,
+): Promise<void> {
   await axiosInstance.delete(`/ingredients/${id}`, outletParams(outletId));
 }

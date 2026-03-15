@@ -26,10 +26,7 @@ export default function AppLayout() {
       />
 
       <div className="flex-1 flex flex-col min-h-screen overflow-hidden">
-        <AppHeader
-          user={user}
-          onLogoutRequest={() => setLogoutOpen(true)}
-        />
+        <AppHeader user={user} onLogoutRequest={() => setLogoutOpen(true)} />
 
         <main className="flex-1 p-6 md:p-8 overflow-auto">
           <Outlet />

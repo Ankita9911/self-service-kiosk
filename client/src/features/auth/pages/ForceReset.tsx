@@ -1,6 +1,13 @@
 import { useNavigate } from "react-router-dom";
 import useAuth from "@/shared/hooks/useAuth";
-import { ShieldCheck, Loader2, ChefHat, ArrowRight, AlertCircle, LogOut } from "lucide-react";
+import {
+  ShieldCheck,
+  Loader2,
+  ChefHat,
+  ArrowRight,
+  AlertCircle,
+  LogOut,
+} from "lucide-react";
 import PasswordStrength from "../components/PasswordStrength";
 import { PasswordField } from "../components/PasswordField";
 import { useForceReset } from "../hooks/useForceReset";
@@ -10,10 +17,17 @@ export function ForceReset() {
   const { logout } = useAuth();
 
   const {
-    currentPassword, setCurrentPassword,
-    password, setPassword,
-    confirm, setConfirm,
-    loading, error, mismatch, isValid, submit,
+    currentPassword,
+    setCurrentPassword,
+    password,
+    setPassword,
+    confirm,
+    setConfirm,
+    loading,
+    error,
+    mismatch,
+    isValid,
+    submit,
   } = useForceReset(() => {
     logout();
     navigate("/login", { replace: true });
@@ -38,7 +52,8 @@ export function ForceReset() {
                   Set New Password
                 </h2>
                 <p className="text-sm font-satoshi text-slate-500 mt-1">
-                  Your account requires a password change before you can continue.
+                  Your account requires a password change before you can
+                  continue.
                 </p>
               </div>
             </div>
@@ -46,13 +61,16 @@ export function ForceReset() {
             <div className="flex items-start gap-2.5 bg-amber-50 border border-amber-200 rounded-xl p-3.5">
               <AlertCircle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
               <p className="text-xs font-satoshi text-amber-700 leading-relaxed">
-                After setting a new password, you'll be redirected to log in again with your new
-                credentials.
+                After setting a new password, you'll be redirected to log in
+                again with your new credentials.
               </p>
             </div>
 
             <form
-              onSubmit={(e) => { e.preventDefault(); submit(); }}
+              onSubmit={(e) => {
+                e.preventDefault();
+                submit();
+              }}
               className="space-y-4"
             >
               <PasswordField
@@ -96,16 +114,23 @@ export function ForceReset() {
                 className="w-full h-11 rounded-xl bg-linear-to-r from-indigo-500 to-indigo-600 hover:from-indigo-600 hover:to-indigo-700 text-white text-sm font-clash-semibold shadow-lg shadow-indigo-500/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 active:scale-[0.98]"
               >
                 {loading ? (
-                  <><Loader2 className="w-4 h-4 animate-spin" /> Updating…</>
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" /> Updating…
+                  </>
                 ) : (
-                  <><ArrowRight className="w-4 h-4" /> Update Password</>
+                  <>
+                    <ArrowRight className="w-4 h-4" /> Update Password
+                  </>
                 )}
               </button>
             </form>
 
             <div className="text-center pt-2 border-t border-slate-100">
               <button
-                onClick={() => { logout(); navigate("/login", { replace: true }); }}
+                onClick={() => {
+                  logout();
+                  navigate("/login", { replace: true });
+                }}
                 className="flex items-center gap-2 text-sm font-satoshi text-slate-400 hover:text-red-500 transition-colors mx-auto"
               >
                 <LogOut className="w-3.5 h-3.5" />

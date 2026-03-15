@@ -27,7 +27,8 @@ const COL_THEME: Record<
   }
 > = {
   CREATED: {
-    headerIcon: "text-amber-600 dark:text-amber-400 bg-amber-100 dark:bg-amber-400/15",
+    headerIcon:
+      "text-amber-600 dark:text-amber-400 bg-amber-100 dark:bg-amber-400/15",
     headerText: "text-amber-800 dark:text-amber-300",
     headerBg: "bg-amber-50 dark:bg-amber-400/[0.08]",
     headerBorder: "border-amber-200 dark:border-amber-400/20",
@@ -39,7 +40,8 @@ const COL_THEME: Record<
     emptyIcon: "text-amber-300 dark:text-amber-400/30",
   },
   IN_KITCHEN: {
-    headerIcon: "text-indigo-600 dark:text-indigo-400 bg-indigo-100 dark:bg-indigo-400/15",
+    headerIcon:
+      "text-indigo-600 dark:text-indigo-400 bg-indigo-100 dark:bg-indigo-400/15",
     headerText: "text-indigo-800 dark:text-indigo-300",
     headerBg: "bg-indigo-50 dark:bg-indigo-400/[0.08]",
     headerBorder: "border-indigo-200 dark:border-indigo-400/20",
@@ -51,7 +53,8 @@ const COL_THEME: Record<
     emptyIcon: "text-indigo-300 dark:text-indigo-400/30",
   },
   READY: {
-    headerIcon: "text-emerald-600 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-400/15",
+    headerIcon:
+      "text-emerald-600 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-400/15",
     headerText: "text-emerald-800 dark:text-emerald-300",
     headerBg: "bg-emerald-50 dark:bg-emerald-400/[0.08]",
     headerBorder: "border-emerald-200 dark:border-emerald-400/20",
@@ -84,11 +87,19 @@ export function Column({
   return (
     <div className="flex flex-col gap-2 min-w-0 h-full">
       {/* sticky column header */}
-      <div className={`flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl border ${theme.headerBg} ${theme.headerBorder}`}>
-        <span className={`w-6 h-6 rounded-lg flex items-center justify-center shrink-0 ${theme.headerIcon}`}>
+      <div
+        className={`flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl border ${theme.headerBg} ${theme.headerBorder}`}
+      >
+        <span
+          className={`w-6 h-6 rounded-lg flex items-center justify-center shrink-0 ${theme.headerIcon}`}
+        >
           {COL_ICON[status]}
         </span>
-        <span className={`text-sm font-bold tracking-tight ${theme.headerText}`}>{cfg.label}</span>
+        <span
+          className={`text-sm font-bold tracking-tight ${theme.headerText}`}
+        >
+          {cfg.label}
+        </span>
         <span
           className={`ml-auto min-w-5 h-5 px-1.5 rounded-full text-[11px] font-black flex items-center justify-center ${theme.countBadge}`}
         >
@@ -119,7 +130,9 @@ export function Column({
                 : theme.emptyBorder,
             ].join(" ")}
           >
-            <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-2 ${theme.headerBg} border ${theme.headerBorder}`}>
+            <div
+              className={`w-10 h-10 rounded-xl flex items-center justify-center mb-2 ${theme.headerBg} border ${theme.headerBorder}`}
+            >
               <span className={theme.emptyIcon}>{COL_ICON[status]}</span>
             </div>
             <p className={`text-xs font-semibold ${theme.emptyText}`}>

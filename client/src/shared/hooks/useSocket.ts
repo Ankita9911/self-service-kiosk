@@ -11,7 +11,7 @@ interface OrderStatusPayload {
 
 export function useSocket(
   onOrderNew: (order: Order) => void,
-  onOrderStatusUpdated: (payload: OrderStatusPayload) => void
+  onOrderStatusUpdated: (payload: OrderStatusPayload) => void,
 ) {
   const socketRef = useRef<Socket | null>(null);
 
@@ -27,7 +27,9 @@ export function useSocket(
     socket.on("order:statusUpdated", onOrderStatusUpdated);
     socket.on("connect_error", () => {});
 
-    return () => { socket.disconnect(); };
+    return () => {
+      socket.disconnect();
+    };
   }, []);
 
   return socketRef;

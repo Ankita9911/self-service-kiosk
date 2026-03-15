@@ -28,13 +28,14 @@ import { getKioskToken } from "@/shared/lib/kioskSession";
 import type { OfferType } from "../types/menu.types";
 import type { MenuItem } from "../types/menu.types";
 
-const OFFER_CHIPS: { value: OfferType | null; label: string; emoji: string }[] = [
-  { value: "DISCOUNT",   label: "Deals",       emoji: "🏷️" },
-  { value: "BOGO",       label: "Buy 1 Get 1", emoji: "🎁" },
-  { value: "BESTSELLER", label: "Best Seller", emoji: "⭐" },
-  { value: "NEW",        label: "New",         emoji: "✨" },
-  { value: "LIMITED",    label: "Limited",     emoji: "⏳" },
-];
+const OFFER_CHIPS: { value: OfferType | null; label: string; emoji: string }[] =
+  [
+    { value: "DISCOUNT", label: "Deals", emoji: "🏷️" },
+    { value: "BOGO", label: "Buy 1 Get 1", emoji: "🎁" },
+    { value: "BESTSELLER", label: "Best Seller", emoji: "⭐" },
+    { value: "NEW", label: "New", emoji: "✨" },
+    { value: "LIMITED", label: "Limited", emoji: "⏳" },
+  ];
 
 export default function KioskPage() {
   const navigate = useNavigate();
@@ -44,39 +45,64 @@ export default function KioskPage() {
   useKioskForceLogout();
 
   const {
-    menu, selectedCategory, setSelectedCategory,
-    categoriesWithAll, combos, selectedItems,
-    offerFilter, setOfferFilter, offerCounts,
-    isLoading, loadMenu, COMBOS_CATEGORY_ID,
+    menu,
+    selectedCategory,
+    setSelectedCategory,
+    categoriesWithAll,
+    combos,
+    selectedItems,
+    offerFilter,
+    setOfferFilter,
+    offerCounts,
+    isLoading,
+    loadMenu,
+    COMBOS_CATEGORY_ID,
   } = useKioskMenu();
 
   const {
-    cart, setCart,
-    handleAddToCart, handleUpdateQuantity,
-    totalItems, totalPrice,
+    cart,
+    setCart,
+    handleAddToCart,
+    handleUpdateQuantity,
+    totalItems,
+    totalPrice,
   } = useKioskCart();
 
   const {
-    showPaymentDialog, setShowPaymentDialog,
+    showPaymentDialog,
+    setShowPaymentDialog,
     showProcessingDialog,
-    showSuccessDialog, setShowSuccessDialog,
-    showFailedDialog, setShowFailedDialog,
+    showSuccessDialog,
+    setShowSuccessDialog,
+    showFailedDialog,
+    setShowFailedDialog,
     failedMessage,
-    paymentStep, setPaymentStep,
-    selectedMethod, setSelectedMethod,
-    isProcessing, orderNumber,
-    handleOpenCheckout, handleConfirmOrder,
+    paymentStep,
+    setPaymentStep,
+    selectedMethod,
+    setSelectedMethod,
+    isProcessing,
+    orderNumber,
+    handleOpenCheckout,
+    handleConfirmOrder,
   } = useKioskCheckout(cart, setCart, loadMenu);
 
   const {
-    trending, isTrendingLoading,
-    frequentlyBoughtTogether, isFbtLoading,
-    completeMeal, isMealLoading,
+    trending,
+    isTrendingLoading,
+    frequentlyBoughtTogether,
+    isFbtLoading,
+    completeMeal,
+    isMealLoading,
   } = useRecommendations(cart, menu);
 
   const handleAddRecommendedItem = (item: MenuItem) => handleAddToCart(item);
 
-  const handleAddComboToCart = (combo: { _id: string; name: string; comboPrice: number }) => {
+  const handleAddComboToCart = (combo: {
+    _id: string;
+    name: string;
+    comboPrice: number;
+  }) => {
     handleAddToCart({
       _id: combo._id,
       name: combo.name,
@@ -86,7 +112,9 @@ export default function KioskPage() {
     });
   };
 
-  useEffect(() => { processQueue(); }, []);
+  useEffect(() => {
+    processQueue();
+  }, []);
 
   useEffect(() => {
     if (!getKioskToken()) navigate("/kiosk/login", { replace: true });
@@ -132,7 +160,11 @@ export default function KioskPage() {
                 onClick={() => setOfferFilter(value)}
                 initial={{ opacity: 0, y: -8 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.04, duration: 0.3, ease: "easeOut" }}
+                transition={{
+                  delay: index * 0.04,
+                  duration: 0.3,
+                  ease: "easeOut",
+                }}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 className="flex flex-col items-center focus:outline-none"
@@ -140,22 +172,33 @@ export default function KioskPage() {
               >
                 <div
                   style={{
-                    width: "48px", height: "48px", borderRadius: "50%", padding: "3px",
+                    width: "48px",
+                    height: "48px",
+                    borderRadius: "50%",
+                    padding: "3px",
                     background: isActive
                       ? "linear-gradient(135deg, #f97316, #ea580c)"
                       : "linear-gradient(135deg, #e4e4e4, #cecece)",
                     boxShadow: isActive
                       ? "0 4px 14px rgba(249, 115, 22, 0.4)"
                       : "0 2px 6px rgba(0,0,0,0.08)",
-                    transition: "all 0.3s ease", position: "relative", flexShrink: 0,
+                    transition: "all 0.3s ease",
+                    position: "relative",
+                    flexShrink: 0,
                   }}
                 >
                   <div
                     style={{
-                      width: "100%", height: "100%", borderRadius: "50%",
-                      overflow: "hidden", border: "2.5px solid white",
-                      background: "#f0f0f0", display: "flex",
-                      alignItems: "center", justifyContent: "center", fontSize: "20px",
+                      width: "100%",
+                      height: "100%",
+                      borderRadius: "50%",
+                      overflow: "hidden",
+                      border: "2.5px solid white",
+                      background: "#f0f0f0",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: "20px",
                     }}
                   >
                     {emoji}
@@ -164,13 +207,18 @@ export default function KioskPage() {
 
                 <span
                   style={{
-                    fontSize: "10px", fontWeight: isActive ? 700 : 500,
+                    fontSize: "10px",
+                    fontWeight: isActive ? 700 : 500,
                     color: isActive ? "#ea580c" : "#777",
-                    textAlign: "center", lineHeight: "1.3", maxWidth: "72px",
+                    textAlign: "center",
+                    lineHeight: "1.3",
+                    maxWidth: "72px",
                     transition: "color 0.2s ease",
                     fontFamily: "'DM Sans', 'Nunito', sans-serif",
-                    letterSpacing: "-0.01em", whiteSpace: "nowrap",
-                    overflow: "hidden", textOverflow: "ellipsis",
+                    letterSpacing: "-0.01em",
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
                   }}
                 >
                   {label}
@@ -179,10 +227,14 @@ export default function KioskPage() {
                 {count !== undefined && count > 0 && (
                   <span
                     style={{
-                      fontSize: "9px", fontWeight: 900,
+                      fontSize: "9px",
+                      fontWeight: 900,
                       color: isActive ? "#ea580c" : "#777",
-                      background: isActive ? "rgba(249, 115, 22, 0.1)" : "#f3f4f6",
-                      padding: "2px 6px", borderRadius: "10px",
+                      background: isActive
+                        ? "rgba(249, 115, 22, 0.1)"
+                        : "#f3f4f6",
+                      padding: "2px 6px",
+                      borderRadius: "10px",
                       transition: "all 0.2s ease",
                     }}
                   >
@@ -192,8 +244,10 @@ export default function KioskPage() {
 
                 <motion.div
                   style={{
-                    width: isActive ? "20px" : "0px", height: "3px",
-                    borderRadius: "2px", background: "#ea580c",
+                    width: isActive ? "20px" : "0px",
+                    height: "3px",
+                    borderRadius: "2px",
+                    background: "#ea580c",
                     transition: "width 0.3s ease",
                   }}
                 />
@@ -278,7 +332,9 @@ export default function KioskPage() {
             </div>
             <div className="text-left">
               <p className="text-sm font-black leading-none">View Cart</p>
-              <p className="text-xs font-semibold opacity-80 mt-0.5">₹{totalPrice.toFixed(2)}</p>
+              <p className="text-xs font-semibold opacity-80 mt-0.5">
+                ₹{totalPrice.toFixed(2)}
+              </p>
             </div>
           </button>
         )}

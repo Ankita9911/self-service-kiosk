@@ -9,11 +9,19 @@ interface Props {
   deleting?: boolean;
 }
 
-export function RecipeDeleteModal({ open, recipe, onClose, onConfirm, deleting }: Props) {
+export function RecipeDeleteModal({
+  open,
+  recipe,
+  onClose,
+  onConfirm,
+  deleting,
+}: Props) {
   if (!open || !recipe) return null;
 
   const menuItemName =
-    typeof recipe.menuItemId === "object" ? recipe.menuItemId.name : "this recipe";
+    typeof recipe.menuItemId === "object"
+      ? recipe.menuItemId.name
+      : "this recipe";
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -28,17 +36,25 @@ export function RecipeDeleteModal({ open, recipe, onClose, onConfirm, deleting }
             <ChefHat className="w-6 h-6 text-white" />
           </div>
           <h3 className="text-lg font-bold text-white">Delete Recipe</h3>
-          <p className="text-sm text-red-100 mt-1">This action cannot be undone.</p>
+          <p className="text-sm text-red-100 mt-1">
+            This action cannot be undone.
+          </p>
         </div>
 
         {/* Body */}
         <div className="px-6 py-5 -mt-3">
           <div className="rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/6 px-4 py-3">
-            <p className="text-[13px] text-slate-500 dark:text-slate-400">Deleting recipe for</p>
-            <p className="font-semibold text-slate-800 dark:text-white mt-0.5 truncate">{menuItemName}</p>
+            <p className="text-[13px] text-slate-500 dark:text-slate-400">
+              Deleting recipe for
+            </p>
+            <p className="font-semibold text-slate-800 dark:text-white mt-0.5 truncate">
+              {menuItemName}
+            </p>
           </div>
           <p className="text-[12px] text-slate-400 dark:text-slate-500 mt-3">
-            Stock deduction from orders placed before this deletion will not be reversed. Menu item availability will fall back to direct stock mode.
+            Stock deduction from orders placed before this deletion will not be
+            reversed. Menu item availability will fall back to direct stock
+            mode.
           </p>
         </div>
 

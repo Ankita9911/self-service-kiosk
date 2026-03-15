@@ -14,10 +14,13 @@ export default function PasswordStrength({ password }: Props) {
 
   const score = checks.filter((c) => c.pass).length;
   const strength =
-    score <= 1 ? "Weak" :
-    score === 2 ? "Fair" :
-    score === 3 ? "Good" :
-    "Strong";
+    score <= 1
+      ? "Weak"
+      : score === 2
+        ? "Fair"
+        : score === 3
+          ? "Good"
+          : "Strong";
 
   const colors = [
     "bg-red-400",
@@ -54,7 +57,9 @@ export default function PasswordStrength({ password }: Props) {
             <span
               key={c.label}
               className={`flex items-center gap-1 text-[11px] ${
-                c.pass ? "text-emerald-600 dark:text-emerald-400" : "text-slate-400 dark:text-slate-500"
+                c.pass
+                  ? "text-emerald-600 dark:text-emerald-400"
+                  : "text-slate-400 dark:text-slate-500"
               }`}
             >
               <CheckCircle2 className="w-3 h-3" />

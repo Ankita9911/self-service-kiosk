@@ -8,7 +8,10 @@ import { CursorPagination } from "@/shared/components/ui/CursorPagination";
 
 function getOutletName(device: Device, outlets: Outlet[]): string {
   if ((device as any).outlet?.name) return (device as any).outlet.name;
-  return outlets.find((o) => o._id === (device.outletId || (device as any).outlet))?.name ?? "—";
+  return (
+    outlets.find((o) => o._id === (device.outletId || (device as any).outlet))
+      ?.name ?? "—"
+  );
 }
 
 function formatLastSeen(device: Device): string {
@@ -40,14 +43,34 @@ interface DeviceTableProps {
   onToggleStatus: (device: Device) => Promise<void>;
 }
 
-const TABLE_HEADERS = ["Device ID", "Name", "Outlet", "Status", "Last Seen", ""];
+const TABLE_HEADERS = [
+  "Device ID",
+  "Name",
+  "Outlet",
+  "Status",
+  "Last Seen",
+  "",
+];
 
 export function DeviceTable({
-  devices, outlets, loading, searchTerm,
-  canUpdate, canDelete, canChangeStatus,
-  total, page, pageSize, hasPrevPage, hasNextPage,
-  onPrevPage, onNextPage, onPageSizeChange,
-  onUpdate, onDelete, onToggleStatus,
+  devices,
+  outlets,
+  loading,
+  searchTerm,
+  canUpdate,
+  canDelete,
+  canChangeStatus,
+  total,
+  page,
+  pageSize,
+  hasPrevPage,
+  hasNextPage,
+  onPrevPage,
+  onNextPage,
+  onPageSizeChange,
+  onUpdate,
+  onDelete,
+  onToggleStatus,
 }: DeviceTableProps) {
   return (
     <div className="bg-white dark:bg-[#161920] rounded-2xl border border-slate-100 dark:border-white/6 shadow-sm">
@@ -69,12 +92,18 @@ export function DeviceTable({
           {loading ? (
             Array.from({ length: 5 }).map((_, i) => (
               <tr key={i}>
-                <td className="px-5 py-4"><Shimmer w="w-28" h="h-6" rounded="rounded-lg" /></td>
+                <td className="px-5 py-4">
+                  <Shimmer w="w-28" h="h-6" rounded="rounded-lg" />
+                </td>
                 <ShimmerCell w="w-24" />
                 <ShimmerCell w="w-32" />
-                <td className="px-5 py-4"><Shimmer w="w-16" h="h-6" rounded="rounded-full" /></td>
+                <td className="px-5 py-4">
+                  <Shimmer w="w-16" h="h-6" rounded="rounded-full" />
+                </td>
                 <ShimmerCell w="w-28" />
-                <td className="px-5 py-4"><Shimmer w="w-6" h="h-6" rounded="rounded-md" /></td>
+                <td className="px-5 py-4">
+                  <Shimmer w="w-6" h="h-6" rounded="rounded-md" />
+                </td>
               </tr>
             ))
           ) : devices.length === 0 ? (
@@ -84,9 +113,13 @@ export function DeviceTable({
                   <div className="h-12 w-12 rounded-2xl bg-slate-100 dark:bg-white/6 flex items-center justify-center">
                     <Cpu className="w-5 h-5 text-slate-400 dark:text-slate-500" />
                   </div>
-                  <p className="font-medium text-slate-600 dark:text-slate-300">No devices found</p>
+                  <p className="font-medium text-slate-600 dark:text-slate-300">
+                    No devices found
+                  </p>
                   <p className="text-slate-400 dark:text-slate-500 text-sm">
-                    {searchTerm ? "Try a different search term" : "Register your first device to get started"}
+                    {searchTerm
+                      ? "Try a different search term"
+                      : "Register your first device to get started"}
                   </p>
                 </div>
               </td>
@@ -103,7 +136,11 @@ export function DeviceTable({
                   </span>
                 </td>
                 <td className="px-5 py-4 text-sm text-slate-700 dark:text-slate-300">
-                  {d.name || <span className="text-slate-400 dark:text-slate-600 italic">Unnamed</span>}
+                  {d.name || (
+                    <span className="text-slate-400 dark:text-slate-600 italic">
+                      Unnamed
+                    </span>
+                  )}
                 </td>
                 <td className="px-5 py-4 text-sm text-slate-600 dark:text-slate-400">
                   {getOutletName(d, outlets)}

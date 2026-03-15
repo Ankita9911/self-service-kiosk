@@ -58,11 +58,18 @@ function StatPill({
   );
 }
 
-export function FranchiseStats({ franchises, loading, totalFranchises, activeFranchises }: Props) {
-  const totalCount = typeof totalFranchises === "number" ? totalFranchises : franchises.length;
-  const activeCount = typeof activeFranchises === "number"
-    ? activeFranchises
-    : franchises.filter((f) => f.status === "ACTIVE").length;
+export function FranchiseStats({
+  franchises,
+  loading,
+  totalFranchises,
+  activeFranchises,
+}: Props) {
+  const totalCount =
+    typeof totalFranchises === "number" ? totalFranchises : franchises.length;
+  const activeCount =
+    typeof activeFranchises === "number"
+      ? activeFranchises
+      : franchises.filter((f) => f.status === "ACTIVE").length;
   const inactiveCount = totalCount - activeCount;
 
   return (

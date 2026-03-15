@@ -1,11 +1,23 @@
 import { useEffect, useState } from "react";
-import type { Recipe, RecipeFormState } from "@/features/recipes/types/recipe.types";
-import type { Ingredient, IngredientFormState } from "@/features/ingredients/types/ingredient.types";
+import type {
+  Recipe,
+  RecipeFormState,
+} from "@/features/recipes/types/recipe.types";
+import type {
+  Ingredient,
+  IngredientFormState,
+} from "@/features/ingredients/types/ingredient.types";
 import { Dialog, DialogContent } from "@/shared/components/ui/dialog";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/shared/components/ui/select";
 import { findIngredientMatch } from "@/features/recipes/lib/ingredientMatching";
 import { Plus, Trash2, Loader2, ChefHat, Pencil, X } from "lucide-react";
 
@@ -44,7 +56,7 @@ function createFormSnapshot(form: RecipeFormState): RecipeFormState {
 
 function initForm(
   recipe: Recipe | null,
-  initialForm?: RecipeFormState | null
+  initialForm?: RecipeFormState | null,
 ): RecipeFormState {
   if (!recipe && initialForm) {
     return createFormSnapshot(initialForm);
@@ -91,10 +103,12 @@ export function RecipeFormModal({
 }: Props) {
   const isEdit = Boolean(recipe);
   const [form, setForm] = useState<RecipeFormState>(() =>
-    initForm(recipe, initialForm)
+    initForm(recipe, initialForm),
   );
   const [saving, setSaving] = useState(false);
-  const [creatingIngredientNames, setCreatingIngredientNames] = useState<string[]>([]);
+  const [creatingIngredientNames, setCreatingIngredientNames] = useState<
+    string[]
+  >([]);
 
   useEffect(() => {
     if (!open) return;
@@ -126,15 +140,11 @@ export function RecipeFormModal({
   }, [ingredients, open]);
 
   const unresolvedAiIngredients = form.ingredients.filter(
-    (row) => !row.ingredientId && row._aiName
+    (row) => !row.ingredientId && row._aiName,
   );
   const hasUnresolvedAiIngredients = unresolvedAiIngredients.length > 0;
 
-  const updateRow = (
-    index: number,
-    field: string,
-    value: string | number
-  ) => {
+  const updateRow = (index: number, field: string, value: string | number) => {
     setForm((prev) => {
       const rows = [...prev.ingredients];
       rows[index] = { ...rows[index], [field]: value };
@@ -166,7 +176,7 @@ export function RecipeFormModal({
     if (!onCreateIngredient) return;
 
     const missingRow = form.ingredients.find(
-      (row) => !row.ingredientId && row._aiName === ingredientName
+      (row) => !row.ingredientId && row._aiName === ingredientName,
     );
     if (!missingRow) return;
 
@@ -192,14 +202,14 @@ export function RecipeFormModal({
                 unit: createdIngredient.unit,
                 _aiName: undefined,
               }
-            : row
+            : row,
         ),
       }));
     } catch {
       // handled by interceptor
     } finally {
       setCreatingIngredientNames((prev) =>
-        prev.filter((name) => name !== ingredientName)
+        prev.filter((name) => name !== ingredientName),
       );
     }
   };
@@ -238,11 +248,15 @@ export function RecipeFormModal({
                 {isEdit ? "Edit Recipe" : "Add Recipe"}
               </h3>
               <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">
-                Link menu items with ingredient quantities for live outlet availability.
+                Link menu items with ingredient quantities for live outlet
+                availability.
               </p>
             </div>
           </div>
-          <button onClick={onClose} className="h-7 w-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/8 transition-colors">
+          <button
+            onClick={onClose}
+            className="h-7 w-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/8 transition-colors"
+          >
             <X className="w-3.5 h-3.5" />
           </button>
         </div>
@@ -299,7 +313,8 @@ export function RecipeFormModal({
                 <div className="mt-3 space-y-2">
                   {unresolvedAiIngredients.map((row) => {
                     const ingredientName = row._aiName ?? "";
-                    const isCreating = creatingIngredientNames.includes(ingredientName);
+                    const isCreating =
+                      creatingIngredientNames.includes(ingredientName);
 
                     return (
                       <div
@@ -316,14 +331,17 @@ export function RecipeFormModal({
                             </span>
                           </div>
                           <p className="mt-0.5 text-[11px] text-amber-800/90 dark:text-amber-100/75">
-                            Add with default stock for one dish: {Math.max(1, Number(row.quantity) || 0)} {row.unit}
+                            Add with default stock for one dish:{" "}
+                            {Math.max(1, Number(row.quantity) || 0)} {row.unit}
                           </p>
                         </div>
                         {onCreateIngredient && (
                           <Button
                             type="button"
                             size="sm"
-                            onClick={() => handleCreateMissingIngredient(ingredientName)}
+                            onClick={() =>
+                              handleCreateMissingIngredient(ingredientName)
+                            }
                             disabled={isCreating}
                             className="h-9 shrink-0 rounded-xl bg-amber-600 px-3.5 text-xs font-semibold text-white hover:bg-amber-700"
                           >
@@ -353,9 +371,7 @@ export function RecipeFormModal({
                       )}
                       <Select
                         value={row.ingredientId}
-                        onValueChange={(v) =>
-                          updateRow(idx, "ingredientId", v)
-                        }
+                        onValueChange={(v) => updateRow(idx, "ingredientId", v)}
                       >
                         <SelectTrigger className="h-10 rounded-xl bg-slate-50 dark:bg-white/5 border-slate-200 dark:border-white/8">
                           <SelectValue placeholder="Select…" />
@@ -366,7 +382,12 @@ export function RecipeFormModal({
                               <span className="flex items-center justify-between w-full gap-3">
                                 <span>{ing.name}</span>
                                 <span className="text-[11px] text-slate-400 font-mono shrink-0">
-                                  {ing.currentStock} {ing.unit === "gram" ? "g" : ing.unit === "liter" ? "L" : ing.unit}
+                                  {ing.currentStock}{" "}
+                                  {ing.unit === "gram"
+                                    ? "g"
+                                    : ing.unit === "liter"
+                                      ? "L"
+                                      : ing.unit}
                                 </span>
                               </span>
                             </SelectItem>
@@ -435,18 +456,26 @@ export function RecipeFormModal({
                           AI suggested ingredient: {row._aiName}
                         </p>
                         <p className="text-[11px] text-amber-700/80 dark:text-amber-300/80">
-                          Add it now with {Math.max(1, Number(row.quantity) || 0)} {row.unit} default stock.
+                          Add it now with{" "}
+                          {Math.max(1, Number(row.quantity) || 0)} {row.unit}{" "}
+                          default stock.
                         </p>
                       </div>
                       {onCreateIngredient && (
                         <Button
                           type="button"
                           size="sm"
-                          onClick={() => handleCreateMissingIngredient(row._aiName ?? "")}
-                          disabled={creatingIngredientNames.includes(row._aiName ?? "")}
+                          onClick={() =>
+                            handleCreateMissingIngredient(row._aiName ?? "")
+                          }
+                          disabled={creatingIngredientNames.includes(
+                            row._aiName ?? "",
+                          )}
                           className="h-8 shrink-0 rounded-lg bg-amber-600 px-3 text-xs font-semibold text-white hover:bg-amber-700"
                         >
-                          {creatingIngredientNames.includes(row._aiName ?? "") ? (
+                          {creatingIngredientNames.includes(
+                            row._aiName ?? "",
+                          ) ? (
                             <Loader2 className="w-3.5 h-3.5 animate-spin" />
                           ) : (
                             "Add"
@@ -461,30 +490,36 @@ export function RecipeFormModal({
           </div>
 
           {/* Servings estimate */}
-          {form.ingredients.some((r) => r.ingredientId && r.quantity > 0) && (() => {
-            const resolved = form.ingredients.filter((r) => r.ingredientId && r.quantity > 0);
-            const servings = resolved.reduce((min, r) => {
-              const ing = ingredients.find((i) => i._id === r.ingredientId);
-              if (!ing) return min;
-              return Math.min(min, Math.floor(ing.currentStock / r.quantity));
-            }, Number.POSITIVE_INFINITY);
-            const estimate = Number.isFinite(servings) ? servings : null;
-            if (estimate === null) return null;
-            return (
-              <div className={`flex items-center gap-2.5 rounded-xl px-3.5 py-2.5 text-sm font-medium ${
-                estimate <= 0
-                  ? "bg-red-50 dark:bg-red-500/10 text-red-700 dark:text-red-300 border border-red-100 dark:border-red-500/20"
-                  : estimate <= 5
-                  ? "bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-100 dark:border-amber-500/20"
-                  : "bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-100 dark:border-emerald-500/20"
-              }`}>
-                <span className="text-lg font-black">{estimate}</span>
-                <span className="text-[12px]">
-                  {estimate === 1 ? "serving" : "servings"} available with current stock
-                </span>
-              </div>
-            );
-          })()}
+          {form.ingredients.some((r) => r.ingredientId && r.quantity > 0) &&
+            (() => {
+              const resolved = form.ingredients.filter(
+                (r) => r.ingredientId && r.quantity > 0,
+              );
+              const servings = resolved.reduce((min, r) => {
+                const ing = ingredients.find((i) => i._id === r.ingredientId);
+                if (!ing) return min;
+                return Math.min(min, Math.floor(ing.currentStock / r.quantity));
+              }, Number.POSITIVE_INFINITY);
+              const estimate = Number.isFinite(servings) ? servings : null;
+              if (estimate === null) return null;
+              return (
+                <div
+                  className={`flex items-center gap-2.5 rounded-xl px-3.5 py-2.5 text-sm font-medium ${
+                    estimate <= 0
+                      ? "bg-red-50 dark:bg-red-500/10 text-red-700 dark:text-red-300 border border-red-100 dark:border-red-500/20"
+                      : estimate <= 5
+                        ? "bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-100 dark:border-amber-500/20"
+                        : "bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-100 dark:border-emerald-500/20"
+                  }`}
+                >
+                  <span className="text-lg font-black">{estimate}</span>
+                  <span className="text-[12px]">
+                    {estimate === 1 ? "serving" : "servings"} available with
+                    current stock
+                  </span>
+                </div>
+              );
+            })()}
 
           {/* Prep Time */}
           <div className="grid grid-cols-2 gap-4">
@@ -523,10 +558,20 @@ export function RecipeFormModal({
         </div>
 
         <div className="flex gap-3 px-6 pb-6">
-          <button type="button" onClick={onClose} disabled={saving} className="flex-1 h-10 rounded-xl border border-slate-200 dark:border-white/8 text-sm font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors disabled:opacity-60">
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={saving}
+            className="flex-1 h-10 rounded-xl border border-slate-200 dark:border-white/8 text-sm font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors disabled:opacity-60"
+          >
             Cancel
           </button>
-          <button type="button" onClick={handleSubmit} disabled={saving || !form.menuItemId || hasUnresolvedAiIngredients} className="flex-1 h-10 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold transition-colors disabled:opacity-60 flex items-center justify-center gap-2">
+          <button
+            type="button"
+            onClick={handleSubmit}
+            disabled={saving || !form.menuItemId || hasUnresolvedAiIngredients}
+            className="flex-1 h-10 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
+          >
             {saving && <Loader2 className="w-4 h-4 animate-spin" />}
             {isEdit ? "Save Changes" : "Create Recipe"}
           </button>

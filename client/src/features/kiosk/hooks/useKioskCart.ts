@@ -17,7 +17,7 @@ type AddToCartInput = {
 export function effectiveLineTotal(item: CartItem): number {
   const customizationsTotal = (item.selectedCustomizations || []).reduce(
     (sum, option) => sum + option.price,
-    0
+    0,
   );
   const effectiveBaseUnitPrice = item.price + customizationsTotal;
   if (item.isCombo) return effectiveBaseUnitPrice * item.quantity;
@@ -26,7 +26,9 @@ export function effectiveLineTotal(item: CartItem): number {
     return effectiveBaseUnitPrice * Math.ceil(item.quantity / 2);
   }
   if (item.offerType === "DISCOUNT" && item.discountPercent) {
-    return effectiveBaseUnitPrice * (1 - item.discountPercent / 100) * item.quantity;
+    return (
+      effectiveBaseUnitPrice * (1 - item.discountPercent / 100) * item.quantity
+    );
   }
   return effectiveBaseUnitPrice * item.quantity;
 }
@@ -35,12 +37,14 @@ export function effectiveLineTotal(item: CartItem): number {
 export function effectiveUnitPrice(item: CartItem): number {
   const customizationsTotal = (item.selectedCustomizations || []).reduce(
     (sum, option) => sum + option.price,
-    0
+    0,
   );
   const effectiveBaseUnitPrice = item.price + customizationsTotal;
   if (item.isCombo) return effectiveBaseUnitPrice;
   if (item.offerType === "BOGO" && item.quantity > 1) {
-    return (effectiveBaseUnitPrice * Math.ceil(item.quantity / 2)) / item.quantity;
+    return (
+      (effectiveBaseUnitPrice * Math.ceil(item.quantity / 2)) / item.quantity
+    );
   }
   if (item.offerType === "DISCOUNT" && item.discountPercent) {
     return effectiveBaseUnitPrice * (1 - item.discountPercent / 100);
@@ -52,12 +56,14 @@ export function useKioskCart() {
   const [cart, setCart] = useState<CartItem[]>([]);
 
   const handleAddToCart = (item: AddToCartInput) => {
-    const selectedCustomizations = (item.selectedCustomizations || []).map((opt) => ({
-      itemId: String(opt.itemId),
-      name: opt.name,
-      price: Number(opt.price),
-      stockQuantity: Number(opt.stockQuantity ?? 0),
-    }));
+    const selectedCustomizations = (item.selectedCustomizations || []).map(
+      (opt) => ({
+        itemId: String(opt.itemId),
+        name: opt.name,
+        price: Number(opt.price),
+        stockQuantity: Number(opt.stockQuantity ?? 0),
+      }),
+    );
     const customizationKey = selectedCustomizations
       .map((opt) => String(opt.itemId))
       .sort()
@@ -75,10 +81,13 @@ export function useKioskCart() {
       });
 
       if (existing) {
-        const stockLimit = item.stockQuantity ?? existing.stockQuantity ?? Infinity;
+        const stockLimit =
+          item.stockQuantity ?? existing.stockQuantity ?? Infinity;
         if (existing.quantity >= stockLimit) return prev;
         return prev.map((c) =>
-          c.cartItemId === existing.cartItemId ? { ...c, quantity: c.quantity + 1 } : c
+          c.cartItemId === existing.cartItemId
+            ? { ...c, quantity: c.quantity + 1 }
+            : c,
         );
       }
 
@@ -104,8 +113,12 @@ export function useKioskCart() {
   const handleUpdateQuantity = (cartItemId: string, delta: number) => {
     setCart((prev) =>
       prev
-        .map((i) => (i.cartItemId === cartItemId ? { ...i, quantity: i.quantity + delta } : i))
-        .filter((i) => i.quantity > 0)
+        .map((i) =>
+          i.cartItemId === cartItemId
+            ? { ...i, quantity: i.quantity + delta }
+            : i,
+        )
+        .filter((i) => i.quantity > 0),
     );
   };
 

@@ -51,7 +51,9 @@ export function AIRecipeModal({
               <Sparkles className="w-4 h-4 text-purple-600 dark:text-purple-400" />
             </div>
             <div>
-              <h3 className="text-sm font-bold text-slate-800 dark:text-white">AI Recipe Generator</h3>
+              <h3 className="text-sm font-bold text-slate-800 dark:text-white">
+                AI Recipe Generator
+              </h3>
               <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">
                 Describe a dish — get ingredients, instructions &amp; prep time.
               </p>
@@ -77,11 +79,14 @@ export function AIRecipeModal({
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               onKeyDown={(e) => {
-                if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) handleGenerate();
+                if (e.key === "Enter" && (e.metaKey || e.ctrlKey))
+                  handleGenerate();
               }}
               disabled={aiLoading}
             />
-            <p className="text-[11px] text-slate-400">Press Ctrl+Enter to generate</p>
+            <p className="text-[11px] text-slate-400">
+              Press Ctrl+Enter to generate
+            </p>
           </div>
 
           <button
@@ -105,7 +110,9 @@ export function AIRecipeModal({
               <div className="px-4 pt-4 pb-3 border-b border-purple-100 dark:border-purple-500/15">
                 <div className="flex items-center gap-2">
                   <ChefHat className="w-4 h-4 text-purple-500 shrink-0" />
-                  <h3 className="font-bold text-slate-800 dark:text-white">{aiSuggestion.name}</h3>
+                  <h3 className="font-bold text-slate-800 dark:text-white">
+                    {aiSuggestion.name}
+                  </h3>
                 </div>
                 <div className="flex items-center gap-1.5 text-[12px] text-slate-500 mt-1.5">
                   <Clock className="w-3 h-3" />
@@ -120,7 +127,10 @@ export function AIRecipeModal({
                 </p>
                 <div className="space-y-1">
                   {aiSuggestion.ingredients.map((ing, i) => (
-                    <div key={i} className="flex items-center justify-between text-sm">
+                    <div
+                      key={i}
+                      className="flex items-center justify-between text-sm"
+                    >
                       <span className="flex items-center gap-1.5 text-slate-700 dark:text-slate-300">
                         <Package className="w-3 h-3 text-slate-400" />
                         {ing.name}
@@ -169,4 +179,3 @@ export function AIRecipeModal({
     </Dialog>
   );
 }
-

@@ -57,7 +57,8 @@ export function setKioskLandingConfig(data: LandingConfig) {
 export function getKioskLandingConfig(): LandingConfig {
   try {
     const raw = localStorage.getItem(KIOSK_LANDING_KEY);
-    if (!raw) return { landingImage: null, landingTitle: null, landingSubtitle: null };
+    if (!raw)
+      return { landingImage: null, landingTitle: null, landingSubtitle: null };
     return JSON.parse(raw) as LandingConfig;
   } catch {
     return { landingImage: null, landingTitle: null, landingSubtitle: null };

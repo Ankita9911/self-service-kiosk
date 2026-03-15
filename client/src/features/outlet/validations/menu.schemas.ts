@@ -7,25 +7,22 @@ const menuItemBaseSchema = z.object({
     .trim()
     .min(2, "Item name must be at least 2 characters")
     .max(100, "Item name must be at most 100 characters")
-    .regex(
-      /^[a-zA-Z][a-zA-Z\s]*$/,
-      "Item name can only contain letters",
-    ),
+    .regex(/^[a-zA-Z][a-zA-Z\s]*$/, "Item name can only contain letters"),
   description: z
     .string()
     .trim()
     .max(500, "Description must be at most 500 characters")
-    .regex(
-      /^[a-zA-Z]/,
-      "Description must start with a letter",
-    )
+    .regex(/^[a-zA-Z]/, "Description must start with a letter")
     .optional()
     .or(z.literal("")),
   price: z
     .string()
     .min(1, "Price is required")
     .refine(
-      (val) => /^\d+(\.\d{1,2})?$/.test(val) && parseFloat(val) >= 1 && parseFloat(val) <= 1_000_000_000,
+      (val) =>
+        /^\d+(\.\d{1,2})?$/.test(val) &&
+        parseFloat(val) >= 1 &&
+        parseFloat(val) <= 1_000_000_000,
       "Price must be between 1 and 1,000,000,000 (e.g. 49 or 49.99)",
     ),
   stockQuantity: z.string().optional(),
@@ -35,7 +32,7 @@ const menuItemBaseSchema = z.object({
       z.object({
         type: z.enum(["DISCOUNT", "BOGO", "NEW", "BESTSELLER", "LIMITED"]),
         discountPercent: z.number().optional(),
-      })
+      }),
     )
     .superRefine((offers, ctx) => {
       const discount = offers.find((o) => o.type === "DISCOUNT");
@@ -50,7 +47,10 @@ const menuItemBaseSchema = z.object({
       }
     })
     .optional(),
-  customizationItemIds: z.array(z.string().min(1)).max(30, "You can add up to 30 customizations").optional(),
+  customizationItemIds: z
+    .array(z.string().min(1))
+    .max(30, "You can add up to 30 customizations")
+    .optional(),
   imageFile: z
     .instanceof(Blob)
     .optional()
@@ -98,7 +98,7 @@ function withInventoryModeRefinement<T extends z.ZodObject>(schema: T) {
 
 export const menuItemSchema = withInventoryModeRefinement(menuItemBaseSchema);
 export const editMenuItemSchema = withInventoryModeRefinement(
-  menuItemBaseSchema.omit({ categoryId: true })
+  menuItemBaseSchema.omit({ categoryId: true }),
 );
 export const categorySchema = z.object({
   name: z
@@ -138,7 +138,7 @@ export const createMenuItemSchema = withInventoryModeRefinement(
           ),
         "Only JPEG, PNG, WebP or GIF images are allowed",
       ),
-  })
+  }),
 );
 
 export type CreateMenuItemFormValues = z.infer<typeof createMenuItemSchema>;

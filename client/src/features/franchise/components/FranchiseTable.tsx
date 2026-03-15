@@ -104,13 +104,11 @@ export function FranchiseTable({
                     <TooltipProvider>
                       <Tooltip delayDuration={300}>
                         <TooltipTrigger asChild>
-                          <p
-                            className="text-[13px] font-semibold text-slate-800 dark:text-white truncate max-w-90"
-                          >
+                          <p className="text-[13px] font-semibold text-slate-800 dark:text-white truncate max-w-90">
                             {f.name}
                           </p>
                         </TooltipTrigger>
-                        <TooltipContent side="top" >
+                        <TooltipContent side="top">
                           <p className="text-xs font-medium">{f.name}</p>
                         </TooltipContent>
                       </Tooltip>

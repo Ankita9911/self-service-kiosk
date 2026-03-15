@@ -13,7 +13,10 @@ export function DeleteDeviceModal({ device, onConfirm, onCancel }: Props) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
-      <div className="absolute inset-0 bg-black/40 dark:bg-black/60 backdrop-blur-sm" onClick={onCancel} />
+      <div
+        className="absolute inset-0 bg-black/40 dark:bg-black/60 backdrop-blur-sm"
+        onClick={onCancel}
+      />
 
       <div className="relative bg-white dark:bg-[#1a1d26] rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden animate-in fade-in zoom-in-95 duration-200">
         <div className="h-0.5 bg-gradient-to-r from-red-400 to-red-600" />
@@ -25,7 +28,9 @@ export function DeleteDeviceModal({ device, onConfirm, onCancel }: Props) {
             </div>
 
             <div>
-              <p className="font-semibold text-slate-900 dark:text-white">Delete device?</p>
+              <p className="font-semibold text-slate-900 dark:text-white">
+                Delete device?
+              </p>
               <p className="text-slate-500 dark:text-slate-400 text-sm mt-0.5">
                 {device.deviceId}
               </p>

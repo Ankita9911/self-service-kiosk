@@ -30,13 +30,15 @@ export interface PaginatedDevicesResult {
 
 export async function getDevicesPage(
   params: DeviceFilterParams = {},
-  options: CursorPageOptions = {}
+  options: CursorPageOptions = {},
 ): Promise<PaginatedDevicesResult> {
   const query: Record<string, string> = {};
   if (params.search?.trim()) query.search = params.search.trim();
   if (params.status && params.status !== "ALL") query.status = params.status;
-  if (params.franchiseId && params.franchiseId !== "ALL") query.franchiseId = params.franchiseId;
-  if (params.outletId && params.outletId !== "ALL") query.outletId = params.outletId;
+  if (params.franchiseId && params.franchiseId !== "ALL")
+    query.franchiseId = params.franchiseId;
+  if (params.outletId && params.outletId !== "ALL")
+    query.outletId = params.outletId;
   if (options.cursor) query.cursor = options.cursor;
   if (typeof options.limit === "number") query.limit = String(options.limit);
 
@@ -69,12 +71,16 @@ export async function getDevicesPage(
     },
     stats: {
       totalItems: stats.totalItems ?? response.data.data.length,
-      activeItems: stats.activeItems ?? response.data.data.filter((d) => d.status === "ACTIVE").length,
+      activeItems:
+        stats.activeItems ??
+        response.data.data.filter((d) => d.status === "ACTIVE").length,
     },
   };
 }
 
-export async function getDevices(params: DeviceFilterParams = {}): Promise<Device[]> {
+export async function getDevices(
+  params: DeviceFilterParams = {},
+): Promise<Device[]> {
   const allDevices: Device[] = [];
   let cursor: string | undefined;
 
@@ -103,11 +109,11 @@ export async function createDevice(payload: {
 
 export async function updateDevice(
   deviceId: string,
-  payload: { name?: string }
+  payload: { name?: string },
 ): Promise<Device> {
   const response = await axiosInstance.patch<{ data: Device }>(
     `/devices/${deviceId}`,
-    payload
+    payload,
   );
   return response.data.data;
 }
@@ -118,24 +124,34 @@ export async function deleteDevice(deviceId: string): Promise<void> {
 
 export async function changeDeviceStatus(
   deviceId: string,
-  status: "ACTIVE" | "INACTIVE"
+  status: "ACTIVE" | "INACTIVE",
 ): Promise<Device> {
   const response = await axiosInstance.patch<{ data: Device }>(
     `/devices/${deviceId}/status`,
-    { status }
+    { status },
   );
   return response.data.data;
 }
 
 export async function kioskLogin(
   deviceId: string,
-  password: string
-): Promise<{ token: string; landingImage: string | null; landingTitle: string | null; landingSubtitle: string | null }> {
+  password: string,
+): Promise<{
+  token: string;
+  landingImage: string | null;
+  landingTitle: string | null;
+  landingSubtitle: string | null;
+}> {
   // Use a plain client to keep kiosk login independent from admin auth interceptors/session.
-  const baseURL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000/api";
-  const response = await axios.post<{ data: { token: string; landingImage: string | null; landingTitle: string | null; landingSubtitle: string | null } }>(
-    `${baseURL}/devices/login`,
-    { deviceId, password }
-  );
+  const baseURL =
+    import.meta.env.VITE_API_BASE_URL || "http://localhost:3000/api";
+  const response = await axios.post<{
+    data: {
+      token: string;
+      landingImage: string | null;
+      landingTitle: string | null;
+      landingSubtitle: string | null;
+    };
+  }>(`${baseURL}/devices/login`, { deviceId, password });
   return response.data.data;
 }

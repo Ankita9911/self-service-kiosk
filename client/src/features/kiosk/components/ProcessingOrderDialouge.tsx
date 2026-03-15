@@ -23,7 +23,10 @@ export default function ProcessingOrderDialog({
           className="p-12 text-center"
         >
           <div className="w-28 h-28 bg-gradient-to-br from-orange-500 to-orange-600 rounded-full flex items-center justify-center mx-auto mb-8 shadow-2xl">
-            <Loader2 className="w-14 h-14 text-white animate-spin" strokeWidth={3} />
+            <Loader2
+              className="w-14 h-14 text-white animate-spin"
+              strokeWidth={3}
+            />
           </div>
 
           <DialogTitle className="text-4xl font-black text-gray-900 tracking-tight mb-4">

@@ -58,7 +58,7 @@ export function useFranchises(filters: FranchiseFilters) {
           {
             cursor: currentCursor ?? undefined,
             limit: pageSize,
-          }
+          },
         );
 
         if (cancelled) return;

@@ -9,11 +9,13 @@ import { DeleteModal } from "../components/DeleteModal";
 import type { Franchise } from "../types/franchise.types";
 
 export default function FranchisePage() {
-  const [modalOpen,    setModalOpen]    = useState(false);
-  const [editing,      setEditing]      = useState<Franchise | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editing, setEditing] = useState<Franchise | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Franchise | null>(null);
-  const [searchTerm,   setSearchTerm]   = useState("");
-  const [statusFilter, setStatusFilter] = useState<"ALL" | "ACTIVE" | "INACTIVE">("ALL");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState<
+    "ALL" | "ACTIVE" | "INACTIVE"
+  >("ALL");
 
   const {
     franchises,
@@ -38,8 +40,14 @@ export default function FranchisePage() {
   } = useFranchises({ search: searchTerm, status: statusFilter });
 
   // Reset to page 1 when filters change
-  const handleSearchChange = (v: string) => { setSearchTerm(v); resetToFirstPage(); };
-  const handleStatusChange = (v: "ALL" | "ACTIVE" | "INACTIVE") => { setStatusFilter(v); resetToFirstPage(); };
+  const handleSearchChange = (v: string) => {
+    setSearchTerm(v);
+    resetToFirstPage();
+  };
+  const handleStatusChange = (v: "ALL" | "ACTIVE" | "INACTIVE") => {
+    setStatusFilter(v);
+    resetToFirstPage();
+  };
 
   return (
     <>
@@ -47,7 +55,10 @@ export default function FranchisePage() {
         <FranchiseHeader
           refreshing={refreshing}
           onRefresh={() => fetchFranchises(true)}
-          onNew={() => { setEditing(null); setModalOpen(true); }}
+          onNew={() => {
+            setEditing(null);
+            setModalOpen(true);
+          }}
         />
 
         <FranchiseStats
@@ -75,16 +86,27 @@ export default function FranchisePage() {
           onPrevPage={goToPrevPage}
           onNextPage={goToNextPage}
           onPageSizeChange={setPageSize}
-          onEdit={(f) => { setEditing(f); setModalOpen(true); }}
+          onEdit={(f) => {
+            setEditing(f);
+            setModalOpen(true);
+          }}
           onDelete={(f) => setDeleteTarget(f)}
-          onToggleStatus={(f) => handleSetStatus(f._id, f.status === "ACTIVE" ? "INACTIVE" : "ACTIVE")}
+          onToggleStatus={(f) =>
+            handleSetStatus(
+              f._id,
+              f.status === "ACTIVE" ? "INACTIVE" : "ACTIVE",
+            )
+          }
         />
       </div>
 
       <FranchiseModal
         open={modalOpen}
         editing={editing}
-        onClose={() => { setModalOpen(false); setEditing(null); }}
+        onClose={() => {
+          setModalOpen(false);
+          setEditing(null);
+        }}
         onCreate={handleCreate}
         onUpdate={handleUpdate}
       />

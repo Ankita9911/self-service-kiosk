@@ -5,7 +5,10 @@ interface IngredientStockBadgeProps {
   minThreshold: number;
 }
 
-export function IngredientStockBadge({ currentStock, minThreshold }: IngredientStockBadgeProps) {
+export function IngredientStockBadge({
+  currentStock,
+  minThreshold,
+}: IngredientStockBadgeProps) {
   const isLow = currentStock < minThreshold;
 
   return (

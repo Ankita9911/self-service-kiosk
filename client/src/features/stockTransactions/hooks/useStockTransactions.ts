@@ -43,7 +43,7 @@ export function useStockTransactions(
   outletId: string | undefined,
   filters: StockTransactionFilters = DEFAULT_FILTERS,
   actionOutletId?: string,
-  allowFranchiseScope = false
+  allowFranchiseScope = false,
 ) {
   const mutationOutletId = actionOutletId ?? outletId;
   const [transactions, setTransactions] = useState<StockTransaction[]>([]);
@@ -87,7 +87,7 @@ export function useStockTransactions(
           {
             cursor: currentCursor,
             limit: pageSize,
-          }
+          },
         );
         setTransactions(result.items);
         setHasNextPage(result.pagination.hasNext);
@@ -114,7 +114,7 @@ export function useStockTransactions(
       currentCursor,
       pageSize,
       refreshTick,
-    ]
+    ],
   );
 
   useEffect(() => {
@@ -126,7 +126,7 @@ export function useStockTransactions(
     () => {
       void fetchTransactions(true);
     },
-    outletId
+    outletId,
   );
 
   function goToNextPage() {
@@ -158,7 +158,7 @@ export function useStockTransactions(
       resetToFirstPage();
       setRefreshTick((n) => n + 1);
     },
-    [allowFranchiseScope, outletId]
+    [allowFranchiseScope, outletId],
   );
 
   async function handleCreate(data: ManualTransactionPayload) {

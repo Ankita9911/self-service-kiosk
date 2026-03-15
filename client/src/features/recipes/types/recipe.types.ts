@@ -1,12 +1,16 @@
 export interface RecipeIngredient {
-  ingredientId: string | { _id: string; name: string; unit: string; currentStock: number };
+  ingredientId:
+    | string
+    | { _id: string; name: string; unit: string; currentStock: number };
   quantity: number;
   unit: string;
 }
 
 export interface Recipe {
   _id: string;
-  menuItemId: string | { _id: string; name: string; price: number; categoryId: string };
+  menuItemId:
+    | string
+    | { _id: string; name: string; price: number; categoryId: string };
   ingredients: RecipeIngredient[];
   prepTime: number;
   instructions: string;

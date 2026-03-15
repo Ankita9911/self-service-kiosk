@@ -1,5 +1,13 @@
 import { useState } from "react";
-import { Mail, Loader2, ChefHat, ShieldCheck, Eye, EyeOff, ArrowRight } from "lucide-react";
+import {
+  Mail,
+  Loader2,
+  ChefHat,
+  ShieldCheck,
+  Eye,
+  EyeOff,
+  ArrowRight,
+} from "lucide-react";
 import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
 import { useLogin } from "../hooks/useLogin";
@@ -9,8 +17,16 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [focused, setFocused] = useState<"email" | "password" | null>(null);
 
-  const { email, setEmail, password, setPassword, loading, error, fieldErrors, submit } =
-    useLogin();
+  const {
+    email,
+    setEmail,
+    password,
+    setPassword,
+    loading,
+    error,
+    fieldErrors,
+    submit,
+  } = useLogin();
 
   return (
     <div
@@ -27,7 +43,9 @@ export default function Login() {
             <div className="h-8 w-8 rounded-lg bg-linear-to-br from-indigo-500 to-violet-600 flex items-center justify-center">
               <ChefHat className="w-4 h-4 text-white" />
             </div>
-            <span className="font-clash-bold text-slate-800 text-sm">Hyper Kitchen</span>
+            <span className="font-clash-bold text-slate-800 text-sm">
+              Hyper Kitchen
+            </span>
           </div>
 
           <div className="mb-8">
@@ -104,7 +122,11 @@ export default function Login() {
                   onClick={() => setShowPassword((v) => !v)}
                   className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
                 >
-                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  {showPassword ? (
+                    <EyeOff className="w-4 h-4" />
+                  ) : (
+                    <Eye className="w-4 h-4" />
+                  )}
                 </button>
               </div>
               {fieldErrors.password && (
@@ -118,7 +140,9 @@ export default function Login() {
             {error && (
               <div className="flex items-start gap-3 rounded-xl bg-red-50 border border-red-100 px-4 py-3 animate-fade-in">
                 <div className="h-1.5 w-1.5 rounded-full bg-red-500 mt-1.5 shrink-0" />
-                <p className="text-[13px] font-satoshi text-red-600 leading-snug">{error}</p>
+                <p className="text-[13px] font-satoshi text-red-600 leading-snug">
+                  {error}
+                </p>
               </div>
             )}
 

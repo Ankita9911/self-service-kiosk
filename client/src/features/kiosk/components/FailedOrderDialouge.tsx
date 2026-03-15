@@ -44,7 +44,9 @@ export default function FailedOrderDialog({
             <p className="text-sm font-black text-red-600 mb-2">
               WE COULD NOT PLACE YOUR ORDER
             </p>
-            <p className="text-base font-semibold text-red-800">Due to stock changes/availability issues</p>
+            <p className="text-base font-semibold text-red-800">
+              Due to stock changes/availability issues
+            </p>
           </div>
 
           <p className="text-gray-600 font-semibold mb-8">

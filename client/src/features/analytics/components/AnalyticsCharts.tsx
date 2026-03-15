@@ -1,23 +1,39 @@
 import {
-  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
-  ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell, Legend,
-  ComposedChart, Line,
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  PieChart,
+  Pie,
+  Cell,
+  Legend,
+  ComposedChart,
+  Line,
 } from "recharts";
-import type { TrendPoint, HourPoint, CategoryRevenue } from "../types/analytics.types";
+import type {
+  TrendPoint,
+  HourPoint,
+  CategoryRevenue,
+} from "../types/analytics.types";
 
 export const PALETTE = [
-  "#6366f1", 
-  "#8b5cf6", 
-  "#3b82f6", 
-  "#10b981", 
-  "#f59e0b", 
-  "#f43f5e", 
-  "#06b6d4", 
-  "#84cc16", 
+  "#6366f1",
+  "#8b5cf6",
+  "#3b82f6",
+  "#10b981",
+  "#f59e0b",
+  "#f43f5e",
+  "#06b6d4",
+  "#84cc16",
 ];
 
-const GRID_COLOR   = "#f1f5f9"; 
-const AXIS_COLOR   = "#94a3b8";
+const GRID_COLOR = "#f1f5f9";
+const AXIS_COLOR = "#94a3b8";
 const TOOLTIP_STYLE = {
   borderRadius: "12px",
   border: "1px solid #e2e8f0",
@@ -26,17 +42,18 @@ const TOOLTIP_STYLE = {
   fontFamily: "Geist, sans-serif",
 };
 
-
 function formatCurrency(val: number) {
   if (val >= 100000) return `₹${(val / 100000).toFixed(1)}L`;
-  if (val >= 1000)   return `₹${(val / 1000).toFixed(1)}K`;
+  if (val >= 1000) return `₹${(val / 1000).toFixed(1)}K`;
   return `₹${val.toFixed(0)}`;
 }
 
 function formatDate(d: string) {
-  return new Date(d).toLocaleDateString("en-IN", { month: "short", day: "numeric" });
+  return new Date(d).toLocaleDateString("en-IN", {
+    month: "short",
+    day: "numeric",
+  });
 }
-
 
 export function RevenueTrendChart({
   data,
@@ -59,24 +76,44 @@ export function RevenueTrendChart({
 
   return (
     <ResponsiveContainer width="100%" height={height}>
-      <AreaChart data={formatted} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+      <AreaChart
+        data={formatted}
+        margin={{ top: 8, right: 8, left: 0, bottom: 0 }}
+      >
         <defs>
           <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="5%"  stopColor={color} stopOpacity={0.15} />
+            <stop offset="5%" stopColor={color} stopOpacity={0.15} />
             <stop offset="95%" stopColor={color} stopOpacity={0} />
           </linearGradient>
         </defs>
-        <CartesianGrid strokeDasharray="3 3" stroke={GRID_COLOR} vertical={false} />
+        <CartesianGrid
+          strokeDasharray="3 3"
+          stroke={GRID_COLOR}
+          vertical={false}
+        />
         <XAxis
           dataKey="label"
-          tick={{ fontSize: 11, fill: AXIS_COLOR, fontFamily: "Geist, sans-serif" }}
-          axisLine={false} tickLine={false}
+          tick={{
+            fontSize: 11,
+            fill: AXIS_COLOR,
+            fontFamily: "Geist, sans-serif",
+          }}
+          axisLine={false}
+          tickLine={false}
           interval="preserveStartEnd"
         />
         <YAxis
-          tick={{ fontSize: 11, fill: AXIS_COLOR, fontFamily: "Geist, sans-serif" }}
-          axisLine={false} tickLine={false} width={52}
-          tickFormatter={dataKey === "revenue" ? formatCurrency : (v: number) => String(v)}
+          tick={{
+            fontSize: 11,
+            fill: AXIS_COLOR,
+            fontFamily: "Geist, sans-serif",
+          }}
+          axisLine={false}
+          tickLine={false}
+          width={52}
+          tickFormatter={
+            dataKey === "revenue" ? formatCurrency : (v: number) => String(v)
+          }
         />
         <Tooltip
           contentStyle={TOOLTIP_STYLE}
@@ -102,8 +139,13 @@ export function RevenueTrendChart({
   );
 }
 
-
-export function HourlyOrdersChart({ data, height = 200 }: { data: HourPoint[]; height?: number }) {
+export function HourlyOrdersChart({
+  data,
+  height = 200,
+}: {
+  data: HourPoint[];
+  height?: number;
+}) {
   const filled = Array.from({ length: 24 }, (_, i) => {
     const found = data.find((d) => d._id === i);
     return { hour: `${i}h`, count: found?.count || 0 };
@@ -112,27 +154,47 @@ export function HourlyOrdersChart({ data, height = 200 }: { data: HourPoint[]; h
   return (
     <ResponsiveContainer width="100%" height={height}>
       <BarChart data={filled} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-        <CartesianGrid strokeDasharray="3 3" stroke={GRID_COLOR} vertical={false} />
+        <CartesianGrid
+          strokeDasharray="3 3"
+          stroke={GRID_COLOR}
+          vertical={false}
+        />
         <XAxis
           dataKey="hour"
-          tick={{ fontSize: 10, fill: AXIS_COLOR, fontFamily: "Geist, sans-serif" }}
-          axisLine={false} tickLine={false} interval={3}
+          tick={{
+            fontSize: 10,
+            fill: AXIS_COLOR,
+            fontFamily: "Geist, sans-serif",
+          }}
+          axisLine={false}
+          tickLine={false}
+          interval={3}
         />
         <YAxis
-          tick={{ fontSize: 10, fill: AXIS_COLOR, fontFamily: "Geist, sans-serif" }}
-          axisLine={false} tickLine={false} width={28}
+          tick={{
+            fontSize: 10,
+            fill: AXIS_COLOR,
+            fontFamily: "Geist, sans-serif",
+          }}
+          axisLine={false}
+          tickLine={false}
+          width={28}
         />
         <Tooltip
           contentStyle={TOOLTIP_STYLE}
           formatter={(value) => [value ?? 0, "Orders"]}
           labelStyle={{ color: "#64748b", fontWeight: 600 }}
         />
-        <Bar dataKey="count" fill="#6366f1" radius={[4, 4, 0, 0]} maxBarSize={18} />
+        <Bar
+          dataKey="count"
+          fill="#6366f1"
+          radius={[4, 4, 0, 0]}
+          maxBarSize={18}
+        />
       </BarChart>
     </ResponsiveContainer>
   );
 }
-
 
 export function CategoryPieChart({ data }: { data: CategoryRevenue[] }) {
   const formatted = data.map((d) => ({
@@ -145,8 +207,10 @@ export function CategoryPieChart({ data }: { data: CategoryRevenue[] }) {
       <PieChart>
         <Pie
           data={formatted}
-          cx="38%" cy="50%"
-          innerRadius={64} outerRadius={96}
+          cx="38%"
+          cy="50%"
+          innerRadius={64}
+          outerRadius={96}
           paddingAngle={3}
           dataKey="value"
         >
@@ -156,20 +220,33 @@ export function CategoryPieChart({ data }: { data: CategoryRevenue[] }) {
         </Pie>
         <Tooltip
           contentStyle={TOOLTIP_STYLE}
-          formatter={(value) => [`₹${Number(value ?? 0).toLocaleString("en-IN")}`, "Revenue"]}
+          formatter={(value) => [
+            `₹${Number(value ?? 0).toLocaleString("en-IN")}`,
+            "Revenue",
+          ]}
         />
         <Legend
-          layout="vertical" align="right" verticalAlign="middle"
-          iconType="circle" iconSize={8}
+          layout="vertical"
+          align="right"
+          verticalAlign="middle"
+          iconType="circle"
+          iconSize={8}
           formatter={(v) => (
-            <span style={{ fontSize: 11, color: "#64748b", fontFamily: "Geist, sans-serif" }}>{v}</span>
+            <span
+              style={{
+                fontSize: 11,
+                color: "#64748b",
+                fontFamily: "Geist, sans-serif",
+              }}
+            >
+              {v}
+            </span>
           )}
         />
       </PieChart>
     </ResponsiveContainer>
   );
 }
-
 
 export function OutletRevenueChart({
   data,
@@ -180,24 +257,52 @@ export function OutletRevenueChart({
 }) {
   return (
     <ResponsiveContainer width="100%" height={height}>
-      <BarChart data={data} layout="vertical" margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-        <CartesianGrid strokeDasharray="3 3" stroke={GRID_COLOR} horizontal={false} />
+      <BarChart
+        data={data}
+        layout="vertical"
+        margin={{ top: 8, right: 8, left: 0, bottom: 0 }}
+      >
+        <CartesianGrid
+          strokeDasharray="3 3"
+          stroke={GRID_COLOR}
+          horizontal={false}
+        />
         <XAxis
           type="number"
-          tick={{ fontSize: 10, fill: AXIS_COLOR, fontFamily: "Geist, sans-serif" }}
-          axisLine={false} tickLine={false}
+          tick={{
+            fontSize: 10,
+            fill: AXIS_COLOR,
+            fontFamily: "Geist, sans-serif",
+          }}
+          axisLine={false}
+          tickLine={false}
           tickFormatter={formatCurrency}
         />
         <YAxis
-          type="category" dataKey="name"
-          tick={{ fontSize: 10, fill: "#64748b", fontFamily: "Geist, sans-serif" }}
-          axisLine={false} tickLine={false} width={82}
+          type="category"
+          dataKey="name"
+          tick={{
+            fontSize: 10,
+            fill: "#64748b",
+            fontFamily: "Geist, sans-serif",
+          }}
+          axisLine={false}
+          tickLine={false}
+          width={82}
         />
         <Tooltip
           contentStyle={TOOLTIP_STYLE}
-          formatter={(value) => [`₹${Number(value ?? 0).toLocaleString("en-IN")}`, "Revenue"]}
+          formatter={(value) => [
+            `₹${Number(value ?? 0).toLocaleString("en-IN")}`,
+            "Revenue",
+          ]}
         />
-        <Bar dataKey="revenue" fill="#6366f1" radius={[0, 4, 4, 0]} maxBarSize={16} />
+        <Bar
+          dataKey="revenue"
+          fill="#6366f1"
+          radius={[0, 4, 4, 0]}
+          maxBarSize={16}
+        />
       </BarChart>
     </ResponsiveContainer>
   );
@@ -213,34 +318,61 @@ export function DualTrendChart({
   const formatted = data.map((d) => ({
     label: formatDate(d._id),
     revenue: d.revenue ?? 0,
-    orders:  d.orders  ?? 0,
+    orders: d.orders ?? 0,
   }));
 
   return (
     <ResponsiveContainer width="100%" height={height}>
-      <ComposedChart data={formatted} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+      <ComposedChart
+        data={formatted}
+        margin={{ top: 8, right: 8, left: 0, bottom: 0 }}
+      >
         <defs>
           <linearGradient id="gradDualRev" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="5%"  stopColor="#6366f1" stopOpacity={0.12} />
+            <stop offset="5%" stopColor="#6366f1" stopOpacity={0.12} />
             <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
           </linearGradient>
         </defs>
-        <CartesianGrid strokeDasharray="3 3" stroke={GRID_COLOR} vertical={false} />
+        <CartesianGrid
+          strokeDasharray="3 3"
+          stroke={GRID_COLOR}
+          vertical={false}
+        />
         <XAxis
           dataKey="label"
-          tick={{ fontSize: 11, fill: AXIS_COLOR, fontFamily: "Geist, sans-serif" }}
-          axisLine={false} tickLine={false} interval="preserveStartEnd"
+          tick={{
+            fontSize: 11,
+            fill: AXIS_COLOR,
+            fontFamily: "Geist, sans-serif",
+          }}
+          axisLine={false}
+          tickLine={false}
+          interval="preserveStartEnd"
         />
         <YAxis
-          yAxisId="rev" orientation="left"
-          tick={{ fontSize: 11, fill: AXIS_COLOR, fontFamily: "Geist, sans-serif" }}
-          axisLine={false} tickLine={false} width={52}
+          yAxisId="rev"
+          orientation="left"
+          tick={{
+            fontSize: 11,
+            fill: AXIS_COLOR,
+            fontFamily: "Geist, sans-serif",
+          }}
+          axisLine={false}
+          tickLine={false}
+          width={52}
           tickFormatter={formatCurrency}
         />
         <YAxis
-          yAxisId="ord" orientation="right"
-          tick={{ fontSize: 11, fill: AXIS_COLOR, fontFamily: "Geist, sans-serif" }}
-          axisLine={false} tickLine={false} width={36}
+          yAxisId="ord"
+          orientation="right"
+          tick={{
+            fontSize: 11,
+            fill: AXIS_COLOR,
+            fontFamily: "Geist, sans-serif",
+          }}
+          axisLine={false}
+          tickLine={false}
+          width={36}
           allowDecimals={false}
         />
         <Tooltip
@@ -253,21 +385,37 @@ export function DualTrendChart({
           labelStyle={{ color: "#64748b", fontWeight: 600, marginBottom: 4 }}
         />
         <Legend
-          iconType="circle" iconSize={7}
+          iconType="circle"
+          iconSize={7}
           formatter={(v: string) => (
-            <span style={{ fontSize: 11, color: "#64748b", fontFamily: "Geist, sans-serif" }}>
+            <span
+              style={{
+                fontSize: 11,
+                color: "#64748b",
+                fontFamily: "Geist, sans-serif",
+              }}
+            >
               {v === "revenue" ? "Revenue" : "Orders"}
             </span>
           )}
         />
         <Area
-          yAxisId="rev" type="monotone" dataKey="revenue"
-          stroke="#6366f1" strokeWidth={2} fill="url(#gradDualRev)"
-          dot={false} activeDot={{ r: 4, fill: "#6366f1", strokeWidth: 0 }}
+          yAxisId="rev"
+          type="monotone"
+          dataKey="revenue"
+          stroke="#6366f1"
+          strokeWidth={2}
+          fill="url(#gradDualRev)"
+          dot={false}
+          activeDot={{ r: 4, fill: "#6366f1", strokeWidth: 0 }}
         />
         <Line
-          yAxisId="ord" type="monotone" dataKey="orders"
-          stroke="#10b981" strokeWidth={2} dot={false}
+          yAxisId="ord"
+          type="monotone"
+          dataKey="orders"
+          stroke="#10b981"
+          strokeWidth={2}
+          dot={false}
           activeDot={{ r: 4, fill: "#10b981", strokeWidth: 0 }}
         />
       </ComposedChart>
@@ -276,11 +424,11 @@ export function DualTrendChart({
 }
 
 const STATUS_COLORS: Record<string, string> = {
-  CREATED:    "#94a3b8",
+  CREATED: "#94a3b8",
   IN_KITCHEN: "#f59e0b",
-  READY:      "#6366f1",
-  COMPLETED:  "#10b981",
-  PICKED_UP:  "#8b5cf6",
+  READY: "#6366f1",
+  COMPLETED: "#10b981",
+  PICKED_UP: "#8b5cf6",
 };
 
 // ─── New chart components for Super Admin ────────────────────────────────────
@@ -300,15 +448,53 @@ export function MonthlyCountChart({
   label?: string;
   height?: number;
 }) {
-  const formatted = data.map((d) => ({ label: formatMonth(d._id), count: d.count }));
+  const formatted = data.map((d) => ({
+    label: formatMonth(d._id),
+    count: d.count,
+  }));
   return (
     <ResponsiveContainer width="100%" height={height}>
-      <BarChart data={formatted} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-        <CartesianGrid strokeDasharray="3 3" stroke={GRID_COLOR} vertical={false} />
-        <XAxis dataKey="label" tick={{ fontSize: 11, fill: AXIS_COLOR, fontFamily: "Geist, sans-serif" }} axisLine={false} tickLine={false} />
-        <YAxis tick={{ fontSize: 11, fill: AXIS_COLOR, fontFamily: "Geist, sans-serif" }} axisLine={false} tickLine={false} width={28} allowDecimals={false} />
-        <Tooltip contentStyle={TOOLTIP_STYLE} formatter={(value) => [value, label]} labelStyle={{ color: "#64748b", fontWeight: 600 }} />
-        <Bar dataKey="count" fill="#6366f1" radius={[4, 4, 0, 0]} maxBarSize={28} />
+      <BarChart
+        data={formatted}
+        margin={{ top: 8, right: 8, left: 0, bottom: 0 }}
+      >
+        <CartesianGrid
+          strokeDasharray="3 3"
+          stroke={GRID_COLOR}
+          vertical={false}
+        />
+        <XAxis
+          dataKey="label"
+          tick={{
+            fontSize: 11,
+            fill: AXIS_COLOR,
+            fontFamily: "Geist, sans-serif",
+          }}
+          axisLine={false}
+          tickLine={false}
+        />
+        <YAxis
+          tick={{
+            fontSize: 11,
+            fill: AXIS_COLOR,
+            fontFamily: "Geist, sans-serif",
+          }}
+          axisLine={false}
+          tickLine={false}
+          width={28}
+          allowDecimals={false}
+        />
+        <Tooltip
+          contentStyle={TOOLTIP_STYLE}
+          formatter={(value) => [value, label]}
+          labelStyle={{ color: "#64748b", fontWeight: 600 }}
+        />
+        <Bar
+          dataKey="count"
+          fill="#6366f1"
+          radius={[4, 4, 0, 0]}
+          maxBarSize={28}
+        />
       </BarChart>
     </ResponsiveContainer>
   );
@@ -325,12 +511,50 @@ export function CountBarChart({
 }) {
   return (
     <ResponsiveContainer width="100%" height={height}>
-      <BarChart data={data} layout="vertical" margin={{ top: 8, right: 16, left: 0, bottom: 0 }}>
-        <CartesianGrid strokeDasharray="3 3" stroke={GRID_COLOR} horizontal={false} />
-        <XAxis type="number" tick={{ fontSize: 10, fill: AXIS_COLOR, fontFamily: "Geist, sans-serif" }} axisLine={false} tickLine={false} allowDecimals={false} />
-        <YAxis type="category" dataKey="name" tick={{ fontSize: 10, fill: "#64748b", fontFamily: "Geist, sans-serif" }} axisLine={false} tickLine={false} width={90} />
-        <Tooltip contentStyle={TOOLTIP_STYLE} formatter={(value) => [value, label]} labelStyle={{ color: "#64748b", fontWeight: 600 }} />
-        <Bar dataKey="count" fill="#6366f1" radius={[0, 4, 4, 0]} maxBarSize={16} />
+      <BarChart
+        data={data}
+        layout="vertical"
+        margin={{ top: 8, right: 16, left: 0, bottom: 0 }}
+      >
+        <CartesianGrid
+          strokeDasharray="3 3"
+          stroke={GRID_COLOR}
+          horizontal={false}
+        />
+        <XAxis
+          type="number"
+          tick={{
+            fontSize: 10,
+            fill: AXIS_COLOR,
+            fontFamily: "Geist, sans-serif",
+          }}
+          axisLine={false}
+          tickLine={false}
+          allowDecimals={false}
+        />
+        <YAxis
+          type="category"
+          dataKey="name"
+          tick={{
+            fontSize: 10,
+            fill: "#64748b",
+            fontFamily: "Geist, sans-serif",
+          }}
+          axisLine={false}
+          tickLine={false}
+          width={90}
+        />
+        <Tooltip
+          contentStyle={TOOLTIP_STYLE}
+          formatter={(value) => [value, label]}
+          labelStyle={{ color: "#64748b", fontWeight: 600 }}
+        />
+        <Bar
+          dataKey="count"
+          fill="#6366f1"
+          radius={[0, 4, 4, 0]}
+          maxBarSize={16}
+        />
       </BarChart>
     </ResponsiveContainer>
   );
@@ -346,17 +570,51 @@ export function DonutChart({
   return (
     <ResponsiveContainer width="100%" height={height}>
       <PieChart>
-        <Pie data={data} cx="50%" cy="50%" innerRadius={58} outerRadius={88} paddingAngle={3} dataKey="value">
-          {data.map((_, i) => <Cell key={i} fill={PALETTE[i % PALETTE.length]} stroke="none" />)}
+        <Pie
+          data={data}
+          cx="50%"
+          cy="50%"
+          innerRadius={58}
+          outerRadius={88}
+          paddingAngle={3}
+          dataKey="value"
+        >
+          {data.map((_, i) => (
+            <Cell key={i} fill={PALETTE[i % PALETTE.length]} stroke="none" />
+          ))}
         </Pie>
-        <Tooltip contentStyle={TOOLTIP_STYLE} formatter={(value, _name, props) => [value, props?.payload?.name ?? ""]} />
-        <Legend iconType="circle" iconSize={7} formatter={(v) => <span style={{ fontSize: 11, color: "#64748b", fontFamily: "Geist, sans-serif" }}>{v}</span>} />
+        <Tooltip
+          contentStyle={TOOLTIP_STYLE}
+          formatter={(value, _name, props) => [
+            value,
+            props?.payload?.name ?? "",
+          ]}
+        />
+        <Legend
+          iconType="circle"
+          iconSize={7}
+          formatter={(v) => (
+            <span
+              style={{
+                fontSize: 11,
+                color: "#64748b",
+                fontFamily: "Geist, sans-serif",
+              }}
+            >
+              {v}
+            </span>
+          )}
+        />
       </PieChart>
     </ResponsiveContainer>
   );
 }
 
-export function StatusDonutChart({ breakdown }: { breakdown: Record<string, number> }) {
+export function StatusDonutChart({
+  breakdown,
+}: {
+  breakdown: Record<string, number>;
+}) {
   const data = Object.entries(breakdown).map(([status, count]) => ({
     name: status.replace(/_/g, " "),
     value: count,
@@ -368,8 +626,10 @@ export function StatusDonutChart({ breakdown }: { breakdown: Record<string, numb
       <PieChart>
         <Pie
           data={data}
-          cx="50%" cy="50%"
-          innerRadius={52} outerRadius={78}
+          cx="50%"
+          cy="50%"
+          innerRadius={52}
+          outerRadius={78}
           paddingAngle={3}
           dataKey="value"
         >
@@ -379,11 +639,25 @@ export function StatusDonutChart({ breakdown }: { breakdown: Record<string, numb
         </Pie>
         <Tooltip
           contentStyle={TOOLTIP_STYLE}
-          formatter={(value, _name, props) => [value ?? 0, props?.payload?.name ?? ""]}
+          formatter={(value, _name, props) => [
+            value ?? 0,
+            props?.payload?.name ?? "",
+          ]}
         />
         <Legend
-          iconType="circle" iconSize={7}
-          formatter={(v) => <span style={{ fontSize: 11, color: "#64748b", fontFamily: "Geist, sans-serif" }}>{v}</span>}
+          iconType="circle"
+          iconSize={7}
+          formatter={(v) => (
+            <span
+              style={{
+                fontSize: 11,
+                color: "#64748b",
+                fontFamily: "Geist, sans-serif",
+              }}
+            >
+              {v}
+            </span>
+          )}
         />
       </PieChart>
     </ResponsiveContainer>

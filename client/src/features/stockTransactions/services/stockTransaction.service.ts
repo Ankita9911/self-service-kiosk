@@ -34,7 +34,7 @@ export interface PaginatedStockTransactionsResult {
 export async function getStockTransactionsPage(
   outletId?: string,
   params: StockTransactionFilterParams = {},
-  options: StockTransactionPageOptions = {}
+  options: StockTransactionPageOptions = {},
 ): Promise<PaginatedStockTransactionsResult> {
   const p: Record<string, string> = {};
   if (outletId) p.outletId = outletId;
@@ -89,28 +89,47 @@ export async function getStockTransactionsPage(
 // Keep legacy name for backward compat (used by getIngredientHistory flow)
 export async function getStockTransactions(
   outletId?: string,
-  options?: { ingredientId?: string; type?: string; cursor?: string; limit?: number }
+  options?: {
+    ingredientId?: string;
+    type?: string;
+    cursor?: string;
+    limit?: number;
+  },
 ): Promise<{
   items: StockTransaction[];
-  pagination: { limit: number; hasNext: boolean; nextCursor: string | null; totalMatching: number };
+  pagination: {
+    limit: number;
+    hasNext: boolean;
+    nextCursor: string | null;
+    totalMatching: number;
+  };
 }> {
-  const result = await getStockTransactionsPage(outletId, {
-    ingredientId: options?.ingredientId,
-    type: options?.type,
-  }, {
-    cursor: options?.cursor,
-    limit: options?.limit,
-  });
+  const result = await getStockTransactionsPage(
+    outletId,
+    {
+      ingredientId: options?.ingredientId,
+      type: options?.type,
+    },
+    {
+      cursor: options?.cursor,
+      limit: options?.limit,
+    },
+  );
   return { items: result.items, pagination: result.pagination };
 }
 
 export async function getIngredientHistory(
   ingredientId: string,
   outletId?: string,
-  options?: { cursor?: string; limit?: number }
+  options?: { cursor?: string; limit?: number },
 ): Promise<{
   items: StockTransaction[];
-  pagination: { limit: number; hasNext: boolean; nextCursor: string | null; totalMatching: number };
+  pagination: {
+    limit: number;
+    hasNext: boolean;
+    nextCursor: string | null;
+    totalMatching: number;
+  };
 }> {
   const p: Record<string, string> = {};
   if (outletId) p.outletId = outletId;
@@ -144,14 +163,14 @@ export async function getIngredientHistory(
 
 export async function createManualTransaction(
   data: ManualTransactionPayload,
-  outletId?: string
+  outletId?: string,
 ): Promise<StockTransaction> {
   const p: Record<string, string> = {};
   if (outletId) p.outletId = outletId;
   const response = await axiosInstance.post<{ data: StockTransaction }>(
     "/stock-transactions",
     data,
-    { params: p }
+    { params: p },
   );
   return response.data.data;
 }

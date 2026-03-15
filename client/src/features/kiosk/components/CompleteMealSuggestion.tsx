@@ -9,7 +9,11 @@ interface CompleteMealSuggestionProps {
   isLoading: boolean;
   cart: CartItem[];
   onAddToCart: (item: MenuItem) => void;
-  onAddComboToCart: (combo: { _id: string; name: string; comboPrice: number }) => void;
+  onAddComboToCart: (combo: {
+    _id: string;
+    name: string;
+    comboPrice: number;
+  }) => void;
 }
 
 export default function CompleteMealSuggestion({
@@ -28,7 +32,10 @@ export default function CompleteMealSuggestion({
     <div className="border-t border-gray-100 pt-3 px-4 pb-3">
       {/* Header */}
       <div className="flex items-center gap-2 mb-3">
-        <UtensilsCrossed className="w-3.5 h-3.5 text-purple-500" strokeWidth={2.5} />
+        <UtensilsCrossed
+          className="w-3.5 h-3.5 text-purple-500"
+          strokeWidth={2.5}
+        />
         <span
           className="text-xs font-black text-gray-700 uppercase tracking-wide"
           style={{ fontFamily: "var(--font-display)" }}
@@ -48,7 +55,10 @@ export default function CompleteMealSuggestion({
             className="mb-3 rounded-2xl bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-orange-200 p-3"
           >
             <div className="flex items-start gap-2 mb-2">
-              <Tag className="w-3.5 h-3.5 text-orange-500 mt-0.5 flex-shrink-0" strokeWidth={2.5} />
+              <Tag
+                className="w-3.5 h-3.5 text-orange-500 mt-0.5 flex-shrink-0"
+                strokeWidth={2.5}
+              />
               <div className="flex-1 min-w-0">
                 <p
                   className="text-xs font-black text-orange-700 leading-tight"
@@ -80,7 +90,10 @@ export default function CompleteMealSuggestion({
                 </span>
                 {comboDeal.originalPrice > comboDeal.comboPrice && (
                   <span className="text-[9px] font-black text-white bg-emerald-500 px-1.5 py-0.5 rounded-full">
-                    SAVE ₹{(comboDeal.originalPrice - comboDeal.comboPrice).toFixed(0)}
+                    SAVE ₹
+                    {(comboDeal.originalPrice - comboDeal.comboPrice).toFixed(
+                      0,
+                    )}
                   </span>
                 )}
               </div>
@@ -109,9 +122,11 @@ export default function CompleteMealSuggestion({
         {suggestions.length > 0 && (
           <div className="grid grid-cols-2 gap-2">
             {suggestions.map((item, index) => {
-              const alreadyInCart = cart.some((c) => c.itemId === String(item._id));
+              const alreadyInCart = cart.some(
+                (c) => c.itemId === String(item._id),
+              );
               const discountOffer = (item.offers ?? []).find(
-                (o) => o.type === "DISCOUNT" && o.discountPercent
+                (o) => o.type === "DISCOUNT" && o.discountPercent,
               );
               const effectivePrice = discountOffer?.discountPercent
                 ? item.price * (1 - discountOffer.discountPercent / 100)
@@ -139,7 +154,10 @@ export default function CompleteMealSuggestion({
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
-                        <ImageOff className="w-6 h-6 text-gray-300" strokeWidth={1.5} />
+                        <ImageOff
+                          className="w-6 h-6 text-gray-300"
+                          strokeWidth={1.5}
+                        />
                       </div>
                     )}
                   </div>
@@ -160,12 +178,16 @@ export default function CompleteMealSuggestion({
                         ₹{effectivePrice.toFixed(0)}
                       </span>
                       {alreadyInCart ? (
-                        <span className="text-[9px] font-black text-emerald-600">✓</span>
+                        <span className="text-[9px] font-black text-emerald-600">
+                          ✓
+                        </span>
                       ) : (
                         <motion.button
                           whileHover={{ scale: 1.15 }}
                           whileTap={{ scale: 0.9 }}
-                          onClick={() => onAddToCart(item as unknown as MenuItem)}
+                          onClick={() =>
+                            onAddToCart(item as unknown as MenuItem)
+                          }
                           className="w-6 h-6 rounded-lg bg-orange-500 hover:bg-orange-600 text-white flex items-center justify-center shadow-sm transition-colors"
                         >
                           <Plus className="w-3 h-3" strokeWidth={3} />

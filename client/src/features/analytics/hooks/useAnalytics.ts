@@ -26,7 +26,7 @@ export function useAnalytics() {
       setPeriodState(p);
       load(p);
     },
-    [load]
+    [load],
   );
 
   useEffect(() => {

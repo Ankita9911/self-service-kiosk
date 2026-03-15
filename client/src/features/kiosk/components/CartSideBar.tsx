@@ -2,7 +2,10 @@ import { motion } from "framer-motion";
 import { ShoppingBag, X } from "lucide-react";
 import CartPanel from "./CartPanel";
 import type { CartItem } from "../types/cartItem.types";
-import type { RecommendedItem, CompleteMealResult } from "../services/recommendation.service";
+import type {
+  RecommendedItem,
+  CompleteMealResult,
+} from "../services/recommendation.service";
 import type { MenuItem } from "../types/menu.types";
 
 interface CartSidebarProps {
@@ -21,7 +24,11 @@ interface CartSidebarProps {
   completeMeal?: CompleteMealResult;
   isMealLoading?: boolean;
   onAddRecommendedItem?: (item: MenuItem) => void;
-  onAddComboToCart?: (combo: { _id: string; name: string; comboPrice: number }) => void;
+  onAddComboToCart?: (combo: {
+    _id: string;
+    name: string;
+    comboPrice: number;
+  }) => void;
 }
 
 export default function CartSidebar({

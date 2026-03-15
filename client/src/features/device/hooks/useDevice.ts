@@ -75,7 +75,7 @@ export function useDevices(canView: boolean, filters: DeviceFilters) {
           {
             cursor: currentCursor ?? undefined,
             limit: pageSize,
-          }
+          },
         );
 
         if (cancelled) return;
@@ -132,15 +132,24 @@ export function useDevices(canView: boolean, filters: DeviceFilters) {
     setHasNextPage(false);
   }
 
-  const refreshAll = useCallback(async (silent = false) => {
-    if (!canView) return;
-    if (silent) setRefreshing(true);
-    await fetchOutlets();
-    resetToFirstPage();
-    setRefreshTick((n) => n + 1);
-  }, [canView, fetchOutlets]);
+  const refreshAll = useCallback(
+    async (silent = false) => {
+      if (!canView) return;
+      if (silent) setRefreshing(true);
+      await fetchOutlets();
+      resetToFirstPage();
+      setRefreshTick((n) => n + 1);
+    },
+    [canView, fetchOutlets],
+  );
 
-  async function handleCreate(payload: { outletId: string; name?: string; landingImage?: string; landingTitle?: string; landingSubtitle?: string }) {
+  async function handleCreate(payload: {
+    outletId: string;
+    name?: string;
+    landingImage?: string;
+    landingTitle?: string;
+    landingSubtitle?: string;
+  }) {
     const result = await createDevice(payload);
     return result.secret;
   }
@@ -155,7 +164,10 @@ export function useDevices(canView: boolean, filters: DeviceFilters) {
     await refreshAll(true);
   }
 
-  async function handleStatusChange(deviceId: string, status: "ACTIVE" | "INACTIVE") {
+  async function handleStatusChange(
+    deviceId: string,
+    status: "ACTIVE" | "INACTIVE",
+  ) {
     await changeDeviceStatus(deviceId, status);
     await refreshAll(true);
   }

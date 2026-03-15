@@ -7,7 +7,12 @@ interface IngredientHeaderProps {
   onAdd: () => void;
 }
 
-export function IngredientHeader({ refreshing, canAdd, onRefresh, onAdd }: IngredientHeaderProps) {
+export function IngredientHeader({
+  refreshing,
+  canAdd,
+  onRefresh,
+  onAdd,
+}: IngredientHeaderProps) {
   return (
     <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2">
       <div>
@@ -24,7 +29,9 @@ export function IngredientHeader({ refreshing, canAdd, onRefresh, onAdd }: Ingre
           disabled={refreshing}
           className="h-9 w-9 rounded-xl border border-slate-200 dark:border-white/[0.08] bg-white dark:bg-white/[0.04] flex items-center justify-center text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:border-indigo-200 dark:hover:border-indigo-500/40 transition-all disabled:opacity-50"
         >
-          <RefreshCcw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
+          <RefreshCcw
+            className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`}
+          />
         </button>
         <button
           onClick={onAdd}

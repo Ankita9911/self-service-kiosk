@@ -10,7 +10,7 @@ export interface CartReconcileResult {
 export function reconcileCartWithCatalog(
   cart: CartItem[],
   menu: MenuCategory[],
-  combos: Combo[]
+  combos: Combo[],
 ): CartReconcileResult {
   const menuById = new Map<string, MenuItem>();
   const comboById = new Map<string, Combo>();
@@ -31,53 +31,77 @@ export function reconcileCartWithCatalog(
     if (cartItem.isCombo) {
       const combo = comboById.get(cartItem.itemId);
       if (!combo || combo.isActive === false) {
-        alerts.push(`${cartItem.name} was removed because it is no longer available.`);
+        alerts.push(
+          `${cartItem.name} was removed because it is no longer available.`,
+        );
         continue;
       }
       const nextPrice = combo.comboPrice ?? cartItem.price;
       if (nextPrice !== cartItem.price) {
-        alerts.push(`${cartItem.name} price changed: Rs ${cartItem.price.toFixed(2)} -> Rs ${nextPrice.toFixed(2)}.`);
+        alerts.push(
+          `${cartItem.name} price changed: Rs ${cartItem.price.toFixed(2)} -> Rs ${nextPrice.toFixed(2)}.`,
+        );
       }
       nextCart.push({ ...cartItem, price: nextPrice });
       continue;
     }
 
     const liveItem = menuById.get(cartItem.itemId);
-    if (!liveItem || liveItem.isActive === false || liveItem.stockQuantity <= 0) {
+    if (
+      !liveItem ||
+      liveItem.isActive === false ||
+      liveItem.stockQuantity <= 0
+    ) {
       alerts.push(`${cartItem.name} was removed because it is out of stock.`);
       continue;
     }
 
     const liveOptionsMap = new Map(
-      (liveItem.customizationOptions || []).map((opt) => [opt.itemId, opt])
+      (liveItem.customizationOptions || []).map((opt) => [opt.itemId, opt]),
     );
 
     const nextSelectedOptions = [];
     for (const option of cartItem.selectedCustomizations || []) {
       const liveOption = liveOptionsMap.get(option.itemId);
       if (!liveOption || liveOption.stockQuantity <= 0) {
-        alerts.push(`${option.name} was removed from ${cartItem.name} because it is unavailable.`);
+        alerts.push(
+          `${option.name} was removed from ${cartItem.name} because it is unavailable.`,
+        );
         continue;
       }
       if (liveOption.price !== option.price) {
-        alerts.push(`${option.name} price changed: Rs ${option.price.toFixed(2)} -> Rs ${liveOption.price.toFixed(2)}.`);
+        alerts.push(
+          `${option.name} price changed: Rs ${option.price.toFixed(2)} -> Rs ${liveOption.price.toFixed(2)}.`,
+        );
       }
-      nextSelectedOptions.push({ ...option, price: liveOption.price, stockQuantity: liveOption.stockQuantity, name: liveOption.name });
+      nextSelectedOptions.push({
+        ...option,
+        price: liveOption.price,
+        stockQuantity: liveOption.stockQuantity,
+        name: liveOption.name,
+      });
     }
 
     const optionStockLimit = nextSelectedOptions.length
       ? Math.min(...nextSelectedOptions.map((opt) => opt.stockQuantity))
       : liveItem.stockQuantity;
 
-    const effectiveStockLimit = Math.min(liveItem.stockQuantity, optionStockLimit);
+    const effectiveStockLimit = Math.min(
+      liveItem.stockQuantity,
+      optionStockLimit,
+    );
     const reducedQuantity = Math.min(cartItem.quantity, effectiveStockLimit);
 
     if (reducedQuantity !== cartItem.quantity) {
-      alerts.push(`${cartItem.name} quantity reduced from ${cartItem.quantity} to ${reducedQuantity} due to stock limits.`);
+      alerts.push(
+        `${cartItem.name} quantity reduced from ${cartItem.quantity} to ${reducedQuantity} due to stock limits.`,
+      );
     }
 
     if (liveItem.price !== cartItem.price) {
-      alerts.push(`${cartItem.name} price changed: Rs ${cartItem.price.toFixed(2)} -> Rs ${liveItem.price.toFixed(2)}.`);
+      alerts.push(
+        `${cartItem.name} price changed: Rs ${cartItem.price.toFixed(2)} -> Rs ${liveItem.price.toFixed(2)}.`,
+      );
     }
 
     const firstOffer = liveItem.offers?.[0];
@@ -108,8 +132,10 @@ function hasCartChanged(prev: CartItem[], next: CartItem[]): boolean {
       a.stockQuantity !== b.stockQuantity ||
       a.offerType !== b.offerType ||
       a.discountPercent !== b.discountPercent ||
-      JSON.stringify(a.selectedCustomizations ?? []) !== JSON.stringify(b.selectedCustomizations ?? [])
-    ) return true;
+      JSON.stringify(a.selectedCustomizations ?? []) !==
+        JSON.stringify(b.selectedCustomizations ?? [])
+    )
+      return true;
   }
   return false;
 }

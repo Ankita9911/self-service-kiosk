@@ -31,7 +31,9 @@ export function useLowStockAlert(outletId?: string) {
 
     socket.on("connect_error", () => {});
 
-    return () => { socket.disconnect(); };
+    return () => {
+      socket.disconnect();
+    };
   }, [outletId]);
 
   return socketRef;

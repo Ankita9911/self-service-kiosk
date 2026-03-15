@@ -1,7 +1,7 @@
-@import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap");
 @import "tailwindcss";
 @plugin "tailwindcss-animate";
 
@@ -13,9 +13,9 @@
 
   /* ── Geist: one font for everything ── */
   --font-display: "Geist", sans-serif;
-  --font-body:    "Geist", sans-serif;
-  --font-sans:    "Geist", sans-serif;
-  --font-mono:    "Geist Mono", monospace;
+  --font-body: "Geist", sans-serif;
+  --font-sans: "Geist", sans-serif;
+  --font-mono: "Geist Mono", monospace;
 
   /* ── Light mode tokens (default) ── */
   --color-background: oklch(0.98 0.002 260);
@@ -37,7 +37,7 @@
   --color-muted: oklch(0.97 0 0);
   --color-muted-foreground: oklch(0.556 0 0);
 
-  --color-accent: oklch(0.60 0.20 280);
+  --color-accent: oklch(0.6 0.2 280);
   --color-accent-foreground: oklch(0.99 0 0);
 
   --color-destructive: oklch(0.577 0.245 27.325);
@@ -71,10 +71,10 @@
   --color-muted: oklch(0.16 0.01 260);
   --color-muted-foreground: oklch(0.55 0 0);
 
-  --color-accent: oklch(0.62 0.20 280);
+  --color-accent: oklch(0.62 0.2 280);
   --color-accent-foreground: oklch(0.99 0 0);
 
-  --color-destructive: oklch(0.60 0.245 27.325);
+  --color-destructive: oklch(0.6 0.245 27.325);
 
   --color-border: oklch(1 0 0 / 0.08);
   --color-input: oklch(1 0 0 / 0.08);
@@ -103,12 +103,19 @@ body {
   letter-spacing: -0.01em;
   background-color: var(--color-background);
   color: var(--color-foreground);
-  transition: background-color 0.3s ease, color 0.3s ease;
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
   /* Geist OpenType alternates: cleaner a, g, 0 */
   font-feature-settings: "cv02", "cv03", "cv04", "cv11";
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-family: var(--font-display);
   font-weight: 600;
   letter-spacing: -0.03em;
@@ -133,27 +140,81 @@ h1, h2, h3, h4, h5, h6 {
   }
 
   /* Weight shorthands */
-  .font-thin       { font-weight: 100; }
-  .font-extralight { font-weight: 200; }
-  .font-light      { font-weight: 300; }
-  .font-normal     { font-weight: 400; }
-  .font-medium     { font-weight: 500; }
-  .font-semibold   { font-weight: 600; }
-  .font-bold       { font-weight: 700; }
-  .font-extrabold  { font-weight: 800; }
-  .font-black      { font-weight: 900; }
+  .font-thin {
+    font-weight: 100;
+  }
+  .font-extralight {
+    font-weight: 200;
+  }
+  .font-light {
+    font-weight: 300;
+  }
+  .font-normal {
+    font-weight: 400;
+  }
+  .font-medium {
+    font-weight: 500;
+  }
+  .font-semibold {
+    font-weight: 600;
+  }
+  .font-bold {
+    font-weight: 700;
+  }
+  .font-extrabold {
+    font-weight: 800;
+  }
+  .font-black {
+    font-weight: 900;
+  }
 
   /* ── Backward-compat aliases (maps old Clash/Satoshi classes → Geist) ── */
-  .font-clash-light    { font-family: var(--font-display); font-weight: 300; letter-spacing: -0.03em; }
-  .font-clash          { font-family: var(--font-display); font-weight: 400; letter-spacing: -0.03em; }
-  .font-clash-medium   { font-family: var(--font-display); font-weight: 500; letter-spacing: -0.03em; }
-  .font-clash-semibold { font-family: var(--font-display); font-weight: 600; letter-spacing: -0.03em; }
-  .font-clash-bold     { font-family: var(--font-display); font-weight: 700; letter-spacing: -0.03em; }
+  .font-clash-light {
+    font-family: var(--font-display);
+    font-weight: 300;
+    letter-spacing: -0.03em;
+  }
+  .font-clash {
+    font-family: var(--font-display);
+    font-weight: 400;
+    letter-spacing: -0.03em;
+  }
+  .font-clash-medium {
+    font-family: var(--font-display);
+    font-weight: 500;
+    letter-spacing: -0.03em;
+  }
+  .font-clash-semibold {
+    font-family: var(--font-display);
+    font-weight: 600;
+    letter-spacing: -0.03em;
+  }
+  .font-clash-bold {
+    font-family: var(--font-display);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+  }
 
-  .font-satoshi-light  { font-family: var(--font-body); font-weight: 300; letter-spacing: -0.01em; }
-  .font-satoshi        { font-family: var(--font-body); font-weight: 400; letter-spacing: -0.01em; }
-  .font-satoshi-medium { font-family: var(--font-body); font-weight: 500; letter-spacing: -0.01em; }
-  .font-satoshi-bold   { font-family: var(--font-body); font-weight: 700; letter-spacing: -0.01em; }
+  .font-satoshi-light {
+    font-family: var(--font-body);
+    font-weight: 300;
+    letter-spacing: -0.01em;
+  }
+  .font-satoshi {
+    font-family: var(--font-body);
+    font-weight: 400;
+    letter-spacing: -0.01em;
+  }
+  .font-satoshi-medium {
+    font-family: var(--font-body);
+    font-weight: 500;
+    letter-spacing: -0.01em;
+  }
+  .font-satoshi-bold {
+    font-family: var(--font-body);
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
 
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
@@ -169,31 +230,65 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 @keyframes shimmer {
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(250%); }
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(250%);
+  }
 }
 
 @keyframes scale-in {
-  from { opacity: 0; transform: scale(0.93); }
-  to   { opacity: 1; transform: scale(1); }
+  from {
+    opacity: 0;
+    transform: scale(0.93);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 @keyframes fade-down {
-  from { opacity: 0; transform: translateY(-8px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes slide-up {
-  from { opacity: 0; transform: translateY(14px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes fade-in {
-  from { opacity: 0; }
-  to   { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
-.animate-scale-in  { animation: scale-in  0.18s ease-out forwards; }
-.animate-fade-down { animation: fade-down 0.15s ease-out forwards; }
-.animate-slide-up  { animation: slide-up  0.2s  ease-out forwards; }
-.animate-fade-in   { animation: fade-in   0.25s ease-out forwards; }
+.animate-scale-in {
+  animation: scale-in 0.18s ease-out forwards;
+}
+.animate-fade-down {
+  animation: fade-down 0.15s ease-out forwards;
+}
+.animate-slide-up {
+  animation: slide-up 0.2s ease-out forwards;
+}
+.animate-fade-in {
+  animation: fade-in 0.25s ease-out forwards;
+}

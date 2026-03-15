@@ -1,5 +1,8 @@
 import { useEffect, useState, useCallback } from "react";
-import { getOrders, updateOrderStatus } from "@/features/kiosk/services/order.service";
+import {
+  getOrders,
+  updateOrderStatus,
+} from "@/features/kiosk/services/order.service";
 import { useSocket } from "@/shared/hooks/useSocket";
 import type { Order, OrderStatus } from "@/features/kiosk/types/order.types";
 
@@ -29,20 +32,29 @@ export function usePickup() {
   }, []);
 
   const handleStatusUpdated = useCallback(
-    ({ orderId, status, order }: { orderId: string; status: OrderStatus; order: Order }) => {
+    ({
+      orderId,
+      status,
+      order,
+    }: {
+      orderId: string;
+      status: OrderStatus;
+      order: Order;
+    }) => {
       if (status === "PICKED_UP" || status === "COMPLETED") {
         setOrders((prev) => prev.filter((o) => o._id !== orderId));
       } else if (status === "READY" || status === "IN_KITCHEN") {
         setOrders((prev) => {
           const exists = prev.find((o) => o._id === orderId);
-          if (exists) return prev.map((o) => (o._id === orderId ? { ...o, status } : o));
+          if (exists)
+            return prev.map((o) => (o._id === orderId ? { ...o, status } : o));
           return [order, ...prev];
         });
       } else {
         setOrders((prev) => prev.filter((o) => o._id !== orderId));
       }
     },
-    []
+    [],
   );
 
   useSocket(handleNewOrder, handleStatusUpdated);

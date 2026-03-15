@@ -1,22 +1,45 @@
 import { useState, useRef, useEffect } from "react";
-import { SlidersHorizontal, ChevronDown, Check, Trash2, X, Pencil } from "lucide-react";
+import {
+  SlidersHorizontal,
+  ChevronDown,
+  Check,
+  Trash2,
+  X,
+  Pencil,
+} from "lucide-react";
 
 interface Props {
-  categories: { _id: string; name: string; imageUrl?: string; description?: string }[];
+  categories: {
+    _id: string;
+    name: string;
+    imageUrl?: string;
+    description?: string;
+  }[];
   selectedCategoryId: string;
   onSelect: (id: string) => void;
-  onEditCategory?: (category: { _id: string; name: string; imageUrl?: string; description?: string }) => void;
+  onEditCategory?: (category: {
+    _id: string;
+    name: string;
+    imageUrl?: string;
+    description?: string;
+  }) => void;
   onDeleteCategory?: (id: string) => void;
 }
 
-export function CategoryFilter({ categories, selectedCategoryId, onSelect, onEditCategory, onDeleteCategory }: Props) {
+export function CategoryFilter({
+  categories,
+  selectedCategoryId,
+  onSelect,
+  onEditCategory,
+  onDeleteCategory,
+}: Props) {
   const [open, setOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const [pendingDelete, setPendingDelete] = useState<string | null>(null);
 
   // which category IDs are shown as tabs (default: all)
   const [visibleIds, setVisibleIds] = useState<string[]>(() =>
-    categories.map((c) => c._id)
+    categories.map((c) => c._id),
   );
 
   // keep visibleIds in sync if categories list changes
@@ -32,7 +55,10 @@ export function CategoryFilter({ categories, selectedCategoryId, onSelect, onEdi
   useEffect(() => {
     if (!open) return;
     const handler = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node))
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(e.target as Node)
+      )
         setOpen(false);
     };
     document.addEventListener("mousedown", handler);
@@ -41,10 +67,12 @@ export function CategoryFilter({ categories, selectedCategoryId, onSelect, onEdi
 
   const toggleId = (id: string) =>
     setVisibleIds((prev) =>
-      prev.includes(id) ? prev.filter((v) => v !== id) : [...prev, id]
+      prev.includes(id) ? prev.filter((v) => v !== id) : [...prev, id],
     );
 
-  const visibleCategories = categories.filter((c) => visibleIds.includes(c._id));
+  const visibleCategories = categories.filter((c) =>
+    visibleIds.includes(c._id),
+  );
   const tabItems = [{ _id: "ALL", name: "All Items" }, ...visibleCategories];
 
   const allSelected = visibleIds.length === categories.length;
@@ -54,7 +82,7 @@ export function CategoryFilter({ categories, selectedCategoryId, onSelect, onEdi
       {/* ── tab strip — naturally sized, scrolls on overflow ── */}
       <div className="flex-1 min-w-0 overflow-x-auto scrollbar-hide">
         <div className="flex items-center gap-1 bg-white dark:bg-[#161920] border border-slate-100 dark:border-white/8 rounded-xl p-1">
-              {tabItems.map((c) => (
+          {tabItems.map((c) => (
             <button
               key={c._id}
               onClick={() => onSelect(c._id)}
@@ -65,7 +93,8 @@ export function CategoryFilter({ categories, selectedCategoryId, onSelect, onEdi
               }`}
             >
               <span className="inline-flex items-center gap-1.5">
-                {c._id !== "ALL" && categories.find((cat) => cat._id === c._id)?.imageUrl ? (
+                {c._id !== "ALL" &&
+                categories.find((cat) => cat._id === c._id)?.imageUrl ? (
                   <img
                     src={categories.find((cat) => cat._id === c._id)?.imageUrl}
                     alt={c.name}
@@ -97,7 +126,9 @@ export function CategoryFilter({ categories, selectedCategoryId, onSelect, onEdi
                 {visibleIds.length}/{categories.length}
               </span>
             )}
-            <ChevronDown className={`w-3 h-3 transition-transform ${open ? "rotate-180" : ""}`} />
+            <ChevronDown
+              className={`w-3 h-3 transition-transform ${open ? "rotate-180" : ""}`}
+            />
           </button>
 
           {open && (
@@ -109,7 +140,9 @@ export function CategoryFilter({ categories, selectedCategoryId, onSelect, onEdi
                 </span>
                 <button
                   onClick={() =>
-                    setVisibleIds(allSelected ? [] : categories.map((c) => c._id))
+                    setVisibleIds(
+                      allSelected ? [] : categories.map((c) => c._id),
+                    )
                   }
                   className="text-[10px] font-semibold text-indigo-600 dark:text-indigo-400 hover:underline"
                 >
@@ -127,7 +160,10 @@ export function CategoryFilter({ categories, selectedCategoryId, onSelect, onEdi
                     >
                       {/* checkbox row */}
                       <button
-                        onClick={() => { setPendingDelete(null); toggleId(c._id); }}
+                        onClick={() => {
+                          setPendingDelete(null);
+                          toggleId(c._id);
+                        }}
                         className="flex items-center gap-2.5 flex-1 px-1.5 py-1 rounded-lg hover:bg-slate-50 dark:hover:bg-white/5 transition-colors"
                       >
                         <div
@@ -137,11 +173,18 @@ export function CategoryFilter({ categories, selectedCategoryId, onSelect, onEdi
                               : "border-slate-200 dark:border-white/15 group-hover:border-indigo-400"
                           }`}
                         >
-                          {checked && <Check className="w-2.5 h-2.5 text-white" strokeWidth={3} />}
+                          {checked && (
+                            <Check
+                              className="w-2.5 h-2.5 text-white"
+                              strokeWidth={3}
+                            />
+                          )}
                         </div>
                         <span
                           className={`text-xs font-medium text-left flex-1 truncate ${
-                            checked ? "text-slate-700 dark:text-slate-200" : "text-slate-500 dark:text-slate-400"
+                            checked
+                              ? "text-slate-700 dark:text-slate-200"
+                              : "text-slate-500 dark:text-slate-400"
                           }`}
                         >
                           {c.name}
@@ -149,11 +192,14 @@ export function CategoryFilter({ categories, selectedCategoryId, onSelect, onEdi
                       </button>
 
                       {/* delete action */}
-                      {(onEditCategory || onDeleteCategory) && (
-                        isPending ? (
+                      {(onEditCategory || onDeleteCategory) &&
+                        (isPending ? (
                           <div className="flex items-center gap-0.5 shrink-0">
                             <button
-                              onClick={() => { onDeleteCategory(c._id); setPendingDelete(null); }}
+                              onClick={() => {
+                                onDeleteCategory(c._id);
+                                setPendingDelete(null);
+                              }}
                               className="h-6 w-6 rounded-lg bg-red-50 dark:bg-red-500/10 flex items-center justify-center text-red-500 hover:bg-red-100 dark:hover:bg-red-500/20 transition-colors"
                               title="Confirm delete"
                             >
@@ -184,7 +230,10 @@ export function CategoryFilter({ categories, selectedCategoryId, onSelect, onEdi
                             )}
                             {onDeleteCategory && (
                               <button
-                                onClick={(e) => { e.stopPropagation(); setPendingDelete(c._id); }}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setPendingDelete(c._id);
+                                }}
                                 className="h-6 w-6 rounded-lg flex items-center justify-center text-slate-300 dark:text-slate-600 hover:text-red-500! hover:bg-red-50 dark:hover:bg-red-500/10 transition-all"
                                 title="Delete category"
                               >
@@ -192,8 +241,7 @@ export function CategoryFilter({ categories, selectedCategoryId, onSelect, onEdi
                               </button>
                             )}
                           </div>
-                        )
-                      )}
+                        ))}
                     </div>
                   );
                 })}

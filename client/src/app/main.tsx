@@ -9,14 +9,14 @@ import { ThemeProvider } from "@/shared/providers/ThemeProvider";
 async function bootstrap() {
   await initDB();
   createRoot(document.getElementById("root")!).render(
-      <ThemeProvider>
-    <BrowserRouter>
-      <AuthProvider>
-        <AppRoutes />
-        <Toaster position="top-right" reverseOrder={false} />
-      </AuthProvider>
-    </BrowserRouter>
-     </ThemeProvider>
+    <ThemeProvider>
+      <BrowserRouter>
+        <AuthProvider>
+          <AppRoutes />
+          <Toaster position="top-right" reverseOrder={false} />
+        </AuthProvider>
+      </BrowserRouter>
+    </ThemeProvider>,
   );
 }
 bootstrap();

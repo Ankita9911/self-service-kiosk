@@ -2,24 +2,49 @@ import { useState } from "react";
 import { Dialog, DialogContent } from "@/shared/components/ui/dialog";
 import { RefreshCcw, Plus, ImageIcon, X } from "lucide-react";
 import { toast } from "react-hot-toast";
-import { createMenuItemSchema, type CreateMenuItemFormValues } from "../validations/menu.schemas";
+import {
+  createMenuItemSchema,
+  type CreateMenuItemFormValues,
+} from "../validations/menu.schemas";
 import { getZodFieldErrors } from "@/shared/utils/zod.utils";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/shared/components/ui/select";
 import { OfferEditor } from "./OfferEditor";
 import { CustomizationPicker } from "./CustomizationPicker";
 
-import type { ServiceType, ItemOfferForm, InventoryMode } from "@/features/outlet/types/outlet.types";
+import type {
+  ServiceType,
+  ItemOfferForm,
+  InventoryMode,
+} from "@/features/outlet/types/outlet.types";
 import type { MenuItem } from "@/features/kiosk/types/menu.types";
 
 const SERVICE_OPTIONS: { value: ServiceType; label: string }[] = [
-  { value: "DINE_IN",   label: "Dine In"   },
+  { value: "DINE_IN", label: "Dine In" },
   { value: "TAKE_AWAY", label: "Take Away" },
-  { value: "BOTH",      label: "Both"      },
+  { value: "BOTH", label: "Both" },
 ];
 
-const INVENTORY_OPTIONS: { value: InventoryMode; label: string; hint: string }[] = [
-  { value: "RECIPE", label: "Recipe Based", hint: "For kitchen-made items. Hidden from kiosk until a recipe is linked." },
-  { value: "DIRECT", label: "Direct Stock", hint: "For packaged items like Coke. Manage stock manually at menu-item level." },
+const INVENTORY_OPTIONS: {
+  value: InventoryMode;
+  label: string;
+  hint: string;
+}[] = [
+  {
+    value: "RECIPE",
+    label: "Recipe Based",
+    hint: "For kitchen-made items. Hidden from kiosk until a recipe is linked.",
+  },
+  {
+    value: "DIRECT",
+    label: "Direct Stock",
+    hint: "For packaged items like Coke. Manage stock manually at menu-item level.",
+  },
 ];
 
 interface Props {
@@ -47,18 +72,35 @@ type AddItemFormState = {
 
 type FieldErrors = Partial<Record<keyof CreateMenuItemFormValues, string>>;
 
-const inputBase = "w-full px-3 h-10 rounded-xl border bg-slate-50 dark:bg-white/5 text-sm text-slate-800 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-600 focus:outline-none focus:ring-2 transition-all";
-const inputOk  = "border-slate-200 dark:border-white/8 focus:ring-indigo-500/30 focus:border-indigo-400";
-const inputErr  = "border-red-400 focus:ring-red-400/30 focus:border-red-400";
+const inputBase =
+  "w-full px-3 h-10 rounded-xl border bg-slate-50 dark:bg-white/5 text-sm text-slate-800 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-600 focus:outline-none focus:ring-2 transition-all";
+const inputOk =
+  "border-slate-200 dark:border-white/8 focus:ring-indigo-500/30 focus:border-indigo-400";
+const inputErr = "border-red-400 focus:ring-red-400/30 focus:border-red-400";
 
 const LabelEl = ({ children }: { children: React.ReactNode }) => (
-  <label className="block text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">{children}</label>
+  <label className="block text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">
+    {children}
+  </label>
 );
 
 const ErrTxt = ({ msg }: { msg?: string }) =>
-  msg ? <p className="mt-1 text-[11px] text-red-500 flex items-center gap-1"><span className="w-1 h-1 rounded-full bg-red-400" />{msg}</p> : null;
+  msg ? (
+    <p className="mt-1 text-[11px] text-red-500 flex items-center gap-1">
+      <span className="w-1 h-1 rounded-full bg-red-400" />
+      {msg}
+    </p>
+  ) : null;
 
-export function AddItemModal({ open, onClose, categories, items, form, setForm, onSubmit }: Props) {
+export function AddItemModal({
+  open,
+  onClose,
+  categories,
+  items,
+  form,
+  setForm,
+  onSubmit,
+}: Props) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<FieldErrors>({});
 
@@ -113,31 +155,60 @@ export function AddItemModal({ open, onClose, categories, items, form, setForm, 
               <Plus className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
             </div>
             <div>
-              <h3 className="text-sm font-bold text-slate-800 dark:text-white">Add Menu Item</h3>
-              <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">Fill in the details for the new product</p>
+              <h3 className="text-sm font-bold text-slate-800 dark:text-white">
+                Add Menu Item
+              </h3>
+              <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">
+                Fill in the details for the new product
+              </p>
             </div>
           </div>
-          <button onClick={onClose} className="h-7 w-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/8 transition-colors">
+          <button
+            onClick={onClose}
+            className="h-7 w-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/8 transition-colors"
+          >
             <X className="w-3.5 h-3.5" />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="px-6 py-5 space-y-4" noValidate>
+        <form
+          onSubmit={handleSubmit}
+          className="px-6 py-5 space-y-4"
+          noValidate
+        >
           {/* Category */}
           <div>
-            <LabelEl>Category <span className="text-red-400 normal-case">*</span></LabelEl>
-            <Select value={form.categoryId} onValueChange={(val) => { setForm((prev) => ({ ...prev, categoryId: val })); clearError("categoryId"); }}>
-              <SelectTrigger className={`h-10 rounded-xl text-sm bg-slate-50 dark:bg-white/5 ${errors.categoryId ? "border-red-400" : "border-slate-200 dark:border-white/8"} focus:ring-indigo-500/30`}>
+            <LabelEl>
+              Category <span className="text-red-400 normal-case">*</span>
+            </LabelEl>
+            <Select
+              value={form.categoryId}
+              onValueChange={(val) => {
+                setForm((prev) => ({ ...prev, categoryId: val }));
+                clearError("categoryId");
+              }}
+            >
+              <SelectTrigger
+                className={`h-10 rounded-xl text-sm bg-slate-50 dark:bg-white/5 ${errors.categoryId ? "border-red-400" : "border-slate-200 dark:border-white/8"} focus:ring-indigo-500/30`}
+              >
                 <SelectValue placeholder="Select category…" />
               </SelectTrigger>
               <SelectContent className="rounded-xl border-slate-200 dark:border-white/8 bg-white dark:bg-[#1e2130] shadow-xl">
                 {categories.length === 0 ? (
                   <div className="px-3 py-4 text-center space-y-0.5">
-                    <p className="text-[12px] font-medium text-slate-500 dark:text-slate-400">No categories found</p>
-                    <p className="text-[11px] text-slate-400 dark:text-slate-500">Please add a category first.</p>
+                    <p className="text-[12px] font-medium text-slate-500 dark:text-slate-400">
+                      No categories found
+                    </p>
+                    <p className="text-[11px] text-slate-400 dark:text-slate-500">
+                      Please add a category first.
+                    </p>
                   </div>
                 ) : (
-                  categories.map((c) => <SelectItem key={c._id} value={c._id} className="text-sm">{c.name}</SelectItem>)
+                  categories.map((c) => (
+                    <SelectItem key={c._id} value={c._id} className="text-sm">
+                      {c.name}
+                    </SelectItem>
+                  ))
                 )}
               </SelectContent>
             </Select>
@@ -146,29 +217,69 @@ export function AddItemModal({ open, onClose, categories, items, form, setForm, 
 
           {/* Name */}
           <div>
-            <LabelEl>Name <span className="text-red-400 normal-case">*</span></LabelEl>
-            <input value={form.name} onChange={(e) => { setForm((prev) => ({ ...prev, name: e.target.value })); clearError("name"); }} placeholder="e.g. Masala Chai" className={`${inputBase} ${errors.name ? inputErr : inputOk}`} />
+            <LabelEl>
+              Name <span className="text-red-400 normal-case">*</span>
+            </LabelEl>
+            <input
+              value={form.name}
+              onChange={(e) => {
+                setForm((prev) => ({ ...prev, name: e.target.value }));
+                clearError("name");
+              }}
+              placeholder="e.g. Masala Chai"
+              className={`${inputBase} ${errors.name ? inputErr : inputOk}`}
+            />
             <ErrTxt msg={errors.name} />
           </div>
 
           {/* Description */}
           <div>
-            <LabelEl>Description <span className="text-slate-400 font-medium normal-case">(optional)</span></LabelEl>
-            <input value={form.description} onChange={(e) => { setForm((prev) => ({ ...prev, description: e.target.value })); clearError("description"); }} placeholder="Short description" className={`${inputBase} ${errors.description ? inputErr : inputOk}`} />
+            <LabelEl>
+              Description{" "}
+              <span className="text-slate-400 font-medium normal-case">
+                (optional)
+              </span>
+            </LabelEl>
+            <input
+              value={form.description}
+              onChange={(e) => {
+                setForm((prev) => ({ ...prev, description: e.target.value }));
+                clearError("description");
+              }}
+              placeholder="Short description"
+              className={`${inputBase} ${errors.description ? inputErr : inputOk}`}
+            />
             <ErrTxt msg={errors.description} />
           </div>
 
           {/* Image */}
           <div>
-            <LabelEl>Image <span className="text-red-400 normal-case">*</span></LabelEl>
+            <LabelEl>
+              Image <span className="text-red-400 normal-case">*</span>
+            </LabelEl>
             <div className="flex gap-2 items-center">
-              <input type="file" accept="image/jpeg,image/png,image/webp,image/gif"
-                onChange={(e) => { setForm((prev) => ({ ...prev, imageFile: e.target.files?.[0] || null })); clearError("imageFile"); }}
-                className={`flex-1 h-10 rounded-xl border px-3 text-sm bg-slate-50 dark:bg-white/5 text-slate-600 dark:text-slate-400 file:mr-3 file:text-xs file:font-semibold file:text-indigo-600 dark:file:text-indigo-400 file:bg-transparent file:border-0 file:py-2 ${errors.imageFile ? "border-red-400" : "border-slate-200 dark:border-white/8"}`} />
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/webp,image/gif"
+                onChange={(e) => {
+                  setForm((prev) => ({
+                    ...prev,
+                    imageFile: e.target.files?.[0] || null,
+                  }));
+                  clearError("imageFile");
+                }}
+                className={`flex-1 h-10 rounded-xl border px-3 text-sm bg-slate-50 dark:bg-white/5 text-slate-600 dark:text-slate-400 file:mr-3 file:text-xs file:font-semibold file:text-indigo-600 dark:file:text-indigo-400 file:bg-transparent file:border-0 file:py-2 ${errors.imageFile ? "border-red-400" : "border-slate-200 dark:border-white/8"}`}
+              />
               <div className="h-10 w-10 rounded-xl border border-slate-200 dark:border-white/8 overflow-hidden bg-slate-100 dark:bg-white/5 flex items-center justify-center shrink-0">
-                {form.imageFile
-                  ? <img src={URL.createObjectURL(form.imageFile)} alt="Preview" className="h-full w-full object-cover" />
-                  : <ImageIcon className="w-4 h-4 text-slate-400" />}
+                {form.imageFile ? (
+                  <img
+                    src={URL.createObjectURL(form.imageFile)}
+                    alt="Preview"
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <ImageIcon className="w-4 h-4 text-slate-400" />
+                )}
               </div>
             </div>
             <ErrTxt msg={errors.imageFile} />
@@ -176,13 +287,17 @@ export function AddItemModal({ open, onClose, categories, items, form, setForm, 
 
           {/* Service Type */}
           <div>
-            <LabelEl>Available For <span className="text-red-400 normal-case">*</span></LabelEl>
+            <LabelEl>
+              Available For <span className="text-red-400 normal-case">*</span>
+            </LabelEl>
             <div className="flex gap-2">
               {SERVICE_OPTIONS.map((opt) => (
                 <button
                   key={opt.value}
                   type="button"
-                  onClick={() => setForm((prev) => ({ ...prev, serviceType: opt.value }))}
+                  onClick={() =>
+                    setForm((prev) => ({ ...prev, serviceType: opt.value }))
+                  }
                   className={`flex-1 h-9 rounded-xl border text-xs font-semibold transition-all ${
                     (form.serviceType ?? "BOTH") === opt.value
                       ? "bg-indigo-600 border-indigo-600 text-white shadow-sm"
@@ -197,7 +312,12 @@ export function AddItemModal({ open, onClose, categories, items, form, setForm, 
 
           {/* Offers */}
           <div>
-            <LabelEl>Offers & Tags <span className="text-slate-400 font-medium normal-case">(optional)</span></LabelEl>
+            <LabelEl>
+              Offers & Tags{" "}
+              <span className="text-slate-400 font-medium normal-case">
+                (optional)
+              </span>
+            </LabelEl>
             <OfferEditor
               offers={form.offers ?? []}
               onChange={(offers) => setForm((prev) => ({ ...prev, offers }))}
@@ -206,19 +326,30 @@ export function AddItemModal({ open, onClose, categories, items, form, setForm, 
           </div>
 
           <div>
-            <LabelEl>Customization Options <span className="text-slate-400 font-medium normal-case">(optional)</span></LabelEl>
+            <LabelEl>
+              Customization Options{" "}
+              <span className="text-slate-400 font-medium normal-case">
+                (optional)
+              </span>
+            </LabelEl>
             <CustomizationPicker
               items={items}
               selectedIds={form.customizationItemIds ?? []}
-              onChange={(customizationItemIds) => setForm((prev) => ({ ...prev, customizationItemIds }))}
+              onChange={(customizationItemIds) =>
+                setForm((prev) => ({ ...prev, customizationItemIds }))
+              }
             />
             <p className="mt-1 text-[11px] text-slate-400">
-              Tip: keep customization items inactive so they only appear as add-ons.
+              Tip: keep customization items inactive so they only appear as
+              add-ons.
             </p>
           </div>
 
           <div>
-            <LabelEl>Inventory Tracking <span className="text-red-400 normal-case">*</span></LabelEl>
+            <LabelEl>
+              Inventory Tracking{" "}
+              <span className="text-red-400 normal-case">*</span>
+            </LabelEl>
             <div className="grid gap-2">
               {INVENTORY_OPTIONS.map((opt) => (
                 <button
@@ -228,7 +359,8 @@ export function AddItemModal({ open, onClose, categories, items, form, setForm, 
                     setForm((prev) => ({
                       ...prev,
                       inventoryMode: opt.value,
-                      stockQuantity: opt.value === "DIRECT" ? prev.stockQuantity : "",
+                      stockQuantity:
+                        opt.value === "DIRECT" ? prev.stockQuantity : "",
                     }));
                     clearError("inventoryMode");
                     clearError("stockQuantity");
@@ -239,8 +371,12 @@ export function AddItemModal({ open, onClose, categories, items, form, setForm, 
                       : "border-slate-200 dark:border-white/8 bg-slate-50 dark:bg-white/5"
                   }`}
                 >
-                  <p className="text-sm font-semibold text-slate-800 dark:text-white">{opt.label}</p>
-                  <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">{opt.hint}</p>
+                  <p className="text-sm font-semibold text-slate-800 dark:text-white">
+                    {opt.label}
+                  </p>
+                  <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">
+                    {opt.hint}
+                  </p>
                 </button>
               ))}
             </div>
@@ -248,7 +384,9 @@ export function AddItemModal({ open, onClose, categories, items, form, setForm, 
           </div>
 
           <div className="rounded-2xl border border-indigo-100 dark:border-indigo-500/20 bg-indigo-50/80 dark:bg-indigo-500/10 px-4 py-3">
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-indigo-600 dark:text-indigo-300">Inventory Source</p>
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-indigo-600 dark:text-indigo-300">
+              Inventory Source
+            </p>
             <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
               {form.inventoryMode === "RECIPE"
                 ? "This item will be available on kiosk only after a recipe is linked and ingredients have stock."
@@ -256,16 +394,50 @@ export function AddItemModal({ open, onClose, categories, items, form, setForm, 
             </p>
           </div>
 
-          <div className={form.inventoryMode === "DIRECT" ? "grid grid-cols-2 gap-4" : ""}>
+          <div
+            className={
+              form.inventoryMode === "DIRECT" ? "grid grid-cols-2 gap-4" : ""
+            }
+          >
             <div>
-              <LabelEl>Price (₹) <span className="text-red-400 normal-case">*</span></LabelEl>
-              <input type="number" step="0.01" min="0" value={form.price} onChange={(e) => { setForm((prev) => ({ ...prev, price: e.target.value })); clearError("price"); }} placeholder="0.00" className={`${inputBase} ${errors.price ? inputErr : inputOk}`} />
+              <LabelEl>
+                Price (₹) <span className="text-red-400 normal-case">*</span>
+              </LabelEl>
+              <input
+                type="number"
+                step="0.01"
+                min="0"
+                value={form.price}
+                onChange={(e) => {
+                  setForm((prev) => ({ ...prev, price: e.target.value }));
+                  clearError("price");
+                }}
+                placeholder="0.00"
+                className={`${inputBase} ${errors.price ? inputErr : inputOk}`}
+              />
               <ErrTxt msg={errors.price} />
             </div>
             {form.inventoryMode === "DIRECT" && (
               <div>
-                <LabelEl>Direct Stock Qty <span className="text-red-400 normal-case">*</span></LabelEl>
-                <input type="number" min="0" step="1" value={form.stockQuantity} onChange={(e) => { setForm((prev) => ({ ...prev, stockQuantity: e.target.value })); clearError("stockQuantity"); }} placeholder="0" className={`${inputBase} ${errors.stockQuantity ? inputErr : inputOk}`} />
+                <LabelEl>
+                  Direct Stock Qty{" "}
+                  <span className="text-red-400 normal-case">*</span>
+                </LabelEl>
+                <input
+                  type="number"
+                  min="0"
+                  step="1"
+                  value={form.stockQuantity}
+                  onChange={(e) => {
+                    setForm((prev) => ({
+                      ...prev,
+                      stockQuantity: e.target.value,
+                    }));
+                    clearError("stockQuantity");
+                  }}
+                  placeholder="0"
+                  className={`${inputBase} ${errors.stockQuantity ? inputErr : inputOk}`}
+                />
                 <ErrTxt msg={errors.stockQuantity} />
               </div>
             )}
@@ -273,11 +445,25 @@ export function AddItemModal({ open, onClose, categories, items, form, setForm, 
 
           {/* Actions */}
           <div className="flex gap-3 pt-2">
-            <button type="button" onClick={onClose} className="flex-1 h-10 rounded-xl border border-slate-200 dark:border-white/8 text-sm font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex-1 h-10 rounded-xl border border-slate-200 dark:border-white/8 text-sm font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors"
+            >
               Cancel
             </button>
-            <button type="submit" disabled={isSubmitting} className="flex-1 h-10 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold transition-colors disabled:opacity-50 flex items-center justify-center gap-2">
-              {isSubmitting ? <RefreshCcw className="w-4 h-4 animate-spin" /> : <><Plus className="w-4 h-4" /> Add Item</>}
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="flex-1 h-10 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+            >
+              {isSubmitting ? (
+                <RefreshCcw className="w-4 h-4 animate-spin" />
+              ) : (
+                <>
+                  <Plus className="w-4 h-4" /> Add Item
+                </>
+              )}
             </button>
           </div>
         </form>

@@ -1,7 +1,15 @@
 import { useEffect, useState } from "react";
-import { getOutlets, createOutlet, updateOutlet, deleteOutlet } from "@/features/outlet/services/outlet.service";
+import {
+  getOutlets,
+  createOutlet,
+  updateOutlet,
+  deleteOutlet,
+} from "@/features/outlet/services/outlet.service";
 import { getFranchises } from "@/features/franchise/services/franchise.service";
-import type { Outlet, OutletAddress } from "@/features/outlet/types/outlet.types";
+import type {
+  Outlet,
+  OutletAddress,
+} from "@/features/outlet/types/outlet.types";
 import type { Franchise } from "@/features/franchise/types/franchise.types";
 
 type OutletForm = {
@@ -40,10 +48,7 @@ export function useOutlets(isSuperAdmin: boolean, canViewOutlet: boolean) {
     fetchData();
   }, []);
 
-  async function handleSubmit(
-    editing: Outlet | null,
-    form: OutletForm
-  ) {
+  async function handleSubmit(editing: Outlet | null, form: OutletForm) {
     if (editing) await updateOutlet(editing._id, form);
     else await createOutlet(form);
     await fetchData(true);

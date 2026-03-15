@@ -1,5 +1,11 @@
 import { useNavigate } from "react-router-dom";
-import { LockKeyhole, Loader2, ArrowRight, AlertCircle, CheckCircle2 } from "lucide-react";
+import {
+  LockKeyhole,
+  Loader2,
+  ArrowRight,
+  AlertCircle,
+  CheckCircle2,
+} from "lucide-react";
 import PasswordStrength from "../components/PasswordStrength";
 import { PasswordField } from "../components/PasswordField";
 import { useResetPassword } from "../hooks/useResetPassword";
@@ -8,10 +14,18 @@ export function ResetPassword() {
   const navigate = useNavigate();
 
   const {
-    currentPassword, setCurrentPassword,
-    password, setPassword,
-    confirm, setConfirm,
-    loading, error, success, mismatch, isValid, submit,
+    currentPassword,
+    setCurrentPassword,
+    password,
+    setPassword,
+    confirm,
+    setConfirm,
+    loading,
+    error,
+    success,
+    mismatch,
+    isValid,
+    submit,
   } = useResetPassword(() => navigate("/"));
 
   return (
@@ -37,7 +51,9 @@ export function ResetPassword() {
             <CheckCircle2 className="w-7 h-7 text-emerald-500" />
           </div>
           <div>
-            <p className="font-clash-bold text-slate-900 dark:text-white text-lg">Password Updated!</p>
+            <p className="font-clash-bold text-slate-900 dark:text-white text-lg">
+              Password Updated!
+            </p>
             <p className="font-satoshi text-slate-500 dark:text-slate-400 text-sm mt-1">
               Redirecting you back to the dashboard…
             </p>
@@ -48,7 +64,10 @@ export function ResetPassword() {
           <div className="h-1 w-full bg-linear-to-r from-indigo-500 to-violet-600" />
           <div className="p-7 space-y-5">
             <form
-              onSubmit={(e) => { e.preventDefault(); submit(); }}
+              onSubmit={(e) => {
+                e.preventDefault();
+                submit();
+              }}
               className="space-y-5"
             >
               <PasswordField
@@ -82,7 +101,9 @@ export function ResetPassword() {
               {error && (
                 <div className="flex items-center gap-2.5 bg-red-50 dark:bg-red-500/10 border border-red-100 dark:border-red-500/20 rounded-xl px-4 py-3">
                   <AlertCircle className="w-4 h-4 text-red-500 shrink-0" />
-                  <p className="text-sm font-satoshi text-red-600 dark:text-red-400">{error}</p>
+                  <p className="text-sm font-satoshi text-red-600 dark:text-red-400">
+                    {error}
+                  </p>
                 </div>
               )}
 
@@ -100,9 +121,13 @@ export function ResetPassword() {
                   className="flex-1 h-11 rounded-xl bg-linear-to-r from-indigo-500 to-indigo-600 hover:from-indigo-600 hover:to-indigo-700 text-white text-sm font-clash-semibold shadow-lg shadow-indigo-500/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 active:scale-[0.98]"
                 >
                   {loading ? (
-                    <><Loader2 className="w-4 h-4 animate-spin" /> Updating…</>
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" /> Updating…
+                    </>
                   ) : (
-                    <><ArrowRight className="w-4 h-4" /> Update Password</>
+                    <>
+                      <ArrowRight className="w-4 h-4" /> Update Password
+                    </>
                   )}
                 </button>
               </div>

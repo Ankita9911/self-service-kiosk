@@ -35,14 +35,20 @@ function StatPill({
 
   return (
     <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-white dark:bg-[#1e2130] border border-slate-100 dark:border-white/[0.07] shadow-sm">
-      <div className={`h-9 w-9 rounded-xl ${iconBg} flex items-center justify-center shrink-0`}>
+      <div
+        className={`h-9 w-9 rounded-xl ${iconBg} flex items-center justify-center shrink-0`}
+      >
         {icon}
       </div>
       <div>
-        <p className={`text-xl font-black leading-none ${valueClassName ?? "text-slate-800 dark:text-white"}`}>
+        <p
+          className={`text-xl font-black leading-none ${valueClassName ?? "text-slate-800 dark:text-white"}`}
+        >
           {value}
         </p>
-        <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5 font-medium">{label}</p>
+        <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5 font-medium">
+          {label}
+        </p>
       </div>
     </div>
   );
@@ -55,7 +61,12 @@ interface Props {
   avgPrepTime: number;
 }
 
-export function RecipeStats({ loading, totalRecipes, aiGeneratedCount, avgPrepTime }: Props) {
+export function RecipeStats({
+  loading,
+  totalRecipes,
+  aiGeneratedCount,
+  avgPrepTime,
+}: Props) {
   return (
     <div className="grid grid-cols-3 gap-3">
       <StatPill
@@ -63,15 +74,23 @@ export function RecipeStats({ loading, totalRecipes, aiGeneratedCount, avgPrepTi
         value={totalRecipes}
         label="Total Recipes"
         iconBg="bg-amber-50 dark:bg-amber-500/10"
-        icon={<ChefHat className="w-4 h-4 text-amber-600 dark:text-amber-400" />}
+        icon={
+          <ChefHat className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+        }
       />
       <StatPill
         loading={loading}
         value={aiGeneratedCount}
         label="AI Generated"
         iconBg="bg-purple-50 dark:bg-purple-500/10"
-        icon={<Sparkles className="w-4 h-4 text-purple-500 dark:text-purple-400" />}
-        valueClassName={aiGeneratedCount > 0 ? "text-purple-600 dark:text-purple-400" : "text-slate-800 dark:text-white"}
+        icon={
+          <Sparkles className="w-4 h-4 text-purple-500 dark:text-purple-400" />
+        }
+        valueClassName={
+          aiGeneratedCount > 0
+            ? "text-purple-600 dark:text-purple-400"
+            : "text-slate-800 dark:text-white"
+        }
       />
       <StatPill
         loading={loading}

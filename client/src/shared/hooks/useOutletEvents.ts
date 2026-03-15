@@ -8,7 +8,7 @@ const SOCKET_URL = getSocketUrl();
 export function useOutletEvents(
   events: string[],
   onEvent: () => void,
-  outletId?: string
+  outletId?: string,
 ) {
   const socketRef = useRef<Socket | null>(null);
   const onEventRef = useRef(onEvent);
@@ -23,7 +23,7 @@ export function useOutletEvents(
       SOCKET_URL,
       kioskToken
         ? { auth: { token: kioskToken }, transports: ["websocket"] }
-        : { withCredentials: true, transports: ["websocket"] }
+        : { withCredentials: true, transports: ["websocket"] },
     );
 
     socketRef.current = socket;

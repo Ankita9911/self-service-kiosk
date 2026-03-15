@@ -31,12 +31,13 @@ export default function PaymentOption({
         </div>
         <div>
           <p className="font-black text-lg text-gray-900">{label}</p>
-          <p className="text-sm font-semibold text-gray-500 mt-1">
-            {sub}
-          </p>
+          <p className="text-sm font-semibold text-gray-500 mt-1">{sub}</p>
         </div>
       </div>
-      <ChevronLeft className="w-6 h-6 text-gray-400 rotate-180" strokeWidth={3} />
+      <ChevronLeft
+        className="w-6 h-6 text-gray-400 rotate-180"
+        strokeWidth={3}
+      />
     </motion.button>
   );
 }

@@ -18,9 +18,9 @@ const DEFAULT_PAGE_SIZE = 10;
 
 export interface IngredientFilters {
   search: string;
-  unit: string;   // "ALL" | "gram" | "ml" | "piece" | "kg" | "liter" | "dozen"
+  unit: string; // "ALL" | "gram" | "ml" | "piece" | "kg" | "liter" | "dozen"
   lowStock: boolean;
-  sortBy: string;    // "createdAt" | "currentStock" | "minThreshold" | "name"
+  sortBy: string; // "createdAt" | "currentStock" | "minThreshold" | "name"
   sortOrder: string; // "asc" | "desc"
 }
 
@@ -36,7 +36,7 @@ export function useIngredients(
   outletId: string | undefined,
   filters: IngredientFilters = DEFAULT_FILTERS,
   actionOutletId?: string,
-  allowFranchiseScope = false
+  allowFranchiseScope = false,
 ) {
   const mutationOutletId = actionOutletId ?? outletId;
   const [ingredients, setIngredients] = useState<Ingredient[]>([]);
@@ -77,7 +77,8 @@ export function useIngredients(
           cursor: currentCursor,
           limit: pageSize,
           sortBy: filters.sortBy !== "createdAt" ? filters.sortBy : undefined,
-          sortOrder: filters.sortOrder !== "desc" ? filters.sortOrder : undefined,
+          sortOrder:
+            filters.sortOrder !== "desc" ? filters.sortOrder : undefined,
         });
 
         setIngredients(result.items);
@@ -95,7 +96,17 @@ export function useIngredients(
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [outletId, debouncedSearch, filters.unit, filters.lowStock, filters.sortBy, filters.sortOrder, currentCursor, pageSize, refreshTick]
+    [
+      outletId,
+      debouncedSearch,
+      filters.unit,
+      filters.lowStock,
+      filters.sortBy,
+      filters.sortOrder,
+      currentCursor,
+      pageSize,
+      refreshTick,
+    ],
   );
 
   useEffect(() => {
@@ -104,8 +115,10 @@ export function useIngredients(
 
   useOutletEvents(
     ["ingredient:updated", "inventory:updated"],
-    () => { void fetchIngredients(true); },
-    outletId
+    () => {
+      void fetchIngredients(true);
+    },
+    outletId,
   );
 
   // ── Navigation ──
@@ -131,12 +144,15 @@ export function useIngredients(
     setHasNextPage(false);
   }
 
-  const refreshAll = useCallback(async (silent = false) => {
-    if (!outletId && !allowFranchiseScope) return;
-    if (silent) setRefreshing(true);
-    resetToFirstPage();
-    setRefreshTick((n) => n + 1);
-  }, [allowFranchiseScope, outletId]);
+  const refreshAll = useCallback(
+    async (silent = false) => {
+      if (!outletId && !allowFranchiseScope) return;
+      if (silent) setRefreshing(true);
+      resetToFirstPage();
+      setRefreshTick((n) => n + 1);
+    },
+    [allowFranchiseScope, outletId],
+  );
 
   // ── CRUD ──
   async function handleCreate(data: IngredientFormState) {
@@ -173,10 +189,11 @@ export function useIngredients(
       {
         ingredientId: id,
         type: data.type,
-        quantity: data.type === "ADJUSTMENT" ? data.quantity : Math.abs(data.quantity),
+        quantity:
+          data.type === "ADJUSTMENT" ? data.quantity : Math.abs(data.quantity),
         note: data.note,
       },
-      mutationOutletId
+      mutationOutletId,
     );
     await refreshAll(true);
     return result;

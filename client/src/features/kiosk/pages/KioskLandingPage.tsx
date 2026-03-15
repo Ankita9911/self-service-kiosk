@@ -1,10 +1,14 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { getKioskLandingConfig, getKioskToken } from "@/shared/lib/kioskSession";
+import {
+  getKioskLandingConfig,
+  getKioskToken,
+} from "@/shared/lib/kioskSession";
 
 export default function KioskLandingPage() {
   const navigate = useNavigate();
-  const { landingImage, landingTitle, landingSubtitle } = getKioskLandingConfig();
+  const { landingImage, landingTitle, landingSubtitle } =
+    getKioskLandingConfig();
 
   useEffect(() => {
     if (!getKioskToken()) {
@@ -48,22 +52,76 @@ export default function KioskLandingPage() {
             >
               {/* Plate */}
               <ellipse cx="200" cy="220" rx="150" ry="25" fill="#F3E8D8" />
-              <circle cx="200" cy="185" r="115" fill="#FFF7ED" stroke="#FDBA74" strokeWidth="4" />
+              <circle
+                cx="200"
+                cy="185"
+                r="115"
+                fill="#FFF7ED"
+                stroke="#FDBA74"
+                strokeWidth="4"
+              />
               <circle cx="200" cy="185" r="90" fill="#FEF3C7" />
               {/* Food items */}
               <circle cx="200" cy="170" r="45" fill="#FB923C" opacity="0.85" />
               <circle cx="200" cy="170" r="32" fill="#FDBA74" />
-              <ellipse cx="182" cy="210" rx="22" ry="14" fill="#86EFAC" opacity="0.9" />
-              <ellipse cx="218" cy="210" rx="22" ry="14" fill="#86EFAC" opacity="0.9" />
+              <ellipse
+                cx="182"
+                cy="210"
+                rx="22"
+                ry="14"
+                fill="#86EFAC"
+                opacity="0.9"
+              />
+              <ellipse
+                cx="218"
+                cy="210"
+                rx="22"
+                ry="14"
+                fill="#86EFAC"
+                opacity="0.9"
+              />
               <circle cx="164" cy="175" r="18" fill="#FCA5A5" opacity="0.85" />
               <circle cx="236" cy="175" r="18" fill="#FCA5A5" opacity="0.85" />
               {/* Fork */}
-              <rect x="95" y="130" width="6" height="80" rx="3" fill="#D1D5DB" />
-              <rect x="88" y="130" width="4" height="30" rx="2" fill="#D1D5DB" />
-              <rect x="103" y="130" width="4" height="30" rx="2" fill="#D1D5DB" />
+              <rect
+                x="95"
+                y="130"
+                width="6"
+                height="80"
+                rx="3"
+                fill="#D1D5DB"
+              />
+              <rect
+                x="88"
+                y="130"
+                width="4"
+                height="30"
+                rx="2"
+                fill="#D1D5DB"
+              />
+              <rect
+                x="103"
+                y="130"
+                width="4"
+                height="30"
+                rx="2"
+                fill="#D1D5DB"
+              />
               {/* Knife */}
-              <rect x="299" y="130" width="6" height="80" rx="3" fill="#D1D5DB" />
-              <path d="M299 130 Q316 145 305 165" stroke="#D1D5DB" strokeWidth="3" fill="none" />
+              <rect
+                x="299"
+                y="130"
+                width="6"
+                height="80"
+                rx="3"
+                fill="#D1D5DB"
+              />
+              <path
+                d="M299 130 Q316 145 305 165"
+                stroke="#D1D5DB"
+                strokeWidth="3"
+                fill="none"
+              />
             </svg>
           )}
         </div>

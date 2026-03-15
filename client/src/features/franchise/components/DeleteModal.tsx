@@ -27,13 +27,15 @@ export function DeleteModal({ franchise, onConfirm, onCancel }: Props) {
         onClick={onCancel}
       />
 
-      <div className="
+      <div
+        className="
         relative w-full max-w-sm overflow-hidden
         bg-white dark:bg-[#1a1d26]
         border border-slate-100 dark:border-white/[0.08]
         rounded-2xl shadow-2xl shadow-slate-300/20 dark:shadow-black/40
         animate-scale-in
-      ">
+      "
+      >
         <div className="h-0.5 bg-gradient-to-r from-red-400 via-red-500 to-red-600" />
 
         <div className="p-6 space-y-5">
@@ -49,7 +51,8 @@ export function DeleteModal({ franchise, onConfirm, onCancel }: Props) {
                 {franchise.name}
               </p>
               <p className="text-[11.5px] text-slate-400 dark:text-slate-500 mt-2 leading-relaxed">
-                This action cannot be undone. All associated data will be permanently removed.
+                This action cannot be undone. All associated data will be
+                permanently removed.
               </p>
             </div>
           </div>
@@ -79,10 +82,11 @@ export function DeleteModal({ franchise, onConfirm, onCancel }: Props) {
                 shadow-lg shadow-red-500/20
               "
             >
-              {loading
-                ? <Loader2 className="w-4 h-4 animate-spin" />
-                : <Trash2 className="w-3.5 h-3.5" />
-              }
+              {loading ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Trash2 className="w-3.5 h-3.5" />
+              )}
               Delete
             </button>
           </div>

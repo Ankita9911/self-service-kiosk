@@ -30,14 +30,16 @@ export interface PaginatedUsersResult {
 
 export async function getUsersPage(
   params: UserFilterParams = {},
-  options: CursorPageOptions = {}
+  options: CursorPageOptions = {},
 ): Promise<PaginatedUsersResult> {
   const query: Record<string, string> = {};
-  if (params.search?.trim())   query.search      = params.search.trim();
-  if (params.role      && params.role      !== "ALL") query.role      = params.role;
-  if (params.franchiseId && params.franchiseId !== "ALL") query.franchiseId = params.franchiseId;
-  if (params.outletId  && params.outletId  !== "ALL") query.outletId  = params.outletId;
-  if (params.status    && params.status    !== "ALL") query.status    = params.status;
+  if (params.search?.trim()) query.search = params.search.trim();
+  if (params.role && params.role !== "ALL") query.role = params.role;
+  if (params.franchiseId && params.franchiseId !== "ALL")
+    query.franchiseId = params.franchiseId;
+  if (params.outletId && params.outletId !== "ALL")
+    query.outletId = params.outletId;
+  if (params.status && params.status !== "ALL") query.status = params.status;
   if (options.cursor) query.cursor = options.cursor;
   if (typeof options.limit === "number") query.limit = String(options.limit);
 
@@ -70,7 +72,9 @@ export async function getUsersPage(
     },
     stats: {
       totalItems: stats.totalItems ?? response.data.data.length,
-      activeItems: stats.activeItems ?? response.data.data.filter((u) => u.status === "ACTIVE").length,
+      activeItems:
+        stats.activeItems ??
+        response.data.data.filter((u) => u.status === "ACTIVE").length,
     },
   };
 }
@@ -100,7 +104,10 @@ export async function createUser(payload: {
   return response.data.data;
 }
 
-export async function updateUser(id: string, payload: { name?: string; email?: string }): Promise<User> {
+export async function updateUser(
+  id: string,
+  payload: { name?: string; email?: string },
+): Promise<User> {
   const response = await axios.patch<{ data: User }>(`/users/${id}`, payload);
   return response.data.data;
 }
@@ -110,18 +117,28 @@ export async function deleteUser(id: string): Promise<void> {
 }
 
 export async function changeUserRole(id: string, role: string): Promise<User> {
-  const response = await axios.patch<{ data: User }>(`/users/${id}/role`, { role });
+  const response = await axios.patch<{ data: User }>(`/users/${id}/role`, {
+    role,
+  });
   return response.data.data;
 }
 
-export async function changeUserStatus(id: string, status: "ACTIVE" | "INACTIVE"): Promise<User> {
-  const response = await axios.patch<{ data: User }>(`/users/${id}/status`, { status });
+export async function changeUserStatus(
+  id: string,
+  status: "ACTIVE" | "INACTIVE",
+): Promise<User> {
+  const response = await axios.patch<{ data: User }>(`/users/${id}/status`, {
+    status,
+  });
   return response.data.data;
 }
 
 function generateTempPassword(): string {
   const chars = "ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#$";
-  return Array.from({ length: 10 }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
+  return Array.from(
+    { length: 10 },
+    () => chars[Math.floor(Math.random() * chars.length)],
+  ).join("");
 }
 
 export async function resetUserPassword(id: string): Promise<string> {

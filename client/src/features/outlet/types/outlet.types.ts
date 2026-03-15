@@ -1,9 +1,14 @@
-export type { ServiceType, InventoryMode, OfferType, ItemOffer } from "@/shared/types/menu.types";
+export type {
+  ServiceType,
+  InventoryMode,
+  OfferType,
+  ItemOffer,
+} from "@/shared/types/menu.types";
 
 export interface OutletAddress {
-  line1?:   string;
-  city?:    string;
-  state?:   string;
+  line1?: string;
+  city?: string;
+  state?: string;
   pincode?: string;
   country?: string;
 }

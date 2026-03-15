@@ -8,19 +8,17 @@ const kioskAxios = axios.create({
     : "http://localhost:3000/api",
 });
 
-kioskAxios.interceptors.request.use(
-  (config) => {
-    const token = getKioskToken();
+kioskAxios.interceptors.request.use((config) => {
+  const token = getKioskToken();
 
-    if (!token) {
-      toast.error("Kiosk not authenticated");
-      return Promise.reject(new Error("Kiosk token missing"));
-    }
-
-    config.headers.Authorization = `Bearer ${token}`;
-    return config;
+  if (!token) {
+    toast.error("Kiosk not authenticated");
+    return Promise.reject(new Error("Kiosk token missing"));
   }
-);
+
+  config.headers.Authorization = `Bearer ${token}`;
+  return config;
+});
 
 let kioskRedirecting = false;
 
@@ -65,7 +63,7 @@ kioskAxios.interceptors.response.use(
     }
 
     return Promise.reject(error);
-  }
+  },
 );
 
 export default kioskAxios;

@@ -33,7 +33,8 @@ function filterByOrderTypeCombo(combos: Combo[]): Combo[] {
 export function useKioskMenu() {
   const [menu, setMenu] = useState<MenuCategory[]>([]);
   const [combos, setCombos] = useState<Combo[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<string>(ALL_CATEGORY_ID);
+  const [selectedCategory, setSelectedCategory] =
+    useState<string>(ALL_CATEGORY_ID);
   const [isLoading, setIsLoading] = useState(true);
   const [offerFilter, setOfferFilter] = useState<OfferType | null>(null);
 
@@ -45,7 +46,7 @@ export function useKioskMenu() {
         kioskAxios.get("/kiosk/combos").catch(() => ({ data: { data: [] } })),
       ]);
       const freshMenu = menuRes.data.data.sort(
-        (a: any, b: any) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0)
+        (a: any, b: any) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0),
       );
       const valid = freshMenu.filter((c: any) => c.items && c.items.length > 0);
       setMenu(valid);
@@ -73,14 +74,16 @@ export function useKioskMenu() {
   function filterByOffer(items: any[]) {
     if (!offerFilter) return items;
     return items.filter((item) =>
-      (item.offers ?? []).some((o: any) => o.type === offerFilter)
+      (item.offers ?? []).some((o: any) => o.type === offerFilter),
     );
   }
 
   const rawItems =
     selectedCategory === ALL_CATEGORY_ID
       ? allItems
-      : filterByOrderType(menu.find((c) => c._id === selectedCategory)?.items || []);
+      : filterByOrderType(
+          menu.find((c) => c._id === selectedCategory)?.items || [],
+        );
 
   const selectedItems = filterByOffer(rawItems);
   const visibleCombos = filterByOrderTypeCombo(combos);
@@ -88,14 +91,24 @@ export function useKioskMenu() {
 
   const categoriesWithAll: MenuCategory[] = [
     ...(hasActiveCombos
-      ? [{ _id: COMBOS_CATEGORY_ID, name: "Combos", items: visibleCombos as any } as MenuCategory]
+      ? [
+          {
+            _id: COMBOS_CATEGORY_ID,
+            name: "Combos",
+            items: visibleCombos as any,
+          } as MenuCategory,
+        ]
       : []),
     { _id: ALL_CATEGORY_ID, name: "All", items: allItems } as MenuCategory,
     ...filteredMenu,
   ];
 
   const offerCounts: Record<OfferType, number> = {
-    DISCOUNT: 0, BOGO: 0, NEW: 0, BESTSELLER: 0, LIMITED: 0,
+    DISCOUNT: 0,
+    BOGO: 0,
+    NEW: 0,
+    BESTSELLER: 0,
+    LIMITED: 0,
   };
   allItems.forEach((item) => {
     (item.offers ?? []).forEach((o: any) => {

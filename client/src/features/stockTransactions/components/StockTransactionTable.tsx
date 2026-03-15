@@ -1,12 +1,33 @@
-import { PackagePlus, ShoppingCart, PackageMinus, ArrowRightLeft, ChevronUp, ChevronDown, ChevronsUpDown, ArrowUpDown } from "lucide-react";
+import {
+  PackagePlus,
+  ShoppingCart,
+  PackageMinus,
+  ArrowRightLeft,
+  ChevronUp,
+  ChevronDown,
+  ChevronsUpDown,
+  ArrowUpDown,
+} from "lucide-react";
 import { CursorPagination } from "@/shared/components/ui/CursorPagination";
-import type { StockTransaction, StockTransactionSortBy } from "../types/stockTransaction.types";
-import { formatDate, qtyDisplay, qtyColor, shortUnit } from "../utils/stockTransaction.utils";
+import type {
+  StockTransaction,
+  StockTransactionSortBy,
+} from "../types/stockTransaction.types";
+import {
+  formatDate,
+  qtyDisplay,
+  qtyColor,
+  shortUnit,
+} from "../utils/stockTransaction.utils";
 
-const TYPE_CONFIG: Record<string, { icon: React.ReactNode; color: string; label: string }> = {
+const TYPE_CONFIG: Record<
+  string,
+  { icon: React.ReactNode; color: string; label: string }
+> = {
   PURCHASE: {
     icon: <PackagePlus className="w-3.5 h-3.5" />,
-    color: "text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/10",
+    color:
+      "text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/10",
     label: "Purchase",
   },
   CONSUMPTION: {
@@ -21,7 +42,8 @@ const TYPE_CONFIG: Record<string, { icon: React.ReactNode; color: string; label:
   },
   ADJUSTMENT: {
     icon: <ArrowRightLeft className="w-3.5 h-3.5" />,
-    color: "text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10",
+    color:
+      "text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10",
     label: "Adjustment",
   },
 };
@@ -33,10 +55,15 @@ interface SortIconProps {
 }
 
 function SortIcon({ column, sortBy, sortOrder }: SortIconProps) {
-  if (sortBy !== column) return <ChevronsUpDown className="w-3 h-3 ml-1 text-slate-300 dark:text-slate-600" />;
-  return sortOrder === "asc"
-    ? <ChevronUp className="w-3 h-3 ml-1 text-indigo-500" />
-    : <ChevronDown className="w-3 h-3 ml-1 text-indigo-500" />;
+  if (sortBy !== column)
+    return (
+      <ChevronsUpDown className="w-3 h-3 ml-1 text-slate-300 dark:text-slate-600" />
+    );
+  return sortOrder === "asc" ? (
+    <ChevronUp className="w-3 h-3 ml-1 text-indigo-500" />
+  ) : (
+    <ChevronDown className="w-3 h-3 ml-1 text-indigo-500" />
+  );
 }
 
 interface StockTransactionTableProps {
@@ -58,19 +85,34 @@ interface StockTransactionTableProps {
 }
 
 export function StockTransactionTable({
-  transactions, filterLoading, hasActiveFilters,
-  sortBy, sortOrder,
-  total, page, pageSize, hasPrevPage, hasNextPage,
-  onSort, onClearFilters,
-  onPrevPage, onNextPage, onPageSizeChange,
+  transactions,
+  filterLoading,
+  hasActiveFilters,
+  sortBy,
+  sortOrder,
+  total,
+  page,
+  pageSize,
+  hasPrevPage,
+  hasNextPage,
+  onSort,
+  onClearFilters,
+  onPrevPage,
+  onNextPage,
+  onPageSizeChange,
 }: StockTransactionTableProps) {
   if (transactions.length === 0) {
     return (
       <div className="text-center py-20">
         <ArrowUpDown className="w-10 h-10 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
-        <p className="text-sm font-medium text-slate-500 dark:text-slate-400">No transactions found.</p>
+        <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
+          No transactions found.
+        </p>
         {hasActiveFilters && (
-          <button onClick={onClearFilters} className="mt-2 text-xs text-indigo-500 hover:underline">
+          <button
+            onClick={onClearFilters}
+            className="mt-2 text-xs text-indigo-500 hover:underline"
+          >
             Clear filters
           </button>
         )}
@@ -90,7 +132,11 @@ export function StockTransactionTable({
               >
                 <span className="inline-flex items-center">
                   Date
-                  <SortIcon column="createdAt" sortBy={sortBy} sortOrder={sortOrder} />
+                  <SortIcon
+                    column="createdAt"
+                    sortBy={sortBy}
+                    sortOrder={sortOrder}
+                  />
                 </span>
               </th>
               <th className="text-left px-4 py-3 text-[11px] uppercase tracking-wider text-slate-400 font-semibold">
@@ -102,7 +148,11 @@ export function StockTransactionTable({
               >
                 <span className="inline-flex items-center">
                   Type
-                  <SortIcon column="type" sortBy={sortBy} sortOrder={sortOrder} />
+                  <SortIcon
+                    column="type"
+                    sortBy={sortBy}
+                    sortOrder={sortOrder}
+                  />
                 </span>
               </th>
               <th
@@ -111,7 +161,11 @@ export function StockTransactionTable({
               >
                 <span className="inline-flex items-center justify-end">
                   Qty
-                  <SortIcon column="quantity" sortBy={sortBy} sortOrder={sortOrder} />
+                  <SortIcon
+                    column="quantity"
+                    sortBy={sortBy}
+                    sortOrder={sortOrder}
+                  />
                 </span>
               </th>
               <th className="text-left px-4 py-3 text-[11px] uppercase tracking-wider text-slate-400 font-semibold">
@@ -122,7 +176,9 @@ export function StockTransactionTable({
               </th>
             </tr>
           </thead>
-          <tbody className={`divide-y divide-slate-50 dark:divide-white/4 ${filterLoading ? "opacity-60 pointer-events-none" : ""}`}>
+          <tbody
+            className={`divide-y divide-slate-50 dark:divide-white/4 ${filterLoading ? "opacity-60 pointer-events-none" : ""}`}
+          >
             {transactions.map((txn) => {
               const cfg = TYPE_CONFIG[txn.type] ?? TYPE_CONFIG.ADJUSTMENT;
               const ingredientName =
@@ -131,7 +187,7 @@ export function StockTransactionTable({
                   : String(txn.ingredientId);
               const unit =
                 typeof txn.ingredientId === "object" && txn.ingredientId
-                  ? (txn.ingredientId as { unit?: string }).unit ?? ""
+                  ? ((txn.ingredientId as { unit?: string }).unit ?? "")
                   : "";
 
               return (
@@ -151,28 +207,40 @@ export function StockTransactionTable({
                     )}
                   </td>
                   <td className="px-4 py-3">
-                    <span className={`inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full ${cfg.color}`}>
+                    <span
+                      className={`inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full ${cfg.color}`}
+                    >
                       {cfg.icon}
                       {cfg.label}
                     </span>
                   </td>
-                  <td className={`px-4 py-3 text-right font-mono font-semibold text-sm ${qtyColor(txn)}`}>
+                  <td
+                    className={`px-4 py-3 text-right font-mono font-semibold text-sm ${qtyColor(txn)}`}
+                  >
                     {qtyDisplay(txn)}
                     {unit && (
-                      <span className="ml-1 text-[10px] text-slate-400 font-normal">{shortUnit(unit)}</span>
+                      <span className="ml-1 text-[10px] text-slate-400 font-normal">
+                        {shortUnit(unit)}
+                      </span>
                     )}
                   </td>
                   <td className="px-4 py-3">
-                    <span className={`inline-flex items-center text-[11px] font-medium px-2 py-0.5 rounded-full ${
-                      txn.referenceType === "ORDER"
-                        ? "bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400"
-                        : "bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400"
-                    }`}>
+                    <span
+                      className={`inline-flex items-center text-[11px] font-medium px-2 py-0.5 rounded-full ${
+                        txn.referenceType === "ORDER"
+                          ? "bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400"
+                          : "bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400"
+                      }`}
+                    >
                       {txn.referenceType === "ORDER" ? "Order" : "Manual"}
                     </span>
                   </td>
                   <td className="px-4 py-3 text-xs text-slate-400 max-w-50 truncate">
-                    {txn.note || <span className="text-slate-300 dark:text-slate-600">—</span>}
+                    {txn.note || (
+                      <span className="text-slate-300 dark:text-slate-600">
+                        —
+                      </span>
+                    )}
                   </td>
                 </tr>
               );

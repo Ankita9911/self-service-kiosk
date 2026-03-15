@@ -58,9 +58,11 @@ export default function FrequentlyBoughtTogether({
         ) : (
           <div className="space-y-2">
             {items.map((item, index) => {
-              const alreadyInCart = cart.some((c) => c.itemId === String(item._id));
+              const alreadyInCart = cart.some(
+                (c) => c.itemId === String(item._id),
+              );
               const discountOffer = (item.offers ?? []).find(
-                (o) => o.type === "DISCOUNT" && o.discountPercent
+                (o) => o.type === "DISCOUNT" && o.discountPercent,
               );
               const effectivePrice = discountOffer?.discountPercent
                 ? item.price * (1 - discountOffer.discountPercent / 100)
@@ -90,7 +92,10 @@ export default function FrequentlyBoughtTogether({
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
-                        <ImageOff className="w-4 h-4 text-gray-300" strokeWidth={1.5} />
+                        <ImageOff
+                          className="w-4 h-4 text-gray-300"
+                          strokeWidth={1.5}
+                        />
                       </div>
                     )}
                   </div>

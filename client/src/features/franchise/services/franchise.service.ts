@@ -34,7 +34,7 @@ export interface CreateFranchiseDTO {
 
 export async function getFranchisesPage(
   params: FranchiseFilterParams = {},
-  options: CursorPageOptions = {}
+  options: CursorPageOptions = {},
 ): Promise<PaginatedFranchisesResult> {
   const query: Record<string, string> = {};
   if (params.search?.trim()) query.search = params.search.trim();
@@ -71,12 +71,16 @@ export async function getFranchisesPage(
     },
     stats: {
       totalItems: stats.totalItems ?? response.data.data.length,
-      activeItems: stats.activeItems ?? response.data.data.filter((f) => f.status === "ACTIVE").length,
+      activeItems:
+        stats.activeItems ??
+        response.data.data.filter((f) => f.status === "ACTIVE").length,
     },
   };
 }
 
-export async function getFranchises(params: FranchiseFilterParams = {}): Promise<Franchise[]> {
+export async function getFranchises(
+  params: FranchiseFilterParams = {},
+): Promise<Franchise[]> {
   const allFranchises: Franchise[] = [];
   let cursor: string | undefined;
 
@@ -96,7 +100,7 @@ export async function getFranchiseById(id: string): Promise<Franchise> {
 }
 
 export async function createFranchise(
-  payload: CreateFranchiseDTO
+  payload: CreateFranchiseDTO,
 ): Promise<Franchise> {
   const response = await axiosInstance.post("/franchises", payload);
   return response.data.data;
@@ -104,7 +108,7 @@ export async function createFranchise(
 
 export async function updateFranchise(
   id: string,
-  payload: Partial<Franchise>
+  payload: Partial<Franchise>,
 ): Promise<Franchise> {
   const response = await axiosInstance.put(`/franchises/${id}`, payload);
 
@@ -116,8 +120,10 @@ export async function deleteFranchise(id: string): Promise<void> {
 
 export async function setFranchiseStatus(
   id: string,
-  status: "ACTIVE" | "INACTIVE"
+  status: "ACTIVE" | "INACTIVE",
 ): Promise<Franchise> {
-  const response = await axiosInstance.patch(`/franchises/${id}/status`, { status });
+  const response = await axiosInstance.patch(`/franchises/${id}/status`, {
+    status,
+  });
   return response.data.data;
 }

@@ -28,7 +28,8 @@ export default function KitchenPage() {
 
   const handleDragStart = (event: DragStartEvent) => {
     setActiveOrder(
-      (event.active.data.current as { order: Order } | undefined)?.order ?? null
+      (event.active.data.current as { order: Order } | undefined)?.order ??
+        null,
     );
   };
 

@@ -1,5 +1,8 @@
 import type { Franchise } from "@/features/franchise/types/franchise.types";
-import type { Outlet, OutletAddress } from "@/features/outlet/types/outlet.types";
+import type {
+  Outlet,
+  OutletAddress,
+} from "@/features/outlet/types/outlet.types";
 import { useState, useEffect } from "react";
 import { X, CheckCircle2, Loader2, MapPin } from "lucide-react";
 import toast from "react-hot-toast";
@@ -7,7 +10,7 @@ import { outletSchema } from "../validations/outlet.schemas";
 import { getZodFieldErrors } from "@/shared/utils/zod.utils";
 
 const COUNTRIES_API = "https://restcountries.com/v3.1/all?fields=name,cca2";
-const STATES_API    = "https://countriesnow.space/api/v0.1/countries/states";
+const STATES_API = "https://countriesnow.space/api/v0.1/countries/states";
 
 type Country = { name: string; cca2: string };
 
@@ -19,7 +22,13 @@ type OutletForm = {
 };
 type FieldErrors = Partial<Record<string, string>>;
 
-const EMPTY_ADDR: OutletAddress = { line1: "", city: "", state: "", pincode: "", country: "" };
+const EMPTY_ADDR: OutletAddress = {
+  line1: "",
+  city: "",
+  state: "",
+  pincode: "",
+  country: "",
+};
 
 export function OutletModal({
   open,
@@ -42,13 +51,13 @@ export function OutletModal({
     outletCode: "",
     address: { ...EMPTY_ADDR },
   });
-  const [countries,        setCountries]        = useState<Country[]>([]);
-  const [states,           setStates]           = useState<string[]>([]);
+  const [countries, setCountries] = useState<Country[]>([]);
+  const [states, setStates] = useState<string[]>([]);
   const [loadingCountries, setLoadingCountries] = useState(false);
-  const [loadingStates,    setLoadingStates]    = useState(false);
-  const [submitting,       setSubmitting]       = useState(false);
-  const [done,             setDone]             = useState(false);
-  const [errors,           setErrors]           = useState<FieldErrors>({});
+  const [loadingStates, setLoadingStates] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [done, setDone] = useState(false);
+  const [errors, setErrors] = useState<FieldErrors>({});
 
   // Reset form when modal opens / editing target changes
   useEffect(() => {
@@ -57,8 +66,8 @@ export function OutletModal({
     setStates([]);
     setForm({
       franchiseId: editing?.franchiseId || "",
-      name:        editing?.name        || "",
-      outletCode:  editing?.outletCode  || "",
+      name: editing?.name || "",
+      outletCode: editing?.outletCode || "",
       address: editing?.address
         ? { ...EMPTY_ADDR, ...editing.address }
         : { ...EMPTY_ADDR },
@@ -75,7 +84,7 @@ export function OutletModal({
         setCountries(
           data
             .map((c) => ({ name: c.name.common, cca2: c.cca2 }))
-            .sort((a, b) => a.name.localeCompare(b.name))
+            .sort((a, b) => a.name.localeCompare(b.name)),
         );
       })
       .catch(() => {})
@@ -85,7 +94,10 @@ export function OutletModal({
   // Fetch states whenever country changes
   useEffect(() => {
     const country = form.address.country;
-    if (!country) { setStates([]); return; }
+    if (!country) {
+      setStates([]);
+      return;
+    }
     setLoadingStates(true);
     fetch(STATES_API, {
       method: "POST",
@@ -100,7 +112,10 @@ export function OutletModal({
       .finally(() => setLoadingStates(false));
   }, [form.address.country]);
 
-  function handleChange(key: "franchiseId" | "name" | "outletCode", raw: string) {
+  function handleChange(
+    key: "franchiseId" | "name" | "outletCode",
+    raw: string,
+  ) {
     const value = key === "outletCode" ? raw.toUpperCase() : raw;
     setForm((prev) => ({ ...prev, [key]: value }));
     if (errors[key]) setErrors((prev) => ({ ...prev, [key]: undefined }));
@@ -108,11 +123,18 @@ export function OutletModal({
 
   function handleAddressChange(key: keyof OutletAddress, value: string) {
     if (key === "country") {
-      setForm((prev) => ({ ...prev, address: { ...prev.address, country: value, state: "" } }));
+      setForm((prev) => ({
+        ...prev,
+        address: { ...prev.address, country: value, state: "" },
+      }));
     } else {
-      setForm((prev) => ({ ...prev, address: { ...prev.address, [key]: value } }));
+      setForm((prev) => ({
+        ...prev,
+        address: { ...prev.address, [key]: value },
+      }));
     }
-    if (errors[`address.${key}`]) setErrors((prev) => ({ ...prev, [`address.${key}`]: undefined }));
+    if (errors[`address.${key}`])
+      setErrors((prev) => ({ ...prev, [`address.${key}`]: undefined }));
   }
 
   function validate(): boolean {
@@ -121,7 +143,10 @@ export function OutletModal({
       return false;
     }
     const result = outletSchema.safeParse(form);
-    if (result.success) { setErrors({}); return true; }
+    if (result.success) {
+      setErrors({});
+      return true;
+    }
     setErrors(getZodFieldErrors<{ [k: string]: string }>(result.error));
     return false;
   }
@@ -160,7 +185,8 @@ export function OutletModal({
         : "border-slate-200 dark:border-white/8 focus:border-indigo-400 dark:focus:border-indigo-500/60 focus:ring-indigo-400/15"
     }`;
 
-  const LabelCls = "block text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider";
+  const LabelCls =
+    "block text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider";
 
   const ErrMsg = ({ field }: { field: string }) =>
     errors[field] ? (
@@ -172,15 +198,20 @@ export function OutletModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
-      <div className="absolute inset-0 bg-black/50 dark:bg-black/70 backdrop-blur-sm" onClick={onClose} />
+      <div
+        className="absolute inset-0 bg-black/50 dark:bg-black/70 backdrop-blur-sm"
+        onClick={onClose}
+      />
 
-      <div className="
+      <div
+        className="
         relative w-full max-w-lg overflow-hidden
         bg-white dark:bg-[#1a1d26]
         border border-slate-100 dark:border-white/8
         rounded-2xl shadow-2xl shadow-slate-300/20 dark:shadow-black/40
         animate-scale-in
-      ">
+      "
+      >
         <div className="h-0.5 bg-linear-to-r from-indigo-400 via-indigo-500 to-violet-500" />
 
         {done ? (
@@ -212,19 +243,30 @@ export function OutletModal({
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="px-6 py-5 space-y-4 max-h-[calc(100vh-160px)] overflow-y-auto" noValidate>
-
+            <form
+              onSubmit={handleSubmit}
+              className="px-6 py-5 space-y-4 max-h-[calc(100vh-160px)] overflow-y-auto"
+              noValidate
+            >
               {/* Franchise (super admin only) */}
               {isSuperAdmin && (
                 <div className="space-y-1.5">
-                  <label className={LabelCls}>Franchise <span className="text-indigo-500">*</span></label>
+                  <label className={LabelCls}>
+                    Franchise <span className="text-indigo-500">*</span>
+                  </label>
                   <select
                     value={form.franchiseId}
-                    onChange={(e) => handleChange("franchiseId", e.target.value)}
+                    onChange={(e) =>
+                      handleChange("franchiseId", e.target.value)
+                    }
                     className={selectCls("franchiseId")}
                   >
                     <option value="">Select a franchise…</option>
-                    {franchises.map((f) => <option key={f._id} value={f._id}>{f.name}</option>)}
+                    {franchises.map((f) => (
+                      <option key={f._id} value={f._id}>
+                        {f.name}
+                      </option>
+                    ))}
                   </select>
                   <ErrMsg field="franchiseId" />
                 </div>
@@ -232,7 +274,9 @@ export function OutletModal({
 
               {/* Name */}
               <div className="space-y-1.5">
-                <label className={LabelCls}>Outlet Name <span className="text-indigo-500">*</span></label>
+                <label className={LabelCls}>
+                  Outlet Name <span className="text-indigo-500">*</span>
+                </label>
                 <input
                   type="text"
                   value={form.name}
@@ -245,7 +289,9 @@ export function OutletModal({
 
               {/* Code */}
               <div className="space-y-1.5">
-                <label className={LabelCls}>Outlet Code <span className="text-indigo-500">*</span></label>
+                <label className={LabelCls}>
+                  Outlet Code <span className="text-indigo-500">*</span>
+                </label>
                 <input
                   type="text"
                   value={form.outletCode}
@@ -254,7 +300,9 @@ export function OutletModal({
                   className={`${inputCls("outletCode")} font-mono uppercase tracking-wide`}
                 />
                 <ErrMsg field="outletCode" />
-                <p className="text-[11px] text-slate-400 dark:text-slate-500">Unique identifier used across the platform</p>
+                <p className="text-[11px] text-slate-400 dark:text-slate-500">
+                  Unique identifier used across the platform
+                </p>
               </div>
 
               {/* ── Address ─────────────────────────────────── */}
@@ -273,7 +321,9 @@ export function OutletModal({
                   <input
                     type="text"
                     value={form.address.line1 || ""}
-                    onChange={(e) => handleAddressChange("line1", e.target.value)}
+                    onChange={(e) =>
+                      handleAddressChange("line1", e.target.value)
+                    }
                     placeholder="e.g. 12, MG Road, 2nd Floor"
                     className={inputCls("address.line1")}
                   />
@@ -287,13 +337,22 @@ export function OutletModal({
                     <div className="relative">
                       <select
                         value={form.address.country || ""}
-                        onChange={(e) => handleAddressChange("country", e.target.value)}
+                        onChange={(e) =>
+                          handleAddressChange("country", e.target.value)
+                        }
                         disabled={loadingCountries}
-                        className={selectCls("address.country", loadingCountries)}
+                        className={selectCls(
+                          "address.country",
+                          loadingCountries,
+                        )}
                       >
-                        <option value="">{loadingCountries ? "Loading…" : "Select country"}</option>
+                        <option value="">
+                          {loadingCountries ? "Loading…" : "Select country"}
+                        </option>
                         {countries.map((c) => (
-                          <option key={c.cca2} value={c.name}>{c.name}</option>
+                          <option key={c.cca2} value={c.name}>
+                            {c.name}
+                          </option>
                         ))}
                       </select>
                       {loadingCountries && (
@@ -309,27 +368,40 @@ export function OutletModal({
                       {states.length > 0 ? (
                         <select
                           value={form.address.state || ""}
-                          onChange={(e) => handleAddressChange("state", e.target.value)}
+                          onChange={(e) =>
+                            handleAddressChange("state", e.target.value)
+                          }
                           disabled={loadingStates}
                           className={selectCls("address.state", loadingStates)}
                         >
-                          <option value="">{loadingStates ? "Loading…" : "Select state"}</option>
-                          {states.map((s) => <option key={s} value={s}>{s}</option>)}
+                          <option value="">
+                            {loadingStates ? "Loading…" : "Select state"}
+                          </option>
+                          {states.map((s) => (
+                            <option key={s} value={s}>
+                              {s}
+                            </option>
+                          ))}
                         </select>
                       ) : (
                         <input
                           type="text"
                           value={form.address.state || ""}
-                          onChange={(e) => handleAddressChange("state", e.target.value)}
+                          onChange={(e) =>
+                            handleAddressChange("state", e.target.value)
+                          }
                           placeholder={
                             loadingStates
                               ? "Loading states…"
                               : form.address.country
-                              ? "Enter state / province"
-                              : "Select country first"
+                                ? "Enter state / province"
+                                : "Select country first"
                           }
                           disabled={loadingStates || !form.address.country}
-                          className={selectCls("address.state", loadingStates || !form.address.country)}
+                          className={selectCls(
+                            "address.state",
+                            loadingStates || !form.address.country,
+                          )}
                         />
                       )}
                       {loadingStates && (
@@ -347,7 +419,9 @@ export function OutletModal({
                     <input
                       type="text"
                       value={form.address.city || ""}
-                      onChange={(e) => handleAddressChange("city", e.target.value)}
+                      onChange={(e) =>
+                        handleAddressChange("city", e.target.value)
+                      }
                       placeholder="e.g. Mumbai"
                       className={inputCls("address.city")}
                     />
@@ -358,7 +432,9 @@ export function OutletModal({
                     <input
                       type="text"
                       value={form.address.pincode || ""}
-                      onChange={(e) => handleAddressChange("pincode", e.target.value)}
+                      onChange={(e) =>
+                        handleAddressChange("pincode", e.target.value)
+                      }
                       placeholder="e.g. 400001"
                       className={inputCls("address.pincode")}
                     />
@@ -381,10 +457,13 @@ export function OutletModal({
                   disabled={submitting}
                   className="flex-1 h-10 rounded-xl text-[13px] font-semibold bg-indigo-600 hover:bg-indigo-700 text-white flex items-center justify-center gap-2 shadow-lg shadow-indigo-500/20 transition disabled:opacity-60"
                 >
-                  {submitting
-                    ? <Loader2 className="w-4 h-4 animate-spin" />
-                    : editing ? "Save Changes" : "Register Outlet"
-                  }
+                  {submitting ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : editing ? (
+                    "Save Changes"
+                  ) : (
+                    "Register Outlet"
+                  )}
                 </button>
               </div>
             </form>

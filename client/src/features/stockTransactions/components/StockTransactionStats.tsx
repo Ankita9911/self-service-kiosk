@@ -1,8 +1,18 @@
-import { PackagePlus, ShoppingCart, PackageMinus, ArrowRightLeft, TrendingDown } from "lucide-react";
+import {
+  PackagePlus,
+  ShoppingCart,
+  PackageMinus,
+  ArrowRightLeft,
+  TrendingDown,
+} from "lucide-react";
 import type { StockTransactionStats } from "../types/stockTransaction.types";
 
 function StatPill({
-  icon, label, value, iconBg, loading,
+  icon,
+  label,
+  value,
+  iconBg,
+  loading,
 }: {
   icon: React.ReactNode;
   label: string;
@@ -30,14 +40,18 @@ function StatPill({
 
   return (
     <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-white dark:bg-[#1e2130] border border-slate-100 dark:border-white/6 shadow-sm">
-      <div className={`h-9 w-9 rounded-xl ${iconBg} flex items-center justify-center shrink-0`}>
+      <div
+        className={`h-9 w-9 rounded-xl ${iconBg} flex items-center justify-center shrink-0`}
+      >
         {icon}
       </div>
       <div>
         <p className="text-xl font-black text-slate-800 dark:text-white leading-none">
           {value.toLocaleString()}
         </p>
-        <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5 font-medium">{label}</p>
+        <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5 font-medium">
+          {label}
+        </p>
       </div>
     </div>
   );
@@ -48,7 +62,10 @@ interface StockTransactionStatsProps {
   loading: boolean;
 }
 
-export function StockTransactionStats({ stats, loading }: StockTransactionStatsProps) {
+export function StockTransactionStats({
+  stats,
+  loading,
+}: StockTransactionStatsProps) {
   return (
     <div className="grid grid-cols-2 xl:grid-cols-4 gap-3">
       <StatPill
@@ -56,7 +73,9 @@ export function StockTransactionStats({ stats, loading }: StockTransactionStatsP
         value={stats.purchaseCount}
         label="Purchases"
         iconBg="bg-emerald-50 dark:bg-emerald-500/10"
-        icon={<PackagePlus className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />}
+        icon={
+          <PackagePlus className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+        }
       />
       <StatPill
         loading={loading}

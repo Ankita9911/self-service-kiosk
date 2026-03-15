@@ -19,7 +19,8 @@ const CARD_THEME: Record<
 > = {
   CREATED: {
     accent: "bg-amber-400",
-    badge: "bg-amber-50 dark:bg-amber-400/10 border-amber-200 dark:border-amber-400/20 text-amber-700 dark:text-amber-300",
+    badge:
+      "bg-amber-50 dark:bg-amber-400/10 border-amber-200 dark:border-amber-400/20 text-amber-700 dark:text-amber-300",
     badgeDot: "bg-amber-400",
     badgeTxt: "New Order",
     btn: "bg-amber-500 hover:bg-amber-600 text-white shadow-lg shadow-amber-500/20 dark:shadow-amber-400/10",
@@ -28,7 +29,8 @@ const CARD_THEME: Record<
   },
   IN_KITCHEN: {
     accent: "bg-indigo-500",
-    badge: "bg-indigo-50 dark:bg-indigo-500/10 border-indigo-200 dark:border-indigo-400/20 text-indigo-700 dark:text-indigo-300",
+    badge:
+      "bg-indigo-50 dark:bg-indigo-500/10 border-indigo-200 dark:border-indigo-400/20 text-indigo-700 dark:text-indigo-300",
     badgeDot: "bg-indigo-500 animate-pulse",
     badgeTxt: "Preparing",
     btn: "bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-500/20 dark:shadow-indigo-400/10",
@@ -37,7 +39,8 @@ const CARD_THEME: Record<
   },
   READY: {
     accent: "bg-emerald-500",
-    badge: "bg-emerald-50 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-400/20 text-emerald-700 dark:text-emerald-300",
+    badge:
+      "bg-emerald-50 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-400/20 text-emerald-700 dark:text-emerald-300",
     badgeDot: "bg-emerald-500 animate-pulse",
     badgeTxt: "Ready",
     btn: "bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-500/20 dark:shadow-emerald-400/10",
@@ -85,7 +88,9 @@ export function OrderCard({
         overlay
           ? "shadow-2xl scale-[1.03] rotate-2 ring-2 ring-indigo-400/20"
           : [
-              isDragging ? "opacity-30 scale-[0.98]" : "opacity-100 hover:shadow-md hover:-translate-y-px",
+              isDragging
+                ? "opacity-30 scale-[0.98]"
+                : "opacity-100 hover:shadow-md hover:-translate-y-px",
               loading ? "pointer-events-none opacity-60" : "",
             ].join(" "),
       ]
@@ -114,8 +119,12 @@ export function OrderCard({
               #{order.orderNumber}
             </p>
             <div className="flex items-center gap-1.5 mt-1.5">
-              <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${theme.badgeDot}`} />
-              <span className={`text-[11px] font-semibold border px-2 py-0.5 rounded-full ${theme.badge}`}>
+              <span
+                className={`w-1.5 h-1.5 rounded-full shrink-0 ${theme.badgeDot}`}
+              />
+              <span
+                className={`text-[11px] font-semibold border px-2 py-0.5 rounded-full ${theme.badge}`}
+              >
                 {theme.badgeTxt}
               </span>
             </div>
@@ -124,7 +133,9 @@ export function OrderCard({
             <p className="text-[11px] text-slate-400 dark:text-slate-500 font-medium">
               {formatTime(order.createdAt)}
             </p>
-            <div className={`flex items-center justify-end gap-1 mt-1 text-[11px] font-bold ${elapsedColor}`}>
+            <div
+              className={`flex items-center justify-end gap-1 mt-1 text-[11px] font-bold ${elapsedColor}`}
+            >
               <Clock className="w-3 h-3" />
               {elapsed}m
             </div>
@@ -132,7 +143,9 @@ export function OrderCard({
         </div>
 
         {/* items list */}
-        <div className={`rounded-xl overflow-hidden border border-slate-100 dark:border-white/5 ${theme.itemRowBg}`}>
+        <div
+          className={`rounded-xl overflow-hidden border border-slate-100 dark:border-white/5 ${theme.itemRowBg}`}
+        >
           {order.items.map((item, i) => (
             <div
               key={i}
@@ -141,7 +154,9 @@ export function OrderCard({
               }`}
             >
               <span className="text-sm text-slate-700 dark:text-slate-300 leading-snug">
-                <span className="font-black text-slate-900 dark:text-white mr-1">{item.quantity}×</span>
+                <span className="font-black text-slate-900 dark:text-white mr-1">
+                  {item.quantity}×
+                </span>
                 {item.nameSnapshot}
               </span>
               <span className="text-[11px] font-medium text-slate-400 dark:text-slate-500 shrink-0">

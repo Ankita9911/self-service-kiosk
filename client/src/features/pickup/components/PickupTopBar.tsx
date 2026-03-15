@@ -20,10 +20,14 @@ export function PickupTopBar({
           <PackageCheck className="w-4.5 h-4.5 text-indigo-600 dark:text-indigo-400" />
         </div>
         <div>
-          <h1 className="text-base font-semibold text-slate-800 dark:text-white leading-tight">Pickup Counter</h1>
+          <h1 className="text-base font-semibold text-slate-800 dark:text-white leading-tight">
+            Pickup Counter
+          </h1>
           <div className="flex items-center gap-1 mt-0.5">
             <Wifi className="w-3 h-3 text-emerald-500" />
-            <span className="text-[11px] font-medium text-emerald-600 dark:text-emerald-400">Live</span>
+            <span className="text-[11px] font-medium text-emerald-600 dark:text-emerald-400">
+              Live
+            </span>
           </div>
         </div>
 
@@ -43,7 +47,10 @@ export function PickupTopBar({
 
       <div className="flex items-center gap-3">
         <p className="text-xs text-slate-400 dark:text-slate-500">
-          {lastUpdated.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+          {lastUpdated.toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          })}
         </p>
         <button
           onClick={onRefresh}

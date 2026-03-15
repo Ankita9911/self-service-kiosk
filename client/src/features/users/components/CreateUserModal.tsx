@@ -3,25 +3,60 @@ import { UserPlus, Loader2, X } from "lucide-react";
 import { createUser } from "@/features/users/services/user.service";
 import type { Franchise } from "@/features/franchise/types/franchise.types";
 import type { Outlet } from "@/features/outlet/types/outlet.types";
-import { createUserSchema, OUTLET_SCOPED_ROLES, type UserRole } from "../validations/user.schemas";
+import {
+  createUserSchema,
+  OUTLET_SCOPED_ROLES,
+  type UserRole,
+} from "../validations/user.schemas";
 import { getZodFieldErrors } from "@/shared/utils/zod.utils";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/shared/components/ui/select";
 
-type FormState = { name: string; email: string; role: string; franchiseId: string; outletId: string };
+type FormState = {
+  name: string;
+  email: string;
+  role: string;
+  franchiseId: string;
+  outletId: string;
+};
 type FieldErrors = Partial<Record<keyof FormState, string>>;
 
 export function CreateUserModal({
-  open, onClose, currentUser, franchises, outlets, onCreated,
+  open,
+  onClose,
+  currentUser,
+  franchises,
+  outlets,
+  onCreated,
 }: {
-  open: boolean; onClose: () => void; currentUser: any;
-  franchises: Franchise[]; outlets: Outlet[]; onCreated: (pw: string, email: string) => void;
+  open: boolean;
+  onClose: () => void;
+  currentUser: any;
+  franchises: Franchise[];
+  outlets: Outlet[];
+  onCreated: (pw: string, email: string) => void;
 }) {
-  const [form, setForm] = useState<FormState>({ name: "", email: "", role: "", franchiseId: "", outletId: "" });
+  const [form, setForm] = useState<FormState>({
+    name: "",
+    email: "",
+    role: "",
+    franchiseId: "",
+    outletId: "",
+  });
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState<FieldErrors>({});
 
-  const needsFranchise = currentUser?.role === "SUPER_ADMIN" && form.role && form.role !== "SUPER_ADMIN";
-  const needsOutlet = form.role && OUTLET_SCOPED_ROLES.includes(form.role as UserRole);
+  const needsFranchise =
+    currentUser?.role === "SUPER_ADMIN" &&
+    form.role &&
+    form.role !== "SUPER_ADMIN";
+  const needsOutlet =
+    form.role && OUTLET_SCOPED_ROLES.includes(form.role as UserRole);
 
   const outletsForSelection =
     currentUser?.role === "SUPER_ADMIN" && form.franchiseId
@@ -36,12 +71,22 @@ export function CreateUserModal({
         : ["KITCHEN_STAFF", "PICKUP_STAFF"];
 
   function validate(): boolean {
-    const payload = { name: form.name, email: form.email, role: form.role as any, franchiseId: form.franchiseId || undefined, outletId: form.outletId || undefined };
+    const payload = {
+      name: form.name,
+      email: form.email,
+      role: form.role as any,
+      franchiseId: form.franchiseId || undefined,
+      outletId: form.outletId || undefined,
+    };
     const result = createUserSchema.safeParse(payload);
-    const fieldErrors: FieldErrors = result.success ? {} : getZodFieldErrors<FormState>(result.error);
+    const fieldErrors: FieldErrors = result.success
+      ? {}
+      : getZodFieldErrors<FormState>(result.error);
 
-    if (needsFranchise && !form.franchiseId) fieldErrors.franchiseId = "Please select a franchise";
-    if (needsOutlet && !form.outletId) fieldErrors.outletId = "Please select an outlet";
+    if (needsFranchise && !form.franchiseId)
+      fieldErrors.franchiseId = "Please select a franchise";
+    if (needsOutlet && !form.outletId)
+      fieldErrors.outletId = "Please select an outlet";
 
     setErrors(fieldErrors);
     return Object.keys(fieldErrors).length === 0;
@@ -61,14 +106,17 @@ export function CreateUserModal({
         name: form.name.trim(),
         email: form.email.trim().toLowerCase(),
         role: form.role,
-        ...(needsFranchise && form.franchiseId && { franchiseId: form.franchiseId }),
+        ...(needsFranchise &&
+          form.franchiseId && { franchiseId: form.franchiseId }),
         ...(needsOutlet && form.outletId && { outletId: form.outletId }),
       });
       setForm({ name: "", email: "", role: "", franchiseId: "", outletId: "" });
       setErrors({});
       onClose();
       onCreated(result.tempPassword, form.email.trim().toLowerCase());
-    } finally { setSubmitting(false); }
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   const inputCls = (field: keyof FormState) =>
@@ -88,17 +136,22 @@ export function CreateUserModal({
   const ErrMsg = ({ field }: { field: keyof FormState }) =>
     errors[field] ? (
       <p className="text-[11px] text-red-500 flex items-center gap-1">
-        <span className="inline-block h-1 w-1 rounded-full bg-red-500" />{errors[field]}
+        <span className="inline-block h-1 w-1 rounded-full bg-red-500" />
+        {errors[field]}
       </p>
     ) : null;
 
-  const LabelCls = "text-[11px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide ";
+  const LabelCls =
+    "text-[11px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide ";
 
   if (!open) return null;
 
   return (
     <div className="fixed inset-0 z-100 flex items-center justify-center px-4">
-      <div className="absolute inset-0 bg-black/40 dark:bg-black/60 backdrop-blur-sm" onClick={() => !submitting && onClose()} />
+      <div
+        className="absolute inset-0 bg-black/40 dark:bg-black/60 backdrop-blur-sm"
+        onClick={() => !submitting && onClose()}
+      />
       <div className="relative bg-white dark:bg-[#1a1d26] rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-200">
         <div className="h-0.5 bg-linear-to-r from-indigo-400 via-indigo-500 to-violet-500" />
 
@@ -108,8 +161,12 @@ export function CreateUserModal({
               <UserPlus className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
             </div>
             <div>
-              <h3 className="font-semibold text-slate-900 dark:text-white text-sm">Create User</h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">A temporary password will be generated</p>
+              <h3 className="font-semibold text-slate-900 dark:text-white text-sm">
+                Create User
+              </h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                A temporary password will be generated
+              </p>
             </div>
           </div>
           <button
@@ -120,34 +177,74 @@ export function CreateUserModal({
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="px-6 pb-6 pt-5 space-y-4 overflow-y-auto max-h-[calc(100vh-180px)]" noValidate>
+        <form
+          onSubmit={handleSubmit}
+          className="px-6 pb-6 pt-5 space-y-4 overflow-y-auto max-h-[calc(100vh-180px)]"
+          noValidate
+        >
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className={LabelCls}>Full Name <span className="text-red-400">*</span></label>
-              <input value={form.name} onChange={(e) => handleChange("name", e.target.value)} placeholder="Jane Smith" type="text" className={inputCls("name")} />
+              <label className={LabelCls}>
+                Full Name <span className="text-red-400">*</span>
+              </label>
+              <input
+                value={form.name}
+                onChange={(e) => handleChange("name", e.target.value)}
+                placeholder="Jane Smith"
+                type="text"
+                className={inputCls("name")}
+              />
               <ErrMsg field="name" />
             </div>
             <div className="space-y-1.5 mb-1.5">
-              <label className={LabelCls}>Email <span className="text-red-400">*</span></label>
-              <input value={form.email} onChange={(e) => handleChange("email", e.target.value)} placeholder="jane@example.com" type="email" className={inputCls("email")} />
+              <label className={LabelCls}>
+                Email <span className="text-red-400">*</span>
+              </label>
+              <input
+                value={form.email}
+                onChange={(e) => handleChange("email", e.target.value)}
+                placeholder="jane@example.com"
+                type="email"
+                className={inputCls("email")}
+              />
               <ErrMsg field="email" />
             </div>
           </div>
 
           <div className="space-y-1.5">
-            <label className={LabelCls}>Role <span className="text-red-400">*</span></label>
-            <Select value={form.role} onValueChange={(val) => setForm((prev) => ({ ...prev, role: val, franchiseId: "", outletId: "" }))}>
+            <label className={LabelCls}>
+              Role <span className="text-red-400">*</span>
+            </label>
+            <Select
+              value={form.role}
+              onValueChange={(val) =>
+                setForm((prev) => ({
+                  ...prev,
+                  role: val,
+                  franchiseId: "",
+                  outletId: "",
+                }))
+              }
+            >
               <SelectTrigger className={triggerCls("role")}>
                 <SelectValue placeholder="Select a role..." />
               </SelectTrigger>
               <SelectContent>
                 {availableRoles.length === 0 ? (
                   <div className="px-3 py-4 text-center space-y-0.5">
-                    <p className="text-[12px] font-medium text-slate-500 dark:text-slate-400">No roles available</p>
-                    <p className="text-[11px] text-slate-400 dark:text-slate-500">Contact your system administrator.</p>
+                    <p className="text-[12px] font-medium text-slate-500 dark:text-slate-400">
+                      No roles available
+                    </p>
+                    <p className="text-[11px] text-slate-400 dark:text-slate-500">
+                      Contact your system administrator.
+                    </p>
                   </div>
                 ) : (
-                  availableRoles.map((r) => <SelectItem key={r} value={r}>{r.replace(/_/g, " ")}</SelectItem>)
+                  availableRoles.map((r) => (
+                    <SelectItem key={r} value={r}>
+                      {r.replace(/_/g, " ")}
+                    </SelectItem>
+                  ))
                 )}
               </SelectContent>
             </Select>
@@ -156,19 +253,38 @@ export function CreateUserModal({
 
           {needsFranchise && (
             <div className="space-y-1.5">
-              <label className={LabelCls}>Franchise <span className="text-red-400">*</span></label>
-              <Select value={form.franchiseId} onValueChange={(val) => setForm((prev) => ({ ...prev, franchiseId: val, outletId: "" }))}>
+              <label className={LabelCls}>
+                Franchise <span className="text-red-400">*</span>
+              </label>
+              <Select
+                value={form.franchiseId}
+                onValueChange={(val) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    franchiseId: val,
+                    outletId: "",
+                  }))
+                }
+              >
                 <SelectTrigger className={triggerCls("franchiseId")}>
                   <SelectValue placeholder="Select a franchise..." />
                 </SelectTrigger>
                 <SelectContent>
                   {franchises.length === 0 ? (
                     <div className="px-3 py-4 text-center space-y-0.5">
-                      <p className="text-[12px] font-medium text-slate-500 dark:text-slate-400">No franchises found</p>
-                      <p className="text-[11px] text-slate-400 dark:text-slate-500">Please create a franchise first.</p>
+                      <p className="text-[12px] font-medium text-slate-500 dark:text-slate-400">
+                        No franchises found
+                      </p>
+                      <p className="text-[11px] text-slate-400 dark:text-slate-500">
+                        Please create a franchise first.
+                      </p>
                     </div>
                   ) : (
-                    franchises.map((f) => <SelectItem key={f._id} value={f._id}>{f.name}</SelectItem>)
+                    franchises.map((f) => (
+                      <SelectItem key={f._id} value={f._id}>
+                        {f.name}
+                      </SelectItem>
+                    ))
                   )}
                 </SelectContent>
               </Select>
@@ -178,19 +294,32 @@ export function CreateUserModal({
 
           {needsOutlet && (
             <div className="space-y-1.5">
-              <label className={LabelCls}>Outlet <span className="text-red-400">*</span></label>
-              <Select value={form.outletId} onValueChange={(val) => handleChange("outletId", val)}>
+              <label className={LabelCls}>
+                Outlet <span className="text-red-400">*</span>
+              </label>
+              <Select
+                value={form.outletId}
+                onValueChange={(val) => handleChange("outletId", val)}
+              >
                 <SelectTrigger className={triggerCls("outletId")}>
                   <SelectValue placeholder="Select an outlet..." />
                 </SelectTrigger>
                 <SelectContent>
                   {outletsForSelection.length === 0 ? (
                     <div className="px-3 py-4 text-center space-y-0.5">
-                      <p className="text-[12px] font-medium text-slate-500 dark:text-slate-400">No outlets found</p>
-                      <p className="text-[11px] text-slate-400 dark:text-slate-500">Please create an outlet first.</p>
+                      <p className="text-[12px] font-medium text-slate-500 dark:text-slate-400">
+                        No outlets found
+                      </p>
+                      <p className="text-[11px] text-slate-400 dark:text-slate-500">
+                        Please create an outlet first.
+                      </p>
                     </div>
                   ) : (
-                    outletsForSelection.map((o) => <SelectItem key={o._id} value={o._id}>{o.name}</SelectItem>)
+                    outletsForSelection.map((o) => (
+                      <SelectItem key={o._id} value={o._id}>
+                        {o.name}
+                      </SelectItem>
+                    ))
                   )}
                 </SelectContent>
               </Select>
@@ -212,7 +341,13 @@ export function CreateUserModal({
               disabled={submitting}
               className="flex-1 h-10 rounded-xl bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white text-sm font-medium shadow-lg shadow-indigo-500/20 transition-all flex items-center justify-center gap-2"
             >
-              {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <><UserPlus className="w-4 h-4" /> Create User</>}
+              {submitting ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <>
+                  <UserPlus className="w-4 h-4" /> Create User
+                </>
+              )}
             </button>
           </div>
         </form>

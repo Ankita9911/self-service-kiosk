@@ -13,23 +13,57 @@ interface Props {
 function getServingsInfo(recipe: Recipe) {
   const available = recipe.ingredients.reduce((min, row) => {
     if (typeof row.ingredientId !== "object" || row.quantity <= 0) return min;
-    return Math.min(min, Math.floor(row.ingredientId.currentStock / row.quantity));
+    return Math.min(
+      min,
+      Math.floor(row.ingredientId.currentStock / row.quantity),
+    );
   }, Number.POSITIVE_INFINITY);
 
-  if (!Number.isFinite(available)) return { label: "Linked", className: "bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400" };
-  if (available <= 0) return { label: "Out of stock", className: "bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400" };
-  if (available <= 5) return { label: `${available} servings`, className: "bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400" };
-  return { label: `${available} servings`, className: "bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" };
+  if (!Number.isFinite(available))
+    return {
+      label: "Linked",
+      className:
+        "bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400",
+    };
+  if (available <= 0)
+    return {
+      label: "Out of stock",
+      className: "bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400",
+    };
+  if (available <= 5)
+    return {
+      label: `${available} servings`,
+      className:
+        "bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400",
+    };
+  return {
+    label: `${available} servings`,
+    className:
+      "bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
+  };
 }
 
-export function RecipeTableRow({ recipe, index, onEdit, onDelete, showActions = true }: Props) {
+export function RecipeTableRow({
+  recipe,
+  index,
+  onEdit,
+  onDelete,
+  showActions = true,
+}: Props) {
   const menuItemName =
-    typeof recipe.menuItemId === "object" ? recipe.menuItemId.name : recipe.menuItemId;
-  const { label: stockLabel, className: stockClassName } = getServingsInfo(recipe);
+    typeof recipe.menuItemId === "object"
+      ? recipe.menuItemId.name
+      : recipe.menuItemId;
+  const { label: stockLabel, className: stockClassName } =
+    getServingsInfo(recipe);
 
-  const ingredientNames = recipe.ingredients.slice(0, 3).map((ri) =>
-    typeof ri.ingredientId === "object" ? ri.ingredientId.name : ri.ingredientId
-  );
+  const ingredientNames = recipe.ingredients
+    .slice(0, 3)
+    .map((ri) =>
+      typeof ri.ingredientId === "object"
+        ? ri.ingredientId.name
+        : ri.ingredientId,
+    );
 
   return (
     <tr className="group hover:bg-indigo-50/30 dark:hover:bg-indigo-500/4 transition-colors">
@@ -89,7 +123,9 @@ export function RecipeTableRow({ recipe, index, onEdit, onDelete, showActions = 
 
       {/* Availability */}
       <td className="px-5 py-3.5">
-        <span className={`inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full ${stockClassName}`}>
+        <span
+          className={`inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full ${stockClassName}`}
+        >
           <Package className="w-3 h-3" />
           {stockLabel}
         </span>
@@ -99,7 +135,10 @@ export function RecipeTableRow({ recipe, index, onEdit, onDelete, showActions = 
       <td className="px-5 py-3.5">
         {showActions && (
           <div className="flex justify-end">
-            <RecipeRowMenu onEdit={() => onEdit(recipe)} onDelete={() => onDelete(recipe)} />
+            <RecipeRowMenu
+              onEdit={() => onEdit(recipe)}
+              onDelete={() => onDelete(recipe)}
+            />
           </div>
         )}
       </td>

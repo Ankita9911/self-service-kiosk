@@ -8,11 +8,26 @@ import { LayoutCustomizer } from "../components/LayoutCustomizer";
 import { QuickCard } from "../components/QuickCard";
 import { DASHBOARD_CARDS } from "../config/Analytic.config";
 
-import { SuperAdminView, SUPER_ADMIN_WIDGETS } from "../components/SuperAdminView";
-import { FranchiseAdminView, FRANCHISE_ADMIN_WIDGETS } from "../components/FranchiseAdminView";
-import { OutletManagerView, OUTLET_MANAGER_WIDGETS } from "../components/OutletManagerView";
-import { KitchenStaffView, KITCHEN_STAFF_WIDGETS } from "../components/KitchenStaffView";
-import { PickupStaffView, PICKUP_STAFF_WIDGETS } from "../components/PickupStaffView";
+import {
+  SuperAdminView,
+  SUPER_ADMIN_WIDGETS,
+} from "../components/SuperAdminView";
+import {
+  FranchiseAdminView,
+  FRANCHISE_ADMIN_WIDGETS,
+} from "../components/FranchiseAdminView";
+import {
+  OutletManagerView,
+  OUTLET_MANAGER_WIDGETS,
+} from "../components/OutletManagerView";
+import {
+  KitchenStaffView,
+  KITCHEN_STAFF_WIDGETS,
+} from "../components/KitchenStaffView";
+import {
+  PickupStaffView,
+  PICKUP_STAFF_WIDGETS,
+} from "../components/PickupStaffView";
 
 import type {
   SuperAdminAnalytics,
@@ -34,33 +49,72 @@ const EMPTY_DATA: Record<string, unknown> = {
   SUPER_ADMIN: {
     role: "SUPER_ADMIN",
     summary: {
-      totalFranchises: 0, activeFranchises: 0, inactiveFranchises: 0,
-      totalOutlets: 0, activeOutlets: 0, inactiveOutlets: 0,
-      totalDevices: 0, activeDevices: 0, inactiveDevices: 0,
-      totalUsers: 0, usersByRole: {},
+      totalFranchises: 0,
+      activeFranchises: 0,
+      inactiveFranchises: 0,
+      totalOutlets: 0,
+      activeOutlets: 0,
+      inactiveOutlets: 0,
+      totalDevices: 0,
+      activeDevices: 0,
+      inactiveDevices: 0,
+      totalUsers: 0,
+      usersByRole: {},
     },
-    franchiseGrowth: [], outletsByFranchise: [], devicesByOutlet: [],
-    recentFranchises: [], recentOutlets: [],
+    franchiseGrowth: [],
+    outletsByFranchise: [],
+    devicesByOutlet: [],
+    recentFranchises: [],
+    recentOutlets: [],
   },
   FRANCHISE_ADMIN: {
     role: "FRANCHISE_ADMIN",
-    summary: { totalRevenue: 0, totalOrders: 0, avgOrderValue: 0, totalOutlets: 0, totalUsers: 0, cancellationRate: 0 },
-    revenueTrend: [], outletBreakdown: [], topItems: [], categoryRevenue: [], statusBreakdown: {},
+    summary: {
+      totalRevenue: 0,
+      totalOrders: 0,
+      avgOrderValue: 0,
+      totalOutlets: 0,
+      totalUsers: 0,
+      cancellationRate: 0,
+    },
+    revenueTrend: [],
+    outletBreakdown: [],
+    topItems: [],
+    categoryRevenue: [],
+    statusBreakdown: {},
   },
   OUTLET_MANAGER: {
     role: "OUTLET_MANAGER",
-    summary: { revenue: 0, orders: 0, avgOrderValue: 0, cancellationRate: 0, peakHour: null },
-    statusBreakdown: {}, ordersPerHour: [], revenueTrend: [], topItems: [], categoryRevenue: [],
+    summary: {
+      revenue: 0,
+      orders: 0,
+      avgOrderValue: 0,
+      cancellationRate: 0,
+      peakHour: null,
+    },
+    statusBreakdown: {},
+    ordersPerHour: [],
+    revenueTrend: [],
+    topItems: [],
+    categoryRevenue: [],
   },
   KITCHEN_STAFF: {
     role: "KITCHEN_STAFF",
-    queueCount: 0, completedToday: 0, peakHour: null,
-    ordersPerHour: [], oldestPendingOrder: null, avgPrepTimeMinutes: null,
+    queueCount: 0,
+    completedToday: 0,
+    peakHour: null,
+    ordersPerHour: [],
+    oldestPendingOrder: null,
+    avgPrepTimeMinutes: null,
   },
   PICKUP_STAFF: {
     role: "PICKUP_STAFF",
-    readyCount: 0, readyOrders: [], handedOverToday: 0,
-    peakHour: null, ordersPerHour: [], avgPickupDelayMinutes: null,
+    readyCount: 0,
+    readyOrders: [],
+    handedOverToday: 0,
+    peakHour: null,
+    ordersPerHour: [],
+    avgPickupDelayMinutes: null,
   },
 };
 
@@ -91,15 +145,18 @@ export default function AnalyticsPage() {
     day: "numeric",
   });
 
-  const visibleCards = DASHBOARD_CARDS.filter((c) => hasPermission(c.permission));
-  const resolvedData = data ?? (EMPTY_DATA[role] ?? null);
+  const visibleCards = DASHBOARD_CARDS.filter((c) =>
+    hasPermission(c.permission),
+  );
+  const resolvedData = data ?? EMPTY_DATA[role] ?? null;
 
   return (
     <div className="space-y-6">
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-[22px] font-bold text-slate-800 dark:text-white tracking-tight leading-none">
-            {getGreeting()}, <span className="text-indigo-500">{firstName}</span> 👋
+            {getGreeting()},{" "}
+            <span className="text-indigo-500">{firstName}</span> 👋
           </h1>
           <p className="text-[13px] text-slate-400 dark:text-slate-500 mt-1.5">
             Real-time insights for smarter decisions
@@ -109,7 +166,9 @@ export default function AnalyticsPage() {
         <div className="flex items-center gap-2 shrink-0">
           <div className="hidden sm:flex items-center gap-2 px-3.5 py-2 bg-white dark:bg-[#161920] border border-slate-100 dark:border-white/6 rounded-xl">
             <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="text-[12px] font-medium text-slate-600 dark:text-slate-300">{todayLabel}</span>
+            <span className="text-[12px] font-medium text-slate-600 dark:text-slate-300">
+              {todayLabel}
+            </span>
           </div>
 
           <button
@@ -117,7 +176,9 @@ export default function AnalyticsPage() {
             disabled={loading}
             className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white dark:bg-[#161920] border border-slate-100 dark:border-white/8 text-[12.5px] font-medium text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:border-slate-200 dark:hover:border-white/15 disabled:opacity-50 transition"
           >
-            <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
+            <RefreshCw
+              className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`}
+            />
             <span className="hidden sm:inline">Refresh</span>
           </button>
 
@@ -141,11 +202,15 @@ export default function AnalyticsPage() {
               Quick Access
             </span>
           </div>
-          <div className={`grid gap-4 ${
-            visibleCards.length === 1 ? "grid-cols-1" :
-            visibleCards.length === 2 ? "grid-cols-1 sm:grid-cols-2" :
-            "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
-          }`}>
+          <div
+            className={`grid gap-4 ${
+              visibleCards.length === 1
+                ? "grid-cols-1"
+                : visibleCards.length === 2
+                  ? "grid-cols-1 sm:grid-cols-2"
+                  : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
+            }`}
+          >
             {visibleCards.map((card) => (
               <QuickCard
                 key={card.title}
@@ -170,7 +235,9 @@ export default function AnalyticsPage() {
             <p className="text-[13.5px] font-semibold text-red-800 dark:text-red-300">
               Failed to load analytics
             </p>
-            <p className="text-[12px] text-red-500 dark:text-red-400 mt-0.5">{error}</p>
+            <p className="text-[12px] text-red-500 dark:text-red-400 mt-0.5">
+              {error}
+            </p>
           </div>
           <button
             onClick={refetch}
@@ -184,19 +251,45 @@ export default function AnalyticsPage() {
       {!error && resolvedData && (
         <div className={loading ? "" : "animate-fade-in"}>
           {role === "SUPER_ADMIN" && (
-            <SuperAdminView data={resolvedData as SuperAdminAnalytics} visibleIds={orderedVisibleIds} loading={loading} period={period} onPeriodChange={setPeriod} />
+            <SuperAdminView
+              data={resolvedData as SuperAdminAnalytics}
+              visibleIds={orderedVisibleIds}
+              loading={loading}
+              period={period}
+              onPeriodChange={setPeriod}
+            />
           )}
           {role === "FRANCHISE_ADMIN" && (
-            <FranchiseAdminView data={resolvedData as FranchiseAdminAnalytics} visibleIds={orderedVisibleIds} loading={loading} period={period} onPeriodChange={setPeriod} />
+            <FranchiseAdminView
+              data={resolvedData as FranchiseAdminAnalytics}
+              visibleIds={orderedVisibleIds}
+              loading={loading}
+              period={period}
+              onPeriodChange={setPeriod}
+            />
           )}
           {role === "OUTLET_MANAGER" && (
-            <OutletManagerView data={resolvedData as OutletManagerAnalytics} visibleIds={orderedVisibleIds} loading={loading} period={period} onPeriodChange={setPeriod} />
+            <OutletManagerView
+              data={resolvedData as OutletManagerAnalytics}
+              visibleIds={orderedVisibleIds}
+              loading={loading}
+              period={period}
+              onPeriodChange={setPeriod}
+            />
           )}
           {role === "KITCHEN_STAFF" && (
-            <KitchenStaffView data={resolvedData as KitchenStaffAnalytics} visibleIds={orderedVisibleIds} loading={loading} />
+            <KitchenStaffView
+              data={resolvedData as KitchenStaffAnalytics}
+              visibleIds={orderedVisibleIds}
+              loading={loading}
+            />
           )}
           {role === "PICKUP_STAFF" && (
-            <PickupStaffView data={resolvedData as PickupStaffAnalytics} visibleIds={orderedVisibleIds} loading={loading} />
+            <PickupStaffView
+              data={resolvedData as PickupStaffAnalytics}
+              visibleIds={orderedVisibleIds}
+              loading={loading}
+            />
           )}
         </div>
       )}

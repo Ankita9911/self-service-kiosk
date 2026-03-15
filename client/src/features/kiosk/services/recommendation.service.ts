@@ -37,14 +37,14 @@ export async function fetchTrending(options?: {
 
   const response = await kioskAxios.get<{ data: RecommendedItem[] }>(
     "/kiosk/recommendations/trending",
-    { params }
+    { params },
   );
   return response.data.data;
 }
 
 export async function fetchFrequentlyBoughtTogether(
   itemIds: string[],
-  options?: { limit?: number; windowDays?: number }
+  options?: { limit?: number; windowDays?: number },
 ): Promise<RecommendedItem[]> {
   if (!itemIds.length) return [];
 
@@ -54,7 +54,7 @@ export async function fetchFrequentlyBoughtTogether(
 
   const response = await kioskAxios.get<{ data: RecommendedItem[] }>(
     "/kiosk/recommendations/frequently-bought-together",
-    { params }
+    { params },
   );
   return response.data.data;
 }
@@ -62,17 +62,18 @@ export async function fetchFrequentlyBoughtTogether(
 export async function fetchCompleteMeal(
   cartItemIds: string[],
   cartCategoryIds: string[],
-  options?: { limit?: number; windowDays?: number }
+  options?: { limit?: number; windowDays?: number },
 ): Promise<CompleteMealResult> {
   const params: Record<string, string> = {};
   if (cartItemIds.length) params.cartItemIds = cartItemIds.join(",");
-  if (cartCategoryIds.length) params.cartCategoryIds = cartCategoryIds.join(",");
+  if (cartCategoryIds.length)
+    params.cartCategoryIds = cartCategoryIds.join(",");
   if (options?.limit) params.limit = String(options.limit);
   if (options?.windowDays) params.windowDays = String(options.windowDays);
 
   const response = await kioskAxios.get<{ data: CompleteMealResult }>(
     "/kiosk/recommendations/complete-meal",
-    { params }
+    { params },
   );
   return response.data.data;
 }

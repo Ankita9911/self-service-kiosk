@@ -14,8 +14,11 @@ export function DeleteItemModal({ open, item, onClose, onConfirm }: Props) {
 
   async function handleConfirm() {
     setIsDeleting(true);
-    try { await onConfirm(); }
-    finally { setIsDeleting(false); }
+    try {
+      await onConfirm();
+    } finally {
+      setIsDeleting(false);
+    }
   }
 
   return (
@@ -28,11 +31,18 @@ export function DeleteItemModal({ open, item, onClose, onConfirm }: Props) {
               <Trash2 className="w-4 h-4 text-red-500 dark:text-red-400" />
             </div>
             <div>
-              <h3 className="text-sm font-bold text-slate-800 dark:text-white">Delete Item</h3>
-              <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">This action cannot be undone</p>
+              <h3 className="text-sm font-bold text-slate-800 dark:text-white">
+                Delete Item
+              </h3>
+              <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">
+                This action cannot be undone
+              </p>
             </div>
           </div>
-          <button onClick={onClose} className="h-7 w-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/8 transition-colors">
+          <button
+            onClick={onClose}
+            className="h-7 w-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/8 transition-colors"
+          >
             <X className="w-3.5 h-3.5" />
           </button>
         </div>
@@ -42,7 +52,9 @@ export function DeleteItemModal({ open, item, onClose, onConfirm }: Props) {
           <div className="flex items-start gap-3 p-4 rounded-xl bg-red-50 dark:bg-red-500/8 border border-red-100 dark:border-red-500/20">
             <AlertTriangle className="w-4 h-4 text-red-500 dark:text-red-400 mt-0.5 shrink-0" />
             <p className="text-sm text-red-700 dark:text-red-300 leading-relaxed">
-              Are you sure you want to remove <span className="font-semibold">&quot;{item?.name}&quot;</span> from the menu?
+              Are you sure you want to remove{" "}
+              <span className="font-semibold">&quot;{item?.name}&quot;</span>{" "}
+              from the menu?
             </p>
           </div>
 
@@ -61,7 +73,9 @@ export function DeleteItemModal({ open, item, onClose, onConfirm }: Props) {
               {isDeleting ? (
                 <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
               ) : (
-                <><Trash2 className="w-3.5 h-3.5" /> Delete Item</>
+                <>
+                  <Trash2 className="w-3.5 h-3.5" /> Delete Item
+                </>
               )}
             </button>
           </div>

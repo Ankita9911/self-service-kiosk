@@ -14,23 +14,33 @@ export function KitchenTopBar({ totalActive, lastUpdated, onRefresh }: Props) {
           <ChefHat className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
         </div>
         <div>
-          <h1 className="text-sm font-semibold text-slate-900 dark:text-white leading-tight">Kitchen Display</h1>
+          <h1 className="text-sm font-semibold text-slate-900 dark:text-white leading-tight">
+            Kitchen Display
+          </h1>
           <div className="flex items-center gap-1.5 mt-0.5">
             <Wifi className="w-2.5 h-2.5 text-emerald-500" />
-            <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium">Live</span>
+            <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium">
+              Live
+            </span>
           </div>
         </div>
         {totalActive > 0 && (
           <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20">
             <span className="h-1.5 w-1.5 rounded-full bg-red-500 animate-pulse" />
-            <span className="text-xs font-semibold text-red-600 dark:text-red-400">{totalActive} active</span>
+            <span className="text-xs font-semibold text-red-600 dark:text-red-400">
+              {totalActive} active
+            </span>
           </div>
         )}
       </div>
 
       <div className="flex items-center gap-3">
         <span className="text-[11px] text-slate-400 dark:text-slate-500">
-          Updated {lastUpdated.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+          Updated{" "}
+          {lastUpdated.toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          })}
         </span>
         <button
           onClick={onRefresh}

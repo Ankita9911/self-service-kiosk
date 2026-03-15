@@ -27,6 +27,8 @@ export function useKioskForceLogout() {
       // silently ignore
     });
 
-    return () => { socket.disconnect(); };
+    return () => {
+      socket.disconnect();
+    };
   }, [navigate]);
 }
