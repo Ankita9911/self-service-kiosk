@@ -1,14 +1,11 @@
 import mongoose from "mongoose";
+import { FRANCHISE_STATUS } from "./franchise.constants.js";
 
 const { Schema } = mongoose;
 
 const franchiseSchema = new Schema(
   {
-    name: {
-      type: String,
-      required: true,
-      trim: true,
-    },
+    name: { type: String, required: true, trim: true },
 
     brandCode: {
       type: String,
@@ -21,38 +18,29 @@ const franchiseSchema = new Schema(
 
     contactEmail: {
       type: String,
-      required:true,
+      required: true,
       trim: true,
       lowercase: true,
       sparse: true,
       index: true,
     },
 
-    contactPhone: {
-      type: String,
-      trim: true,
-    },
+    contactPhone: { type: String, trim: true },
 
     status: {
       type: String,
-      enum: ["ACTIVE", "INACTIVE"],
-      default: "ACTIVE",
+      enum: Object.values(FRANCHISE_STATUS),
+      default: FRANCHISE_STATUS.ACTIVE,
       index: true,
     },
-    isDeleted: {
-  type: Boolean,
-  default: false,
-  index: true,
-}
+
+    isDeleted: { type: Boolean, default: false, index: true },
   },
-  {
-    timestamps: true,
-  }
+  { timestamps: true }
 );
 
 franchiseSchema.index({ status: 1 });
 franchiseSchema.index({ brandCode: 1 }, { unique: true });
-
 
 const Franchise = mongoose.model("Franchise", franchiseSchema);
 

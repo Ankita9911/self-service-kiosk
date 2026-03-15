@@ -1,30 +1,19 @@
 import mongoose from "mongoose";
+import {
+  ORDER_STATUS,
+  PAYMENT_METHOD,
+  PAYMENT_STATUS,
+} from "./order.constants.js";
 
 const { Schema } = mongoose;
 
 const orderItemSchema = new Schema(
   {
-    itemId: {
-      type: Schema.Types.ObjectId,
-      required: true,
-    },
-    nameSnapshot: {
-      type: String,
-      required: true,
-    },
-    priceSnapshot: {
-      type: Number,
-      required: true,
-    },
-    quantity: {
-      type: Number,
-      required: true,
-      min: 1,
-    },
-    lineTotal: {
-      type: Number,
-      required: true,
-    },
+    itemId: { type: Schema.Types.ObjectId, required: true },
+    nameSnapshot: { type: String, required: true },
+    priceSnapshot: { type: Number, required: true },
+    quantity: { type: Number, required: true, min: 1 },
+    lineTotal: { type: Number, required: true },
     customizations: [
       {
         itemId: { type: Schema.Types.ObjectId, required: true },
@@ -41,62 +30,40 @@ const orderItemSchema = new Schema(
 
 const orderSchema = new Schema(
   {
-    franchiseId: {
-      type: Schema.Types.ObjectId,
-      required: true,
-      index: true,
-    },
-    outletId: {
-      type: Schema.Types.ObjectId,
-      required: true,
-      index: true,
-    },
+    franchiseId: { type: Schema.Types.ObjectId, required: true, index: true },
+    outletId:    { type: Schema.Types.ObjectId, required: true, index: true },
 
-    orderNumber: {
-      type: Number,
-      required: true,
-    },
-
-    clientOrderId: {
-      type: String,
-      required: true,
-    },
+    orderNumber:   { type: Number, required: true },
+    clientOrderId: { type: String, required: true },
 
     items: [orderItemSchema],
 
-    totalAmount: {
-      type: Number,
-      required: true,
-    },
+    totalAmount: { type: Number, required: true },
 
     paymentMethod: {
       type: String,
-      enum: ["CASH", "CARD", "UPI"],
+      enum: Object.values(PAYMENT_METHOD),
       required: true,
     },
 
     paymentStatus: {
       type: String,
-      enum: ["PENDING", "SUCCESS"],
-      default: "SUCCESS",
+      enum: Object.values(PAYMENT_STATUS),
+      default: PAYMENT_STATUS.SUCCESS,
     },
 
     status: {
       type: String,
-      enum: ["CREATED", "IN_KITCHEN", "READY", "COMPLETED", "PICKED_UP"],
-      default: "CREATED",
+      enum: Object.values(ORDER_STATUS),
+      default: ORDER_STATUS.CREATED,
     },
 
-    createdByRole: {
-      type: String,
-      required: true,
-    },
+    createdByRole: { type: String, required: true },
   },
   { timestamps: true }
 );
 
 orderSchema.index({ outletId: 1, clientOrderId: 1 }, { unique: true });
-
 orderSchema.index({ outletId: 1, orderNumber: 1 }, { unique: true });
 
 const Order = mongoose.model("Order", orderSchema);

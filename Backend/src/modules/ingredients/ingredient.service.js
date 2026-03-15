@@ -3,43 +3,54 @@ import { getRedisClient } from "../../core/cache/redis.client.js";
 import { buildTenantKey } from "../../core/cache/cache.utils.js";
 import { emitOutletEvent } from "../../realtime/realtime.manager.js";
 import AppError from "../../shared/errors/AppError.js";
+import { toBoundedLimit } from "../../shared/utils/pagination.js";
 
 const CACHE_TTL = 300;
 const DEFAULT_LIMIT = 20;
-const MAX_LIMIT = 100;
 
-function toBoundedLimit(value) {
-  const parsed = Number.parseInt(String(value ?? DEFAULT_LIMIT), 10);
-  if (Number.isNaN(parsed)) return DEFAULT_LIMIT;
-  return Math.min(Math.max(parsed, 1), MAX_LIMIT);
+// ─── Private helpers ──────────────────────────────────────────────────────────
+
+async function invalidateIngredientCache(tenant) {
+  try {
+    const redis = getRedisClient();
+    await redis.del(buildTenantKey("ingredients", tenant));
+  } catch {
+    // Redis failure is non-fatal
+  }
 }
 
-function encodeCursor(payload) {
+function buildSortSpec(sortBy, sortOrder) {
+  const order = sortOrder === "asc" ? 1 : -1;
+  const allowedFields = ["createdAt", "currentStock", "minThreshold", "name"];
+  const field = allowedFields.includes(sortBy) ? sortBy : "createdAt";
+  return { field, order };
+}
+
+// Ingredient list uses multi-field sort cursors — more complex than the standard
+// createdAt cursor, so these helpers are ingredient-specific and stay here.
+function encodeSortCursor(payload) {
   return Buffer.from(JSON.stringify(payload)).toString("base64url");
 }
 
-function decodeCursor(cursor) {
+function decodeSortCursor(cursor, sortField) {
   if (!cursor) return null;
   try {
     const decoded = JSON.parse(Buffer.from(cursor, "base64url").toString("utf-8"));
-    if (!decoded?.createdAt || !decoded?._id) return null;
-    const createdAt = new Date(decoded.createdAt);
-    if (Number.isNaN(createdAt.getTime())) return null;
-    return { createdAt, _id: decoded._id };
+    if (!decoded?._id) return null;
+    if (sortField === "createdAt") {
+      if (!decoded.createdAt) return null;
+      const createdAt = new Date(decoded.createdAt);
+      if (Number.isNaN(createdAt.getTime())) return null;
+      return { createdAt, _id: decoded._id };
+    }
+    if (decoded[sortField] === undefined) return null;
+    return { [sortField]: decoded[sortField], _id: decoded._id };
   } catch {
     return null;
   }
 }
 
-async function invalidateIngredientCache(tenant) {
-  try {
-    const redis = getRedisClient();
-    const cacheKey = buildTenantKey("ingredients", tenant);
-    await redis.del(cacheKey);
-  } catch (_) {
-    // Redis failure is non-fatal
-  }
-}
+// ─── Service functions ────────────────────────────────────────────────────────
 
 export async function createIngredient(data, tenant) {
   const existing = await Ingredient.findOne({
@@ -67,58 +78,18 @@ export async function createIngredient(data, tenant) {
   });
 
   await invalidateIngredientCache(tenant);
-  emitOutletEvent(tenant.outletId, "ingredient:updated", {
-    type: "INGREDIENT_CREATE",
-    ingredientId: String(ingredient._id),
-  });
-  emitOutletEvent(tenant.outletId, "inventory:updated", {
-    type: "INGREDIENT_CREATE",
-    ingredientId: String(ingredient._id),
-  });
+  emitOutletEvent(tenant.outletId, "ingredient:updated", { type: "INGREDIENT_CREATE", ingredientId: String(ingredient._id) });
+  emitOutletEvent(tenant.outletId, "inventory:updated", { type: "INGREDIENT_CREATE", ingredientId: String(ingredient._id) });
   return ingredient;
 }
 
-function buildSortSpec(sortBy, sortOrder) {
-  const order = sortOrder === "asc" ? 1 : -1;
-  const allowedFields = ["createdAt", "currentStock", "minThreshold", "name"];
-  const field = allowedFields.includes(sortBy) ? sortBy : "createdAt";
-  return { field, order };
-}
-
-function encodeSortCursor(payload) {
-  return Buffer.from(JSON.stringify(payload)).toString("base64url");
-}
-
-function decodeSortCursor(cursor, sortField) {
-  if (!cursor) return null;
-  try {
-    const decoded = JSON.parse(Buffer.from(cursor, "base64url").toString("utf-8"));
-    if (!decoded?._id) return null;
-    if (sortField === "createdAt") {
-      if (!decoded.createdAt) return null;
-      const createdAt = new Date(decoded.createdAt);
-      if (Number.isNaN(createdAt.getTime())) return null;
-      return { createdAt, _id: decoded._id };
-    }
-    if (decoded[sortField] === undefined) return null;
-    return { [sortField]: decoded[sortField], _id: decoded._id };
-  } catch {
-    return null;
-  }
-}
-
 export async function getIngredients(tenant, { search, unit, lowStock, cursor, limit, sortBy, sortOrder } = {}) {
-  const pageLimit = toBoundedLimit(limit);
+  const pageLimit = toBoundedLimit(limit, DEFAULT_LIMIT);
   const { field: sortField, order: sortOrderNum } = buildSortSpec(sortBy, sortOrder);
 
-  // Base tenant filter — always applied
-  const tenantFilter = {
-    franchiseId: tenant.franchiseId,
-    isDeleted: false,
-  };
+  const tenantFilter = { franchiseId: tenant.franchiseId, isDeleted: false };
   if (tenant.outletId) tenantFilter.outletId = tenant.outletId;
 
-  // Build search/filter constraints for the paginated query
   const baseFilter = { ...tenantFilter };
   if (unit && unit !== "ALL") baseFilter.unit = unit;
   if (search?.trim()) baseFilter.name = { $regex: search.trim(), $options: "i" };
@@ -154,44 +125,25 @@ export async function getIngredients(tenant, { search, unit, lowStock, cursor, l
     : { [sortField]: sortOrderNum, _id: -1 };
 
   const [itemsPlusOne, totalMatching, totalItems, lowStockItems] = await Promise.all([
-    Ingredient.find(queryFilter)
-      .sort(sortSpec)
-      .limit(pageLimit + 1)
-      .lean(),
+    Ingredient.find(queryFilter).sort(sortSpec).limit(pageLimit + 1).lean(),
     Ingredient.countDocuments(baseFilter),
-    // Stats always use the raw tenant filter (no search/lowStock)
     Ingredient.countDocuments(tenantFilter),
-    Ingredient.countDocuments({
-      ...tenantFilter,
-      $expr: { $lt: ["$currentStock", "$minThreshold"] },
-    }),
+    Ingredient.countDocuments({ ...tenantFilter, $expr: { $lt: ["$currentStock", "$minThreshold"] } }),
   ]);
 
   const hasNext = itemsPlusOne.length > pageLimit;
   const items = hasNext ? itemsPlusOne.slice(0, pageLimit) : itemsPlusOne;
 
   const lastItem = items[items.length - 1];
-  const nextCursor =
-    hasNext && lastItem
-      ? encodeSortCursor({
-        [sortField]: lastItem[sortField],
-        _id: lastItem._id,
-      })
-      : null;
+  const nextCursor = hasNext && lastItem
+    ? encodeSortCursor({ [sortField]: lastItem[sortField], _id: lastItem._id })
+    : null;
 
   return {
     items,
     meta: {
-      pagination: {
-        limit: pageLimit,
-        hasNext,
-        nextCursor,
-        totalMatching,
-      },
-      stats: {
-        totalItems,
-        lowStockItems,
-      },
+      pagination: { limit: pageLimit, hasNext, nextCursor, totalMatching },
+      stats: { totalItems, lowStockItems },
     },
   };
 }
@@ -219,12 +171,7 @@ export async function updateIngredient(id, data, tenant) {
   }
 
   const ingredient = await Ingredient.findOneAndUpdate(
-    {
-      _id: id,
-      franchiseId: tenant.franchiseId,
-      outletId: tenant.outletId,
-      isDeleted: false,
-    },
+    { _id: id, franchiseId: tenant.franchiseId, outletId: tenant.outletId, isDeleted: false },
     { $set: update },
     { new: true, runValidators: true }
   );
@@ -234,25 +181,14 @@ export async function updateIngredient(id, data, tenant) {
   }
 
   await invalidateIngredientCache(tenant);
-  emitOutletEvent(tenant.outletId, "ingredient:updated", {
-    type: "INGREDIENT_UPDATE",
-    ingredientId: String(ingredient._id),
-  });
-  emitOutletEvent(tenant.outletId, "inventory:updated", {
-    type: "INGREDIENT_UPDATE",
-    ingredientId: String(ingredient._id),
-  });
+  emitOutletEvent(tenant.outletId, "ingredient:updated", { type: "INGREDIENT_UPDATE", ingredientId: String(ingredient._id) });
+  emitOutletEvent(tenant.outletId, "inventory:updated", { type: "INGREDIENT_UPDATE", ingredientId: String(ingredient._id) });
   return ingredient;
 }
 
 export async function deleteIngredient(id, tenant) {
   const ingredient = await Ingredient.findOneAndUpdate(
-    {
-      _id: id,
-      franchiseId: tenant.franchiseId,
-      outletId: tenant.outletId,
-      isDeleted: false,
-    },
+    { _id: id, franchiseId: tenant.franchiseId, outletId: tenant.outletId, isDeleted: false },
     { $set: { isDeleted: true } },
     { new: true }
   );
@@ -262,24 +198,14 @@ export async function deleteIngredient(id, tenant) {
   }
 
   await invalidateIngredientCache(tenant);
-  emitOutletEvent(tenant.outletId, "ingredient:updated", {
-    type: "INGREDIENT_DELETE",
-    ingredientId: String(ingredient._id),
-  });
-  emitOutletEvent(tenant.outletId, "inventory:updated", {
-    type: "INGREDIENT_DELETE",
-    ingredientId: String(ingredient._id),
-  });
+  emitOutletEvent(tenant.outletId, "ingredient:updated", { type: "INGREDIENT_DELETE", ingredientId: String(ingredient._id) });
+  emitOutletEvent(tenant.outletId, "inventory:updated", { type: "INGREDIENT_DELETE", ingredientId: String(ingredient._id) });
   return { deleted: true, id };
 }
 
 export async function adjustStock(id, { quantity, note }, tenant) {
   if (typeof quantity !== "number" || quantity === 0) {
-    throw new AppError(
-      "quantity must be a non-zero number",
-      400,
-      "INVALID_QUANTITY"
-    );
+    throw new AppError("quantity must be a non-zero number", 400, "INVALID_QUANTITY");
   }
 
   const ingredient = await Ingredient.findOneAndUpdate(
@@ -303,13 +229,7 @@ export async function adjustStock(id, { quantity, note }, tenant) {
   }
 
   await invalidateIngredientCache(tenant);
-  emitOutletEvent(tenant.outletId, "ingredient:updated", {
-    type: "INGREDIENT_STOCK_ADJUST",
-    ingredientId: String(ingredient._id),
-  });
-  emitOutletEvent(tenant.outletId, "inventory:updated", {
-    type: "INGREDIENT_STOCK_ADJUST",
-    ingredientId: String(ingredient._id),
-  });
+  emitOutletEvent(tenant.outletId, "ingredient:updated", { type: "INGREDIENT_STOCK_ADJUST", ingredientId: String(ingredient._id) });
+  emitOutletEvent(tenant.outletId, "inventory:updated", { type: "INGREDIENT_STOCK_ADJUST", ingredientId: String(ingredient._id) });
   return ingredient;
 }

@@ -4,38 +4,12 @@ import Outlet from "../outlets/outlet.model.js";
 import Device from "../devices/device.model.js";
 import { forceLogout, broadcastRefresh } from "../../realtime/realtime.manager.js";
 import AppError from "../../shared/errors/AppError.js";
+import { toBoundedLimit, encodeCursor, decodeCursor } from "../../shared/utils/pagination.js";
+import { FRANCHISE_STATUS } from "./franchise.constants.js";
 
 const DEFAULT_LIMIT = 10;
-const MAX_LIMIT = 100;
 
-function toBoundedLimit(value) {
-  const parsed = Number.parseInt(String(value ?? DEFAULT_LIMIT), 10);
-  if (Number.isNaN(parsed)) return DEFAULT_LIMIT;
-  return Math.min(Math.max(parsed, 1), MAX_LIMIT);
-}
-
-function encodeCursor(payload) {
-  return Buffer.from(JSON.stringify(payload)).toString("base64url");
-}
-
-function decodeCursor(cursor) {
-  if (!cursor) return null;
-
-  try {
-    const decoded = JSON.parse(Buffer.from(cursor, "base64url").toString("utf-8"));
-    if (!decoded?.createdAt || !decoded?._id) return null;
-
-    const createdAt = new Date(decoded.createdAt);
-    if (Number.isNaN(createdAt.getTime())) return null;
-
-    return {
-      createdAt,
-      _id: decoded._id,
-    };
-  } catch {
-    return null;
-  }
-}
+// ─── Service functions ────────────────────────────────────────────────────────
 
 export async function createFranchise(payload, user) {
   if (user.role !== "SUPER_ADMIN") {
@@ -45,11 +19,7 @@ export async function createFranchise(payload, user) {
   const { name, brandCode, contactEmail, contactPhone } = payload;
 
   if (!name || !brandCode) {
-    throw new AppError(
-      "Name and brandCode are required",
-      400,
-      "VALIDATION_ERROR"
-    );
+    throw new AppError("Name and brandCode are required", 400, "VALIDATION_ERROR");
   }
 
   const existing = await Franchise.findOne({
@@ -58,11 +28,7 @@ export async function createFranchise(payload, user) {
   });
 
   if (existing) {
-    throw new AppError(
-      "Brand code already exists",
-      409,
-      "BRAND_CODE_EXISTS"
-    );
+    throw new AppError("Brand code already exists", 409, "BRAND_CODE_EXISTS");
   }
 
   if (contactEmail) {
@@ -71,11 +37,7 @@ export async function createFranchise(payload, user) {
       isDeleted: false,
     });
     if (emailExists) {
-      throw new AppError(
-        "A franchise with this email already exists",
-        409,
-        "EMAIL_EXISTS"
-      );
+      throw new AppError("A franchise with this email already exists", 409, "EMAIL_EXISTS");
     }
   }
 
@@ -88,13 +50,14 @@ export async function createFranchise(payload, user) {
 
   return franchise;
 }
+
 export async function getFranchises(user, query = {}) {
   if (user.role !== "SUPER_ADMIN") {
     throw new AppError("Forbidden", 403, "FORBIDDEN");
   }
 
   const { search, status, cursor, limit } = query;
-  const pageLimit = toBoundedLimit(limit);
+  const pageLimit = toBoundedLimit(limit, DEFAULT_LIMIT);
   const baseFilter = { isDeleted: false };
 
   // Full-text search on name, brandCode and contactEmail
@@ -119,17 +82,13 @@ export async function getFranchises(user, query = {}) {
       }
     : null;
 
-  const queryFilter = cursorFilter
-    ? { $and: [baseFilter, cursorFilter] }
-    : baseFilter;
+  const queryFilter = cursorFilter ? { $and: [baseFilter, cursorFilter] } : baseFilter;
 
   const [franchisesPlusOne, totalMatching, totalFranchises, activeFranchises] = await Promise.all([
-    Franchise.find(queryFilter)
-      .sort({ createdAt: -1, _id: -1 })
-      .limit(pageLimit + 1),
+    Franchise.find(queryFilter).sort({ createdAt: -1, _id: -1 }).limit(pageLimit + 1),
     Franchise.countDocuments(baseFilter),
     Franchise.countDocuments({ isDeleted: false }),
-    Franchise.countDocuments({ isDeleted: false, status: "ACTIVE" }),
+    Franchise.countDocuments({ isDeleted: false, status: FRANCHISE_STATUS.ACTIVE }),
   ]);
 
   const hasNext = franchisesPlusOne.length > pageLimit;
@@ -143,16 +102,8 @@ export async function getFranchises(user, query = {}) {
   return {
     items: franchises,
     meta: {
-      pagination: {
-        limit: pageLimit,
-        hasNext,
-        nextCursor,
-        totalMatching,
-      },
-      stats: {
-        totalItems: totalFranchises,
-        activeItems: activeFranchises,
-      },
+      pagination: { limit: pageLimit, hasNext, nextCursor, totalMatching },
+      stats: { totalItems: totalFranchises, activeItems: activeFranchises },
     },
   };
 }
@@ -162,17 +113,10 @@ export async function getFranchiseById(id, user) {
     throw new AppError("Forbidden", 403, "FORBIDDEN");
   }
 
-  const franchise = await Franchise.findOne({
-    _id: id,
-    isDeleted: false,
-  });
+  const franchise = await Franchise.findOne({ _id: id, isDeleted: false });
 
   if (!franchise) {
-    throw new AppError(
-      "Franchise not found",
-      404,
-      "FRANCHISE_NOT_FOUND"
-    );
+    throw new AppError("Franchise not found", 404, "FRANCHISE_NOT_FOUND");
   }
 
   return franchise;
@@ -196,16 +140,11 @@ export async function updateFranchise(id, payload, user) {
       _id: { $ne: id },
     });
     if (emailExists) {
-      throw new AppError(
-        "A franchise with this email already exists",
-        409,
-        "EMAIL_EXISTS"
-      );
+      throw new AppError("A franchise with this email already exists", 409, "EMAIL_EXISTS");
     }
   }
 
   Object.assign(franchise, payload);
-
   await franchise.save();
 
   return franchise;
@@ -216,7 +155,7 @@ export async function setFranchiseStatus(id, status, user) {
     throw new AppError("Forbidden", 403, "FORBIDDEN");
   }
 
-  if (![ "ACTIVE", "INACTIVE" ].includes(status)) {
+  if (!Object.values(FRANCHISE_STATUS).includes(status)) {
     throw new AppError("Invalid status value", 400, "VALIDATION_ERROR");
   }
 
@@ -231,99 +170,46 @@ export async function setFranchiseStatus(id, status, user) {
     "_id"
   ).lean().then((docs) => docs.map((d) => d._id));
 
-  if (status === "INACTIVE") {
-    // Deactivate all outlets under the franchise
+  if (status === FRANCHISE_STATUS.INACTIVE) {
     await Outlet.updateMany(
       { franchiseId: franchise._id, isDeleted: false },
-      { $set: { status: "INACTIVE" } }
+      { $set: { status: FRANCHISE_STATUS.INACTIVE } }
     );
-
-    // Deactivate all users under the franchise / its outlets
     await User.updateMany(
-      {
-        $or: [
-          { franchiseId: franchise._id },
-          { outletId: { $in: outletIds } },
-        ],
-        isDeleted: false,
-      },
-      { $set: { status: "INACTIVE" } }
+      { $or: [{ franchiseId: franchise._id }, { outletId: { $in: outletIds } }], isDeleted: false },
+      { $set: { status: FRANCHISE_STATUS.INACTIVE } }
     );
-
-    // Deactivate all devices under the franchise / its outlets
     await Device.updateMany(
-      {
-        $or: [
-          { franchiseId: franchise._id },
-          { outletId: { $in: outletIds } },
-        ],
-        isDeleted: false,
-      },
-      { $set: { status: "INACTIVE" } }
+      { $or: [{ franchiseId: franchise._id }, { outletId: { $in: outletIds } }], isDeleted: false },
+      { $set: { status: FRANCHISE_STATUS.INACTIVE } }
     );
 
-    // Force-kick all affected users
     const affectedUsers = await User.find(
-      {
-        $or: [
-          { franchiseId: franchise._id },
-          { outletId: { $in: outletIds } },
-        ],
-        isDeleted: false,
-      },
+      { $or: [{ franchiseId: franchise._id }, { outletId: { $in: outletIds } }], isDeleted: false },
       "_id"
     ).lean();
-    for (const u of affectedUsers) {
-      forceLogout("user", u._id.toString());
-    }
+    for (const u of affectedUsers) forceLogout("user", u._id.toString());
 
-    // Force-kick all affected devices
     const affectedDevices = await Device.find(
-      {
-        $or: [
-          { franchiseId: franchise._id },
-          { outletId: { $in: outletIds } },
-        ],
-        isDeleted: false,
-      },
+      { $or: [{ franchiseId: franchise._id }, { outletId: { $in: outletIds } }], isDeleted: false },
       "deviceId"
     ).lean();
-    for (const d of affectedDevices) {
-      forceLogout("device", d.deviceId);
-    }
+    for (const d of affectedDevices) forceLogout("device", d.deviceId);
   } else {
-    // Re-activate all outlets under the franchise
     await Outlet.updateMany(
       { franchiseId: franchise._id, isDeleted: false },
-      { $set: { status: "ACTIVE" } }
+      { $set: { status: FRANCHISE_STATUS.ACTIVE } }
     );
-
-    // Re-activate users tied to this franchise / its outlets
     await User.updateMany(
-      {
-        $or: [
-          { franchiseId: franchise._id },
-          { outletId: { $in: outletIds } },
-        ],
-        isDeleted: false,
-      },
-      { $set: { status: "ACTIVE" } }
+      { $or: [{ franchiseId: franchise._id }, { outletId: { $in: outletIds } }], isDeleted: false },
+      { $set: { status: FRANCHISE_STATUS.ACTIVE } }
     );
-
-    // Re-activate devices tied to this franchise / its outlets
     await Device.updateMany(
-      {
-        $or: [
-          { franchiseId: franchise._id },
-          { outletId: { $in: outletIds } },
-        ],
-        isDeleted: false,
-      },
-      { $set: { status: "ACTIVE" } }
+      { $or: [{ franchiseId: franchise._id }, { outletId: { $in: outletIds } }], isDeleted: false },
+      { $set: { status: FRANCHISE_STATUS.ACTIVE } }
     );
   }
 
-  // Notify all connected clients so outlet page refreshes live
   broadcastRefresh("outlets:refreshNeeded");
 
   return franchise;
@@ -336,69 +222,42 @@ export async function deleteFranchise(id, user) {
 
   const franchise = await getFranchiseById(id, user);
 
-  // 1. Cascade: collect all outlet IDs under this franchise
   const outlets = await Outlet.find({ franchiseId: franchise._id, isDeleted: false }).select("_id");
   const outletIds = outlets.map((o) => o._id);
 
-  // 2. Soft-delete all outlets
   if (outletIds.length > 0) {
     await Outlet.updateMany(
       { franchiseId: franchise._id },
-      { isDeleted: true, status: "INACTIVE" }
+      { isDeleted: true, status: FRANCHISE_STATUS.INACTIVE }
     );
   }
 
-  // 3. Force-logout + soft-delete all affected users
-  const affectedUsers = await User.find({
-    $or: [
-      { franchiseId: franchise._id },
-      { outletId: { $in: outletIds } },
-    ],
-    isDeleted: false,
-  }).select("_id");
-
-  for (const u of affectedUsers) {
-    forceLogout("user", u._id.toString());
-  }
+  const affectedUsers = await User.find(
+    { $or: [{ franchiseId: franchise._id }, { outletId: { $in: outletIds } }], isDeleted: false },
+    "_id"
+  );
+  for (const u of affectedUsers) forceLogout("user", u._id.toString());
   if (affectedUsers.length > 0) {
     await User.updateMany(
-      {
-        $or: [
-          { franchiseId: franchise._id },
-          { outletId: { $in: outletIds } },
-        ],
-      },
-      { isDeleted: true, status: "INACTIVE" }
+      { $or: [{ franchiseId: franchise._id }, { outletId: { $in: outletIds } }] },
+      { isDeleted: true, status: FRANCHISE_STATUS.INACTIVE }
     );
   }
 
-  // 4. Force-logout + soft-delete all affected devices
-  const affectedDevices = await Device.find({
-    $or: [
-      { franchiseId: franchise._id },
-      { outletId: { $in: outletIds } },
-    ],
-    isDeleted: false,
-  }).select("_id deviceId");
-
-  for (const d of affectedDevices) {
-    forceLogout("device", d.deviceId);
-  }
+  const affectedDevices = await Device.find(
+    { $or: [{ franchiseId: franchise._id }, { outletId: { $in: outletIds } }], isDeleted: false },
+    "_id deviceId"
+  );
+  for (const d of affectedDevices) forceLogout("device", d.deviceId);
   if (affectedDevices.length > 0) {
     await Device.updateMany(
-      {
-        $or: [
-          { franchiseId: franchise._id },
-          { outletId: { $in: outletIds } },
-        ],
-      },
-      { isDeleted: true, status: "INACTIVE" }
+      { $or: [{ franchiseId: franchise._id }, { outletId: { $in: outletIds } }] },
+      { isDeleted: true, status: FRANCHISE_STATUS.INACTIVE }
     );
   }
 
-  // 5. Soft-delete the franchise itself
   franchise.isDeleted = true;
-  franchise.status = "INACTIVE";
+  franchise.status = FRANCHISE_STATUS.INACTIVE;
   await franchise.save();
 
   broadcastRefresh("outlets:refreshNeeded");

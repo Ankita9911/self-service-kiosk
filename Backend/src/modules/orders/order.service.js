@@ -4,15 +4,7 @@ import OrderRequest from "./orderRequest.model.js";
 import AppError from "../../shared/errors/AppError.js";
 import { getIO } from "../../realtime/realtime.manager.js";
 import { enqueue } from "../../core/queue/queue.producer.js";
-
-export const VALID_STATUS_TRANSITIONS = {
-  CREATED: ["IN_KITCHEN"],
-  IN_KITCHEN: ["READY"],
-  READY: ["PICKED_UP", "COMPLETED"],
-  COMPLETED: ["PICKED_UP"],
-  PICKED_UP: [],
-};
-
+import { VALID_STATUS_TRANSITIONS } from "./order.constants.js";
 
 export async function createOrder(data, tenant, userRole) {
   const { items, paymentMethod, clientOrderId } = data;
@@ -73,21 +65,12 @@ export async function getOrderProcessingStatus(clientOrderId, tenant) {
     throw new AppError("Outlet context required", 403, "OUTLET_REQUIRED");
   }
 
-  const request = await OrderRequest.findOne({
-    outletId: tenant.outletId,
-    clientOrderId,
-  })
+  const request = await OrderRequest.findOne({ outletId: tenant.outletId, clientOrderId })
     .select("clientOrderId orderNumber status errorMessage orderId")
     .lean();
 
   if (!request) {
-    return {
-      clientOrderId,
-      orderNumber: null,
-      status: "UNKNOWN",
-      errorMessage: null,
-      orderId: null,
-    };
+    return { clientOrderId, orderNumber: null, status: "UNKNOWN", errorMessage: null, orderId: null };
   }
 
   return {
@@ -118,10 +101,7 @@ export async function updateOrderStatus(orderId, newStatus, tenant) {
     throw new AppError("Outlet context required", 403, "OUTLET_REQUIRED");
   }
 
-  const order = await Order.findOne({
-    _id: orderId,
-    outletId: tenant.outletId,
-  });
+  const order = await Order.findOne({ _id: orderId, outletId: tenant.outletId });
 
   if (!order) {
     throw new AppError("Order not found", 404, "ORDER_NOT_FOUND");
@@ -132,7 +112,7 @@ export async function updateOrderStatus(orderId, newStatus, tenant) {
     throw new AppError(
       `Cannot transition from ${order.status} to ${newStatus}`,
       400,
-      "INVALID_STATUS_TRANSITION",
+      "INVALID_STATUS_TRANSITION"
     );
   }
 
@@ -147,7 +127,9 @@ export async function updateOrderStatus(orderId, newStatus, tenant) {
       status: order.status,
       order,
     });
-  } catch (_) {}
+  } catch {
+    // Socket not initialised — non-fatal
+  }
 
   return order;
 }

@@ -7,47 +7,26 @@ import { buildTenantKey } from "../../core/cache/cache.utils.js";
 import { emitOutletEvent } from "../../realtime/realtime.manager.js";
 import AppError from "../../shared/errors/AppError.js";
 import env from "../../config/env.js";
+import { toBoundedLimit, encodeCursor, decodeCursor } from "../../shared/utils/pagination.js";
 
 const CACHE_TTL = 300;
 const DEFAULT_LIMIT = 20;
-const MAX_LIMIT = 100;
 
-function toBoundedLimit(value) {
-  const parsed = Number.parseInt(String(value ?? DEFAULT_LIMIT), 10);
-  if (Number.isNaN(parsed)) return DEFAULT_LIMIT;
-  return Math.min(Math.max(parsed, 1), MAX_LIMIT);
-}
-
-function encodeCursor(payload) {
-  return Buffer.from(JSON.stringify(payload)).toString("base64url");
-}
-
-function decodeCursor(cursor) {
-  if (!cursor) return null;
-  try {
-    const decoded = JSON.parse(Buffer.from(cursor, "base64url").toString("utf-8"));
-    if (!decoded?.createdAt || !decoded?._id) return null;
-    const createdAt = new Date(decoded.createdAt);
-    if (Number.isNaN(createdAt.getTime())) return null;
-    return { createdAt, _id: decoded._id };
-  } catch {
-    return null;
-  }
-}
+// ─── Private helpers ──────────────────────────────────────────────────────────
 
 async function invalidateRecipeCache(tenant, menuItemId = null) {
   try {
     const redis = getRedisClient();
-    const listKey = buildTenantKey("recipes", tenant);
-    await redis.del(listKey);
+    await redis.del(buildTenantKey("recipes", tenant));
     if (menuItemId) {
-      const itemKey = buildTenantKey(`recipe:${menuItemId}`, tenant);
-      await redis.del(itemKey);
+      await redis.del(buildTenantKey(`recipe:${menuItemId}`, tenant));
     }
-  } catch (_) {
+  } catch {
     // Redis failure is non-fatal
   }
 }
+
+// ─── Service functions ────────────────────────────────────────────────────────
 
 export async function createRecipe(data, tenant) {
   const existing = await Recipe.findOne({
@@ -103,12 +82,9 @@ export async function createRecipe(data, tenant) {
 }
 
 export async function getRecipes(tenant, { cursor, limit, search, aiOnly } = {}) {
-  const pageLimit = toBoundedLimit(limit);
+  const pageLimit = toBoundedLimit(limit, DEFAULT_LIMIT);
 
-  const tenantFilter = {
-    franchiseId: tenant.franchiseId,
-    isDeleted: false,
-  };
+  const tenantFilter = { franchiseId: tenant.franchiseId, isDeleted: false };
   if (tenant.outletId) tenantFilter.outletId = tenant.outletId;
 
   // Resolve menu item IDs for search
@@ -152,13 +128,9 @@ export async function getRecipes(tenant, { cursor, limit, search, aiOnly } = {})
   const hasNext = itemsPlusOne.length > pageLimit;
   const items = hasNext ? itemsPlusOne.slice(0, pageLimit) : itemsPlusOne;
 
-  const nextCursor =
-    hasNext
-      ? encodeCursor({
-        createdAt: items[items.length - 1].createdAt,
-        _id: items[items.length - 1]._id,
-      })
-      : null;
+  const nextCursor = hasNext
+    ? encodeCursor({ createdAt: items[items.length - 1].createdAt, _id: items[items.length - 1]._id })
+    : null;
 
   return {
     items,
@@ -205,10 +177,9 @@ export async function getRecipeByMenuItemId(menuItemId, tenant) {
       isDeleted: false,
     }).lean();
 
-    const value = recipe || null;
-    await redis.set(cacheKey, JSON.stringify(value), "EX", CACHE_TTL);
-    return value;
-  } catch (_) {
+    await redis.set(cacheKey, JSON.stringify(recipe || null), "EX", CACHE_TTL);
+    return recipe || null;
+  } catch {
     // Redis failure — go straight to DB
     return Recipe.findOne({
       menuItemId,
@@ -245,12 +216,7 @@ export async function updateRecipe(id, data, tenant) {
   }
 
   const recipe = await Recipe.findOneAndUpdate(
-    {
-      _id: id,
-      franchiseId: tenant.franchiseId,
-      outletId: tenant.outletId,
-      isDeleted: false,
-    },
+    { _id: id, franchiseId: tenant.franchiseId, outletId: tenant.outletId, isDeleted: false },
     { $set: update },
     { new: true, runValidators: true }
   )
@@ -272,12 +238,7 @@ export async function updateRecipe(id, data, tenant) {
 
 export async function deleteRecipe(id, tenant) {
   const recipe = await Recipe.findOneAndUpdate(
-    {
-      _id: id,
-      franchiseId: tenant.franchiseId,
-      outletId: tenant.outletId,
-      isDeleted: false,
-    },
+    { _id: id, franchiseId: tenant.franchiseId, outletId: tenant.outletId, isDeleted: false },
     { $set: { isDeleted: true } },
     { new: true }
   );
@@ -296,8 +257,8 @@ export async function deleteRecipe(id, tenant) {
 }
 
 /**
- * Calls OpenAI to generate a structured recipe JSON.
- * Does NOT persist to the database — frontend reviews and calls createRecipe.
+ * Calls Gemini to generate a structured recipe JSON.
+ * Does NOT persist — frontend reviews and calls createRecipe.
  */
 export async function generateRecipeWithAI(description) {
   if (!env.GEMINI_API_KEY) {
@@ -336,7 +297,6 @@ Generate a recipe for: ${description}`;
 
   let parsed;
   try {
-    // Strip markdown code fences Gemini sometimes wraps around JSON
     const cleaned = raw.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "").trim();
     parsed = JSON.parse(cleaned);
   } catch {
@@ -344,7 +304,11 @@ Generate a recipe for: ${description}`;
   }
 
   // Normalise unit values to allowed enum
-  const unitMap = { g: "gram", grams: "gram", gram: "gram", ml: "ml", milliliter: "ml", milliliters: "ml", piece: "piece", pieces: "piece", pcs: "piece", nos: "piece" };
+  const unitMap = {
+    g: "gram", grams: "gram", gram: "gram",
+    ml: "ml", milliliter: "ml", milliliters: "ml",
+    piece: "piece", pieces: "piece", pcs: "piece", nos: "piece",
+  };
   if (Array.isArray(parsed.ingredients)) {
     parsed.ingredients = parsed.ingredients.map((ing) => ({
       ...ing,

@@ -6,17 +6,19 @@ import MenuItem from "../../../modules/menu/menuItem.model.js";
 import Ingredient from "../../../modules/ingredients/ingredient.model.js";
 import Recipe from "../../../modules/recipes/recipe.model.js";
 import StockTransaction from "../../../modules/stockTransactions/stockTransaction.model.js";
+import { TRANSACTION_TYPE, REFERENCE_TYPE } from "../../../modules/stockTransactions/stockTransaction.constants.js";
 import { enqueue } from "../queue.producer.js";
 import { getRedisClient } from "../../cache/redis.client.js";
 import { buildTenantKey } from "../../cache/cache.utils.js";
 import { emitOutletEvent, getIO } from "../../../realtime/realtime.manager.js";
 
-// Private helpers
+// ─── Private helpers ──────────────────────────────────────────────────────────
+
 async function getNextOrderNumber(outletId, session) {
   const counter = await Counter.findOneAndUpdate(
     { outletId },
     { $inc: { seq: 1 } },
-    { returnDocument: "after", upsert: true, session },
+    { returnDocument: "after", upsert: true, session }
   );
   return counter.seq;
 }
@@ -30,13 +32,12 @@ function emitToOutlet(outletId, event, data) {
   }
 }
 
-async function resolveMenuItemStock(
-  itemId,
-  quantity,
-  tenant,
-  session,
-  recipeTargets,
-) {
+/**
+ * Validates a menu item and deducts stock if DIRECT-mode.
+ * For RECIPE-mode items, pushes to recipeTargets for later ingredient deduction.
+ * Returns the resolved MenuItem document.
+ */
+async function resolveMenuItemStock(itemId, quantity, tenant, session, recipeTargets) {
   const menuItemBase = await MenuItem.findOne({
     _id: itemId,
     outletId: tenant.outletId,
@@ -62,7 +63,7 @@ async function resolveMenuItemStock(
         stockQuantity: { $gte: quantity },
       },
       { $inc: { stockQuantity: -quantity } },
-      { returnDocument: "after", session },
+      { returnDocument: "after", session }
     );
 
     if (!updated) {
@@ -72,6 +73,7 @@ async function resolveMenuItemStock(
     return updated;
   }
 
+  // RECIPE mode — verify recipe exists, defer ingredient deduction
   const recipe = await Recipe.findOne({
     menuItemId: itemId,
     franchiseId: tenant.franchiseId,
@@ -88,16 +90,13 @@ async function resolveMenuItemStock(
   return menuItemBase;
 }
 
-async function resolveCustomizations(
-  item,
-  menuItem,
-  tenant,
-  session,
-  recipeTargets,
-) {
-  const requestedIds = [
-    ...new Set((item.customizationItemIds || []).map(String)),
-  ];
+/**
+ * Validates customizations for a single order item and deducts their stock.
+ * Pushes RECIPE-mode customizations to recipeTargets.
+ * Returns { selectedCustomizations, customizationUnitTotal }.
+ */
+async function resolveCustomizations(item, menuItem, tenant, session, recipeTargets) {
+  const requestedIds = [...new Set((item.customizationItemIds || []).map(String))];
   const allowedIds = new Set((menuItem.customizationItemIds || []).map(String));
 
   const selectedCustomizations = [];
@@ -105,9 +104,7 @@ async function resolveCustomizations(
 
   for (const customizationItemId of requestedIds) {
     if (!allowedIds.has(customizationItemId)) {
-      throw new Error(
-        `Invalid customization ${customizationItemId} for item: ${item.itemId}`,
-      );
+      throw new Error(`Invalid customization ${customizationItemId} for item: ${item.itemId}`);
     }
 
     const customizationBase = await MenuItem.findOne({
@@ -134,13 +131,11 @@ async function resolveCustomizations(
           stockQuantity: { $gte: item.quantity },
         },
         { $inc: { stockQuantity: -item.quantity } },
-        { returnDocument: "after", session },
+        { returnDocument: "after", session }
       );
 
       if (!customizationItem) {
-        throw new Error(
-          `Insufficient stock or invalid customization item: ${customizationItemId}`,
-        );
+        throw new Error(`Insufficient stock or invalid customization item: ${customizationItemId}`);
       }
     } else {
       const customizationRecipe = await Recipe.findOne({
@@ -151,15 +146,10 @@ async function resolveCustomizations(
       }).session(session);
 
       if (!customizationRecipe) {
-        throw new Error(
-          `Recipe not configured for customization item: ${customizationItemId}`,
-        );
+        throw new Error(`Recipe not configured for customization item: ${customizationItemId}`);
       }
 
-      recipeTargets.push({
-        itemId: customizationBase._id,
-        quantity: item.quantity,
-      });
+      recipeTargets.push({ itemId: customizationBase._id, quantity: item.quantity });
     }
 
     customizationUnitTotal += customizationItem.price;
@@ -176,6 +166,10 @@ async function resolveCustomizations(
   return { selectedCustomizations, customizationUnitTotal };
 }
 
+/**
+ * Processes all order items — validates stock, resolves customizations.
+ * Returns { processedItems, recipeTargets, totalAmount }.
+ */
 async function processOrderItems(items, tenant, session) {
   const processedItems = [];
   const recipeTargets = [];
@@ -183,21 +177,11 @@ async function processOrderItems(items, tenant, session) {
 
   for (const item of items) {
     const menuItem = await resolveMenuItemStock(
-      item.itemId,
-      item.quantity,
-      tenant,
-      session,
-      recipeTargets,
+      item.itemId, item.quantity, tenant, session, recipeTargets
     );
 
     const { selectedCustomizations, customizationUnitTotal } =
-      await resolveCustomizations(
-        item,
-        menuItem,
-        tenant,
-        session,
-        recipeTargets,
-      );
+      await resolveCustomizations(item, menuItem, tenant, session, recipeTargets);
 
     const unitPrice = menuItem.price + customizationUnitTotal;
     const lineTotal = unitPrice * item.quantity;
@@ -216,13 +200,12 @@ async function processOrderItems(items, tenant, session) {
   return { processedItems, recipeTargets, totalAmount };
 }
 
-async function deductIngredients(
-  recipeTargets,
-  orderId,
-  orderNumber,
-  tenant,
-  session,
-) {
+/**
+ * Deducts ingredient stock for all recipe-mode items/customizations.
+ * Bulk-inserts StockTransaction records within the active session.
+ * Returns ingredientDeductions[] for post-commit alerting.
+ */
+async function deductIngredients(recipeTargets, orderId, orderNumber, tenant, session) {
   const ingredientDeductions = [];
 
   for (const target of recipeTargets) {
@@ -247,13 +230,11 @@ async function deductIngredients(
           currentStock: { $gte: totalDeduction },
         },
         { $inc: { currentStock: -totalDeduction } },
-        { returnDocument: "after", session },
+        { returnDocument: "after", session }
       );
 
       if (!ingredient) {
-        throw new Error(
-          `Insufficient ingredient stock: ${recipeIngredient.ingredientId}`,
-        );
+        throw new Error(`Insufficient ingredient stock: ${recipeIngredient.ingredientId}`);
       }
 
       ingredientDeductions.push({
@@ -266,16 +247,17 @@ async function deductIngredients(
     }
   }
 
+  // Bulk-log CONSUMPTION transactions within the same Mongo session
   if (ingredientDeductions.length > 0) {
     const txDocs = ingredientDeductions.map((d) => ({
-      ingredientId: d.ingredientId,
-      type: "CONSUMPTION",
-      quantity: -d.deductedQty, // stored as negative delta
-      referenceType: "ORDER",
-      referenceId: orderId,
-      note: `Order #${orderNumber}`,
-      franchiseId: tenant.franchiseId,
-      outletId: tenant.outletId,
+      ingredientId:  d.ingredientId,
+      type:          TRANSACTION_TYPE.CONSUMPTION,
+      quantity:      -d.deductedQty,          // stored as negative delta
+      referenceType: REFERENCE_TYPE.ORDER,
+      referenceId:   orderId,
+      note:          `Order #${orderNumber}`,
+      franchiseId:   tenant.franchiseId,
+      outletId:      tenant.outletId,
     }));
     await StockTransaction.insertMany(txDocs, { session });
   }
@@ -283,6 +265,10 @@ async function deductIngredients(
   return ingredientDeductions;
 }
 
+/**
+ * Runs after the transaction commits — non-fatal if any step fails.
+ * Invalidates Redis cache, enqueues low-stock alerts, emits realtime events.
+ */
 async function postCommitSideEffects(ingredientDeductions, order, tenant) {
   if (ingredientDeductions.length === 0) return;
 
@@ -298,17 +284,14 @@ async function postCommitSideEffects(ingredientDeductions, order, tenant) {
   for (const d of ingredientDeductions) {
     if (d.currentStockAfter < d.minThreshold) {
       await enqueue("LOW_STOCK_ALERT", {
-        ingredientId: String(d.ingredientId),
+        ingredientId:   String(d.ingredientId),
         ingredientName: d.ingredientName,
-        currentStock: d.currentStockAfter,
-        minThreshold: d.minThreshold,
-        franchiseId: String(tenant.franchiseId),
-        outletId: String(tenant.outletId),
+        currentStock:   d.currentStockAfter,
+        minThreshold:   d.minThreshold,
+        franchiseId:    String(tenant.franchiseId),
+        outletId:       String(tenant.outletId),
       }).catch((err) =>
-        console.error(
-          "[queue] Failed to enqueue LOW_STOCK_ALERT:",
-          err.message,
-        ),
+        console.error("[queue] Failed to enqueue LOW_STOCK_ALERT:", err.message)
       );
     }
   }
@@ -324,35 +307,24 @@ async function postCommitSideEffects(ingredientDeductions, order, tenant) {
   });
 }
 
-// Exported handler
+// ─── Exported handler ─────────────────────────────────────────────────────────
 
 export async function handleOrderPlaced(payload) {
-  const { items, paymentMethod, clientOrderId, orderNumber, tenant, userRole } =
-    payload;
+  const { items, paymentMethod, clientOrderId, orderNumber, tenant, userRole } = payload;
 
   const session = await mongoose.startSession();
   session.startTransaction();
 
   try {
     // ── 1. Idempotency check ──────────────────────────────────────────────────
-    const existing = await Order.findOne({
-      outletId: tenant.outletId,
-      clientOrderId,
-    }).session(session);
+    const existing = await Order.findOne({ outletId: tenant.outletId, clientOrderId }).session(session);
 
     if (existing) {
       await session.commitTransaction();
       session.endSession();
       await OrderRequest.findOneAndUpdate(
         { outletId: tenant.outletId, clientOrderId },
-        {
-          $set: {
-            status: "SUCCESS",
-            orderId: existing._id,
-            orderNumber: existing.orderNumber,
-            errorMessage: null,
-          },
-        },
+        { $set: { status: "SUCCESS", orderId: existing._id, orderNumber: existing.orderNumber, errorMessage: null } }
       );
       emitToOutlet(tenant.outletId, "order:new", existing);
       return existing;
@@ -363,33 +335,26 @@ export async function handleOrderPlaced(payload) {
       await processOrderItems(items, tenant, session);
 
     // ── 3. Create the Order document ──────────────────────────────────────────
-    const resolvedOrderNumber =
-      orderNumber ?? (await getNextOrderNumber(tenant.outletId, session));
+    const resolvedOrderNumber = orderNumber ?? await getNextOrderNumber(tenant.outletId, session);
 
     const order = await Order.create(
-      [
-        {
-          franchiseId: tenant.franchiseId,
-          outletId: tenant.outletId,
-          orderNumber: resolvedOrderNumber,
-          clientOrderId,
-          items: processedItems,
-          totalAmount,
-          paymentMethod,
-          paymentStatus: "SUCCESS",
-          createdByRole: userRole,
-        },
-      ],
-      { session },
+      [{
+        franchiseId:   tenant.franchiseId,
+        outletId:      tenant.outletId,
+        orderNumber:   resolvedOrderNumber,
+        clientOrderId,
+        items:         processedItems,
+        totalAmount,
+        paymentMethod,
+        paymentStatus: "SUCCESS",
+        createdByRole: userRole,
+      }],
+      { session }
     );
 
     // ── 4. Deduct ingredients + log stock transactions ────────────────────────
     const ingredientDeductions = await deductIngredients(
-      recipeTargets,
-      order[0]._id,
-      resolvedOrderNumber,
-      tenant,
-      session,
+      recipeTargets, order[0]._id, resolvedOrderNumber, tenant, session
     );
 
     // ── 5. Commit ─────────────────────────────────────────────────────────────
@@ -402,21 +367,11 @@ export async function handleOrderPlaced(payload) {
     // ── 7. Finalise: mark request success + emit ──────────────────────────────
     await OrderRequest.findOneAndUpdate(
       { outletId: tenant.outletId, clientOrderId },
-      {
-        $set: {
-          status: "SUCCESS",
-          orderId: order[0]._id,
-          orderNumber: order[0].orderNumber,
-          errorMessage: null,
-        },
-      },
+      { $set: { status: "SUCCESS", orderId: order[0]._id, orderNumber: order[0].orderNumber, errorMessage: null } }
     );
 
     emitToOutlet(tenant.outletId, "order:new", order[0]);
-    emitToOutlet(tenant.outletId, "menu:updated", {
-      type: "ORDER_STOCK_CHANGED",
-      outletId: tenant.outletId,
-    });
+    emitToOutlet(tenant.outletId, "menu:updated", { type: "ORDER_STOCK_CHANGED", outletId: tenant.outletId });
 
     return order[0];
   } catch (error) {
