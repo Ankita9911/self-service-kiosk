@@ -1,6 +1,6 @@
-import * as service from "./user.service.js";
-import { sendSuccess } from "../../shared/utils/response.js";
-import { asyncHandler } from "../../shared/utils/asyncHandler.js";
+import * as service from "../service/user.service.js";
+import { sendSuccess } from "../../../shared/utils/response.js";
+import { asyncHandler } from "../../../shared/utils/asyncHandler.js";
 
 export const createUserController = asyncHandler(async (req, res) => {
   const result = await service.createUser(req.user, req.body);

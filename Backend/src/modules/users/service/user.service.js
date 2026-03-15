@@ -1,20 +1,20 @@
 import bcrypt from "bcrypt";
 import crypto from "crypto";
-import User from "./user.model.js";
-import AppError from "../../shared/errors/AppError.js";
-import { ROLE_HIERARCHY } from "../../core/rbac/roleHierarchy.js";
+import User from "../model/user.model.js";
+import AppError from "../../../shared/errors/AppError.js";
+import { ROLE_HIERARCHY } from "../../../core/rbac/roleHierarchy.js";
 import {
   sendWelcomeEmail,
   sendPasswordResetEmail,
-} from "../../core/email/email.service.js";
-import { forceLogout } from "../../realtime/realtime.manager.js";
+} from "../../../core/email/email.service.js";
+import { forceLogout } from "../../../realtime/realtime.manager.js";
 import {
   toBoundedLimit,
   encodeCursor,
   decodeCursor,
-} from "../../shared/utils/pagination.js";
-import { invalidateAuthStatus } from "../../core/auth/auth.middleware.js";
-import { USER_ROLE, USER_STATUS } from "./user.constants.js";
+} from "../../../shared/utils/pagination.js";
+import { invalidateAuthStatus } from "../../../core/auth/auth.middleware.js";
+import { USER_ROLE, USER_STATUS } from "../constant/user.constants.js";
 
 const DEFAULT_LIMIT = 10;
 const SALT_ROUNDS = 10;

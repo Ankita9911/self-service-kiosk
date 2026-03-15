@@ -1,5 +1,5 @@
 import bcrypt from "bcrypt";
-import User from "../../modules/users/user.model.js";
+import User from "../../modules/users/model/user.model.js";
 import AppError from "../../shared/errors/AppError.js";
 import { generateToken } from "./jwt.service.js";
 import { sendPasswordChangedEmail } from "../email/email.service.js";

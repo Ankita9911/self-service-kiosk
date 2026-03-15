@@ -1,17 +1,17 @@
 import express from "express";
-import { authenticate } from "../../core/auth/auth.middleware.js";
-import { requireUser } from "../devices/middleware/device.middleware.js";
-import { authorize } from "../../core/rbac/rbac.middleware.js";
-import { PERMISSIONS } from "../../core/rbac/permissions.js";
-import { validate } from "../../shared/validation/validate.middleware.js";
+import { authenticate } from "../../../core/auth/auth.middleware.js";
+import { requireUser } from "../../devices/middleware/device.middleware.js";
+import { authorize } from "../../../core/rbac/rbac.middleware.js";
+import { PERMISSIONS } from "../../../core/rbac/permissions.js";
+import { validate } from "../../../shared/validation/validate.middleware.js";
 import {
   createUserSchema,
   updateUserSchema,
   changeRoleSchema,
   changeStatusSchema,
   resetPasswordSchema,
-} from "./user.schemas.js";
-import * as controller from "./user.controller.js";
+} from "../validation/user.schemas.js";
+import * as controller from "../controller/user.controller.js";
 
 const router = express.Router();
 

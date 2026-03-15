@@ -1,6 +1,6 @@
 import { verifyToken } from "./jwt.service.js";
 import AppError from "../../shared/errors/AppError.js";
-import User from "../../modules/users/user.model.js";
+import User from "../../modules/users/model/user.model.js";
 import Device from "../../modules/devices/model/device.model.js";
 import { getRedisClient } from "../cache/redis.client.js";
 

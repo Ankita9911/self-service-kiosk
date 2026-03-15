@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import Order from "../../orders/model/order.model.js";
-import User from "../../users/user.model.js";
+import User from "../../users/model/user.model.js";
 import Franchise from "../../franchises/model/franchise.model.js";
 import Outlet from "../../outlets/model/outlet.model.js";
 import Device from "../../devices/model/device.model.js";

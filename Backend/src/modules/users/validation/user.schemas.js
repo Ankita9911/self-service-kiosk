@@ -3,8 +3,8 @@ import {
   objectIdSchema,
   emailSchema,
   passwordSchema,
-} from "../../shared/validation/common.schemas.js";
-import { USER_ROLE, USER_STATUS } from "./user.constants.js";
+} from "../../../shared/validation/common.schemas.js";
+import { USER_ROLE, USER_STATUS } from "../constant/user.constants.js";
 
 export const createUserSchema = z.object({
   name: z.string({ required_error: "name is required" }).min(1).trim(),
