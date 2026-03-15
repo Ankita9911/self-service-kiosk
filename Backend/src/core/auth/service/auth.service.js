@@ -1,8 +1,8 @@
 import bcrypt from "bcrypt";
-import User from "../../modules/users/model/user.model.js";
-import AppError from "../../shared/errors/AppError.js";
-import { generateToken } from "./jwt.service.js";
-import { sendPasswordChangedEmail } from "../email/email.service.js";
+import User from "../../../modules/users/model/user.model.js";
+import AppError from "../../../shared/errors/AppError.js";
+import { generateToken } from "../jwt.service.js";
+import { sendPasswordChangedEmail } from "../../email/email.service.js";
 
 const SALT_ROUNDS = 10;
 

@@ -1,5 +1,5 @@
 import express from "express";
-import { authenticate } from "../../../core/auth/auth.middleware.js";
+import { authenticate } from "../../../core/auth/middleware/auth.middleware.js";
 import { attachTenant } from "../../../core/tenancy/tenancy.middleware.js";
 import { attachOutletForMenu } from "../../outlets/middleware/outlet.middleware.js";
 import { authorize } from "../../../core/rbac/rbac.middleware.js";

@@ -2,7 +2,7 @@ import { z } from "zod";
 import {
   emailSchema,
   passwordSchema,
-} from "../../shared/validation/common.schemas.js";
+} from "../../../shared/validation/common.schemas.js";
 
 export const loginSchema = z.object({
   email: emailSchema,

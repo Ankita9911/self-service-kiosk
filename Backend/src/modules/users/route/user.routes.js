@@ -1,5 +1,5 @@
 import express from "express";
-import { authenticate } from "../../../core/auth/auth.middleware.js";
+import { authenticate } from "../../../core/auth/middleware/auth.middleware.js";
 import { requireUser } from "../../devices/middleware/device.middleware.js";
 import { authorize } from "../../../core/rbac/rbac.middleware.js";
 import { PERMISSIONS } from "../../../core/rbac/permissions.js";

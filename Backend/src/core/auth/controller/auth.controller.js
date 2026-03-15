@@ -1,7 +1,7 @@
-import { login, forceResetPassword } from "./auth.service.js";
-import { sendSuccess } from "../../shared/utils/response.js";
-import { asyncHandler } from "../../shared/utils/asyncHandler.js";
-import env from "../../config/env.js";
+import { login, forceResetPassword } from "../service/auth.service.js";
+import { sendSuccess } from "../../../shared/utils/response.js";
+import { asyncHandler } from "../../../shared/utils/asyncHandler.js";
+import env from "../../../config/env.js";
 
 const COOKIE_NAME = "auth_token";
 const COOKIE_OPTIONS = {

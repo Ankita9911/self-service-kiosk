@@ -1,6 +1,6 @@
 import express from "express";
 
-import authRoutes from "../core/auth/auth.routes.js";
+import authRoutes from "../core/auth/route/auth.routes.js";
 import franchiseRoutes from "../modules/franchises/route/franchise.routes.js";
 import outletRoutes from "../modules/outlets/route/outlet.routes.js";
 import menuRoutes from "../modules/menu/route/menu.routes.js";
@@ -14,7 +14,7 @@ import recipeRoutes from "../modules/recipes/route/recipe.routes.js";
 import stockTransactionRoutes from "../modules/stockTransactions/route/stockTransaction.routes.js";
 import uploadRoutes from "../modules/upload/route/upload.routes.js";
 import analyticsRoutes from "../modules/analytics/route/analytics.routes.js";
-import { authenticate } from "../core/auth/auth.middleware.js";
+import { authenticate } from "../core/auth/middleware/auth.middleware.js";
 import { attachTenant } from "../core/tenancy/tenancy.middleware.js";
 
 const router = express.Router();

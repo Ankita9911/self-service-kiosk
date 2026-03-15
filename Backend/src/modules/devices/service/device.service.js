@@ -8,7 +8,7 @@ import {
   encodeCursor,
   decodeCursor,
 } from "../../../shared/utils/pagination.js";
-import { invalidateAuthStatus } from "../../../core/auth/auth.middleware.js";
+import { invalidateAuthStatus } from "../../../core/auth/middleware/auth.middleware.js";
 import { DEVICE_STATUS } from "../constant/device.constants.js";
 
 const SALT_ROUNDS = 10;

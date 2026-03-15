@@ -13,7 +13,7 @@ import {
   encodeCursor,
   decodeCursor,
 } from "../../../shared/utils/pagination.js";
-import { invalidateAuthStatus } from "../../../core/auth/auth.middleware.js";
+import { invalidateAuthStatus } from "../../../core/auth/middleware/auth.middleware.js";
 import { USER_ROLE, USER_STATUS } from "../constant/user.constants.js";
 
 const DEFAULT_LIMIT = 10;
