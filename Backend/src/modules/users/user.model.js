@@ -5,11 +5,28 @@ const { Schema } = mongoose;
 
 const userSchema = new Schema(
   {
-    franchiseId: { type: Schema.Types.ObjectId, ref: "Franchise", required: false, index: true },
-    outletId:    { type: Schema.Types.ObjectId, ref: "Outlet",    required: false, index: true },
+    franchiseId: {
+      type: Schema.Types.ObjectId,
+      ref: "Franchise",
+      required: false,
+      index: true,
+    },
+    outletId: {
+      type: Schema.Types.ObjectId,
+      ref: "Outlet",
+      required: false,
+      index: true,
+    },
 
-    name:  { type: String, required: true, trim: true },
-    email: { type: String, required: true, unique: true, lowercase: true, trim: true, index: true },
+    name: { type: String, required: true, trim: true },
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+      lowercase: true,
+      trim: true,
+      index: true,
+    },
 
     passwordHash: { type: String, required: true, select: false },
 
@@ -27,10 +44,10 @@ const userSchema = new Schema(
       index: true,
     },
 
-    isDeleted:          { type: Boolean, default: false, index: true },
+    isDeleted: { type: Boolean, default: false, index: true },
     mustChangePassword: { type: Boolean, default: false },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 userSchema.index({ franchiseId: 1, outletId: 1 });

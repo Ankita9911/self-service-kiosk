@@ -37,7 +37,7 @@ export async function deviceLogin({ deviceId, password }) {
       type: "DEVICE",
     },
     env.JWT_SECRET,
-    { expiresIn: "6h" }
+    { expiresIn: "6h" },
   );
 
   return {

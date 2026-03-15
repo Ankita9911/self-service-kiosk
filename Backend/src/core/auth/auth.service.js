@@ -7,7 +7,9 @@ import { sendPasswordChangedEmail } from "../email/email.service.js";
 const SALT_ROUNDS = 10;
 
 export async function login({ email, password }) {
-  const user = await User.findOne({ email, isDeleted: false }).select("+passwordHash");
+  const user = await User.findOne({ email, isDeleted: false }).select(
+    "+passwordHash",
+  );
 
   if (!user) {
     throw new AppError("Invalid credentials", 401, "INVALID_CREDENTIALS");
@@ -47,7 +49,11 @@ export async function forceResetPassword(userId, currentPassword, newPassword) {
 
   const isMatch = await bcrypt.compare(currentPassword, user.passwordHash);
   if (!isMatch) {
-    throw new AppError("Current password is incorrect", 401, "INVALID_CURRENT_PASSWORD");
+    throw new AppError(
+      "Current password is incorrect",
+      401,
+      "INVALID_CURRENT_PASSWORD",
+    );
   }
 
   user.passwordHash = await bcrypt.hash(newPassword, SALT_ROUNDS);
@@ -55,7 +61,9 @@ export async function forceResetPassword(userId, currentPassword, newPassword) {
 
   await user.save();
 
-  sendPasswordChangedEmail({ name: user.name, email: user.email }).catch(() => {});
+  sendPasswordChangedEmail({ name: user.name, email: user.email }).catch(
+    () => {},
+  );
 
   return true;
 }

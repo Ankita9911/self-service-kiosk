@@ -3,7 +3,11 @@ import crypto from "crypto";
 import Device from "./device.model.js";
 import AppError from "../../shared/errors/AppError.js";
 import { forceLogout } from "../../realtime/realtime.manager.js";
-import { toBoundedLimit, encodeCursor, decodeCursor } from "../../shared/utils/pagination.js";
+import {
+  toBoundedLimit,
+  encodeCursor,
+  decodeCursor,
+} from "../../shared/utils/pagination.js";
 import { invalidateAuthStatus } from "../../core/auth/auth.middleware.js";
 import { DEVICE_STATUS } from "./device.constants.js";
 
@@ -29,11 +33,18 @@ function generateSecret() {
 // ─── Service functions ────────────────────────────────────────────────────────
 
 export async function createDevice(currentUser, payload) {
-  if (currentUser.role !== "FRANCHISE_ADMIN" && currentUser.role !== "OUTLET_MANAGER") {
-    throw new AppError("Only Franchise Admin or Outlet Manager can create devices", 403);
+  if (
+    currentUser.role !== "FRANCHISE_ADMIN" &&
+    currentUser.role !== "OUTLET_MANAGER"
+  ) {
+    throw new AppError(
+      "Only Franchise Admin or Outlet Manager can create devices",
+      403,
+    );
   }
 
-  const { outletId, name, landingImage, landingTitle, landingSubtitle } = payload;
+  const { outletId, name, landingImage, landingTitle, landingSubtitle } =
+    payload;
 
   if (!outletId) {
     throw new AppError("Outlet is required when creating a device", 400);
@@ -48,7 +59,10 @@ export async function createDevice(currentUser, payload) {
       throw new AppError("Outlet context is required", 403);
     }
     if (outletId.toString() !== currentUser.outletId.toString()) {
-      throw new AppError("Outlet Manager can only create devices for their own outlet", 403);
+      throw new AppError(
+        "Outlet Manager can only create devices for their own outlet",
+        403,
+      );
     }
   }
 
@@ -89,7 +103,8 @@ export async function listDevices(currentUser, query = {}) {
   const baseFilter = { isDeleted: false };
 
   if (currentUser.role === "SUPER_ADMIN") {
-    if (franchiseId && franchiseId !== "ALL") baseFilter.franchiseId = franchiseId;
+    if (franchiseId && franchiseId !== "ALL")
+      baseFilter.franchiseId = franchiseId;
   } else {
     baseFilter.franchiseId = currentUser.franchiseId;
     if (currentUser.role === "OUTLET_MANAGER") {
@@ -118,34 +133,47 @@ export async function listDevices(currentUser, query = {}) {
     ? {
         $or: [
           { createdAt: { $lt: decodedCursor.createdAt } },
-          { createdAt: decodedCursor.createdAt, _id: { $lt: decodedCursor._id } },
+          {
+            createdAt: decodedCursor.createdAt,
+            _id: { $lt: decodedCursor._id },
+          },
         ],
       }
     : null;
 
-  const queryFilter = cursorFilter ? { $and: [baseFilter, cursorFilter] } : baseFilter;
+  const queryFilter = cursorFilter
+    ? { $and: [baseFilter, cursorFilter] }
+    : baseFilter;
 
-  const [devicesPlusOne, totalMatching, totalDevices, activeDevices] = await Promise.all([
-    Device.find(queryFilter).sort({ createdAt: -1, _id: -1 }).limit(pageLimit + 1),
-    Device.countDocuments(baseFilter),
-    Device.countDocuments({
-      isDeleted: false,
-      ...(currentUser.role === "SUPER_ADMIN" ? {} : { franchiseId: currentUser.franchiseId }),
-    }),
-    Device.countDocuments({
-      isDeleted: false,
-      status: DEVICE_STATUS.ACTIVE,
-      ...(currentUser.role === "SUPER_ADMIN" ? {} : { franchiseId: currentUser.franchiseId }),
-    }),
-  ]);
+  const [devicesPlusOne, totalMatching, totalDevices, activeDevices] =
+    await Promise.all([
+      Device.find(queryFilter)
+        .sort({ createdAt: -1, _id: -1 })
+        .limit(pageLimit + 1),
+      Device.countDocuments(baseFilter),
+      Device.countDocuments({
+        isDeleted: false,
+        ...(currentUser.role === "SUPER_ADMIN"
+          ? {}
+          : { franchiseId: currentUser.franchiseId }),
+      }),
+      Device.countDocuments({
+        isDeleted: false,
+        status: DEVICE_STATUS.ACTIVE,
+        ...(currentUser.role === "SUPER_ADMIN"
+          ? {}
+          : { franchiseId: currentUser.franchiseId }),
+      }),
+    ]);
 
   const hasNext = devicesPlusOne.length > pageLimit;
   const devices = hasNext ? devicesPlusOne.slice(0, pageLimit) : devicesPlusOne;
 
   const lastDevice = devices[devices.length - 1];
-  const nextCursor = hasNext && lastDevice
-    ? encodeCursor({ createdAt: lastDevice.createdAt, _id: lastDevice._id })
-    : null;
+  const nextCursor =
+    hasNext && lastDevice
+      ? encodeCursor({ createdAt: lastDevice.createdAt, _id: lastDevice._id })
+      : null;
 
   return {
     items: devices,
@@ -167,13 +195,22 @@ export async function updateDevice(currentUser, deviceId, payload) {
     throw new AppError("Device not found", 404);
   }
 
-  if (currentUser.role !== "FRANCHISE_ADMIN" && currentUser.role !== "OUTLET_MANAGER") {
-    throw new AppError("Only Franchise Admin or Outlet Manager can update devices", 403);
+  if (
+    currentUser.role !== "FRANCHISE_ADMIN" &&
+    currentUser.role !== "OUTLET_MANAGER"
+  ) {
+    throw new AppError(
+      "Only Franchise Admin or Outlet Manager can update devices",
+      403,
+    );
   }
 
   if (currentUser.role === "OUTLET_MANAGER") {
     if (device.outletId.toString() !== currentUser.outletId.toString()) {
-      throw new AppError("Outlet Manager can only update devices in their own outlet", 403);
+      throw new AppError(
+        "Outlet Manager can only update devices in their own outlet",
+        403,
+      );
     }
   }
 
@@ -186,8 +223,14 @@ export async function updateDevice(currentUser, deviceId, payload) {
 }
 
 export async function softDeleteDevice(currentUser, deviceId) {
-  if (currentUser.role !== "FRANCHISE_ADMIN" && currentUser.role !== "OUTLET_MANAGER") {
-    throw new AppError("Only Franchise Admin or Outlet Manager can delete devices", 403);
+  if (
+    currentUser.role !== "FRANCHISE_ADMIN" &&
+    currentUser.role !== "OUTLET_MANAGER"
+  ) {
+    throw new AppError(
+      "Only Franchise Admin or Outlet Manager can delete devices",
+      403,
+    );
   }
 
   const device = await Device.findOne({
@@ -202,7 +245,10 @@ export async function softDeleteDevice(currentUser, deviceId) {
 
   if (currentUser.role === "OUTLET_MANAGER") {
     if (device.outletId.toString() !== currentUser.outletId.toString()) {
-      throw new AppError("Outlet Manager can only delete devices in their own outlet", 403);
+      throw new AppError(
+        "Outlet Manager can only delete devices in their own outlet",
+        403,
+      );
     }
   }
 
@@ -243,15 +289,21 @@ export async function updateHeartbeat(deviceUser, metadata, ip) {
     {
       lastSeenAt: new Date(),
       appVersion: metadata.appVersion,
-      osVersion:  metadata.osVersion,
-      ipAddress:  ip,
+      osVersion: metadata.osVersion,
+      ipAddress: ip,
     },
   );
 }
 
 export async function setDeviceStatus(currentUser, deviceId, status) {
-  if (currentUser.role !== "FRANCHISE_ADMIN" && currentUser.role !== "OUTLET_MANAGER") {
-    throw new AppError("Only Franchise Admin or Outlet Manager can change device status", 403);
+  if (
+    currentUser.role !== "FRANCHISE_ADMIN" &&
+    currentUser.role !== "OUTLET_MANAGER"
+  ) {
+    throw new AppError(
+      "Only Franchise Admin or Outlet Manager can change device status",
+      403,
+    );
   }
 
   if (!Object.values(DEVICE_STATUS).includes(status)) {
@@ -270,7 +322,10 @@ export async function setDeviceStatus(currentUser, deviceId, status) {
 
   if (currentUser.role === "OUTLET_MANAGER") {
     if (device.outletId.toString() !== currentUser.outletId.toString()) {
-      throw new AppError("Outlet Manager can only change status of devices in their own outlet", 403);
+      throw new AppError(
+        "Outlet Manager can only change status of devices in their own outlet",
+        403,
+      );
     }
   }
 

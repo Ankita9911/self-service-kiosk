@@ -23,7 +23,11 @@ export const listDevicesController = asyncHandler(async (req, res) => {
 });
 
 export const updateDeviceController = asyncHandler(async (req, res) => {
-  const result = await service.updateDevice(req.user, req.params.deviceId, req.body);
+  const result = await service.updateDevice(
+    req.user,
+    req.params.deviceId,
+    req.body,
+  );
 
   return sendSuccess(res, {
     message: "Device updated successfully",
@@ -57,7 +61,11 @@ export const heartbeatController = asyncHandler(async (req, res) => {
 });
 
 export const setDeviceStatusController = asyncHandler(async (req, res) => {
-  const result = await service.setDeviceStatus(req.user, req.params.deviceId, req.body.status);
+  const result = await service.setDeviceStatus(
+    req.user,
+    req.params.deviceId,
+    req.body.status,
+  );
 
   return sendSuccess(res, {
     message: "Device status updated successfully",

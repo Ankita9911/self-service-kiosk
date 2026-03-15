@@ -36,7 +36,7 @@ const franchiseSchema = new Schema(
 
     isDeleted: { type: Boolean, default: false, index: true },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 franchiseSchema.index({ status: 1 });

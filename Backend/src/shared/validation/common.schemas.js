@@ -1,9 +1,11 @@
 import { z } from "zod";
 
-export const objectIdSchema = z.string().regex(/^[a-f\d]{24}$/i, "Invalid ID format");
+export const objectIdSchema = z
+  .string()
+  .regex(/^[a-f\d]{24}$/i, "Invalid ID format");
 
 export const paginationSchema = z.object({
-  limit:  z.string().optional(),
+  limit: z.string().optional(),
   cursor: z.string().optional(),
 });
 

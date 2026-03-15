@@ -22,7 +22,7 @@ router.post(
   authenticate,
   requireDevice,
   validate(heartbeatSchema),
-  controller.heartbeatController
+  controller.heartbeatController,
 );
 
 router.use(authenticate, requireUser);
@@ -31,39 +31,39 @@ router.post(
   "/",
   authorize(PERMISSIONS.DEVICE_CREATE),
   validate(createDeviceSchema),
-  controller.createDeviceController
+  controller.createDeviceController,
 );
 
 router.get(
   "/",
   authorize(PERMISSIONS.DEVICE_VIEW),
-  controller.listDevicesController
+  controller.listDevicesController,
 );
 
 router.patch(
   "/:deviceId/status",
   authorize(PERMISSIONS.DEVICE_CHANGE_STATUS),
   validate(setDeviceStatusSchema),
-  controller.setDeviceStatusController
+  controller.setDeviceStatusController,
 );
 
 router.patch(
   "/:deviceId",
   authorize(PERMISSIONS.DEVICE_UPDATE),
   validate(updateDeviceSchema),
-  controller.updateDeviceController
+  controller.updateDeviceController,
 );
 
 router.delete(
   "/:deviceId",
   authorize(PERMISSIONS.DEVICE_DELETE),
-  controller.deleteDeviceController
+  controller.deleteDeviceController,
 );
 
 router.post(
   "/:deviceId/reset-secret",
   authorize(PERMISSIONS.DEVICE_UPDATE),
-  controller.resetSecretController
+  controller.resetSecretController,
 );
 
 export default router;

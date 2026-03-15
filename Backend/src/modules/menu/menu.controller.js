@@ -22,7 +22,11 @@ export const getCategories = asyncHandler(async (req, res) => {
 });
 
 export const updateCategory = asyncHandler(async (req, res) => {
-  const result = await menuService.updateCategory(req.params.id, req.body, req.tenant);
+  const result = await menuService.updateCategory(
+    req.params.id,
+    req.body,
+    req.tenant,
+  );
 
   return sendSuccess(res, {
     statusCode: 202,
@@ -53,10 +57,13 @@ export const createMenuItem = asyncHandler(async (req, res) => {
 export const getMenuItems = asyncHandler(async (req, res) => {
   const { categoryId, search, status, cursor, limit } = req.query;
 
-  const result = await menuService.getMenuItems(
-    req.tenant,
-    { categoryId, search, status, cursor, limit }
-  );
+  const result = await menuService.getMenuItems(req.tenant, {
+    categoryId,
+    search,
+    status,
+    cursor,
+    limit,
+  });
 
   return sendSuccess(res, {
     message: "Menu items fetched successfully",
@@ -66,7 +73,11 @@ export const getMenuItems = asyncHandler(async (req, res) => {
 });
 
 export const updateMenuItem = asyncHandler(async (req, res) => {
-  const result = await menuService.updateMenuItem(req.params.id, req.body, req.tenant);
+  const result = await menuService.updateMenuItem(
+    req.params.id,
+    req.body,
+    req.tenant,
+  );
 
   return sendSuccess(res, {
     statusCode: 202,
@@ -76,7 +87,11 @@ export const updateMenuItem = asyncHandler(async (req, res) => {
 });
 
 export const updateItemPrice = asyncHandler(async (req, res) => {
-  const result = await menuService.updateItemPrice(req.params.id, req.body.price, req.tenant);
+  const result = await menuService.updateItemPrice(
+    req.params.id,
+    req.body.price,
+    req.tenant,
+  );
 
   return sendSuccess(res, {
     statusCode: 202,
@@ -89,7 +104,7 @@ export const updateItemStock = asyncHandler(async (req, res) => {
   const result = await menuService.updateItemStock(
     req.params.id,
     req.body.stockQuantity,
-    req.tenant
+    req.tenant,
   );
 
   return sendSuccess(res, {

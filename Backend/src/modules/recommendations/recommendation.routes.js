@@ -5,7 +5,10 @@ const router = express.Router();
 
 router.get("/trending", controller.getTrending);
 
-router.get("/frequently-bought-together", controller.getFrequentlyBoughtTogether);
+router.get(
+  "/frequently-bought-together",
+  controller.getFrequentlyBoughtTogether,
+);
 
 router.get("/complete-meal", controller.getCompleteMeal);
 

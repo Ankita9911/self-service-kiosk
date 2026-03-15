@@ -22,9 +22,14 @@ export async function handleMenuPriceUpdate(payload) {
   const { itemId, price, tenant } = payload;
 
   const item = await MenuItem.findOneAndUpdate(
-    { _id: itemId, franchiseId: tenant.franchiseId, outletId: tenant.outletId, isDeleted: false },
+    {
+      _id: itemId,
+      franchiseId: tenant.franchiseId,
+      outletId: tenant.outletId,
+      isDeleted: false,
+    },
     { price },
-    { new: true }
+    { new: true },
   );
 
   if (!item) throw new Error(`Menu item not found for price update: ${itemId}`);
@@ -32,7 +37,9 @@ export async function handleMenuPriceUpdate(payload) {
   await invalidateMenuCache(["menuItems"], tenant);
 
   emitMenuUpdated(tenant.outletId, "MENU_PRICE_UPDATE");
-  console.log(`[queue] Price updated — item=${itemId} price=${price} outlet=${tenant.outletId}`);
+  console.log(
+    `[queue] Price updated — item=${itemId} price=${price} outlet=${tenant.outletId}`,
+  );
 
   return item;
 }
@@ -47,16 +54,24 @@ export async function handleMenuStockUpdate(payload) {
     isDeleted: false,
   });
 
-  if (!currentItem) throw new Error(`Menu item not found for stock update: ${itemId}`);
+  if (!currentItem)
+    throw new Error(`Menu item not found for stock update: ${itemId}`);
 
   if ((currentItem.inventoryMode ?? "RECIPE") !== "DIRECT") {
-    throw new Error(`Direct stock updates are only allowed for DIRECT inventory items: ${itemId}`);
+    throw new Error(
+      `Direct stock updates are only allowed for DIRECT inventory items: ${itemId}`,
+    );
   }
 
   const item = await MenuItem.findOneAndUpdate(
-    { _id: itemId, franchiseId: tenant.franchiseId, outletId: tenant.outletId, isDeleted: false },
+    {
+      _id: itemId,
+      franchiseId: tenant.franchiseId,
+      outletId: tenant.outletId,
+      isDeleted: false,
+    },
     { stockQuantity },
-    { new: true }
+    { new: true },
   );
 
   if (!item) throw new Error(`Menu item not found for stock update: ${itemId}`);
@@ -64,7 +79,9 @@ export async function handleMenuStockUpdate(payload) {
   await invalidateMenuCache(["menuItems"], tenant);
 
   emitMenuUpdated(tenant.outletId, "MENU_STOCK_UPDATE");
-  console.log(`[queue] Stock updated — item=${itemId} qty=${stockQuantity} outlet=${tenant.outletId}`);
+  console.log(
+    `[queue] Stock updated — item=${itemId} qty=${stockQuantity} outlet=${tenant.outletId}`,
+  );
 
   return item;
 }
@@ -81,7 +98,9 @@ export async function handleMenuCategoryCreate(payload) {
   await invalidateMenuCache(["categories"], tenant);
 
   emitMenuUpdated(tenant.outletId, "MENU_CATEGORY_CREATE");
-  console.log(`[queue] Category created — id=${category._id} outlet=${tenant.outletId}`);
+  console.log(
+    `[queue] Category created — id=${category._id} outlet=${tenant.outletId}`,
+  );
   return category;
 }
 
@@ -89,9 +108,14 @@ export async function handleMenuCategoryUpdate(payload) {
   const { id, data, tenant } = payload;
 
   const category = await Category.findOneAndUpdate(
-    { _id: id, franchiseId: tenant.franchiseId, outletId: tenant.outletId, isDeleted: false },
+    {
+      _id: id,
+      franchiseId: tenant.franchiseId,
+      outletId: tenant.outletId,
+      isDeleted: false,
+    },
     data,
-    { new: true }
+    { new: true },
   );
 
   if (!category) throw new Error(`Category not found for update: ${id}`);
@@ -107,22 +131,37 @@ export async function handleMenuCategoryDelete(payload) {
   const { id, tenant } = payload;
 
   const category = await Category.findOneAndUpdate(
-    { _id: id, franchiseId: tenant.franchiseId, outletId: tenant.outletId, isDeleted: false },
+    {
+      _id: id,
+      franchiseId: tenant.franchiseId,
+      outletId: tenant.outletId,
+      isDeleted: false,
+    },
     { isDeleted: true },
-    { new: true }
+    { new: true },
   );
 
   if (!category) throw new Error(`Category not found for delete: ${id}`);
 
   await MenuItem.updateMany(
-    { categoryId: id, franchiseId: tenant.franchiseId, outletId: tenant.outletId, isDeleted: false },
-    { isDeleted: true }
+    {
+      categoryId: id,
+      franchiseId: tenant.franchiseId,
+      outletId: tenant.outletId,
+      isDeleted: false,
+    },
+    { isDeleted: true },
   );
 
-  await invalidateMenuCache(["categories", "menuItems", `menuItems:${id}`], tenant);
+  await invalidateMenuCache(
+    ["categories", "menuItems", `menuItems:${id}`],
+    tenant,
+  );
 
   emitMenuUpdated(tenant.outletId, "MENU_CATEGORY_DELETE");
-  console.log(`[queue] Category deleted (cascade) — id=${id} outlet=${tenant.outletId}`);
+  console.log(
+    `[queue] Category deleted (cascade) — id=${id} outlet=${tenant.outletId}`,
+  );
   return category;
 }
 
@@ -140,7 +179,9 @@ export async function handleMenuItemCreate(payload) {
   await invalidateMenuCache(keys, tenant);
 
   emitMenuUpdated(tenant.outletId, "MENU_ITEM_CREATE");
-  console.log(`[queue] Menu item created — id=${item._id} outlet=${tenant.outletId}`);
+  console.log(
+    `[queue] Menu item created — id=${item._id} outlet=${tenant.outletId}`,
+  );
   return item;
 }
 
@@ -148,9 +189,14 @@ export async function handleMenuItemUpdate(payload) {
   const { id, data, tenant } = payload;
 
   const item = await MenuItem.findOneAndUpdate(
-    { _id: id, franchiseId: tenant.franchiseId, outletId: tenant.outletId, isDeleted: false },
+    {
+      _id: id,
+      franchiseId: tenant.franchiseId,
+      outletId: tenant.outletId,
+      isDeleted: false,
+    },
     data,
-    { new: true }
+    { new: true },
   );
 
   if (!item) throw new Error(`Menu item not found for update: ${id}`);
@@ -168,9 +214,14 @@ export async function handleMenuItemDelete(payload) {
   const { id, tenant } = payload;
 
   const item = await MenuItem.findOneAndUpdate(
-    { _id: id, franchiseId: tenant.franchiseId, outletId: tenant.outletId, isDeleted: false },
+    {
+      _id: id,
+      franchiseId: tenant.franchiseId,
+      outletId: tenant.outletId,
+      isDeleted: false,
+    },
     { isDeleted: true },
-    { new: true }
+    { new: true },
   );
 
   if (!item) throw new Error(`Menu item not found for delete: ${id}`);
@@ -199,7 +250,7 @@ export async function handleMenuItemStatusUpdate(payload) {
   const item = await MenuItem.findByIdAndUpdate(
     id,
     { isActive: !current.isActive },
-    { new: true }
+    { new: true },
   );
 
   const keys = ["menuItems"];
@@ -207,7 +258,9 @@ export async function handleMenuItemStatusUpdate(payload) {
   await invalidateMenuCache(keys, tenant);
 
   emitMenuUpdated(tenant.outletId, "MENU_ITEM_STATUS_UPDATE");
-  console.log(`[queue] Item status toggled — id=${id} isActive=${item.isActive} outlet=${tenant.outletId}`);
+  console.log(
+    `[queue] Item status toggled — id=${id} isActive=${item.isActive} outlet=${tenant.outletId}`,
+  );
   return item;
 }
 
@@ -221,7 +274,9 @@ export async function handleComboCreate(payload) {
   });
 
   emitMenuUpdated(tenant.outletId, "COMBO_CREATE");
-  console.log(`[queue] Combo created — id=${combo._id} outlet=${tenant.outletId}`);
+  console.log(
+    `[queue] Combo created — id=${combo._id} outlet=${tenant.outletId}`,
+  );
   return combo;
 }
 
@@ -229,9 +284,14 @@ export async function handleComboUpdate(payload) {
   const { id, data, tenant } = payload;
 
   const combo = await Combo.findOneAndUpdate(
-    { _id: id, franchiseId: tenant.franchiseId, outletId: tenant.outletId, isDeleted: false },
+    {
+      _id: id,
+      franchiseId: tenant.franchiseId,
+      outletId: tenant.outletId,
+      isDeleted: false,
+    },
     data,
-    { new: true }
+    { new: true },
   );
 
   if (!combo) throw new Error(`Combo not found for update: ${id}`);
@@ -245,9 +305,14 @@ export async function handleComboDelete(payload) {
   const { id, tenant } = payload;
 
   const combo = await Combo.findOneAndUpdate(
-    { _id: id, franchiseId: tenant.franchiseId, outletId: tenant.outletId, isDeleted: false },
+    {
+      _id: id,
+      franchiseId: tenant.franchiseId,
+      outletId: tenant.outletId,
+      isDeleted: false,
+    },
     { isDeleted: true },
-    { new: true }
+    { new: true },
   );
 
   if (!combo) throw new Error(`Combo not found for delete: ${id}`);

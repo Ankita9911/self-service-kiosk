@@ -25,15 +25,15 @@ const orderItemSchema = new Schema(
       },
     ],
   },
-  { _id: false }
+  { _id: false },
 );
 
 const orderSchema = new Schema(
   {
     franchiseId: { type: Schema.Types.ObjectId, required: true, index: true },
-    outletId:    { type: Schema.Types.ObjectId, required: true, index: true },
+    outletId: { type: Schema.Types.ObjectId, required: true, index: true },
 
-    orderNumber:   { type: Number, required: true },
+    orderNumber: { type: Number, required: true },
     clientOrderId: { type: String, required: true },
 
     items: [orderItemSchema],
@@ -60,7 +60,7 @@ const orderSchema = new Schema(
 
     createdByRole: { type: String, required: true },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 orderSchema.index({ outletId: 1, clientOrderId: 1 }, { unique: true });

@@ -67,7 +67,10 @@ export async function authenticate(req, res, next) {
         return next(new AppError("Device is inactive", 403, "DEVICE_INACTIVE"));
       }
     } else {
-      const device = await Device.findOne({ deviceId: decoded.deviceId, isDeleted: false }).lean();
+      const device = await Device.findOne({
+        deviceId: decoded.deviceId,
+        isDeleted: false,
+      }).lean();
       if (!device || device.status !== "ACTIVE") {
         return next(new AppError("Device is inactive", 403, "DEVICE_INACTIVE"));
       }
@@ -79,12 +82,16 @@ export async function authenticate(req, res, next) {
 
     if (cached) {
       if (cached !== "ACTIVE") {
-        return next(new AppError("Account is inactive", 403, "ACCOUNT_INACTIVE"));
+        return next(
+          new AppError("Account is inactive", 403, "ACCOUNT_INACTIVE"),
+        );
       }
     } else {
       const user = await User.findById(decoded.userId).lean();
       if (!user || user.isDeleted || user.status !== "ACTIVE") {
-        return next(new AppError("Account is inactive", 403, "ACCOUNT_INACTIVE"));
+        return next(
+          new AppError("Account is inactive", 403, "ACCOUNT_INACTIVE"),
+        );
       }
       await setCachedStatus(cacheKey, user.status);
     }

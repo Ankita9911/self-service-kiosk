@@ -6,9 +6,9 @@ import { getRedisClient } from "../../core/cache/redis.client.js";
 import { buildTenantKey } from "../../core/cache/cache.utils.js";
 
 const TTL = {
-  TRENDING:          5 * 60,
+  TRENDING: 5 * 60,
   FREQUENTLY_BOUGHT: 30 * 60,
-  COMPLETE_MEAL:     10 * 60,
+  COMPLETE_MEAL: 10 * 60,
 };
 
 async function withCache(key, ttl, fn) {
@@ -36,7 +36,10 @@ export async function getTrending(tenant, options = {}) {
   const { windowHours = 4, limit = 8 } = options;
   const outletId = new mongoose.Types.ObjectId(tenant.outletId);
   const since = new Date(Date.now() - windowHours * 60 * 60 * 1000);
-  const cacheKey = buildTenantKey(`rec:trending:${windowHours}h:${limit}`, tenant);
+  const cacheKey = buildTenantKey(
+    `rec:trending:${windowHours}h:${limit}`,
+    tenant,
+  );
 
   return withCache(cacheKey, TTL.TRENDING, async () => {
     const soldItems = await Order.aggregate([
@@ -71,7 +74,9 @@ export async function getTrending(tenant, options = {}) {
       isDeleted: false,
       isActive: true,
     })
-      .select("_id name description imageUrl price stockQuantity offers categoryId serviceType")
+      .select(
+        "_id name description imageUrl price stockQuantity offers categoryId serviceType",
+      )
       .lean();
 
     const liveMap = new Map(liveItems.map((item) => [String(item._id), item]));
@@ -100,7 +105,11 @@ export async function getTrending(tenant, options = {}) {
   });
 }
 
-export async function getFrequentlyBoughtTogether(tenant, itemIds = [], options = {}) {
+export async function getFrequentlyBoughtTogether(
+  tenant,
+  itemIds = [],
+  options = {},
+) {
   const { limit = 5, windowDays = 30 } = options;
 
   if (!itemIds.length) return [];
@@ -108,7 +117,10 @@ export async function getFrequentlyBoughtTogether(tenant, itemIds = [], options 
   const outletId = new mongoose.Types.ObjectId(tenant.outletId);
   const since = new Date(Date.now() - windowDays * 24 * 60 * 60 * 1000);
   const sortedIds = [...itemIds].sort().join(",");
-  const cacheKey = buildTenantKey(`rec:fbt:${sortedIds}:${windowDays}d`, tenant);
+  const cacheKey = buildTenantKey(
+    `rec:fbt:${sortedIds}:${windowDays}d`,
+    tenant,
+  );
 
   return withCache(cacheKey, TTL.FREQUENTLY_BOUGHT, async () => {
     const seedIds = itemIds.map((id) => new mongoose.Types.ObjectId(id));
@@ -145,7 +157,9 @@ export async function getFrequentlyBoughtTogether(tenant, itemIds = [], options 
       isDeleted: false,
       isActive: true,
     })
-      .select("_id name description imageUrl price stockQuantity offers categoryId serviceType")
+      .select(
+        "_id name description imageUrl price stockQuantity offers categoryId serviceType",
+      )
       .lean();
 
     const liveMap = new Map(liveItems.map((item) => [String(item._id), item]));
@@ -173,13 +187,21 @@ export async function getFrequentlyBoughtTogether(tenant, itemIds = [], options 
   });
 }
 
-export async function getCompleteMeal(tenant, cartItemIds = [], cartCategoryIds = [], options = {}) {
+export async function getCompleteMeal(
+  tenant,
+  cartItemIds = [],
+  cartCategoryIds = [],
+  options = {},
+) {
   const { limit = 4, windowDays = 30 } = options;
 
   const outletId = new mongoose.Types.ObjectId(tenant.outletId);
   const since = new Date(Date.now() - windowDays * 24 * 60 * 60 * 1000);
   const sortedCatIds = [...cartCategoryIds].sort().join(",");
-  const cacheKey = buildTenantKey(`rec:meal:${sortedCatIds}:${windowDays}d`, tenant);
+  const cacheKey = buildTenantKey(
+    `rec:meal:${sortedCatIds}:${windowDays}d`,
+    tenant,
+  );
 
   return withCache(cacheKey, TTL.COMPLETE_MEAL, async () => {
     const popularFromOtherCategories = await Order.aggregate([
@@ -195,11 +217,16 @@ export async function getCompleteMeal(tenant, cartItemIds = [], cartCategoryIds 
       { $limit: 50 },
     ]);
 
-    if (popularFromOtherCategories.length === 0) return { suggestions: [], comboDeal: null };
+    if (popularFromOtherCategories.length === 0)
+      return { suggestions: [], comboDeal: null };
 
     const popularIds = popularFromOtherCategories.map((p) => p._id);
-    const excludedCategoryIds = cartCategoryIds.map((id) => new mongoose.Types.ObjectId(id));
-    const excludedItemIds = cartItemIds.map((id) => new mongoose.Types.ObjectId(id));
+    const excludedCategoryIds = cartCategoryIds.map(
+      (id) => new mongoose.Types.ObjectId(id),
+    );
+    const excludedItemIds = cartItemIds.map(
+      (id) => new mongoose.Types.ObjectId(id),
+    );
 
     const liveItems = await MenuItem.find({
       _id: { $in: popularIds },
@@ -208,19 +235,23 @@ export async function getCompleteMeal(tenant, cartItemIds = [], cartCategoryIds 
       isDeleted: false,
       isActive: true,
       stockQuantity: { $gt: 0 },
-      ...(excludedCategoryIds.length > 0 && { categoryId: { $nin: excludedCategoryIds } }),
+      ...(excludedCategoryIds.length > 0 && {
+        categoryId: { $nin: excludedCategoryIds },
+      }),
       ...(excludedItemIds.length > 0 && { _id: { $nin: excludedItemIds } }),
     })
-      .select("_id name description imageUrl price stockQuantity offers categoryId serviceType")
+      .select(
+        "_id name description imageUrl price stockQuantity offers categoryId serviceType",
+      )
       .lean();
 
     const popularRankMap = new Map(
-      popularFromOtherCategories.map((p, idx) => [String(p._id), idx])
+      popularFromOtherCategories.map((p, idx) => [String(p._id), idx]),
     );
     liveItems.sort(
       (a, b) =>
         (popularRankMap.get(String(a._id)) ?? 999) -
-        (popularRankMap.get(String(b._id)) ?? 999)
+        (popularRankMap.get(String(b._id)) ?? 999),
     );
 
     const suggestions = liveItems.slice(0, limit).map((item) => ({
@@ -237,7 +268,9 @@ export async function getCompleteMeal(tenant, cartItemIds = [], cartCategoryIds 
 
     let comboDeal = null;
     if (cartItemIds.length > 0) {
-      const cartObjectIds = cartItemIds.map((id) => new mongoose.Types.ObjectId(id));
+      const cartObjectIds = cartItemIds.map(
+        (id) => new mongoose.Types.ObjectId(id),
+      );
 
       const matchingCombos = await Combo.find({
         franchiseId: tenant.franchiseId,
@@ -246,14 +279,16 @@ export async function getCompleteMeal(tenant, cartItemIds = [], cartCategoryIds 
         isActive: true,
         "items.menuItemId": { $in: cartObjectIds },
       })
-        .select("_id name description imageUrl items originalPrice comboPrice serviceType")
+        .select(
+          "_id name description imageUrl items originalPrice comboPrice serviceType",
+        )
         .lean();
 
       if (matchingCombos.length > 0) {
         const best = matchingCombos
           .map((combo) => {
             const overlap = combo.items.filter((ci) =>
-              cartItemIds.includes(String(ci.menuItemId))
+              cartItemIds.includes(String(ci.menuItemId)),
             ).length;
             return { ...combo, overlap };
           })

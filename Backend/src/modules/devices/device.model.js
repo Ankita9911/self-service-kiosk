@@ -5,8 +5,18 @@ const { Schema } = mongoose;
 
 const deviceSchema = new Schema(
   {
-    franchiseId: { type: Schema.Types.ObjectId, ref: "Franchise", required: true, index: true },
-    outletId:    { type: Schema.Types.ObjectId, ref: "Outlet",    required: true, index: true },
+    franchiseId: {
+      type: Schema.Types.ObjectId,
+      ref: "Franchise",
+      required: true,
+      index: true,
+    },
+    outletId: {
+      type: Schema.Types.ObjectId,
+      ref: "Outlet",
+      required: true,
+      index: true,
+    },
 
     deviceId: {
       type: String,
@@ -30,18 +40,18 @@ const deviceSchema = new Schema(
 
     lastSeenAt: Date,
     appVersion: String,
-    osVersion:  String,
-    ipAddress:  String,
+    osVersion: String,
+    ipAddress: String,
 
-    landingImage:    { type: String },
-    landingTitle:    { type: String },
+    landingImage: { type: String },
+    landingTitle: { type: String },
     landingSubtitle: { type: String },
 
     isDeleted: { type: Boolean, default: false, index: true },
 
     createdBy: { type: Schema.Types.ObjectId, ref: "User", required: true },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 deviceSchema.index({ franchiseId: 1, outletId: 1 });

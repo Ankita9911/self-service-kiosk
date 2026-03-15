@@ -36,7 +36,7 @@ export async function createOrder(data, tenant, userRole) {
   const counter = await Counter.findOneAndUpdate(
     { outletId: tenant.outletId },
     { $inc: { seq: 1 } },
-    { returnDocument: "after", upsert: true }
+    { returnDocument: "after", upsert: true },
   );
   const orderNumber = counter.seq;
 
@@ -65,12 +65,21 @@ export async function getOrderProcessingStatus(clientOrderId, tenant) {
     throw new AppError("Outlet context required", 403, "OUTLET_REQUIRED");
   }
 
-  const request = await OrderRequest.findOne({ outletId: tenant.outletId, clientOrderId })
+  const request = await OrderRequest.findOne({
+    outletId: tenant.outletId,
+    clientOrderId,
+  })
     .select("clientOrderId orderNumber status errorMessage orderId")
     .lean();
 
   if (!request) {
-    return { clientOrderId, orderNumber: null, status: "UNKNOWN", errorMessage: null, orderId: null };
+    return {
+      clientOrderId,
+      orderNumber: null,
+      status: "UNKNOWN",
+      errorMessage: null,
+      orderId: null,
+    };
   }
 
   return {
@@ -101,7 +110,10 @@ export async function updateOrderStatus(orderId, newStatus, tenant) {
     throw new AppError("Outlet context required", 403, "OUTLET_REQUIRED");
   }
 
-  const order = await Order.findOne({ _id: orderId, outletId: tenant.outletId });
+  const order = await Order.findOne({
+    _id: orderId,
+    outletId: tenant.outletId,
+  });
 
   if (!order) {
     throw new AppError("Order not found", 404, "ORDER_NOT_FOUND");
@@ -112,7 +124,7 @@ export async function updateOrderStatus(orderId, newStatus, tenant) {
     throw new AppError(
       `Cannot transition from ${order.status} to ${newStatus}`,
       400,
-      "INVALID_STATUS_TRANSITION"
+      "INVALID_STATUS_TRANSITION",
     );
   }
 

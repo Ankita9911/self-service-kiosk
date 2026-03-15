@@ -32,7 +32,10 @@ export function initSocket(httpServer) {
       const decoded = jwt.verify(token, env.JWT_SECRET);
 
       if (decoded.type === "DEVICE") {
-        const device = await Device.findOne({ deviceId: decoded.deviceId, isDeleted: false }).lean();
+        const device = await Device.findOne({
+          deviceId: decoded.deviceId,
+          isDeleted: false,
+        }).lean();
         if (!device || device.status !== "ACTIVE") {
           return next(new Error("Device inactive"));
         }

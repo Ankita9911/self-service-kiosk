@@ -15,26 +15,22 @@ router.post(
   "/",
   authorize(PERMISSIONS.ORDERS_CREATE),
   validate(createOrderSchema),
-  controller.createOrder
+  controller.createOrder,
 );
 
 router.get(
   "/client/:clientOrderId/status",
   authorize(PERMISSIONS.ORDERS_CREATE),
-  controller.getOrderProcessingStatus
+  controller.getOrderProcessingStatus,
 );
 
-router.get(
-  "/",
-  authorize(PERMISSIONS.ORDERS_VIEW),
-  controller.listOrders
-);
+router.get("/", authorize(PERMISSIONS.ORDERS_VIEW), controller.listOrders);
 
 router.patch(
   "/:id/status",
   authorize(PERMISSIONS.ORDERS_UPDATE_STATUS),
   validate(updateOrderStatusSchema),
-  controller.updateOrderStatus
+  controller.updateOrderStatus,
 );
 
 export default router;

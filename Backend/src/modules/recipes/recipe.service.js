@@ -7,7 +7,11 @@ import { buildTenantKey } from "../../core/cache/cache.utils.js";
 import { emitOutletEvent } from "../../realtime/realtime.manager.js";
 import AppError from "../../shared/errors/AppError.js";
 import env from "../../config/env.js";
-import { toBoundedLimit, encodeCursor, decodeCursor } from "../../shared/utils/pagination.js";
+import {
+  toBoundedLimit,
+  encodeCursor,
+  decodeCursor,
+} from "../../shared/utils/pagination.js";
 
 const CACHE_TTL = 300;
 const DEFAULT_LIMIT = 20;
@@ -26,7 +30,7 @@ async function invalidateRecipeCache(tenant, menuItemId = null) {
   }
 }
 
-// ─── Service functions ────────────────────────────────────────────────────────
+// ─── Service functions 
 
 export async function createRecipe(data, tenant) {
   const existing = await Recipe.findOne({
@@ -40,7 +44,7 @@ export async function createRecipe(data, tenant) {
     throw new AppError(
       "A recipe for this menu item already exists. Delete the existing recipe to create a new one.",
       409,
-      "RECIPE_DUPLICATE"
+      "RECIPE_DUPLICATE",
     );
   }
 
@@ -57,7 +61,7 @@ export async function createRecipe(data, tenant) {
       throw new AppError(
         "One or more ingredient IDs are invalid or do not belong to this outlet",
         400,
-        "INVALID_INGREDIENT_IDS"
+        "INVALID_INGREDIENT_IDS",
       );
     }
   }
@@ -81,7 +85,10 @@ export async function createRecipe(data, tenant) {
   return recipe;
 }
 
-export async function getRecipes(tenant, { cursor, limit, search, aiOnly } = {}) {
+export async function getRecipes(
+  tenant,
+  { cursor, limit, search, aiOnly } = {},
+) {
   const pageLimit = toBoundedLimit(limit, DEFAULT_LIMIT);
 
   const tenantFilter = { franchiseId: tenant.franchiseId, isDeleted: false };
@@ -95,12 +102,15 @@ export async function getRecipes(tenant, { cursor, limit, search, aiOnly } = {})
       isDeleted: false,
       name: { $regex: search.trim(), $options: "i" },
       ...(tenant.outletId ? { outletId: tenant.outletId } : {}),
-    }).select("_id").lean();
+    })
+      .select("_id")
+      .lean();
     searchMenuItemIds = matchingItems.map((m) => m._id);
   }
 
   const baseFilter = { ...tenantFilter };
-  if (searchMenuItemIds !== null) baseFilter.menuItemId = { $in: searchMenuItemIds };
+  if (searchMenuItemIds !== null)
+    baseFilter.menuItemId = { $in: searchMenuItemIds };
   if (aiOnly === "true" || aiOnly === true) baseFilter.aiGenerated = true;
 
   const queryFilter = { ...baseFilter };
@@ -113,23 +123,27 @@ export async function getRecipes(tenant, { cursor, limit, search, aiOnly } = {})
     ];
   }
 
-  const [itemsPlusOne, totalMatching, totalRecipes, aiGeneratedCount] = await Promise.all([
-    Recipe.find(queryFilter)
-      .populate("menuItemId", "name price categoryId")
-      .populate("ingredients.ingredientId", "name unit currentStock")
-      .sort({ createdAt: -1, _id: -1 })
-      .limit(pageLimit + 1)
-      .lean(),
-    Recipe.countDocuments(baseFilter),
-    Recipe.countDocuments(tenantFilter),
-    Recipe.countDocuments({ ...tenantFilter, aiGenerated: true }),
-  ]);
+  const [itemsPlusOne, totalMatching, totalRecipes, aiGeneratedCount] =
+    await Promise.all([
+      Recipe.find(queryFilter)
+        .populate("menuItemId", "name price categoryId")
+        .populate("ingredients.ingredientId", "name unit currentStock")
+        .sort({ createdAt: -1, _id: -1 })
+        .limit(pageLimit + 1)
+        .lean(),
+      Recipe.countDocuments(baseFilter),
+      Recipe.countDocuments(tenantFilter),
+      Recipe.countDocuments({ ...tenantFilter, aiGenerated: true }),
+    ]);
 
   const hasNext = itemsPlusOne.length > pageLimit;
   const items = hasNext ? itemsPlusOne.slice(0, pageLimit) : itemsPlusOne;
 
   const nextCursor = hasNext
-    ? encodeCursor({ createdAt: items[items.length - 1].createdAt, _id: items[items.length - 1]._id })
+    ? encodeCursor({
+        createdAt: items[items.length - 1].createdAt,
+        _id: items[items.length - 1]._id,
+      })
     : null;
 
   return {
@@ -191,7 +205,12 @@ export async function getRecipeByMenuItemId(menuItemId, tenant) {
 }
 
 export async function updateRecipe(id, data, tenant) {
-  const allowedFields = ["ingredients", "prepTime", "instructions", "aiGenerated"];
+  const allowedFields = [
+    "ingredients",
+    "prepTime",
+    "instructions",
+    "aiGenerated",
+  ];
   const update = {};
   for (const field of allowedFields) {
     if (data[field] !== undefined) update[field] = data[field];
@@ -210,15 +229,20 @@ export async function updateRecipe(id, data, tenant) {
       throw new AppError(
         "One or more ingredient IDs are invalid or do not belong to this outlet",
         400,
-        "INVALID_INGREDIENT_IDS"
+        "INVALID_INGREDIENT_IDS",
       );
     }
   }
 
   const recipe = await Recipe.findOneAndUpdate(
-    { _id: id, franchiseId: tenant.franchiseId, outletId: tenant.outletId, isDeleted: false },
+    {
+      _id: id,
+      franchiseId: tenant.franchiseId,
+      outletId: tenant.outletId,
+      isDeleted: false,
+    },
     { $set: update },
-    { new: true, runValidators: true }
+    { new: true, runValidators: true },
   )
     .populate("menuItemId", "name price categoryId")
     .populate("ingredients.ingredientId", "name unit currentStock");
@@ -227,7 +251,10 @@ export async function updateRecipe(id, data, tenant) {
     throw new AppError("Recipe not found", 404, "RECIPE_NOT_FOUND");
   }
 
-  await invalidateRecipeCache(tenant, String(recipe.menuItemId?._id || recipe.menuItemId));
+  await invalidateRecipeCache(
+    tenant,
+    String(recipe.menuItemId?._id || recipe.menuItemId),
+  );
   emitOutletEvent(tenant.outletId, "recipe:updated", {
     type: "RECIPE_UPDATE",
     recipeId: String(recipe._id),
@@ -238,9 +265,14 @@ export async function updateRecipe(id, data, tenant) {
 
 export async function deleteRecipe(id, tenant) {
   const recipe = await Recipe.findOneAndUpdate(
-    { _id: id, franchiseId: tenant.franchiseId, outletId: tenant.outletId, isDeleted: false },
+    {
+      _id: id,
+      franchiseId: tenant.franchiseId,
+      outletId: tenant.outletId,
+      isDeleted: false,
+    },
     { $set: { isDeleted: true } },
-    { new: true }
+    { new: true },
   );
 
   if (!recipe) {
@@ -265,7 +297,7 @@ export async function generateRecipeWithAI(description) {
     throw new AppError(
       "AI recipe generation is not configured (missing GEMINI_API_KEY)",
       503,
-      "AI_NOT_CONFIGURED"
+      "AI_NOT_CONFIGURED",
     );
   }
 
@@ -292,12 +324,19 @@ Generate a recipe for: ${description}`;
 
   const raw = response.text;
   if (!raw) {
-    throw new AppError("AI returned an empty response", 502, "AI_EMPTY_RESPONSE");
+    throw new AppError(
+      "AI returned an empty response",
+      502,
+      "AI_EMPTY_RESPONSE",
+    );
   }
 
   let parsed;
   try {
-    const cleaned = raw.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "").trim();
+    const cleaned = raw
+      .replace(/^```(?:json)?\s*/i, "")
+      .replace(/\s*```$/, "")
+      .trim();
     parsed = JSON.parse(cleaned);
   } catch {
     throw new AppError("AI returned invalid JSON", 502, "AI_INVALID_JSON");
@@ -305,9 +344,16 @@ Generate a recipe for: ${description}`;
 
   // Normalise unit values to allowed enum
   const unitMap = {
-    g: "gram", grams: "gram", gram: "gram",
-    ml: "ml", milliliter: "ml", milliliters: "ml",
-    piece: "piece", pieces: "piece", pcs: "piece", nos: "piece",
+    g: "gram",
+    grams: "gram",
+    gram: "gram",
+    ml: "ml",
+    milliliter: "ml",
+    milliliters: "ml",
+    piece: "piece",
+    pieces: "piece",
+    pcs: "piece",
+    nos: "piece",
   };
   if (Array.isArray(parsed.ingredients)) {
     parsed.ingredients = parsed.ingredients.map((ing) => ({

@@ -20,39 +20,39 @@ router.post(
   "/",
   authorize(PERMISSIONS.INGREDIENT_MANAGE),
   validate(createIngredientSchema),
-  ingredientController.createIngredient
+  ingredientController.createIngredient,
 );
 
 router.get(
   "/",
   authorize(PERMISSIONS.INGREDIENT_MANAGE),
-  ingredientController.getIngredients
+  ingredientController.getIngredients,
 );
 
 router.get(
   "/:id",
   authorize(PERMISSIONS.INGREDIENT_MANAGE),
-  ingredientController.getIngredientById
+  ingredientController.getIngredientById,
 );
 
 router.patch(
   "/:id",
   authorize(PERMISSIONS.INGREDIENT_MANAGE),
   validate(updateIngredientSchema),
-  ingredientController.updateIngredient
+  ingredientController.updateIngredient,
 );
 
 router.delete(
   "/:id",
   authorize(PERMISSIONS.INGREDIENT_MANAGE),
-  ingredientController.deleteIngredient
+  ingredientController.deleteIngredient,
 );
 
 router.patch(
   "/:id/stock",
   authorize(PERMISSIONS.INVENTORY_MANAGE),
   validate(adjustStockSchema),
-  ingredientController.adjustStock
+  ingredientController.adjustStock,
 );
 
 export default router;

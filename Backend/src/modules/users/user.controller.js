@@ -32,18 +32,13 @@ export const getUserController = asyncHandler(async (req, res) => {
 });
 
 export const updateUserController = asyncHandler(async (req, res) => {
-  const result = await service.updateUser(
-    req.user,
-    req.params.id,
-    req.body
-  );
+  const result = await service.updateUser(req.user, req.params.id, req.body);
 
   return sendSuccess(res, {
     message: "User updated successfully",
     data: result,
   });
 });
-
 
 export const deleteUserController = asyncHandler(async (req, res) => {
   await service.deleteUser(req.user, req.params.id);
@@ -57,7 +52,7 @@ export const changeRoleController = asyncHandler(async (req, res) => {
   const result = await service.changeUserRole(
     req.user,
     req.params.id,
-    req.body.role
+    req.body.role,
   );
 
   return sendSuccess(res, {
@@ -70,7 +65,7 @@ export const changeStatusController = asyncHandler(async (req, res) => {
   const result = await service.changeUserStatus(
     req.user,
     req.params.id,
-    req.body.status
+    req.body.status,
   );
 
   return sendSuccess(res, {
@@ -80,11 +75,7 @@ export const changeStatusController = asyncHandler(async (req, res) => {
 });
 
 export const resetPasswordController = asyncHandler(async (req, res) => {
-  await service.resetPassword(
-    req.user,
-    req.params.id,
-    req.body.password
-  );
+  await service.resetPassword(req.user, req.params.id, req.body.password);
 
   return sendSuccess(res, {
     message: "Password reset successfully",

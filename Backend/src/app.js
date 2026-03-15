@@ -16,7 +16,7 @@ app.use(
   cors({
     origin: env.CLIENT_URL,
     credentials: true,
-  })
+  }),
 );
 app.use(cookieParser());
 app.use(express.json());
@@ -31,7 +31,7 @@ app.use((req, res, next) => {
         url: req.originalUrl,
         status: res.statusCode,
         ms: Date.now() - start,
-      })
+      }),
     );
   });
   next();

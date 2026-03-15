@@ -7,7 +7,7 @@ function getTransporter() {
   if (_transporter) return _transporter;
 
   if (!env.SMTP_HOST || !env.SMTP_USER || !env.SMTP_PASS) {
-    return null; 
+    return null;
   }
 
   _transporter = nodemailer.createTransport({

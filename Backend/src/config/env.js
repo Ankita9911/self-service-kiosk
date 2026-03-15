@@ -18,27 +18,22 @@ const env = {
   JWT_SECRET: requireEnv("JWT_SECRET"),
   CLIENT_URL: process.env.CLIENT_URL || "http://localhost:5173",
 
-  // ── SMTP (optional — email is fire-and-forget, app runs without these) ────
   SMTP_HOST: process.env.SMTP_HOST || "",
   SMTP_PORT: process.env.SMTP_PORT || "587",
   SMTP_USER: process.env.SMTP_USER || "",
   SMTP_PASS: process.env.SMTP_PASS || "",
   SMTP_FROM: process.env.SMTP_FROM || "",
 
-  // ── AWS ───────────────────────────────────────────────────────────────────
   AWS_REGION: process.env.AWS_REGION || "us-east-1",
   AWS_ACCESS_KEY_ID: process.env.AWS_ACCESS_KEY_ID || "",
   AWS_SECRET_ACCESS_KEY: process.env.AWS_SECRET_ACCESS_KEY || "",
   AWS_S3_BUCKET: requireEnv("AWS_S3_BUCKET"),
 
-  // ── SQS ───────────────────────────────────────────────────────────────────
   SQS_QUEUE_URL: requireEnv("SQS_QUEUE_URL"),
 
-  // ── Redis ─────────────────────────────────────────────────────────────────
   REDIS_HOST: process.env.REDIS_HOST || "127.0.0.1",
   REDIS_PORT: parseInt(process.env.REDIS_PORT || "6379", 10),
 
-  // ── Gemini ────────────────────────────────────────────────────────────────
   GEMINI_API_KEY: process.env.GEMINI_API_KEY || "",
 };
 

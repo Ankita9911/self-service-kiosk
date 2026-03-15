@@ -16,19 +16,19 @@ router.post(
   "/",
   authorize(PERMISSIONS.INVENTORY_MANAGE),
   validate(createManualTransactionSchema),
-  stockTransactionController.createManualTransaction
+  stockTransactionController.createManualTransaction,
 );
 
 router.get(
   "/",
   authorize(PERMISSIONS.INVENTORY_MANAGE),
-  stockTransactionController.getTransactions
+  stockTransactionController.getTransactions,
 );
 
 router.get(
   "/:ingredientId/history",
   authorize(PERMISSIONS.INVENTORY_MANAGE),
-  stockTransactionController.getTransactionsByIngredient
+  stockTransactionController.getTransactionsByIngredient,
 );
 
 export default router;

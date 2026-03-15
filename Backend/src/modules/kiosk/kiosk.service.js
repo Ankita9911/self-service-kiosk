@@ -10,7 +10,11 @@ function computeItemStock(item, recipe, ingredientMap) {
     return item.stockQuantity ?? 0;
   }
 
-  if (!recipe || !Array.isArray(recipe.ingredients) || recipe.ingredients.length === 0) {
+  if (
+    !recipe ||
+    !Array.isArray(recipe.ingredients) ||
+    recipe.ingredients.length === 0
+  ) {
     return null;
   }
 
@@ -26,7 +30,7 @@ function computeItemStock(item, recipe, ingredientMap) {
 
     servings = Math.min(
       servings,
-      Math.floor(Number(ingredient.currentStock ?? 0) / requiredQty)
+      Math.floor(Number(ingredient.currentStock ?? 0) / requiredQty),
     );
   }
 
@@ -51,16 +55,15 @@ export async function getKioskMenu(tenant) {
   const customizationIds = [
     ...new Set(
       items
-        .flatMap((item) => (item.customizationItemIds || []).map((id) => String(id)))
-        .filter(Boolean)
+        .flatMap((item) =>
+          (item.customizationItemIds || []).map((id) => String(id)),
+        )
+        .filter(Boolean),
     ),
   ];
 
   const relevantItemIds = [
-    ...new Set([
-      ...items.map((item) => String(item._id)),
-      ...customizationIds,
-    ]),
+    ...new Set([...items.map((item) => String(item._id)), ...customizationIds]),
   ];
 
   const recipes = await Recipe.find({
@@ -73,14 +76,14 @@ export async function getKioskMenu(tenant) {
     .lean();
 
   const recipeByItemId = new Map(
-    recipes.map((recipe) => [String(recipe.menuItemId), recipe])
+    recipes.map((recipe) => [String(recipe.menuItemId), recipe]),
   );
 
   const ingredientIds = [
     ...new Set(
       recipes.flatMap((recipe) =>
-        (recipe.ingredients || []).map((row) => String(row.ingredientId))
-      )
+        (recipe.ingredients || []).map((row) => String(row.ingredientId)),
+      ),
     ),
   ];
 
@@ -113,7 +116,7 @@ export async function getKioskMenu(tenant) {
       .lean();
 
     customizationItemMap = new Map(
-      customizationItems.map((item) => [String(item._id), item])
+      customizationItems.map((item) => [String(item._id), item]),
     );
   }
 
@@ -156,11 +159,12 @@ export async function getKioskMenu(tenant) {
             itemId: String(opt._id),
             name: opt.name,
             price: opt.price,
-            stockQuantity: computeItemStock(
-              opt,
-              recipeByItemId.get(String(opt._id)),
-              ingredientMap
-            ) ?? 0,
+            stockQuantity:
+              computeItemStock(
+                opt,
+                recipeByItemId.get(String(opt._id)),
+                ingredientMap,
+              ) ?? 0,
           })),
       });
     }

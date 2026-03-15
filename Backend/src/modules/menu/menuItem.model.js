@@ -6,14 +6,19 @@ const { Schema } = mongoose;
 const menuItemSchema = new Schema(
   {
     franchiseId: { type: Schema.Types.ObjectId, required: true, index: true },
-    outletId:    { type: Schema.Types.ObjectId, required: true, index: true },
-    categoryId:  { type: Schema.Types.ObjectId, ref: "Category", required: true, index: true },
+    outletId: { type: Schema.Types.ObjectId, required: true, index: true },
+    categoryId: {
+      type: Schema.Types.ObjectId,
+      ref: "Category",
+      required: true,
+      index: true,
+    },
 
-    name:        { type: String, required: true, trim: true },
+    name: { type: String, required: true, trim: true },
     description: { type: String, trim: true },
-    imageUrl:    { type: String, trim: true },
+    imageUrl: { type: String, trim: true },
 
-    price:         { type: Number, required: true, min: 0 },
+    price: { type: Number, required: true, min: 0 },
     stockQuantity: { type: Number, required: true, default: 0, min: 0 },
 
     inventoryMode: {
@@ -43,13 +48,18 @@ const menuItemSchema = new Schema(
 
     customizationItemIds: [{ type: Schema.Types.ObjectId, ref: "MenuItem" }],
 
-    isActive:  { type: Boolean, default: true },
+    isActive: { type: Boolean, default: true },
     isDeleted: { type: Boolean, default: false, index: true },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
-menuItemSchema.index({ franchiseId: 1, outletId: 1, categoryId: 1, isDeleted: 1 });
+menuItemSchema.index({
+  franchiseId: 1,
+  outletId: 1,
+  categoryId: 1,
+  isDeleted: 1,
+});
 
 const MenuItem = mongoose.model("MenuItem", menuItemSchema);
 

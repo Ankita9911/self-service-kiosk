@@ -5,6 +5,6 @@ export async function getUploadUrl(payload, tenant) {
 
   return await generatePresignedUploadUrl(
     { fileName, fileType, folder },
-    tenant
+    tenant,
   );
 }

@@ -8,11 +8,11 @@ import { getRedisClient } from "../../core/cache/redis.client.js";
 import { buildTenantKey } from "../../core/cache/cache.utils.js";
 
 const TTL = {
-  SUPER_ADMIN:     900,
+  SUPER_ADMIN: 900,
   FRANCHISE_ADMIN: 300,
-  OUTLET_MANAGER:  120,
-  KITCHEN_STAFF:   60,
-  PICKUP_STAFF:    60,
+  OUTLET_MANAGER: 120,
+  KITCHEN_STAFF: 60,
+  PICKUP_STAFF: 60,
 };
 
 async function withCache(key, ttl, fn) {
@@ -39,14 +39,39 @@ async function withCache(key, ttl, fn) {
 function getPeriodStart(period) {
   const now = new Date();
   switch (period) {
-    case "today": { const d = new Date(now); d.setHours(0, 0, 0, 0); return d; }
-    case "7d":    return new Date(now - 7  * 24 * 60 * 60 * 1000);
-    case "30d":   return new Date(now - 30 * 24 * 60 * 60 * 1000);
-    case "90d":   return new Date(now - 90 * 24 * 60 * 60 * 1000);
-    case "3m":    { const d = new Date(now); d.setMonth(d.getMonth() - 3); d.setDate(1); d.setHours(0, 0, 0, 0); return d; }
-    case "6m":    { const d = new Date(now); d.setMonth(d.getMonth() - 6); d.setDate(1); d.setHours(0, 0, 0, 0); return d; }
+    case "today": {
+      const d = new Date(now);
+      d.setHours(0, 0, 0, 0);
+      return d;
+    }
+    case "7d":
+      return new Date(now - 7 * 24 * 60 * 60 * 1000);
+    case "30d":
+      return new Date(now - 30 * 24 * 60 * 60 * 1000);
+    case "90d":
+      return new Date(now - 90 * 24 * 60 * 60 * 1000);
+    case "3m": {
+      const d = new Date(now);
+      d.setMonth(d.getMonth() - 3);
+      d.setDate(1);
+      d.setHours(0, 0, 0, 0);
+      return d;
+    }
+    case "6m": {
+      const d = new Date(now);
+      d.setMonth(d.getMonth() - 6);
+      d.setDate(1);
+      d.setHours(0, 0, 0, 0);
+      return d;
+    }
     case "12m":
-    default:      { const d = new Date(now); d.setFullYear(d.getFullYear() - 1); d.setDate(1); d.setHours(0, 0, 0, 0); return d; }
+    default: {
+      const d = new Date(now);
+      d.setFullYear(d.getFullYear() - 1);
+      d.setDate(1);
+      d.setHours(0, 0, 0, 0);
+      return d;
+    }
   }
 }
 
@@ -152,7 +177,9 @@ async function getSuperAdminAnalytics(period = "12m") {
       .lean(),
   ]);
 
-  const usersByRoleMap = Object.fromEntries(usersByRole.map((r) => [r._id, r.count]));
+  const usersByRoleMap = Object.fromEntries(
+    usersByRole.map((r) => [r._id, r.count]),
+  );
 
   return {
     role: "SUPER_ADMIN",
@@ -296,20 +323,28 @@ async function getFranchiseAdminAnalytics(tenant, period = "30d") {
     ]),
   ]);
 
-  const stats = overallStats[0] || { totalRevenue: 0, totalOrders: 0, avgOrderValue: 0 };
+  const stats = overallStats[0] || {
+    totalRevenue: 0,
+    totalOrders: 0,
+    avgOrderValue: 0,
+  };
   const totalRev = stats.totalRevenue;
 
   const outletContribution = revenuePerOutlet.map((o) => ({
     ...o,
-    contributionPercent: totalRev > 0 ? parseFloat(((o.revenue / totalRev) * 100).toFixed(2)) : 0,
+    contributionPercent:
+      totalRev > 0 ? parseFloat(((o.revenue / totalRev) * 100).toFixed(2)) : 0,
   }));
 
-  const statusMap = Object.fromEntries(cancellationData.map((s) => [s._id, s.count]));
+  const statusMap = Object.fromEntries(
+    cancellationData.map((s) => [s._id, s.count]),
+  );
   const totalOrders = stats.totalOrders;
   const cancelledOrders = statusMap["CREATED"] || 0;
-  const cancellationRate = totalOrders > 0
-    ? parseFloat(((cancelledOrders / totalOrders) * 100).toFixed(2))
-    : 0;
+  const cancellationRate =
+    totalOrders > 0
+      ? parseFloat(((cancelledOrders / totalOrders) * 100).toFixed(2))
+      : 0;
 
   return {
     role: "FRANCHISE_ADMIN",
@@ -380,7 +415,9 @@ async function getOutletManagerAnalytics(tenant, period = "7d") {
           { $match: { outletId, createdAt: { $gte: periodStart } } },
           {
             $group: {
-              _id: { $dateToString: { format: trendFormat, date: "$createdAt" } },
+              _id: {
+                $dateToString: { format: trendFormat, date: "$createdAt" },
+              },
               revenue: { $sum: "$totalAmount" },
               orders: { $sum: 1 },
             },
@@ -435,14 +472,20 @@ async function getOutletManagerAnalytics(tenant, period = "7d") {
   ]);
 
   const stats = periodStats[0] || { revenue: 0, orders: 0, avgOrderValue: 0 };
-  const statusMap = Object.fromEntries(statusBreakdown.map((s) => [s._id, s.count]));
+  const statusMap = Object.fromEntries(
+    statusBreakdown.map((s) => [s._id, s.count]),
+  );
   const totalOrders = stats.orders;
   const cancelledOrders = statusMap["CREATED"] || 0;
-  const cancellationRate = totalOrders > 0
-    ? parseFloat(((cancelledOrders / totalOrders) * 100).toFixed(2))
-    : 0;
+  const cancellationRate =
+    totalOrders > 0
+      ? parseFloat(((cancelledOrders / totalOrders) * 100).toFixed(2))
+      : 0;
   const peakHour = isToday
-    ? ordersPerHour.reduce((peak, h) => (h.count > (peak?.count || 0) ? h : peak), null)
+    ? ordersPerHour.reduce(
+        (peak, h) => (h.count > (peak?.count || 0) ? h : peak),
+        null,
+      )
     : null;
 
   return {
@@ -468,27 +511,28 @@ async function getKitchenStaffAnalytics(tenant) {
   const todayStart = new Date(now);
   todayStart.setHours(0, 0, 0, 0);
 
-  const [queue, completedToday, ordersPerHour, oldestPending] = await Promise.all([
-    Order.countDocuments({ outletId, status: "IN_KITCHEN" }),
-    Order.countDocuments({
-      outletId,
-      status: { $in: ["READY", "COMPLETED", "PICKED_UP"] },
-      updatedAt: { $gte: todayStart },
-    }),
-    Order.aggregate([
-      { $match: { outletId, createdAt: { $gte: todayStart } } },
-      { $group: { _id: { $hour: "$createdAt" }, count: { $sum: 1 } } },
-      { $sort: { _id: 1 } },
-    ]),
-    Order.findOne({ outletId, status: "IN_KITCHEN" })
-      .sort({ createdAt: 1 })
-      .select("createdAt orderNumber")
-      .lean(),
-  ]);
+  const [queue, completedToday, ordersPerHour, oldestPending] =
+    await Promise.all([
+      Order.countDocuments({ outletId, status: "IN_KITCHEN" }),
+      Order.countDocuments({
+        outletId,
+        status: { $in: ["READY", "COMPLETED", "PICKED_UP"] },
+        updatedAt: { $gte: todayStart },
+      }),
+      Order.aggregate([
+        { $match: { outletId, createdAt: { $gte: todayStart } } },
+        { $group: { _id: { $hour: "$createdAt" }, count: { $sum: 1 } } },
+        { $sort: { _id: 1 } },
+      ]),
+      Order.findOne({ outletId, status: "IN_KITCHEN" })
+        .sort({ createdAt: 1 })
+        .select("createdAt orderNumber")
+        .lean(),
+    ]);
 
   const peakHour = ordersPerHour.reduce(
     (peak, h) => (h.count > (peak?.count || 0) ? h : peak),
-    null
+    null,
   );
 
   const avgPrepTime = oldestPending
@@ -505,7 +549,9 @@ async function getKitchenStaffAnalytics(tenant) {
       ? {
           orderNumber: oldestPending.orderNumber,
           createdAt: oldestPending.createdAt,
-          waitingMinutes: Math.round((now - new Date(oldestPending.createdAt)) / 60000),
+          waitingMinutes: Math.round(
+            (now - new Date(oldestPending.createdAt)) / 60000,
+          ),
         }
       : null,
     avgPrepTimeMinutes: avgPrepTime,
@@ -519,8 +565,14 @@ async function getPickupStaffAnalytics(tenant) {
   todayStart.setHours(0, 0, 0, 0);
 
   const [readyOrders, handedOverToday, ordersPerHour] = await Promise.all([
-    Order.find({ outletId, status: "READY" }).select("orderNumber createdAt").lean(),
-    Order.countDocuments({ outletId, status: "PICKED_UP", updatedAt: { $gte: todayStart } }),
+    Order.find({ outletId, status: "READY" })
+      .select("orderNumber createdAt")
+      .lean(),
+    Order.countDocuments({
+      outletId,
+      status: "PICKED_UP",
+      updatedAt: { $gte: todayStart },
+    }),
     Order.aggregate([
       { $match: { outletId, createdAt: { $gte: todayStart } } },
       { $group: { _id: { $hour: "$createdAt" }, count: { $sum: 1 } } },
@@ -530,12 +582,15 @@ async function getPickupStaffAnalytics(tenant) {
 
   const peakHour = ordersPerHour.reduce(
     (peak, h) => (h.count > (peak?.count || 0) ? h : peak),
-    null
+    null,
   );
 
   let avgPickupDelay = null;
   if (readyOrders.length > 0) {
-    const totalWait = readyOrders.reduce((acc, o) => acc + (now - new Date(o.createdAt)), 0);
+    const totalWait = readyOrders.reduce(
+      (acc, o) => acc + (now - new Date(o.createdAt)),
+      0,
+    );
     avgPickupDelay = Math.round(totalWait / readyOrders.length / 60000);
   }
 
@@ -553,16 +608,25 @@ async function getPickupStaffAnalytics(tenant) {
 export async function getAnalyticsOverview(tenant, period) {
   const { role, franchiseId, outletId } = tenant;
   const ttl = TTL[role] || 300;
-  const cacheKey = buildTenantKey(`analytics:overview:${role}:${period || "default"}`, { franchiseId, outletId });
+  const cacheKey = buildTenantKey(
+    `analytics:overview:${role}:${period || "default"}`,
+    { franchiseId, outletId },
+  );
 
   return withCache(cacheKey, ttl, async () => {
     switch (role) {
-      case "SUPER_ADMIN":     return getSuperAdminAnalytics(period);
-      case "FRANCHISE_ADMIN": return getFranchiseAdminAnalytics(tenant, period);
-      case "OUTLET_MANAGER":  return getOutletManagerAnalytics(tenant, period);
-      case "KITCHEN_STAFF":   return getKitchenStaffAnalytics(tenant);
-      case "PICKUP_STAFF":    return getPickupStaffAnalytics(tenant);
-      default: throw new Error(`Unsupported role for analytics: ${role}`);
+      case "SUPER_ADMIN":
+        return getSuperAdminAnalytics(period);
+      case "FRANCHISE_ADMIN":
+        return getFranchiseAdminAnalytics(tenant, period);
+      case "OUTLET_MANAGER":
+        return getOutletManagerAnalytics(tenant, period);
+      case "KITCHEN_STAFF":
+        return getKitchenStaffAnalytics(tenant);
+      case "PICKUP_STAFF":
+        return getPickupStaffAnalytics(tenant);
+      default:
+        throw new Error(`Unsupported role for analytics: ${role}`);
     }
   });
 }

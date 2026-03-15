@@ -13,8 +13,22 @@ const router = express.Router();
 router.use(authenticate, attachTenant, attachOutletForMenu);
 
 router.get("/", authorize(PERMISSIONS.MENU_MANAGE), controller.getCombos);
-router.post("/", authorize(PERMISSIONS.MENU_MANAGE), validate(createComboSchema), controller.createCombo);
-router.put("/:id", authorize(PERMISSIONS.MENU_MANAGE), validate(updateComboSchema), controller.updateCombo);
-router.delete("/:id", authorize(PERMISSIONS.MENU_MANAGE), controller.deleteCombo);
+router.post(
+  "/",
+  authorize(PERMISSIONS.MENU_MANAGE),
+  validate(createComboSchema),
+  controller.createCombo,
+);
+router.put(
+  "/:id",
+  authorize(PERMISSIONS.MENU_MANAGE),
+  validate(updateComboSchema),
+  controller.updateCombo,
+);
+router.delete(
+  "/:id",
+  authorize(PERMISSIONS.MENU_MANAGE),
+  controller.deleteCombo,
+);
 
 export default router;

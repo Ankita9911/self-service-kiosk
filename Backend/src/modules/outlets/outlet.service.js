@@ -4,7 +4,11 @@ import User from "../users/user.model.js";
 import Device from "../devices/device.model.js";
 import { forceLogout } from "../../realtime/realtime.manager.js";
 import AppError from "../../shared/errors/AppError.js";
-import { toBoundedLimit, encodeCursor, decodeCursor } from "../../shared/utils/pagination.js";
+import {
+  toBoundedLimit,
+  encodeCursor,
+  decodeCursor,
+} from "../../shared/utils/pagination.js";
 import { OUTLET_STATUS } from "./outlet.constants.js";
 
 const DEFAULT_LIMIT = 10;
@@ -41,7 +45,8 @@ export async function getOutlets(user, query = {}) {
   const baseFilter = { isDeleted: false };
 
   if (user.role === "SUPER_ADMIN") {
-    if (franchiseId && franchiseId !== "ALL") baseFilter.franchiseId = franchiseId;
+    if (franchiseId && franchiseId !== "ALL")
+      baseFilter.franchiseId = franchiseId;
   } else if (user.role === "FRANCHISE_ADMIN") {
     baseFilter.franchiseId = user.franchiseId;
   } else if (user.role === "OUTLET_MANAGER") {
@@ -64,31 +69,41 @@ export async function getOutlets(user, query = {}) {
     ? {
         $or: [
           { createdAt: { $lt: decodedCursor.createdAt } },
-          { createdAt: decodedCursor.createdAt, _id: { $lt: decodedCursor._id } },
+          {
+            createdAt: decodedCursor.createdAt,
+            _id: { $lt: decodedCursor._id },
+          },
         ],
       }
     : null;
 
-  const queryFilter = cursorFilter ? { $and: [baseFilter, cursorFilter] } : baseFilter;
+  const queryFilter = cursorFilter
+    ? { $and: [baseFilter, cursorFilter] }
+    : baseFilter;
 
   const scopeFilter = { isDeleted: false };
-  if (user.role === "FRANCHISE_ADMIN") scopeFilter.franchiseId = user.franchiseId;
+  if (user.role === "FRANCHISE_ADMIN")
+    scopeFilter.franchiseId = user.franchiseId;
   if (user.role === "OUTLET_MANAGER") scopeFilter._id = user.outletId;
 
-  const [outletsPlusOne, totalMatching, totalOutlets, activeOutlets] = await Promise.all([
-    Outlet.find(queryFilter).sort({ createdAt: -1, _id: -1 }).limit(pageLimit + 1),
-    Outlet.countDocuments(baseFilter),
-    Outlet.countDocuments(scopeFilter),
-    Outlet.countDocuments({ ...scopeFilter, status: OUTLET_STATUS.ACTIVE }),
-  ]);
+  const [outletsPlusOne, totalMatching, totalOutlets, activeOutlets] =
+    await Promise.all([
+      Outlet.find(queryFilter)
+        .sort({ createdAt: -1, _id: -1 })
+        .limit(pageLimit + 1),
+      Outlet.countDocuments(baseFilter),
+      Outlet.countDocuments(scopeFilter),
+      Outlet.countDocuments({ ...scopeFilter, status: OUTLET_STATUS.ACTIVE }),
+    ]);
 
   const hasNext = outletsPlusOne.length > pageLimit;
   const outlets = hasNext ? outletsPlusOne.slice(0, pageLimit) : outletsPlusOne;
 
   const lastOutlet = outlets[outlets.length - 1];
-  const nextCursor = hasNext && lastOutlet
-    ? encodeCursor({ createdAt: lastOutlet.createdAt, _id: lastOutlet._id })
-    : null;
+  const nextCursor =
+    hasNext && lastOutlet
+      ? encodeCursor({ createdAt: lastOutlet.createdAt, _id: lastOutlet._id })
+      : null;
 
   return {
     items: outlets,
@@ -106,7 +121,10 @@ export async function getOutletById(id, user) {
     throw new AppError("Outlet not found", 404, "OUTLET_NOT_FOUND");
   }
 
-  if (user.role !== "SUPER_ADMIN" && String(outlet.franchiseId) !== String(user.franchiseId)) {
+  if (
+    user.role !== "SUPER_ADMIN" &&
+    String(outlet.franchiseId) !== String(user.franchiseId)
+  ) {
     throw new AppError("Forbidden", 403, "FORBIDDEN");
   }
 
@@ -129,16 +147,28 @@ export async function updateOutlet(id, payload, user) {
 export async function deleteOutlet(id, user) {
   const outlet = await getOutletById(id, user);
 
-  const affectedUsers = await User.find({ outletId: outlet._id, isDeleted: false }).select("_id");
+  const affectedUsers = await User.find({
+    outletId: outlet._id,
+    isDeleted: false,
+  }).select("_id");
   for (const u of affectedUsers) forceLogout("user", u._id.toString());
   if (affectedUsers.length > 0) {
-    await User.updateMany({ outletId: outlet._id }, { isDeleted: true, status: OUTLET_STATUS.INACTIVE });
+    await User.updateMany(
+      { outletId: outlet._id },
+      { isDeleted: true, status: OUTLET_STATUS.INACTIVE },
+    );
   }
 
-  const affectedDevices = await Device.find({ outletId: outlet._id, isDeleted: false }).select("_id deviceId");
+  const affectedDevices = await Device.find({
+    outletId: outlet._id,
+    isDeleted: false,
+  }).select("_id deviceId");
   for (const d of affectedDevices) forceLogout("device", d.deviceId);
   if (affectedDevices.length > 0) {
-    await Device.updateMany({ outletId: outlet._id }, { isDeleted: true, status: OUTLET_STATUS.INACTIVE });
+    await Device.updateMany(
+      { outletId: outlet._id },
+      { isDeleted: true, status: OUTLET_STATUS.INACTIVE },
+    );
   }
 
   outlet.isDeleted = true;
@@ -155,17 +185,35 @@ export async function setOutletStatus(id, status, user) {
   await outlet.save();
 
   if (status === OUTLET_STATUS.INACTIVE) {
-    await User.updateMany({ outletId: outlet._id, isDeleted: false }, { $set: { status: OUTLET_STATUS.INACTIVE } });
-    await Device.updateMany({ outletId: outlet._id, isDeleted: false }, { $set: { status: OUTLET_STATUS.INACTIVE } });
+    await User.updateMany(
+      { outletId: outlet._id, isDeleted: false },
+      { $set: { status: OUTLET_STATUS.INACTIVE } },
+    );
+    await Device.updateMany(
+      { outletId: outlet._id, isDeleted: false },
+      { $set: { status: OUTLET_STATUS.INACTIVE } },
+    );
 
-    const affectedUsers = await User.find({ outletId: outlet._id, isDeleted: false }, "_id").lean();
+    const affectedUsers = await User.find(
+      { outletId: outlet._id, isDeleted: false },
+      "_id",
+    ).lean();
     for (const u of affectedUsers) forceLogout("user", u._id.toString());
 
-    const affectedDevices = await Device.find({ outletId: outlet._id, isDeleted: false }, "deviceId").lean();
+    const affectedDevices = await Device.find(
+      { outletId: outlet._id, isDeleted: false },
+      "deviceId",
+    ).lean();
     for (const d of affectedDevices) forceLogout("device", d.deviceId);
   } else {
-    await User.updateMany({ outletId: outlet._id, isDeleted: false }, { $set: { status: OUTLET_STATUS.ACTIVE } });
-    await Device.updateMany({ outletId: outlet._id, isDeleted: false }, { $set: { status: OUTLET_STATUS.ACTIVE } });
+    await User.updateMany(
+      { outletId: outlet._id, isDeleted: false },
+      { $set: { status: OUTLET_STATUS.ACTIVE } },
+    );
+    await Device.updateMany(
+      { outletId: outlet._id, isDeleted: false },
+      { $set: { status: OUTLET_STATUS.ACTIVE } },
+    );
   }
 
   return outlet;

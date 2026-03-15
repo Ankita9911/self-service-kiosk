@@ -23,7 +23,9 @@ function encodeCursor(payload) {
 function decodeCursor(cursor) {
   if (!cursor) return null;
   try {
-    const decoded = JSON.parse(Buffer.from(cursor, "base64url").toString("utf-8"));
+    const decoded = JSON.parse(
+      Buffer.from(cursor, "base64url").toString("utf-8"),
+    );
     if (!decoded?._id) return null;
     return decoded;
   } catch {
@@ -39,17 +41,37 @@ function buildCursorCondition(decoded, field, dir) {
     const dateVal = decoded.createdAt ? new Date(decoded.createdAt) : null;
     if (!dateVal || Number.isNaN(dateVal.getTime())) return null;
     if (dir === -1) {
-      return { $or: [{ createdAt: { $lt: dateVal } }, { createdAt: dateVal, _id: { $lt: _id } }] };
+      return {
+        $or: [
+          { createdAt: { $lt: dateVal } },
+          { createdAt: dateVal, _id: { $lt: _id } },
+        ],
+      };
     }
-    return { $or: [{ createdAt: { $gt: dateVal } }, { createdAt: dateVal, _id: { $gt: _id } }] };
+    return {
+      $or: [
+        { createdAt: { $gt: dateVal } },
+        { createdAt: dateVal, _id: { $gt: _id } },
+      ],
+    };
   }
 
   const { sortVal } = decoded;
   if (sortVal === undefined || sortVal === null) return null;
   if (dir === -1) {
-    return { $or: [{ [field]: { $lt: sortVal } }, { [field]: sortVal, _id: { $lt: _id } }] };
+    return {
+      $or: [
+        { [field]: { $lt: sortVal } },
+        { [field]: sortVal, _id: { $lt: _id } },
+      ],
+    };
   }
-  return { $or: [{ [field]: { $gt: sortVal } }, { [field]: sortVal, _id: { $gt: _id } }] };
+  return {
+    $or: [
+      { [field]: { $gt: sortVal } },
+      { [field]: sortVal, _id: { $gt: _id } },
+    ],
+  };
 }
 
 export async function logTransaction({
@@ -75,21 +97,24 @@ export async function logTransaction({
 
   const [transaction] = await StockTransaction.create(
     [doc],
-    session ? { session } : {}
+    session ? { session } : {},
   );
   return transaction;
 }
 
-export async function logTransactionsBulk(transactions, { tenant, session = null } = {}) {
+export async function logTransactionsBulk(
+  transactions,
+  { tenant, session = null } = {},
+) {
   const docs = transactions.map((t) => ({
-    ingredientId:  t.ingredientId,
-    type:          t.type,
-    quantity:      t.quantity,
+    ingredientId: t.ingredientId,
+    type: t.type,
+    quantity: t.quantity,
     referenceType: t.referenceType,
-    referenceId:   t.referenceId ?? null,
-    note:          t.note ?? "",
-    franchiseId:   tenant.franchiseId,
-    outletId:      tenant.outletId,
+    referenceId: t.referenceId ?? null,
+    note: t.note ?? "",
+    franchiseId: tenant.franchiseId,
+    outletId: tenant.outletId,
   }));
 
   return StockTransaction.insertMany(docs, session ? { session } : {});
@@ -102,7 +127,7 @@ export async function createManualTransaction(data, tenant) {
     throw new AppError(
       "Manual transactions only support PURCHASE, WASTAGE, or ADJUSTMENT",
       400,
-      "INVALID_TRANSACTION_TYPE"
+      "INVALID_TRANSACTION_TYPE",
     );
   }
 
@@ -130,7 +155,7 @@ export async function createManualTransaction(data, tenant) {
     throw new AppError(
       `Insufficient stock. Current: ${ingredient.currentStock}, adjustment would result in negative stock`,
       400,
-      "INSUFFICIENT_STOCK"
+      "INSUFFICIENT_STOCK",
     );
   }
 
@@ -164,7 +189,7 @@ export async function createManualTransaction(data, tenant) {
 
 export async function getTransactions(
   tenant,
-  { ingredientId, type, search, cursor, limit, sortBy, sortOrder } = {}
+  { ingredientId, type, search, cursor, limit, sortBy, sortOrder } = {},
 ) {
   const pageLimit = toBoundedLimit(limit, DEFAULT_LIMIT);
   const { field, dir } = getSortConfig(sortBy, sortOrder);
@@ -225,13 +250,14 @@ export async function getTransactions(
   const items = hasNext ? itemsPlusOne.slice(0, pageLimit) : itemsPlusOne;
 
   const lastItem = items[items.length - 1];
-  const nextCursor = hasNext && lastItem
-    ? encodeCursor(
-        field === "createdAt"
-          ? { createdAt: lastItem.createdAt, _id: lastItem._id }
-          : { sortVal: lastItem[field], _id: lastItem._id }
-      )
-    : null;
+  const nextCursor =
+    hasNext && lastItem
+      ? encodeCursor(
+          field === "createdAt"
+            ? { createdAt: lastItem.createdAt, _id: lastItem._id }
+            : { sortVal: lastItem[field], _id: lastItem._id },
+        )
+      : null;
 
   return {
     items,
@@ -248,6 +274,10 @@ export async function getTransactions(
   };
 }
 
-export async function getTransactionsByIngredient(ingredientId, tenant, queryOptions) {
+export async function getTransactionsByIngredient(
+  ingredientId,
+  tenant,
+  queryOptions,
+) {
   return getTransactions(tenant, { ...queryOptions, ingredientId });
 }

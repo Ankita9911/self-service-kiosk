@@ -1,9 +1,3 @@
-/**
- * stockTransaction.constants.js
- *
- * Single source of truth for stock transaction domain enums.
- */
-
 export const TRANSACTION_TYPE = {
   PURCHASE:    "PURCHASE",
   CONSUMPTION: "CONSUMPTION",

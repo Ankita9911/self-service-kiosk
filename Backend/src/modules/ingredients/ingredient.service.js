@@ -8,7 +8,7 @@ import { toBoundedLimit } from "../../shared/utils/pagination.js";
 const CACHE_TTL = 300;
 const DEFAULT_LIMIT = 20;
 
-// ─── Private helpers ──────────────────────────────────────────────────────────
+// Private helpers
 
 async function invalidateIngredientCache(tenant) {
   try {
@@ -26,8 +26,6 @@ function buildSortSpec(sortBy, sortOrder) {
   return { field, order };
 }
 
-// Ingredient list uses multi-field sort cursors — more complex than the standard
-// createdAt cursor, so these helpers are ingredient-specific and stay here.
 function encodeSortCursor(payload) {
   return Buffer.from(JSON.stringify(payload)).toString("base64url");
 }
@@ -35,7 +33,9 @@ function encodeSortCursor(payload) {
 function decodeSortCursor(cursor, sortField) {
   if (!cursor) return null;
   try {
-    const decoded = JSON.parse(Buffer.from(cursor, "base64url").toString("utf-8"));
+    const decoded = JSON.parse(
+      Buffer.from(cursor, "base64url").toString("utf-8"),
+    );
     if (!decoded?._id) return null;
     if (sortField === "createdAt") {
       if (!decoded.createdAt) return null;
@@ -50,7 +50,7 @@ function decodeSortCursor(cursor, sortField) {
   }
 }
 
-// ─── Service functions ────────────────────────────────────────────────────────
+// ─── Service functions
 
 export async function createIngredient(data, tenant) {
   const existing = await Ingredient.findOne({
@@ -64,7 +64,7 @@ export async function createIngredient(data, tenant) {
     throw new AppError(
       `Ingredient "${data.name}" already exists for this outlet`,
       409,
-      "INGREDIENT_DUPLICATE"
+      "INGREDIENT_DUPLICATE",
     );
   }
 
@@ -78,21 +78,34 @@ export async function createIngredient(data, tenant) {
   });
 
   await invalidateIngredientCache(tenant);
-  emitOutletEvent(tenant.outletId, "ingredient:updated", { type: "INGREDIENT_CREATE", ingredientId: String(ingredient._id) });
-  emitOutletEvent(tenant.outletId, "inventory:updated", { type: "INGREDIENT_CREATE", ingredientId: String(ingredient._id) });
+  emitOutletEvent(tenant.outletId, "ingredient:updated", {
+    type: "INGREDIENT_CREATE",
+    ingredientId: String(ingredient._id),
+  });
+  emitOutletEvent(tenant.outletId, "inventory:updated", {
+    type: "INGREDIENT_CREATE",
+    ingredientId: String(ingredient._id),
+  });
   return ingredient;
 }
 
-export async function getIngredients(tenant, { search, unit, lowStock, cursor, limit, sortBy, sortOrder } = {}) {
+export async function getIngredients(
+  tenant,
+  { search, unit, lowStock, cursor, limit, sortBy, sortOrder } = {},
+) {
   const pageLimit = toBoundedLimit(limit, DEFAULT_LIMIT);
-  const { field: sortField, order: sortOrderNum } = buildSortSpec(sortBy, sortOrder);
+  const { field: sortField, order: sortOrderNum } = buildSortSpec(
+    sortBy,
+    sortOrder,
+  );
 
   const tenantFilter = { franchiseId: tenant.franchiseId, isDeleted: false };
   if (tenant.outletId) tenantFilter.outletId = tenant.outletId;
 
   const baseFilter = { ...tenantFilter };
   if (unit && unit !== "ALL") baseFilter.unit = unit;
-  if (search?.trim()) baseFilter.name = { $regex: search.trim(), $options: "i" };
+  if (search?.trim())
+    baseFilter.name = { $regex: search.trim(), $options: "i" };
   if (lowStock === "true" || lowStock === true) {
     baseFilter.$expr = { $lt: ["$currentStock", "$minThreshold"] };
   }
@@ -120,24 +133,36 @@ export async function getIngredients(tenant, { search, unit, lowStock, cursor, l
     }
   }
 
-  const sortSpec = sortField === "createdAt"
-    ? { createdAt: sortOrderNum, _id: -1 }
-    : { [sortField]: sortOrderNum, _id: -1 };
+  const sortSpec =
+    sortField === "createdAt"
+      ? { createdAt: sortOrderNum, _id: -1 }
+      : { [sortField]: sortOrderNum, _id: -1 };
 
-  const [itemsPlusOne, totalMatching, totalItems, lowStockItems] = await Promise.all([
-    Ingredient.find(queryFilter).sort(sortSpec).limit(pageLimit + 1).lean(),
-    Ingredient.countDocuments(baseFilter),
-    Ingredient.countDocuments(tenantFilter),
-    Ingredient.countDocuments({ ...tenantFilter, $expr: { $lt: ["$currentStock", "$minThreshold"] } }),
-  ]);
+  const [itemsPlusOne, totalMatching, totalItems, lowStockItems] =
+    await Promise.all([
+      Ingredient.find(queryFilter)
+        .sort(sortSpec)
+        .limit(pageLimit + 1)
+        .lean(),
+      Ingredient.countDocuments(baseFilter),
+      Ingredient.countDocuments(tenantFilter),
+      Ingredient.countDocuments({
+        ...tenantFilter,
+        $expr: { $lt: ["$currentStock", "$minThreshold"] },
+      }),
+    ]);
 
   const hasNext = itemsPlusOne.length > pageLimit;
   const items = hasNext ? itemsPlusOne.slice(0, pageLimit) : itemsPlusOne;
 
   const lastItem = items[items.length - 1];
-  const nextCursor = hasNext && lastItem
-    ? encodeSortCursor({ [sortField]: lastItem[sortField], _id: lastItem._id })
-    : null;
+  const nextCursor =
+    hasNext && lastItem
+      ? encodeSortCursor({
+          [sortField]: lastItem[sortField],
+          _id: lastItem._id,
+        })
+      : null;
 
   return {
     items,
@@ -171,9 +196,14 @@ export async function updateIngredient(id, data, tenant) {
   }
 
   const ingredient = await Ingredient.findOneAndUpdate(
-    { _id: id, franchiseId: tenant.franchiseId, outletId: tenant.outletId, isDeleted: false },
+    {
+      _id: id,
+      franchiseId: tenant.franchiseId,
+      outletId: tenant.outletId,
+      isDeleted: false,
+    },
     { $set: update },
-    { new: true, runValidators: true }
+    { new: true, runValidators: true },
   );
 
   if (!ingredient) {
@@ -181,16 +211,27 @@ export async function updateIngredient(id, data, tenant) {
   }
 
   await invalidateIngredientCache(tenant);
-  emitOutletEvent(tenant.outletId, "ingredient:updated", { type: "INGREDIENT_UPDATE", ingredientId: String(ingredient._id) });
-  emitOutletEvent(tenant.outletId, "inventory:updated", { type: "INGREDIENT_UPDATE", ingredientId: String(ingredient._id) });
+  emitOutletEvent(tenant.outletId, "ingredient:updated", {
+    type: "INGREDIENT_UPDATE",
+    ingredientId: String(ingredient._id),
+  });
+  emitOutletEvent(tenant.outletId, "inventory:updated", {
+    type: "INGREDIENT_UPDATE",
+    ingredientId: String(ingredient._id),
+  });
   return ingredient;
 }
 
 export async function deleteIngredient(id, tenant) {
   const ingredient = await Ingredient.findOneAndUpdate(
-    { _id: id, franchiseId: tenant.franchiseId, outletId: tenant.outletId, isDeleted: false },
+    {
+      _id: id,
+      franchiseId: tenant.franchiseId,
+      outletId: tenant.outletId,
+      isDeleted: false,
+    },
     { $set: { isDeleted: true } },
-    { new: true }
+    { new: true },
   );
 
   if (!ingredient) {
@@ -198,14 +239,24 @@ export async function deleteIngredient(id, tenant) {
   }
 
   await invalidateIngredientCache(tenant);
-  emitOutletEvent(tenant.outletId, "ingredient:updated", { type: "INGREDIENT_DELETE", ingredientId: String(ingredient._id) });
-  emitOutletEvent(tenant.outletId, "inventory:updated", { type: "INGREDIENT_DELETE", ingredientId: String(ingredient._id) });
+  emitOutletEvent(tenant.outletId, "ingredient:updated", {
+    type: "INGREDIENT_DELETE",
+    ingredientId: String(ingredient._id),
+  });
+  emitOutletEvent(tenant.outletId, "inventory:updated", {
+    type: "INGREDIENT_DELETE",
+    ingredientId: String(ingredient._id),
+  });
   return { deleted: true, id };
 }
 
 export async function adjustStock(id, { quantity, note }, tenant) {
   if (typeof quantity !== "number" || quantity === 0) {
-    throw new AppError("quantity must be a non-zero number", 400, "INVALID_QUANTITY");
+    throw new AppError(
+      "quantity must be a non-zero number",
+      400,
+      "INVALID_QUANTITY",
+    );
   }
 
   const ingredient = await Ingredient.findOneAndUpdate(
@@ -217,19 +268,25 @@ export async function adjustStock(id, { quantity, note }, tenant) {
       ...(quantity < 0 ? { currentStock: { $gte: Math.abs(quantity) } } : {}),
     },
     { $inc: { currentStock: quantity } },
-    { new: true }
+    { new: true },
   );
 
   if (!ingredient) {
     throw new AppError(
       "Ingredient not found or insufficient stock for deduction",
       404,
-      "INGREDIENT_ADJUST_FAILED"
+      "INGREDIENT_ADJUST_FAILED",
     );
   }
 
   await invalidateIngredientCache(tenant);
-  emitOutletEvent(tenant.outletId, "ingredient:updated", { type: "INGREDIENT_STOCK_ADJUST", ingredientId: String(ingredient._id) });
-  emitOutletEvent(tenant.outletId, "inventory:updated", { type: "INGREDIENT_STOCK_ADJUST", ingredientId: String(ingredient._id) });
+  emitOutletEvent(tenant.outletId, "ingredient:updated", {
+    type: "INGREDIENT_STOCK_ADJUST",
+    ingredientId: String(ingredient._id),
+  });
+  emitOutletEvent(tenant.outletId, "inventory:updated", {
+    type: "INGREDIENT_STOCK_ADJUST",
+    ingredientId: String(ingredient._id),
+  });
   return ingredient;
 }

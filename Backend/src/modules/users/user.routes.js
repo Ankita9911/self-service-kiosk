@@ -21,53 +21,53 @@ router.post(
   "/",
   authorize(PERMISSIONS.USERS_CREATE),
   validate(createUserSchema),
-  controller.createUserController
+  controller.createUserController,
 );
 
 router.get(
   "/",
   authorize(PERMISSIONS.USERS_VIEW),
-  controller.listUsersController
+  controller.listUsersController,
 );
 
 router.get(
   "/:id",
   authorize(PERMISSIONS.USERS_VIEW),
-  controller.getUserController
+  controller.getUserController,
 );
 
 router.patch(
   "/:id",
   authorize(PERMISSIONS.USERS_UPDATE),
   validate(updateUserSchema),
-  controller.updateUserController
+  controller.updateUserController,
 );
 
 router.delete(
   "/:id",
   authorize(PERMISSIONS.USERS_DELETE),
-  controller.deleteUserController
+  controller.deleteUserController,
 );
 
 router.patch(
   "/:id/role",
   authorize(PERMISSIONS.USERS_CHANGE_ROLE),
   validate(changeRoleSchema),
-  controller.changeRoleController
+  controller.changeRoleController,
 );
 
 router.patch(
   "/:id/status",
   authorize(PERMISSIONS.USERS_CHANGE_STATUS),
   validate(changeStatusSchema),
-  controller.changeStatusController
+  controller.changeStatusController,
 );
 
 router.post(
   "/:id/reset-password",
   authorize(PERMISSIONS.USERS_RESET_PASSWORD),
   validate(resetPasswordSchema),
-  controller.resetPasswordController
+  controller.resetPasswordController,
 );
 
 export default router;

@@ -56,7 +56,11 @@ export const deleteFranchiseController = asyncHandler(async (req, res) => {
 });
 
 export const setFranchiseStatusController = asyncHandler(async (req, res) => {
-  const franchise = await setFranchiseStatus(req.params.id, req.body.status, req.user);
+  const franchise = await setFranchiseStatus(
+    req.params.id,
+    req.body.status,
+    req.user,
+  );
 
   return sendSuccess(res, {
     message: `Franchise marked as ${req.body.status.toLowerCase()} successfully`,

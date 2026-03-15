@@ -25,39 +25,31 @@ router.post(
   "/",
   authorize(PERMISSIONS.OUTLET_CREATE),
   validate(createOutletSchema),
-  createOutletController
+  createOutletController,
 );
 
-router.get(
-  "/",
-  authorize(PERMISSIONS.OUTLET_VIEW),
-  getOutletsController
-);
+router.get("/", authorize(PERMISSIONS.OUTLET_VIEW), getOutletsController);
 
-router.get(
-  "/:id",
-  authorize(PERMISSIONS.OUTLET_VIEW),
-  getOutletByIdController
-);
+router.get("/:id", authorize(PERMISSIONS.OUTLET_VIEW), getOutletByIdController);
 
 router.put(
   "/:id",
   authorize(PERMISSIONS.OUTLET_UPDATE),
   validate(updateOutletSchema),
-  updateOutletController
+  updateOutletController,
 );
 
 router.delete(
   "/:id",
   authorize(PERMISSIONS.OUTLET_DELETE),
-  deleteOutletController
+  deleteOutletController,
 );
 
 router.patch(
   "/:id/status",
   authorize(PERMISSIONS.OUTLET_UPDATE),
   validate(setOutletStatusSchema),
-  setOutletStatusController
+  setOutletStatusController,
 );
 
 export default router;

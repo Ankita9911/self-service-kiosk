@@ -6,7 +6,10 @@ import MenuItem from "../../../modules/menu/menuItem.model.js";
 import Ingredient from "../../../modules/ingredients/ingredient.model.js";
 import Recipe from "../../../modules/recipes/recipe.model.js";
 import StockTransaction from "../../../modules/stockTransactions/stockTransaction.model.js";
-import { TRANSACTION_TYPE, REFERENCE_TYPE } from "../../../modules/stockTransactions/stockTransaction.constants.js";
+import {
+  TRANSACTION_TYPE,
+  REFERENCE_TYPE,
+} from "../../../modules/stockTransactions/stockTransaction.constants.js";
 import { enqueue } from "../queue.producer.js";
 import { getRedisClient } from "../../cache/redis.client.js";
 import { buildTenantKey } from "../../cache/cache.utils.js";
@@ -16,7 +19,7 @@ async function getNextOrderNumber(outletId, session) {
   const counter = await Counter.findOneAndUpdate(
     { outletId },
     { $inc: { seq: 1 } },
-    { returnDocument: "after", upsert: true, session }
+    { returnDocument: "after", upsert: true, session },
   );
   return counter.seq;
 }
@@ -30,7 +33,13 @@ function emitToOutlet(outletId, event, data) {
   }
 }
 
-async function resolveMenuItemStock(itemId, quantity, tenant, session, recipeTargets) {
+async function resolveMenuItemStock(
+  itemId,
+  quantity,
+  tenant,
+  session,
+  recipeTargets,
+) {
   const menuItemBase = await MenuItem.findOne({
     _id: itemId,
     outletId: tenant.outletId,
@@ -56,7 +65,7 @@ async function resolveMenuItemStock(itemId, quantity, tenant, session, recipeTar
         stockQuantity: { $gte: quantity },
       },
       { $inc: { stockQuantity: -quantity } },
-      { returnDocument: "after", session }
+      { returnDocument: "after", session },
     );
 
     if (!updated) {
@@ -82,8 +91,16 @@ async function resolveMenuItemStock(itemId, quantity, tenant, session, recipeTar
   return menuItemBase;
 }
 
-async function resolveCustomizations(item, menuItem, tenant, session, recipeTargets) {
-  const requestedIds = [...new Set((item.customizationItemIds || []).map(String))];
+async function resolveCustomizations(
+  item,
+  menuItem,
+  tenant,
+  session,
+  recipeTargets,
+) {
+  const requestedIds = [
+    ...new Set((item.customizationItemIds || []).map(String)),
+  ];
   const allowedIds = new Set((menuItem.customizationItemIds || []).map(String));
 
   const selectedCustomizations = [];
@@ -91,7 +108,9 @@ async function resolveCustomizations(item, menuItem, tenant, session, recipeTarg
 
   for (const customizationItemId of requestedIds) {
     if (!allowedIds.has(customizationItemId)) {
-      throw new Error(`Invalid customization ${customizationItemId} for item: ${item.itemId}`);
+      throw new Error(
+        `Invalid customization ${customizationItemId} for item: ${item.itemId}`,
+      );
     }
 
     const customizationBase = await MenuItem.findOne({
@@ -118,11 +137,13 @@ async function resolveCustomizations(item, menuItem, tenant, session, recipeTarg
           stockQuantity: { $gte: item.quantity },
         },
         { $inc: { stockQuantity: -item.quantity } },
-        { returnDocument: "after", session }
+        { returnDocument: "after", session },
       );
 
       if (!customizationItem) {
-        throw new Error(`Insufficient stock or invalid customization item: ${customizationItemId}`);
+        throw new Error(
+          `Insufficient stock or invalid customization item: ${customizationItemId}`,
+        );
       }
     } else {
       const customizationRecipe = await Recipe.findOne({
@@ -133,10 +154,15 @@ async function resolveCustomizations(item, menuItem, tenant, session, recipeTarg
       }).session(session);
 
       if (!customizationRecipe) {
-        throw new Error(`Recipe not configured for customization item: ${customizationItemId}`);
+        throw new Error(
+          `Recipe not configured for customization item: ${customizationItemId}`,
+        );
       }
 
-      recipeTargets.push({ itemId: customizationBase._id, quantity: item.quantity });
+      recipeTargets.push({
+        itemId: customizationBase._id,
+        quantity: item.quantity,
+      });
     }
 
     customizationUnitTotal += customizationItem.price;
@@ -160,11 +186,21 @@ async function processOrderItems(items, tenant, session) {
 
   for (const item of items) {
     const menuItem = await resolveMenuItemStock(
-      item.itemId, item.quantity, tenant, session, recipeTargets
+      item.itemId,
+      item.quantity,
+      tenant,
+      session,
+      recipeTargets,
     );
 
     const { selectedCustomizations, customizationUnitTotal } =
-      await resolveCustomizations(item, menuItem, tenant, session, recipeTargets);
+      await resolveCustomizations(
+        item,
+        menuItem,
+        tenant,
+        session,
+        recipeTargets,
+      );
 
     const unitPrice = menuItem.price + customizationUnitTotal;
     const lineTotal = unitPrice * item.quantity;
@@ -183,7 +219,13 @@ async function processOrderItems(items, tenant, session) {
   return { processedItems, recipeTargets, totalAmount };
 }
 
-async function deductIngredients(recipeTargets, orderId, orderNumber, tenant, session) {
+async function deductIngredients(
+  recipeTargets,
+  orderId,
+  orderNumber,
+  tenant,
+  session,
+) {
   const ingredientDeductions = [];
 
   for (const target of recipeTargets) {
@@ -208,11 +250,13 @@ async function deductIngredients(recipeTargets, orderId, orderNumber, tenant, se
           currentStock: { $gte: totalDeduction },
         },
         { $inc: { currentStock: -totalDeduction } },
-        { returnDocument: "after", session }
+        { returnDocument: "after", session },
       );
 
       if (!ingredient) {
-        throw new Error(`Insufficient ingredient stock: ${recipeIngredient.ingredientId}`);
+        throw new Error(
+          `Insufficient ingredient stock: ${recipeIngredient.ingredientId}`,
+        );
       }
 
       ingredientDeductions.push({
@@ -227,14 +271,14 @@ async function deductIngredients(recipeTargets, orderId, orderNumber, tenant, se
 
   if (ingredientDeductions.length > 0) {
     const txDocs = ingredientDeductions.map((d) => ({
-      ingredientId:  d.ingredientId,
-      type:          TRANSACTION_TYPE.CONSUMPTION,
-      quantity:      -d.deductedQty,
+      ingredientId: d.ingredientId,
+      type: TRANSACTION_TYPE.CONSUMPTION,
+      quantity: -d.deductedQty,
       referenceType: REFERENCE_TYPE.ORDER,
-      referenceId:   orderId,
-      note:          `Order #${orderNumber}`,
-      franchiseId:   tenant.franchiseId,
-      outletId:      tenant.outletId,
+      referenceId: orderId,
+      note: `Order #${orderNumber}`,
+      franchiseId: tenant.franchiseId,
+      outletId: tenant.outletId,
     }));
     await StockTransaction.insertMany(txDocs, { session });
   }
@@ -255,14 +299,17 @@ async function postCommitSideEffects(ingredientDeductions, order, tenant) {
   for (const d of ingredientDeductions) {
     if (d.currentStockAfter < d.minThreshold) {
       await enqueue("LOW_STOCK_ALERT", {
-        ingredientId:   String(d.ingredientId),
+        ingredientId: String(d.ingredientId),
         ingredientName: d.ingredientName,
-        currentStock:   d.currentStockAfter,
-        minThreshold:   d.minThreshold,
-        franchiseId:    String(tenant.franchiseId),
-        outletId:       String(tenant.outletId),
+        currentStock: d.currentStockAfter,
+        minThreshold: d.minThreshold,
+        franchiseId: String(tenant.franchiseId),
+        outletId: String(tenant.outletId),
       }).catch((err) =>
-        console.error("[queue] Failed to enqueue LOW_STOCK_ALERT:", err.message)
+        console.error(
+          "[queue] Failed to enqueue LOW_STOCK_ALERT:",
+          err.message,
+        ),
       );
     }
   }
@@ -278,20 +325,31 @@ async function postCommitSideEffects(ingredientDeductions, order, tenant) {
 }
 
 export async function handleOrderPlaced(payload) {
-  const { items, paymentMethod, clientOrderId, orderNumber, tenant, userRole } = payload;
+  const { items, paymentMethod, clientOrderId, orderNumber, tenant, userRole } =
+    payload;
 
   const session = await mongoose.startSession();
   session.startTransaction();
 
   try {
-    const existing = await Order.findOne({ outletId: tenant.outletId, clientOrderId }).session(session);
+    const existing = await Order.findOne({
+      outletId: tenant.outletId,
+      clientOrderId,
+    }).session(session);
 
     if (existing) {
       await session.commitTransaction();
       session.endSession();
       await OrderRequest.findOneAndUpdate(
         { outletId: tenant.outletId, clientOrderId },
-        { $set: { status: "SUCCESS", orderId: existing._id, orderNumber: existing.orderNumber, errorMessage: null } }
+        {
+          $set: {
+            status: "SUCCESS",
+            orderId: existing._id,
+            orderNumber: existing.orderNumber,
+            errorMessage: null,
+          },
+        },
       );
       emitToOutlet(tenant.outletId, "order:new", existing);
       return existing;
@@ -300,25 +358,32 @@ export async function handleOrderPlaced(payload) {
     const { processedItems, recipeTargets, totalAmount } =
       await processOrderItems(items, tenant, session);
 
-    const resolvedOrderNumber = orderNumber ?? await getNextOrderNumber(tenant.outletId, session);
+    const resolvedOrderNumber =
+      orderNumber ?? (await getNextOrderNumber(tenant.outletId, session));
 
     const order = await Order.create(
-      [{
-        franchiseId:   tenant.franchiseId,
-        outletId:      tenant.outletId,
-        orderNumber:   resolvedOrderNumber,
-        clientOrderId,
-        items:         processedItems,
-        totalAmount,
-        paymentMethod,
-        paymentStatus: "SUCCESS",
-        createdByRole: userRole,
-      }],
-      { session }
+      [
+        {
+          franchiseId: tenant.franchiseId,
+          outletId: tenant.outletId,
+          orderNumber: resolvedOrderNumber,
+          clientOrderId,
+          items: processedItems,
+          totalAmount,
+          paymentMethod,
+          paymentStatus: "SUCCESS",
+          createdByRole: userRole,
+        },
+      ],
+      { session },
     );
 
     const ingredientDeductions = await deductIngredients(
-      recipeTargets, order[0]._id, resolvedOrderNumber, tenant, session
+      recipeTargets,
+      order[0]._id,
+      resolvedOrderNumber,
+      tenant,
+      session,
     );
 
     await session.commitTransaction();
@@ -328,11 +393,21 @@ export async function handleOrderPlaced(payload) {
 
     await OrderRequest.findOneAndUpdate(
       { outletId: tenant.outletId, clientOrderId },
-      { $set: { status: "SUCCESS", orderId: order[0]._id, orderNumber: order[0].orderNumber, errorMessage: null } }
+      {
+        $set: {
+          status: "SUCCESS",
+          orderId: order[0]._id,
+          orderNumber: order[0].orderNumber,
+          errorMessage: null,
+        },
+      },
     );
 
     emitToOutlet(tenant.outletId, "order:new", order[0]);
-    emitToOutlet(tenant.outletId, "menu:updated", { type: "ORDER_STOCK_CHANGED", outletId: tenant.outletId });
+    emitToOutlet(tenant.outletId, "menu:updated", {
+      type: "ORDER_STOCK_CHANGED",
+      outletId: tenant.outletId,
+    });
 
     return order[0];
   } catch (error) {

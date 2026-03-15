@@ -31,7 +31,7 @@ export const getFrequentlyBoughtTogether = asyncHandler(async (req, res) => {
   const data = await recommendationService.getFrequentlyBoughtTogether(
     req.tenant,
     itemIds,
-    { limit, windowDays }
+    { limit, windowDays },
   );
 
   return sendSuccess(res, {
@@ -62,7 +62,7 @@ export const getCompleteMeal = asyncHandler(async (req, res) => {
     req.tenant,
     cartItemIds,
     cartCategoryIds,
-    { limit, windowDays }
+    { limit, windowDays },
   );
 
   return sendSuccess(res, {

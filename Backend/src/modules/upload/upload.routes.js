@@ -12,7 +12,7 @@ router.post(
   authenticate,
   attachTenant,
   validate(uploadSchema),
-  generateUploadUrl
+  generateUploadUrl,
 );
 
 export default router;

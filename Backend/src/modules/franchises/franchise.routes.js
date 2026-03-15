@@ -25,39 +25,35 @@ router.post(
   "/",
   authorize(PERMISSIONS.FRANCHISE_CREATE),
   validate(createFranchiseSchema),
-  createFranchiseController
+  createFranchiseController,
 );
 
-router.get(
-  "/",
-  authorize(PERMISSIONS.FRANCHISE_VIEW),
-  getFranchisesController
-);
+router.get("/", authorize(PERMISSIONS.FRANCHISE_VIEW), getFranchisesController);
 
 router.post(
   "/get-one",
   authorize(PERMISSIONS.FRANCHISE_VIEW),
-  getFranchiseByIdController
+  getFranchiseByIdController,
 );
 
 router.put(
   "/:id",
   authorize(PERMISSIONS.FRANCHISE_UPDATE),
   validate(updateFranchiseSchema),
-  updateFranchiseController
+  updateFranchiseController,
 );
 
 router.delete(
   "/:id",
   authorize(PERMISSIONS.FRANCHISE_DELETE),
-  deleteFranchiseController
+  deleteFranchiseController,
 );
 
 router.patch(
   "/:id/status",
   authorize(PERMISSIONS.FRANCHISE_UPDATE),
   validate(setFranchiseStatusSchema),
-  setFranchiseStatusController
+  setFranchiseStatusController,
 );
 
 export default router;

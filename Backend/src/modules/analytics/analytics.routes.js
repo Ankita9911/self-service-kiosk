@@ -10,9 +10,9 @@ const router = express.Router();
 router.use(authenticate, attachTenant);
 
 router.get(
-    "/overview",
-    authorize(PERMISSIONS.ANALYTICS_VIEW),
-    controller.getOverview
+  "/overview",
+  authorize(PERMISSIONS.ANALYTICS_VIEW),
+  controller.getOverview,
 );
 
 export default router;

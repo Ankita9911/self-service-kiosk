@@ -32,16 +32,25 @@ export const getRecipeById = asyncHandler(async (req, res) => {
 });
 
 export const getRecipeByMenuItemId = asyncHandler(async (req, res) => {
-  const recipe = await recipeService.getRecipeByMenuItemId(req.params.menuItemId, req.tenant);
+  const recipe = await recipeService.getRecipeByMenuItemId(
+    req.params.menuItemId,
+    req.tenant,
+  );
 
   return sendSuccess(res, {
-    message: recipe ? "Recipe fetched" : "No recipe configured for this menu item",
+    message: recipe
+      ? "Recipe fetched"
+      : "No recipe configured for this menu item",
     data: recipe,
   });
 });
 
 export const updateRecipe = asyncHandler(async (req, res) => {
-  const recipe = await recipeService.updateRecipe(req.params.id, req.body, req.tenant);
+  const recipe = await recipeService.updateRecipe(
+    req.params.id,
+    req.body,
+    req.tenant,
+  );
 
   return sendSuccess(res, {
     message: "Recipe updated",
@@ -59,7 +68,9 @@ export const deleteRecipe = asyncHandler(async (req, res) => {
 });
 
 export const generateRecipeWithAI = asyncHandler(async (req, res) => {
-  const suggestion = await recipeService.generateRecipeWithAI(req.body.description);
+  const suggestion = await recipeService.generateRecipeWithAI(
+    req.body.description,
+  );
 
   return sendSuccess(res, {
     message: "AI recipe suggestion generated — review and save to confirm",

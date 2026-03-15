@@ -20,45 +20,45 @@ router.post(
   "/ai-generate",
   authorize(PERMISSIONS.RECIPE_MANAGE),
   validate(aiGenerateSchema),
-  recipeController.generateRecipeWithAI
+  recipeController.generateRecipeWithAI,
 );
 
 router.post(
   "/",
   authorize(PERMISSIONS.RECIPE_MANAGE),
   validate(createRecipeSchema),
-  recipeController.createRecipe
+  recipeController.createRecipe,
 );
 
 router.get(
   "/",
   authorize(PERMISSIONS.RECIPE_MANAGE),
-  recipeController.getRecipes
+  recipeController.getRecipes,
 );
 
 router.get(
   "/by-item/:menuItemId",
   authorize(PERMISSIONS.RECIPE_MANAGE),
-  recipeController.getRecipeByMenuItemId
+  recipeController.getRecipeByMenuItemId,
 );
 
 router.get(
   "/:id",
   authorize(PERMISSIONS.RECIPE_MANAGE),
-  recipeController.getRecipeById
+  recipeController.getRecipeById,
 );
 
 router.patch(
   "/:id",
   authorize(PERMISSIONS.RECIPE_MANAGE),
   validate(updateRecipeSchema),
-  recipeController.updateRecipe
+  recipeController.updateRecipe,
 );
 
 router.delete(
   "/:id",
   authorize(PERMISSIONS.RECIPE_MANAGE),
-  recipeController.deleteRecipe
+  recipeController.deleteRecipe,
 );
 
 export default router;

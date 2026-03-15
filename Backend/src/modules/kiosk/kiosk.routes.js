@@ -8,11 +8,7 @@ import recommendationRoutes from "../recommendations/recommendation.routes.js";
 
 const router = express.Router();
 
-router.use(
-  authenticate,
-  attachTenant,
-  authorize(PERMISSIONS.ORDERS_CREATE)
-);
+router.use(authenticate, attachTenant, authorize(PERMISSIONS.ORDERS_CREATE));
 
 router.get("/menu", controller.getMenu);
 router.get("/combos", controller.getCombos);

@@ -39,14 +39,14 @@ async function poll() {
           MaxNumberOfMessages: 10,
           WaitTimeSeconds: 20,
           MessageAttributeNames: ["All"],
-        })
+        }),
       );
 
       const messages = response.Messages || [];
 
       if (messages.length > 0) {
         await Promise.allSettled(
-          messages.map((msg) => processMessage(client, msg))
+          messages.map((msg) => processMessage(client, msg)),
         );
       }
     } catch (err) {
@@ -70,7 +70,9 @@ async function processMessage(client, message) {
     const handler = MESSAGE_HANDLERS[type];
 
     if (!handler) {
-      console.warn(`[queue] No handler registered for type: ${type} — discarding`);
+      console.warn(
+        `[queue] No handler registered for type: ${type} — discarding`,
+      );
     } else {
       await handler(payload);
       console.log(`[queue] Processed: ${type} (${message.MessageId})`);
@@ -86,7 +88,7 @@ async function processMessage(client, message) {
 
     console.error(
       `[queue] Failed to process ${type || "unknown"} (${message.MessageId}):`,
-      err.message
+      err.message,
     );
   }
 }
@@ -94,7 +96,9 @@ async function processMessage(client, message) {
 function isTerminalOrderError(type, err) {
   if (type !== "ORDER_PLACED") return false;
   if (typeof err?.message !== "string") return false;
-  return TERMINAL_ORDER_ERROR_PREFIXES.some((prefix) => err.message.startsWith(prefix));
+  return TERMINAL_ORDER_ERROR_PREFIXES.some((prefix) =>
+    err.message.startsWith(prefix),
+  );
 }
 
 async function deleteMessage(client, receiptHandle) {
@@ -102,23 +106,29 @@ async function deleteMessage(client, receiptHandle) {
     new DeleteMessageCommand({
       QueueUrl: env.SQS_QUEUE_URL,
       ReceiptHandle: receiptHandle,
-    })
+    }),
   );
 }
 
 async function markOrderRequestFailed(payload, errorMessage) {
   try {
     await OrderRequest.findOneAndUpdate(
-      { outletId: payload.tenant.outletId, clientOrderId: payload.clientOrderId },
+      {
+        outletId: payload.tenant.outletId,
+        clientOrderId: payload.clientOrderId,
+      },
       {
         $set: {
           status: "FAILED",
           errorMessage: errorMessage || "Order processing failed",
         },
-      }
+      },
     );
   } catch (err) {
-    console.error("[queue] Failed to update order request status:", err.message);
+    console.error(
+      "[queue] Failed to update order request status:",
+      err.message,
+    );
   }
 }
 

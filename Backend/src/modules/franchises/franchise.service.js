@@ -2,9 +2,16 @@ import Franchise from "./franchise.model.js";
 import User from "../users/user.model.js";
 import Outlet from "../outlets/outlet.model.js";
 import Device from "../devices/device.model.js";
-import { forceLogout, broadcastRefresh } from "../../realtime/realtime.manager.js";
+import {
+  forceLogout,
+  broadcastRefresh,
+} from "../../realtime/realtime.manager.js";
 import AppError from "../../shared/errors/AppError.js";
-import { toBoundedLimit, encodeCursor, decodeCursor } from "../../shared/utils/pagination.js";
+import {
+  toBoundedLimit,
+  encodeCursor,
+  decodeCursor,
+} from "../../shared/utils/pagination.js";
 import { FRANCHISE_STATUS } from "./franchise.constants.js";
 
 const DEFAULT_LIMIT = 10;
@@ -31,7 +38,11 @@ export async function createFranchise(payload, user) {
       isDeleted: false,
     });
     if (emailExists) {
-      throw new AppError("A franchise with this email already exists", 409, "EMAIL_EXISTS");
+      throw new AppError(
+        "A franchise with this email already exists",
+        409,
+        "EMAIL_EXISTS",
+      );
     }
   }
 
@@ -67,27 +78,44 @@ export async function getFranchises(user, query = {}) {
     ? {
         $or: [
           { createdAt: { $lt: decodedCursor.createdAt } },
-          { createdAt: decodedCursor.createdAt, _id: { $lt: decodedCursor._id } },
+          {
+            createdAt: decodedCursor.createdAt,
+            _id: { $lt: decodedCursor._id },
+          },
         ],
       }
     : null;
 
-  const queryFilter = cursorFilter ? { $and: [baseFilter, cursorFilter] } : baseFilter;
+  const queryFilter = cursorFilter
+    ? { $and: [baseFilter, cursorFilter] }
+    : baseFilter;
 
-  const [franchisesPlusOne, totalMatching, totalFranchises, activeFranchises] = await Promise.all([
-    Franchise.find(queryFilter).sort({ createdAt: -1, _id: -1 }).limit(pageLimit + 1),
-    Franchise.countDocuments(baseFilter),
-    Franchise.countDocuments({ isDeleted: false }),
-    Franchise.countDocuments({ isDeleted: false, status: FRANCHISE_STATUS.ACTIVE }),
-  ]);
+  const [franchisesPlusOne, totalMatching, totalFranchises, activeFranchises] =
+    await Promise.all([
+      Franchise.find(queryFilter)
+        .sort({ createdAt: -1, _id: -1 })
+        .limit(pageLimit + 1),
+      Franchise.countDocuments(baseFilter),
+      Franchise.countDocuments({ isDeleted: false }),
+      Franchise.countDocuments({
+        isDeleted: false,
+        status: FRANCHISE_STATUS.ACTIVE,
+      }),
+    ]);
 
   const hasNext = franchisesPlusOne.length > pageLimit;
-  const franchises = hasNext ? franchisesPlusOne.slice(0, pageLimit) : franchisesPlusOne;
+  const franchises = hasNext
+    ? franchisesPlusOne.slice(0, pageLimit)
+    : franchisesPlusOne;
 
   const lastFranchise = franchises[franchises.length - 1];
-  const nextCursor = hasNext && lastFranchise
-    ? encodeCursor({ createdAt: lastFranchise.createdAt, _id: lastFranchise._id })
-    : null;
+  const nextCursor =
+    hasNext && lastFranchise
+      ? encodeCursor({
+          createdAt: lastFranchise.createdAt,
+          _id: lastFranchise._id,
+        })
+      : null;
 
   return {
     items: franchises,
@@ -123,14 +151,21 @@ export async function updateFranchise(id, payload, user) {
     payload.brandCode = payload.brandCode.toUpperCase();
   }
 
-  if (payload.contactEmail && payload.contactEmail.toLowerCase() !== (franchise.contactEmail || "")) {
+  if (
+    payload.contactEmail &&
+    payload.contactEmail.toLowerCase() !== (franchise.contactEmail || "")
+  ) {
     const emailExists = await Franchise.findOne({
       contactEmail: payload.contactEmail.toLowerCase(),
       isDeleted: false,
       _id: { $ne: id },
     });
     if (emailExists) {
-      throw new AppError("A franchise with this email already exists", 409, "EMAIL_EXISTS");
+      throw new AppError(
+        "A franchise with this email already exists",
+        409,
+        "EMAIL_EXISTS",
+      );
     }
   }
 
@@ -152,46 +187,66 @@ export async function setFranchiseStatus(id, status, user) {
 
   const outletIds = await Outlet.find(
     { franchiseId: franchise._id, isDeleted: false },
-    "_id"
-  ).lean().then((docs) => docs.map((d) => d._id));
+    "_id",
+  )
+    .lean()
+    .then((docs) => docs.map((d) => d._id));
 
   if (status === FRANCHISE_STATUS.INACTIVE) {
     await Outlet.updateMany(
       { franchiseId: franchise._id, isDeleted: false },
-      { $set: { status: FRANCHISE_STATUS.INACTIVE } }
+      { $set: { status: FRANCHISE_STATUS.INACTIVE } },
     );
     await User.updateMany(
-      { $or: [{ franchiseId: franchise._id }, { outletId: { $in: outletIds } }], isDeleted: false },
-      { $set: { status: FRANCHISE_STATUS.INACTIVE } }
+      {
+        $or: [{ franchiseId: franchise._id }, { outletId: { $in: outletIds } }],
+        isDeleted: false,
+      },
+      { $set: { status: FRANCHISE_STATUS.INACTIVE } },
     );
     await Device.updateMany(
-      { $or: [{ franchiseId: franchise._id }, { outletId: { $in: outletIds } }], isDeleted: false },
-      { $set: { status: FRANCHISE_STATUS.INACTIVE } }
+      {
+        $or: [{ franchiseId: franchise._id }, { outletId: { $in: outletIds } }],
+        isDeleted: false,
+      },
+      { $set: { status: FRANCHISE_STATUS.INACTIVE } },
     );
 
     const affectedUsers = await User.find(
-      { $or: [{ franchiseId: franchise._id }, { outletId: { $in: outletIds } }], isDeleted: false },
-      "_id"
+      {
+        $or: [{ franchiseId: franchise._id }, { outletId: { $in: outletIds } }],
+        isDeleted: false,
+      },
+      "_id",
     ).lean();
     for (const u of affectedUsers) forceLogout("user", u._id.toString());
 
     const affectedDevices = await Device.find(
-      { $or: [{ franchiseId: franchise._id }, { outletId: { $in: outletIds } }], isDeleted: false },
-      "deviceId"
+      {
+        $or: [{ franchiseId: franchise._id }, { outletId: { $in: outletIds } }],
+        isDeleted: false,
+      },
+      "deviceId",
     ).lean();
     for (const d of affectedDevices) forceLogout("device", d.deviceId);
   } else {
     await Outlet.updateMany(
       { franchiseId: franchise._id, isDeleted: false },
-      { $set: { status: FRANCHISE_STATUS.ACTIVE } }
+      { $set: { status: FRANCHISE_STATUS.ACTIVE } },
     );
     await User.updateMany(
-      { $or: [{ franchiseId: franchise._id }, { outletId: { $in: outletIds } }], isDeleted: false },
-      { $set: { status: FRANCHISE_STATUS.ACTIVE } }
+      {
+        $or: [{ franchiseId: franchise._id }, { outletId: { $in: outletIds } }],
+        isDeleted: false,
+      },
+      { $set: { status: FRANCHISE_STATUS.ACTIVE } },
     );
     await Device.updateMany(
-      { $or: [{ franchiseId: franchise._id }, { outletId: { $in: outletIds } }], isDeleted: false },
-      { $set: { status: FRANCHISE_STATUS.ACTIVE } }
+      {
+        $or: [{ franchiseId: franchise._id }, { outletId: { $in: outletIds } }],
+        isDeleted: false,
+      },
+      { $set: { status: FRANCHISE_STATUS.ACTIVE } },
     );
   }
 
@@ -207,37 +262,50 @@ export async function deleteFranchise(id, user) {
 
   const franchise = await getFranchiseById(id, user);
 
-  const outlets = await Outlet.find({ franchiseId: franchise._id, isDeleted: false }).select("_id");
+  const outlets = await Outlet.find({
+    franchiseId: franchise._id,
+    isDeleted: false,
+  }).select("_id");
   const outletIds = outlets.map((o) => o._id);
 
   if (outletIds.length > 0) {
     await Outlet.updateMany(
       { franchiseId: franchise._id },
-      { isDeleted: true, status: FRANCHISE_STATUS.INACTIVE }
+      { isDeleted: true, status: FRANCHISE_STATUS.INACTIVE },
     );
   }
 
   const affectedUsers = await User.find(
-    { $or: [{ franchiseId: franchise._id }, { outletId: { $in: outletIds } }], isDeleted: false },
-    "_id"
+    {
+      $or: [{ franchiseId: franchise._id }, { outletId: { $in: outletIds } }],
+      isDeleted: false,
+    },
+    "_id",
   );
   for (const u of affectedUsers) forceLogout("user", u._id.toString());
   if (affectedUsers.length > 0) {
     await User.updateMany(
-      { $or: [{ franchiseId: franchise._id }, { outletId: { $in: outletIds } }] },
-      { isDeleted: true, status: FRANCHISE_STATUS.INACTIVE }
+      {
+        $or: [{ franchiseId: franchise._id }, { outletId: { $in: outletIds } }],
+      },
+      { isDeleted: true, status: FRANCHISE_STATUS.INACTIVE },
     );
   }
 
   const affectedDevices = await Device.find(
-    { $or: [{ franchiseId: franchise._id }, { outletId: { $in: outletIds } }], isDeleted: false },
-    "_id deviceId"
+    {
+      $or: [{ franchiseId: franchise._id }, { outletId: { $in: outletIds } }],
+      isDeleted: false,
+    },
+    "_id deviceId",
   );
   for (const d of affectedDevices) forceLogout("device", d.deviceId);
   if (affectedDevices.length > 0) {
     await Device.updateMany(
-      { $or: [{ franchiseId: franchise._id }, { outletId: { $in: outletIds } }] },
-      { isDeleted: true, status: FRANCHISE_STATUS.INACTIVE }
+      {
+        $or: [{ franchiseId: franchise._id }, { outletId: { $in: outletIds } }],
+      },
+      { isDeleted: true, status: FRANCHISE_STATUS.INACTIVE },
     );
   }
 

@@ -5,15 +5,20 @@ const { Schema } = mongoose;
 
 const outletSchema = new Schema(
   {
-    franchiseId: { type: Schema.Types.ObjectId, ref: "Franchise", required: true, index: true },
+    franchiseId: {
+      type: Schema.Types.ObjectId,
+      ref: "Franchise",
+      required: true,
+      index: true,
+    },
 
-    name:       { type: String, required: true, trim: true },
+    name: { type: String, required: true, trim: true },
     outletCode: { type: String, required: true, uppercase: true, trim: true },
 
     address: {
-      line1:   { type: String, trim: true },
-      city:    { type: String, trim: true },
-      state:   { type: String, trim: true },
+      line1: { type: String, trim: true },
+      city: { type: String, trim: true },
+      state: { type: String, trim: true },
       pincode: { type: String, trim: true },
       country: { type: String, trim: true },
     },
@@ -27,7 +32,7 @@ const outletSchema = new Schema(
 
     isDeleted: { type: Boolean, default: false, index: true },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 outletSchema.index({ franchiseId: 1, outletCode: 1 }, { unique: true });

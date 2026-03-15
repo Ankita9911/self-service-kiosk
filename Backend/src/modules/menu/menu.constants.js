@@ -1,10 +1,3 @@
-/**
- * menu.constants.js
- *
- * Single source of truth for all menu-domain enums.
- * Covers MenuItem, Category, and Combo shared values.
- */
-
 export const INVENTORY_MODE = {
   RECIPE: "RECIPE",
   DIRECT: "DIRECT",

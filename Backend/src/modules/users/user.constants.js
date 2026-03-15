@@ -1,9 +1,3 @@
-/**
- * user.constants.js
- *
- * Single source of truth for user-domain enums.
- */
-
 export const USER_ROLE = {
   SUPER_ADMIN:     "SUPER_ADMIN",
   FRANCHISE_ADMIN: "FRANCHISE_ADMIN",

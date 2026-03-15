@@ -43,7 +43,7 @@ const categorySchema = new Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 categorySchema.index({ franchiseId: 1, outletId: 1, isDeleted: 1 });

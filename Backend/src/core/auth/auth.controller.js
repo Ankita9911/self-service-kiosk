@@ -12,7 +12,10 @@ const COOKIE_OPTIONS = {
 };
 
 export const loginController = asyncHandler(async (req, res) => {
-  const result = await login({ email: req.body.email, password: req.body.password });
+  const result = await login({
+    email: req.body.email,
+    password: req.body.password,
+  });
 
   res.cookie(COOKIE_NAME, result.token, COOKIE_OPTIONS);
 
@@ -42,7 +45,11 @@ export const meController = asyncHandler(async (req, res) => {
 export const forceResetPasswordController = asyncHandler(async (req, res) => {
   const userId = req.user?.userId ?? req.user?.id;
 
-  await forceResetPassword(String(userId), req.body.currentPassword, req.body.password);
+  await forceResetPassword(
+    String(userId),
+    req.body.currentPassword,
+    req.body.password,
+  );
 
   return sendSuccess(res, { message: "Password reset successfully" });
 });

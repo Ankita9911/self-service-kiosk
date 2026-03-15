@@ -23,72 +23,72 @@ router.post(
   "/categories",
   authorize(PERMISSIONS.MENU_MANAGE),
   validate(createCategorySchema),
-  controller.createCategory
+  controller.createCategory,
 );
 
 router.get(
   "/categories",
   authorize(PERMISSIONS.MENU_MANAGE),
-  controller.getCategories
+  controller.getCategories,
 );
 
 router.patch(
   "/categories/:id",
   authorize(PERMISSIONS.MENU_MANAGE),
   validate(updateCategorySchema),
-  controller.updateCategory
+  controller.updateCategory,
 );
 
 router.delete(
   "/categories/:id",
   authorize(PERMISSIONS.MENU_MANAGE),
-  controller.deleteCategory
+  controller.deleteCategory,
 );
 
 router.post(
   "/items",
   authorize(PERMISSIONS.MENU_MANAGE),
   validate(createMenuItemSchema),
-  controller.createMenuItem
+  controller.createMenuItem,
 );
 
 router.get(
   "/items",
   authorize(PERMISSIONS.MENU_MANAGE),
-  controller.getMenuItems
+  controller.getMenuItems,
 );
 
 router.put(
   "/items/:id",
   authorize(PERMISSIONS.MENU_MANAGE),
   validate(updateMenuItemSchema),
-  controller.updateMenuItem
+  controller.updateMenuItem,
 );
 
 router.patch(
   "/items/:id/price",
   authorize(PERMISSIONS.MENU_MANAGE),
   validate(updateItemPriceSchema),
-  controller.updateItemPrice
+  controller.updateItemPrice,
 );
 
 router.patch(
   "/items/:id/stock",
   authorize(PERMISSIONS.MENU_MANAGE),
   validate(updateItemStockSchema),
-  controller.updateItemStock
+  controller.updateItemStock,
 );
 
 router.delete(
   "/items/:id",
   authorize(PERMISSIONS.MENU_MANAGE),
-  controller.deleteMenuItem
+  controller.deleteMenuItem,
 );
 
 router.patch(
   "/items/:id/status",
   authorize(PERMISSIONS.MENU_MANAGE),
-  controller.toggleItemStatus
+  controller.toggleItemStatus,
 );
 
 export default router;

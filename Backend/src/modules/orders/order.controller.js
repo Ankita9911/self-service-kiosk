@@ -3,7 +3,11 @@ import { sendSuccess } from "../../shared/utils/response.js";
 import { asyncHandler } from "../../shared/utils/asyncHandler.js";
 
 export const createOrder = asyncHandler(async (req, res) => {
-  const result = await orderService.createOrder(req.body, req.tenant, req.user.role);
+  const result = await orderService.createOrder(
+    req.body,
+    req.tenant,
+    req.user.role,
+  );
 
   return sendSuccess(res, {
     statusCode: 202,
@@ -15,7 +19,7 @@ export const createOrder = asyncHandler(async (req, res) => {
 export const getOrderProcessingStatus = asyncHandler(async (req, res) => {
   const result = await orderService.getOrderProcessingStatus(
     req.params.clientOrderId,
-    req.tenant
+    req.tenant,
   );
 
   return sendSuccess(res, {
@@ -41,7 +45,7 @@ export const updateOrderStatus = asyncHandler(async (req, res) => {
   const result = await orderService.updateOrderStatus(
     req.params.id,
     req.body.status,
-    req.tenant
+    req.tenant,
   );
 
   return sendSuccess(res, {

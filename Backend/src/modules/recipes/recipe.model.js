@@ -17,7 +17,7 @@ const recipeIngredientSchema = new Schema(
       required: true,
     },
   },
-  { _id: false }
+  { _id: false },
 );
 
 const recipeSchema = new Schema(
@@ -60,13 +60,13 @@ const recipeSchema = new Schema(
       index: true,
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 // One active recipe per menu item per outlet
 recipeSchema.index(
   { franchiseId: 1, outletId: 1, menuItemId: 1, isDeleted: 1 },
-  { unique: true, partialFilterExpression: { isDeleted: false } }
+  { unique: true, partialFilterExpression: { isDeleted: false } },
 );
 
 const Recipe = mongoose.model("Recipe", recipeSchema);

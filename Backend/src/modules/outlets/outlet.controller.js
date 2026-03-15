@@ -56,7 +56,11 @@ export const deleteOutletController = asyncHandler(async (req, res) => {
 });
 
 export const setOutletStatusController = asyncHandler(async (req, res) => {
-  const outlet = await setOutletStatus(req.params.id, req.body.status, req.user);
+  const outlet = await setOutletStatus(
+    req.params.id,
+    req.body.status,
+    req.user,
+  );
 
   return sendSuccess(res, {
     message: `Outlet marked as ${req.body.status.toLowerCase()} successfully`,

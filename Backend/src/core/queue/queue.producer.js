@@ -15,6 +15,6 @@ export async function enqueue(type, payload) {
           StringValue: type,
         },
       },
-    })
+    }),
   );
 }

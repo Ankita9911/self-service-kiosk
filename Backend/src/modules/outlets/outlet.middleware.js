@@ -7,7 +7,9 @@ export async function attachOutletForMenu(req, res, next) {
 
   if (user.role === "OUTLET_MANAGER") {
     if (!user.outletId) {
-      return next(new AppError("Outlet context required", 403, "OUTLET_REQUIRED"));
+      return next(
+        new AppError("Outlet context required", 403, "OUTLET_REQUIRED"),
+      );
     }
     return next();
   }
@@ -18,7 +20,13 @@ export async function attachOutletForMenu(req, res, next) {
     }
 
     if (!outletId) {
-      return next(new AppError("Outlet ID is required for menu operations", 400, "OUTLET_REQUIRED"));
+      return next(
+        new AppError(
+          "Outlet ID is required for menu operations",
+          400,
+          "OUTLET_REQUIRED",
+        ),
+      );
     }
 
     const outlet = await Outlet.findOne({ _id: outletId, isDeleted: false });
@@ -31,7 +39,13 @@ export async function attachOutletForMenu(req, res, next) {
       user.role === "FRANCHISE_ADMIN" &&
       outlet.franchiseId?.toString() !== user.franchiseId?.toString()
     ) {
-      return next(new AppError("Cannot manage menu for outlet outside your franchise", 403, "FORBIDDEN"));
+      return next(
+        new AppError(
+          "Cannot manage menu for outlet outside your franchise",
+          403,
+          "FORBIDDEN",
+        ),
+      );
     }
 
     req.tenant.outletId = outlet._id;

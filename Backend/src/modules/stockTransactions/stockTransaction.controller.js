@@ -5,7 +5,7 @@ import * as stockTransactionService from "./stockTransaction.service.js";
 export const createManualTransaction = asyncHandler(async (req, res) => {
   const transaction = await stockTransactionService.createManualTransaction(
     req.body,
-    req.tenant
+    req.tenant,
   );
   return sendSuccess(res, {
     statusCode: 201,
@@ -15,7 +15,10 @@ export const createManualTransaction = asyncHandler(async (req, res) => {
 });
 
 export const getTransactions = asyncHandler(async (req, res) => {
-  const result = await stockTransactionService.getTransactions(req.tenant, req.query);
+  const result = await stockTransactionService.getTransactions(
+    req.tenant,
+    req.query,
+  );
   return sendSuccess(res, {
     message: "Stock transactions fetched",
     data: result.items,
@@ -27,7 +30,7 @@ export const getTransactionsByIngredient = asyncHandler(async (req, res) => {
   const result = await stockTransactionService.getTransactionsByIngredient(
     req.params.ingredientId,
     req.tenant,
-    req.query
+    req.query,
   );
   return sendSuccess(res, {
     message: "Stock transaction history fetched",
