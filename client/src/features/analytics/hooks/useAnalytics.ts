@@ -5,15 +5,17 @@ import type { AnalyticsData } from "../types/analytics.types";
 export function useAnalytics() {
   const [data, setData] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [period, setPeriodState] = useState<string>("");
 
   const load = useCallback(async (p?: string) => {
     setLoading(true);
+    setError(null);
     try {
       const result = await fetchAnalyticsOverview(p || undefined);
       setData(result);
-    } catch {
-      // axios interceptor handles error toasts
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Failed to load analytics");
     } finally {
       setLoading(false);
     }
@@ -34,6 +36,7 @@ export function useAnalytics() {
   return {
     data,
     loading,
+    error,
     period,
     setPeriod,
     refetch: () => load(period || undefined),

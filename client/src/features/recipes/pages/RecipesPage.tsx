@@ -6,6 +6,8 @@ import { getAllIngredients } from "@/features/ingredients/services/ingredient.se
 import { getOutlets } from "@/features/outlet/services/outlet.service";
 import { RecipeStats } from "@/features/recipes/components/RecipeStats";
 import { RecipeFilters } from "@/features/recipes/components/RecipeFilters";
+import { RecipePageHeader } from "@/features/recipes/components/RecipePageHeader";
+import { RecipeEmptyState } from "@/features/recipes/components/RecipeEmptyState";
 import { RecipeCard } from "@/features/recipes/components/RecipeCard";
 import { RecipeTableRow } from "@/features/recipes/components/RecipeTableRow";
 import { RecipeDeleteModal } from "@/features/recipes/components/RecipeDeleteModal";
@@ -13,12 +15,12 @@ import { RecipeFormModal } from "@/features/recipes/components/RecipeFormModal";
 import { AIRecipeModal } from "@/features/recipes/components/AIRecipeModal";
 import { findIngredientMatch } from "@/features/recipes/lib/ingredientMatching";
 import { CursorPagination } from "@/shared/components/ui/CursorPagination";
-import { Shimmer } from "@/features/device/components/ShimmerCell";
+import { Shimmer } from "@/shared/components/ui/ShimmerCell";
 import type { Recipe, RecipeFormState, AISuggestion } from "@/features/recipes/types/recipe.types";
 import type { Ingredient, IngredientFormState } from "@/features/ingredients/types/ingredient.types";
 import type { Outlet } from "@/features/outlet/types/outlet.types";
 import axiosInstance from "@/shared/lib/axiosInstance";
-import { Plus, Sparkles, ChefHat, RefreshCcw, ShieldAlert } from "lucide-react";
+import { ShieldAlert } from "lucide-react";
 
 interface BasicMenuItem {
   _id: string;
@@ -26,16 +28,17 @@ interface BasicMenuItem {
 }
 
 const LAYOUT_KEY = "recipe-layout";
+const TABLE_HEADERS = ["#", "Menu Item", "Ingredients", "Prep Time", "Availability", ""];
 
 export default function RecipesPage() {
   const { user } = useAuth();
   const isFranchiseAdmin = user?.role === "FRANCHISE_ADMIN";
   const [outletFilter, setOutletFilter] = useState(user?.outletId ?? "ALL");
   const [outlets, setOutlets] = useState<Outlet[]>([]);
+
   const listOutletId = user?.outletId ?? (outletFilter !== "ALL" ? outletFilter : undefined);
   const actionOutletId = user?.outletId ?? (outletFilter !== "ALL" ? outletFilter : undefined);
 
-  // Filters
   const [searchTerm, setSearchTerm] = useState("");
   const [aiOnly, setAiOnly] = useState(false);
   const [layout, setLayout] = useState<"grid" | "table">(() => {
@@ -44,40 +47,16 @@ export default function RecipesPage() {
   });
 
   const {
-    recipes,
-    loading,
-    refreshing,
-    totalRecipes,
-    aiGeneratedCount,
-    totalMatching,
-    page,
-    pageSize,
-    hasPrevPage,
-    hasNextPage,
-    goToNextPage,
-    goToPrevPage,
-    setPageSize,
-    resetToFirstPage,
-    fetchData,
-    handleCreate,
-    handleUpdate,
-    handleDelete,
-    aiLoading,
-    aiSuggestion,
-    handleAIGenerate,
-    clearAISuggestion,
-  } = useRecipes(
-    listOutletId,
-    { search: searchTerm, aiOnly },
-    actionOutletId,
-    isFranchiseAdmin && !user?.outletId
-  );
+    recipes, loading, refreshing,
+    totalRecipes, aiGeneratedCount, totalMatching,
+    page, pageSize, hasPrevPage, hasNextPage,
+    goToNextPage, goToPrevPage, setPageSize, resetToFirstPage,
+    fetchData, handleCreate, handleUpdate, handleDelete,
+    aiLoading, aiSuggestion, handleAIGenerate, clearAISuggestion,
+  } = useRecipes(listOutletId, { search: searchTerm, aiOnly }, actionOutletId, isFranchiseAdmin && !user?.outletId);
 
   const { handleCreate: createIngredient } = useIngredients(
-    listOutletId,
-    undefined,
-    actionOutletId,
-    isFranchiseAdmin && !user?.outletId
+    listOutletId, undefined, actionOutletId, isFranchiseAdmin && !user?.outletId
   );
 
   const [menuItems, setMenuItems] = useState<BasicMenuItem[]>([]);
@@ -106,9 +85,7 @@ export default function RecipesPage() {
     }
   }, [listOutletId]);
 
-  useEffect(() => {
-    void fetchMenuItems();
-  }, [fetchMenuItems]);
+  useEffect(() => { void fetchMenuItems(); }, [fetchMenuItems]);
 
   const fetchRecipeIngredients = useCallback(async () => {
     if (!listOutletId) return;
@@ -120,9 +97,7 @@ export default function RecipesPage() {
     }
   }, [listOutletId]);
 
-  useEffect(() => {
-    void fetchRecipeIngredients();
-  }, [fetchRecipeIngredients]);
+  useEffect(() => { void fetchRecipeIngredients(); }, [fetchRecipeIngredients]);
 
   const handleLayoutChange = (v: "grid" | "table") => {
     setLayout(v);
@@ -149,10 +124,6 @@ export default function RecipesPage() {
     setShowForm(true);
   };
 
-  const handleDeleteClick = (recipe: Recipe) => {
-    setDeletingRecipe(recipe);
-  };
-
   const confirmDelete = async () => {
     if (!deletingRecipe) return;
     setDeleteLoading(true);
@@ -164,31 +135,12 @@ export default function RecipesPage() {
     }
   };
 
-  const handleCloseForm = () => {
-    setShowForm(false);
-    setEditingRecipe(null);
-    setAiPrefill(null);
-  };
-
   const handleUseSuggestion = (suggestion: AISuggestion) => {
     const mappedIngredients = suggestion.ingredients.map((ai) => {
       const match = findIngredientMatch(recipeIngredients, ai.name);
-      return {
-        ingredientId: match?._id ?? "",
-        quantity: ai.quantity,
-        unit: ai.unit,
-        _aiName: ai.name,
-      };
+      return { ingredientId: match?._id ?? "", quantity: ai.quantity, unit: ai.unit, _aiName: ai.name };
     });
-
-    setAiPrefill({
-      menuItemId: "",
-      ingredients: mappedIngredients,
-      prepTime: suggestion.prepTime,
-      instructions: suggestion.instructions,
-      aiGenerated: true,
-    });
-
+    setAiPrefill({ menuItemId: "", ingredients: mappedIngredients, prepTime: suggestion.prepTime, instructions: suggestion.instructions, aiGenerated: true });
     clearAISuggestion();
     setEditingRecipe(null);
     setShowForm(true);
@@ -201,7 +153,6 @@ export default function RecipesPage() {
   };
 
   const showShimmer = loading || refreshing;
-  const TABLE_HEADERS = ["#", "Menu Item", "Ingredients", "Prep Time", "Availability", ""];
 
   if (!listOutletId && !isFranchiseAdmin) {
     return (
@@ -217,48 +168,14 @@ export default function RecipesPage() {
 
   return (
     <div className="space-y-6">
-      {/* ── Header ── */}
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2">
-        <div>
-          <h1 className="text-[28px] font-semibold text-slate-900 dark:text-white tracking-tight">
-            Recipes
-          </h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400">
-            Link menu items to ingredients so outlet availability comes from live inventory.
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => fetchData(true)}
-            disabled={refreshing}
-            className="h-9 w-9 rounded-xl border border-slate-200 dark:border-white/[0.08] bg-white dark:bg-white/[0.04] flex items-center justify-center text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:border-indigo-200 dark:hover:border-indigo-500/40 transition-all disabled:opacity-50"
-          >
-            <RefreshCcw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
-          </button>
-          <button
-            onClick={() => setShowAI(true)}
-            disabled={!actionOutletId}
-            className="flex items-center gap-2 h-9 px-4 rounded-xl border border-slate-200 dark:border-white/[0.08] bg-white dark:bg-white/[0.04] text-sm font-medium text-slate-600 dark:text-slate-300 hover:border-purple-300 dark:hover:border-purple-500/40 hover:text-purple-600 dark:hover:text-purple-400 transition-all"
-          >
-            <Sparkles className="w-4 h-4" />
-            <span className="hidden sm:inline">AI Generate</span>
-          </button>
-          <button
-            onClick={() => {
-              setEditingRecipe(null);
-              setAiPrefill(null);
-              setShowForm(true);
-            }}
-            disabled={!actionOutletId}
-            className="flex items-center gap-2 h-9 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium shadow-lg shadow-indigo-500/20 transition-all"
-          >
-            <Plus className="w-4 h-4" />
-            <span className="hidden sm:inline">Add Recipe</span>
-          </button>
-        </div>
-      </div>
+      <RecipePageHeader
+        refreshing={refreshing}
+        canAdd={Boolean(actionOutletId)}
+        onRefresh={() => fetchData(true)}
+        onAIGenerate={() => setShowAI(true)}
+        onAdd={() => { setEditingRecipe(null); setAiPrefill(null); setShowForm(true); }}
+      />
 
-      {/* ── Stats ── */}
       <RecipeStats
         loading={showShimmer}
         totalRecipes={totalRecipes}
@@ -266,7 +183,6 @@ export default function RecipesPage() {
         avgPrepTime={avgPrepTime}
       />
 
-      {/* ── Filters ── */}
       <RecipeFilters
         searchTerm={searchTerm}
         aiOnly={aiOnly}
@@ -281,7 +197,6 @@ export default function RecipesPage() {
         onClearFilters={clearFilters}
       />
 
-      {/* ── Content ── */}
       {layout === "grid" ? (
         <>
           {showShimmer ? (
@@ -302,19 +217,7 @@ export default function RecipesPage() {
               ))}
             </div>
           ) : recipes.length === 0 ? (
-            <div className="text-center py-20">
-              <div className="h-14 w-14 rounded-2xl bg-slate-100 dark:bg-white/6 flex items-center justify-center mx-auto mb-3">
-                <ChefHat className="w-6 h-6 text-slate-400 dark:text-slate-500" />
-              </div>
-              <p className="font-medium text-slate-600 dark:text-slate-300">
-                {hasActiveFilters ? "No recipes match your filters" : "No recipes yet"}
-              </p>
-              <p className="text-slate-400 dark:text-slate-500 text-sm mt-1">
-                {hasActiveFilters
-                  ? "Try clearing filters or a different search"
-                  : "Add your first recipe to link menu items to inventory"}
-              </p>
-            </div>
+            <RecipeEmptyState hasActiveFilters={hasActiveFilters} />
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {recipes.map((recipe) => (
@@ -322,7 +225,7 @@ export default function RecipesPage() {
                   key={recipe._id}
                   recipe={recipe}
                   onEdit={handleEdit}
-                  onDelete={handleDeleteClick}
+                  onDelete={setDeletingRecipe}
                   showActions={Boolean(actionOutletId)}
                 />
               ))}
@@ -343,7 +246,6 @@ export default function RecipesPage() {
           )}
         </>
       ) : (
-        /* Table layout */
         <div className="bg-white dark:bg-[#161920] rounded-2xl border border-slate-100 dark:border-white/6 shadow-sm">
           <table className="w-full">
             <thead>
@@ -364,12 +266,7 @@ export default function RecipesPage() {
                   <tr key={i}>
                     <td className="px-5 py-4"><Shimmer w="w-6" /></td>
                     <td className="px-5 py-4"><Shimmer w="w-36" /></td>
-                    <td className="px-5 py-4">
-                      <div className="flex gap-1">
-                        <Shimmer w="w-12" h="h-5" rounded="rounded-full" />
-                        <Shimmer w="w-14" h="h-5" rounded="rounded-full" />
-                      </div>
-                    </td>
+                    <td className="px-5 py-4"><div className="flex gap-1"><Shimmer w="w-12" h="h-5" rounded="rounded-full" /><Shimmer w="w-14" h="h-5" rounded="rounded-full" /></div></td>
                     <td className="px-5 py-4"><Shimmer w="w-14" /></td>
                     <td className="px-5 py-4"><Shimmer w="w-20" h="h-5" rounded="rounded-full" /></td>
                     <td className="px-5 py-4"><Shimmer w="w-14" /></td>
@@ -377,18 +274,8 @@ export default function RecipesPage() {
                 ))
               ) : recipes.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="py-16 text-center">
-                    <div className="flex flex-col items-center gap-3">
-                      <div className="h-12 w-12 rounded-2xl bg-slate-100 dark:bg-white/6 flex items-center justify-center">
-                        <ChefHat className="w-5 h-5 text-slate-400 dark:text-slate-500" />
-                      </div>
-                      <p className="font-medium text-slate-600 dark:text-slate-300">
-                        {hasActiveFilters ? "No recipes match your filters" : "No recipes yet"}
-                      </p>
-                      <p className="text-slate-400 dark:text-slate-500 text-sm">
-                        {hasActiveFilters ? "Try clearing filters" : "Add your first recipe to get started"}
-                      </p>
-                    </div>
+                  <td colSpan={6} className="py-4">
+                    <RecipeEmptyState hasActiveFilters={hasActiveFilters} />
                   </td>
                 </tr>
               ) : (
@@ -398,7 +285,7 @@ export default function RecipesPage() {
                     recipe={recipe}
                     index={index}
                     onEdit={handleEdit}
-                    onDelete={handleDeleteClick}
+                    onDelete={setDeletingRecipe}
                     showActions={Boolean(actionOutletId)}
                   />
                 ))
@@ -421,11 +308,10 @@ export default function RecipesPage() {
         </div>
       )}
 
-      {/* ── Modals ── */}
       {showForm && (
         <RecipeFormModal
           open={showForm}
-          onClose={handleCloseForm}
+          onClose={() => { setShowForm(false); setEditingRecipe(null); setAiPrefill(null); }}
           recipe={editingRecipe}
           initialForm={aiPrefill}
           menuItems={menuItems}

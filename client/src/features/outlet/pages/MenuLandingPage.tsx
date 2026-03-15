@@ -58,14 +58,7 @@ export default function MenuLandingPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
-          {/* <div className="flex items-center gap-2 mb-1.5">
-            <div className="h-5 w-5 rounded-md bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center">
-              <UtensilsCrossed className="w-3 h-3 text-indigo-600 dark:text-indigo-400" />
-            </div>
-            <span className="text-[11px] font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-widest">
-              Menu Management
-            </span>
-          </div> */}
+
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
             Select Outlet
           </h1>

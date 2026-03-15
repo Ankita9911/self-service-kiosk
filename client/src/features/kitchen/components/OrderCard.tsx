@@ -1,8 +1,8 @@
 import { useDraggable } from "@dnd-kit/core";
 import { GripVertical, Clock, ArrowRight } from "lucide-react";
 import type { Order, OrderStatus } from "@/features/kiosk/types/order.types";
-import type { KitchenStatus } from "../config/kitchen.contant";
-import { STATUS_CONFIG } from "../config/kitchen.contant";
+import type { KitchenStatus } from "../config/kitchen.constants";
+import { STATUS_CONFIG } from "../config/kitchen.constants";
 import { formatTime, elapsedMinutes } from "@/shared/utils/commonFunction";
 
 const CARD_THEME: Record<
