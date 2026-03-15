@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { objectIdSchema } from "../../shared/validation/common.schemas.js";
-import { INGREDIENT_UNIT } from "../ingredients/constant/ingredient.constants.js";
+import { objectIdSchema } from "../../../shared/validation/common.schemas.js";
+import { INGREDIENT_UNIT } from "../../ingredients/constant/ingredient.constants.js";
 
 const recipeIngredientSchema = z.object({
   ingredientId: objectIdSchema,

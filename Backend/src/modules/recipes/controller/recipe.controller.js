@@ -1,6 +1,6 @@
-import { asyncHandler } from "../../shared/utils/asyncHandler.js";
-import { sendSuccess } from "../../shared/utils/response.js";
-import * as recipeService from "./recipe.service.js";
+import { asyncHandler } from "../../../shared/utils/asyncHandler.js";
+import { sendSuccess } from "../../../shared/utils/response.js";
+import * as recipeService from "../service/recipe.service.js";
 
 export const createRecipe = asyncHandler(async (req, res) => {
   const recipe = await recipeService.createRecipe(req.body, req.tenant);

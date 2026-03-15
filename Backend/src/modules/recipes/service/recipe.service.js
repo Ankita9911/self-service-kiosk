@@ -1,17 +1,17 @@
 import { GoogleGenAI } from "@google/genai";
-import Recipe from "./recipe.model.js";
-import Ingredient from "../ingredients/model/ingredient.model.js";
-import MenuItem from "../menu/model/menuItem.model.js";
-import { getRedisClient } from "../../core/cache/redis.client.js";
-import { buildTenantKey } from "../../core/cache/cache.utils.js";
-import { emitOutletEvent } from "../../realtime/realtime.manager.js";
-import AppError from "../../shared/errors/AppError.js";
-import env from "../../config/env.js";
+import Recipe from "../model/recipe.model.js";
+import Ingredient from "../../ingredients/model/ingredient.model.js";
+import MenuItem from "../../menu/model/menuItem.model.js";
+import { getRedisClient } from "../../../core/cache/redis.client.js";
+import { buildTenantKey } from "../../../core/cache/cache.utils.js";
+import { emitOutletEvent } from "../../../realtime/realtime.manager.js";
+import AppError from "../../../shared/errors/AppError.js";
+import env from "../../../config/env.js";
 import {
   toBoundedLimit,
   encodeCursor,
   decodeCursor,
-} from "../../shared/utils/pagination.js";
+} from "../../../shared/utils/pagination.js";
 
 const CACHE_TTL = 300;
 const DEFAULT_LIMIT = 20;
