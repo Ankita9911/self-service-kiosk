@@ -6,16 +6,11 @@ const axiosInstance = axios.create({
   withCredentials: true, // send httpOnly cookie on every request
 });
 
-axiosInstance.interceptors.request.use((config) => {
-  return config;
-});
-
 // Prevent multiple simultaneous 401/403 responses from spamming logout/toasts
 let isLoggingOut = false;
 
 axiosInstance.interceptors.response.use(
   (response) => {
-
     const message = response.data?.message;
     if (message && response.config.method !== "get") {
       toast.success(message);

@@ -8,8 +8,8 @@ export async function processQueue() {
     try {
       await axiosInstance.post("/orders", order.payload);
       await markOrderSynced(order.clientOrderId);
-    } catch (error: any) {
-      if (!error.response) {
+    } catch (error: unknown) {
+      if (!(error as { response?: unknown }).response) {
         break;
       }
     }

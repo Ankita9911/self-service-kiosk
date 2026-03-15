@@ -1,12 +1,13 @@
 import { Cpu, CheckCircle2, WifiOff } from "lucide-react";
-import type { Device } from "../types/device.types";
+
+interface DeviceStatsProps {
+  totalDevices: number;
+  activeDevices: number;
+  loading: boolean;
+}
 
 function StatPill({
-  icon,
-  label,
-  value,
-  iconBg,
-  loading,
+  icon, label, value, iconBg, loading,
 }: {
   icon: React.ReactNode;
   label: string;
@@ -34,7 +35,9 @@ function StatPill({
 
   return (
     <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-white dark:bg-[#1e2130] border border-slate-100 dark:border-white/[0.07] shadow-sm">
-      <div className={`h-9 w-9 rounded-xl ${iconBg} flex items-center justify-center shrink-0`}>{icon}</div>
+      <div className={`h-9 w-9 rounded-xl ${iconBg} flex items-center justify-center shrink-0`}>
+        {icon}
+      </div>
       <div>
         <p className="text-xl font-black text-slate-800 dark:text-white leading-none">{value}</p>
         <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5 font-medium">{label}</p>
@@ -43,27 +46,30 @@ function StatPill({
   );
 }
 
-export function DeviceStats({
-  devices,
-  loading,
-  totalDevices,
-  activeDevices,
-}: {
-  devices: Device[];
-  loading: boolean;
-  totalDevices?: number;
-  activeDevices?: number;
-}) {
-  const resolvedTotal = typeof totalDevices === "number" ? totalDevices : devices.length;
-  const activeCount = typeof activeDevices === "number"
-    ? activeDevices
-    : devices.filter((d) => d.status === "ACTIVE").length;
-
+export function DeviceStats({ totalDevices, activeDevices, loading }: DeviceStatsProps) {
   return (
     <div className="grid grid-cols-3 gap-3">
-      <StatPill loading={loading} value={resolvedTotal}              label="Total Devices" iconBg="bg-indigo-50 dark:bg-indigo-500/10"   icon={<Cpu        className="w-4 h-4 text-indigo-500"   />} />
-      <StatPill loading={loading} value={activeCount}                 label="Online"        iconBg="bg-emerald-50 dark:bg-emerald-500/10" icon={<CheckCircle2 className="w-4 h-4 text-emerald-500" />} />
-      <StatPill loading={loading} value={resolvedTotal - activeCount} label="Offline"      iconBg="bg-red-50 dark:bg-red-500/10"         icon={<WifiOff    className="w-4 h-4 text-red-400"      />} />
+      <StatPill
+        loading={loading}
+        value={totalDevices}
+        label="Total Devices"
+        iconBg="bg-indigo-50 dark:bg-indigo-500/10"
+        icon={<Cpu className="w-4 h-4 text-indigo-500" />}
+      />
+      <StatPill
+        loading={loading}
+        value={activeDevices}
+        label="Online"
+        iconBg="bg-emerald-50 dark:bg-emerald-500/10"
+        icon={<CheckCircle2 className="w-4 h-4 text-emerald-500" />}
+      />
+      <StatPill
+        loading={loading}
+        value={totalDevices - activeDevices}
+        label="Offline"
+        iconBg="bg-red-50 dark:bg-red-500/10"
+        icon={<WifiOff className="w-4 h-4 text-red-400" />}
+      />
     </div>
   );
 }

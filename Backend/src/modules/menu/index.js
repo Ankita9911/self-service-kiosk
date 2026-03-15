@@ -1,10 +1,10 @@
 import express from "express";
-import { authenticate } from "../../../core/auth/middleware/auth.middleware.js";
-import { attachTenant } from "../../../core/tenancy/tenancy.middleware.js";
-import { attachOutletForMenu } from "../../outlets/middleware/outlet.middleware.js";
-import { authorize } from "../../../core/rbac/rbac.middleware.js";
-import { PERMISSIONS } from "../../../core/rbac/permissions.js";
-import { validate } from "../../../shared/validation/validate.middleware.js";
+import { authenticate } from "../../core/auth/middleware/auth.middleware.js";
+import { attachTenant } from "../../core/tenancy/tenancy.middleware.js";
+import { attachOutletForMenu } from "../outlets/middleware/outlet.middleware.js";
+import { authorize } from "../../core/rbac/rbac.middleware.js";
+import { PERMISSIONS } from "../../core/rbac/permissions.js";
+import { validate } from "../../shared/validation/validate.middleware.js";
 import {
   createCategorySchema,
   updateCategorySchema,
@@ -12,8 +12,8 @@ import {
   updateMenuItemSchema,
   updateItemPriceSchema,
   updateItemStockSchema,
-} from "../validation/menu.schemas.js";
-import * as controller from "../controller/menu.controller.js";
+} from "./validation/menu.schemas.js";
+import * as controller from "./controller/menu.controller.js";
 
 const router = express.Router();
 

@@ -1,38 +1,33 @@
 import { useEffect, useRef } from "react";
-import { io, Socket } from "socket.io-client";
+import { io, type Socket } from "socket.io-client";
 import { getSocketUrl } from "@/shared/lib/socket";
+import type { Order, OrderStatus } from "@/features/kiosk/types/order.types";
 
-const SOCKET_URL = getSocketUrl();
+interface OrderStatusPayload {
+  orderId: string;
+  status: OrderStatus;
+  order: Order;
+}
 
 export function useSocket(
-  onOrderNew: (order: any) => void,
-  onOrderStatusUpdated: (payload: any) => void
+  onOrderNew: (order: Order) => void,
+  onOrderStatusUpdated: (payload: OrderStatusPayload) => void
 ) {
   const socketRef = useRef<Socket | null>(null);
 
   useEffect(() => {
-    const socket = io(SOCKET_URL, {
+    const socket = io(getSocketUrl(), {
       withCredentials: true,
       transports: ["websocket"],
     });
 
     socketRef.current = socket;
 
-    socket.on("order:new", (order) => {
-      onOrderNew(order);
-    });
+    socket.on("order:new", onOrderNew);
+    socket.on("order:statusUpdated", onOrderStatusUpdated);
+    socket.on("connect_error", () => {});
 
-    socket.on("order:statusUpdated", (payload) => {
-      onOrderStatusUpdated(payload);
-    });
-
-    socket.on("connect_error", (err) => {
-      console.warn("Socket connect error:", err.message);
-    });
-
-    return () => {
-      socket.disconnect();
-    };
+    return () => { socket.disconnect(); };
   }, []);
 
   return socketRef;

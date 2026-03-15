@@ -22,7 +22,7 @@ export function DeviceHeader({
         <p className="text-sm text-slate-500 dark:text-slate-400">
           Monitor and register kiosk hardware across outlets.
         </p>
-     </div>
+      </div>
 
       <div className="flex items-center gap-2">
         <button

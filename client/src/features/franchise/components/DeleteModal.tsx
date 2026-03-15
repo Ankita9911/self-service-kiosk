@@ -11,9 +11,17 @@ interface Props {
 export function DeleteModal({ franchise, onConfirm, onCancel }: Props) {
   const [loading, setLoading] = useState(false);
 
+  const handleConfirm = async () => {
+    setLoading(true);
+    try {
+      await onConfirm();
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
-      {/* Backdrop */}
       <div
         className="absolute inset-0 bg-black/50 dark:bg-black/70 backdrop-blur-sm"
         onClick={onCancel}
@@ -26,11 +34,9 @@ export function DeleteModal({ franchise, onConfirm, onCancel }: Props) {
         rounded-2xl shadow-2xl shadow-slate-300/20 dark:shadow-black/40
         animate-scale-in
       ">
-        {/* Top accent bar */}
         <div className="h-0.5 bg-gradient-to-r from-red-400 via-red-500 to-red-600" />
 
         <div className="p-6 space-y-5">
-          {/* Icon + text */}
           <div className="flex items-start gap-4">
             <div className="h-11 w-11 rounded-xl bg-red-50 dark:bg-red-500/10 border border-red-100 dark:border-red-500/20 flex items-center justify-center shrink-0">
               <AlertTriangle className="w-5 h-5 text-red-500" />
@@ -48,7 +54,6 @@ export function DeleteModal({ franchise, onConfirm, onCancel }: Props) {
             </div>
           </div>
 
-          {/* Actions */}
           <div className="flex gap-2.5">
             <button
               onClick={onCancel}
@@ -64,11 +69,7 @@ export function DeleteModal({ franchise, onConfirm, onCancel }: Props) {
             </button>
 
             <button
-              onClick={async () => {
-                setLoading(true);
-                await onConfirm();
-                setLoading(false);
-              }}
+              onClick={handleConfirm}
               disabled={loading}
               className="
                 flex-1 h-10 rounded-xl text-[13px] font-semibold
@@ -80,7 +81,7 @@ export function DeleteModal({ franchise, onConfirm, onCancel }: Props) {
             >
               {loading
                 ? <Loader2 className="w-4 h-4 animate-spin" />
-                : <Trash2  className="w-3.5 h-3.5" />
+                : <Trash2 className="w-3.5 h-3.5" />
               }
               Delete
             </button>

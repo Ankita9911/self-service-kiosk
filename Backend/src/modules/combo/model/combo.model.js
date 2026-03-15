@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { SERVICE_TYPE } from "../constant/menu.constants.js";
+import { SERVICE_TYPE } from "../../menu/constant/menu.constants.js";
 
 const { Schema } = mongoose;
 

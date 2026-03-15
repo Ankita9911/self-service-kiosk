@@ -1,11 +1,11 @@
 import express from "express";
-import { authenticate } from "../../../core/auth/middleware/auth.middleware.js";
-import { attachTenant } from "../../../core/tenancy/tenancy.middleware.js";
-import { authorize } from "../../../core/rbac/rbac.middleware.js";
-import { PERMISSIONS } from "../../../core/rbac/permissions.js";
-import { validate } from "../../../shared/validation/validate.middleware.js";
-import { createOrderSchema, updateOrderStatusSchema } from "../validation/order.schemas.js";
-import * as controller from "../controller/order.controller.js";
+import { authenticate } from "../../core/auth/middleware/auth.middleware.js";
+import { attachTenant } from "../../core/tenancy/tenancy.middleware.js";
+import { authorize } from "../../core/rbac/rbac.middleware.js";
+import { PERMISSIONS } from "../../core/rbac/permissions.js";
+import { validate } from "../../shared/validation/validate.middleware.js";
+import { createOrderSchema, updateOrderStatusSchema } from "./validation/order.schemas.js";
+import * as controller from "./controller/order.controller.js";
 
 const router = express.Router();
 

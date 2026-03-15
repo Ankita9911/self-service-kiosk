@@ -23,92 +23,60 @@ import { useKioskCart } from "../hooks/useKioskCart";
 import { useKioskCheckout } from "../hooks/useKioskCheckout";
 import { useKioskForceLogout } from "../hooks/useKioskForceLogout";
 import { useRecommendations } from "../hooks/useRecommendations";
-import type { OfferType } from "../types/menu.types";
+import { reconcileCartWithCatalog } from "../utils/cartReconcile";
 import { getKioskToken } from "@/shared/lib/kioskSession";
-import type { CartItem } from "../types/cartItem.types";
-import type { Combo, MenuCategory, MenuItem } from "../types/menu.types";
+import type { OfferType } from "../types/menu.types";
+import type { MenuItem } from "../types/menu.types";
 
-const OFFER_CHIPS: { value: OfferType | null; label: string; emoji: string }[] =
-  [
-    { value: "DISCOUNT", label: "Deals", emoji: "🏷️" },
-    { value: "BOGO", label: "Buy 1 Get 1", emoji: "🎁" },
-    { value: "BESTSELLER", label: "Best Seller", emoji: "⭐" },
-    { value: "NEW", label: "New", emoji: "✨" },
-    { value: "LIMITED", label: "Limited", emoji: "⏳" },
-  ];
+const OFFER_CHIPS: { value: OfferType | null; label: string; emoji: string }[] = [
+  { value: "DISCOUNT",   label: "Deals",       emoji: "🏷️" },
+  { value: "BOGO",       label: "Buy 1 Get 1", emoji: "🎁" },
+  { value: "BESTSELLER", label: "Best Seller", emoji: "⭐" },
+  { value: "NEW",        label: "New",         emoji: "✨" },
+  { value: "LIMITED",    label: "Limited",     emoji: "⏳" },
+];
 
 export default function KioskPage() {
   const navigate = useNavigate();
   const [isCartOpen, setIsCartOpen] = useState(true);
   const [cartSyncAlerts, setCartSyncAlerts] = useState<string[]>([]);
 
-  // Redirect immediately if the device is deactivated by an admin
   useKioskForceLogout();
 
   const {
-    menu,
-    selectedCategory,
-    setSelectedCategory,
-    categoriesWithAll,
-    combos,
-    selectedItems,
-    offerFilter,
-    setOfferFilter,
-    offerCounts,
-    isLoading,
-    loadMenu,
-    COMBOS_CATEGORY_ID,
+    menu, selectedCategory, setSelectedCategory,
+    categoriesWithAll, combos, selectedItems,
+    offerFilter, setOfferFilter, offerCounts,
+    isLoading, loadMenu, COMBOS_CATEGORY_ID,
   } = useKioskMenu();
 
   const {
-    cart,
-    setCart,
-    handleAddToCart,
-    handleUpdateQuantity,
-    totalItems,
-    totalPrice,
+    cart, setCart,
+    handleAddToCart, handleUpdateQuantity,
+    totalItems, totalPrice,
   } = useKioskCart();
 
   const {
-    showPaymentDialog,
-    setShowPaymentDialog,
+    showPaymentDialog, setShowPaymentDialog,
     showProcessingDialog,
-    showSuccessDialog,
-    setShowSuccessDialog,
-    showFailedDialog,
-    setShowFailedDialog,
+    showSuccessDialog, setShowSuccessDialog,
+    showFailedDialog, setShowFailedDialog,
     failedMessage,
-    paymentStep,
-    setPaymentStep,
-    selectedMethod,
-    setSelectedMethod,
-    isProcessing,
-    orderNumber,
-    handleOpenCheckout,
-    handleConfirmOrder,
+    paymentStep, setPaymentStep,
+    selectedMethod, setSelectedMethod,
+    isProcessing, orderNumber,
+    handleOpenCheckout, handleConfirmOrder,
   } = useKioskCheckout(cart, setCart, loadMenu);
 
-  // ── Recommendations ──────────────────────────────────────────────────────
   const {
-    trending,
-    isTrendingLoading,
-    frequentlyBoughtTogether,
-    isFbtLoading,
-    completeMeal,
-    isMealLoading,
+    trending, isTrendingLoading,
+    frequentlyBoughtTogether, isFbtLoading,
+    completeMeal, isMealLoading,
   } = useRecommendations(cart, menu);
 
-  // Handler to add a recommended item to cart (mirrors onAddToCart signature)
-  const handleAddRecommendedItem = (item: MenuItem) => {
-    handleAddToCart(item);
-  };
+  const handleAddRecommendedItem = (item: MenuItem) => handleAddToCart(item);
 
-  // Handler for combo upsell in "complete meal" section
-  const handleAddComboToCart = (combo: {
-    _id: string;
-    name: string;
-    comboPrice: number;
-  }) => {
+  const handleAddComboToCart = (combo: { _id: string; name: string; comboPrice: number }) => {
     handleAddToCart({
       _id: combo._id,
       name: combo.name,
@@ -118,29 +86,20 @@ export default function KioskPage() {
     });
   };
 
-  useEffect(() => {
-    processQueue();
-  }, []);
+  useEffect(() => { processQueue(); }, []);
 
   useEffect(() => {
-    if (!getKioskToken()) {
-      navigate("/kiosk/login", { replace: true });
-    }
+    if (!getKioskToken()) navigate("/kiosk/login", { replace: true });
   }, [navigate]);
 
   const isOnCombos = selectedCategory === COMBOS_CATEGORY_ID;
 
   useEffect(() => {
     if (cart.length === 0) {
-      if (cartSyncAlerts.length > 0) {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setCartSyncAlerts([]);
-      }
+      if (cartSyncAlerts.length > 0) setCartSyncAlerts([]);
       return;
     }
-
     const result = reconcileCartWithCatalog(cart, menu, combos);
-
     if (result.changed) {
       setCart(result.cart);
       setCartSyncAlerts(result.alerts);
@@ -149,9 +108,9 @@ export default function KioskPage() {
 
   return (
     <div className="h-screen flex flex-row bg-gray-50 overflow-hidden">
-      {/* ── Left sidebar: offer filter chips ── */}
+      {/* ── Offer filter sidebar ── */}
       <div className="w-[104px] min-w-20 shrink-0 flex flex-col bg-white border-r border-gray-100 shadow-sm overflow-y-auto scrollbar-none">
-        <div className="px-10 py-9.5 flex flex-col bg-white border-r border-gray-100 shadow-sm overflow-y-auto scrollbar-none ">
+        <div className="px-10 py-9.5 flex flex-col bg-white border-r border-gray-100 shadow-sm overflow-y-auto scrollbar-none">
           <button
             className="text-gray-400 hover:text-orange-500 hover:bg-orange-50 transition-all active:scale-95"
             onClick={() => navigate("/kiosk/order-type")}
@@ -164,7 +123,6 @@ export default function KioskPage() {
         <div className="flex flex-col gap-1 px-2 pt-2">
           {OFFER_CHIPS.map(({ value, label, emoji }, index) => {
             if (isOnCombos && value !== null) return null;
-
             const count = value === null ? undefined : offerCounts[value];
             const isActive = offerFilter === value;
 
@@ -174,11 +132,7 @@ export default function KioskPage() {
                 onClick={() => setOfferFilter(value)}
                 initial={{ opacity: 0, y: -8 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{
-                  delay: index * 0.04,
-                  duration: 0.3,
-                  ease: "easeOut",
-                }}
+                transition={{ delay: index * 0.04, duration: 0.3, ease: "easeOut" }}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 className="flex flex-col items-center focus:outline-none"
@@ -186,33 +140,22 @@ export default function KioskPage() {
               >
                 <div
                   style={{
-                    width: "48px",
-                    height: "48px",
-                    borderRadius: "50%",
-                    padding: "3px",
+                    width: "48px", height: "48px", borderRadius: "50%", padding: "3px",
                     background: isActive
                       ? "linear-gradient(135deg, #f97316, #ea580c)"
                       : "linear-gradient(135deg, #e4e4e4, #cecece)",
                     boxShadow: isActive
                       ? "0 4px 14px rgba(249, 115, 22, 0.4)"
                       : "0 2px 6px rgba(0,0,0,0.08)",
-                    transition: "all 0.3s ease",
-                    position: "relative",
-                    flexShrink: 0,
+                    transition: "all 0.3s ease", position: "relative", flexShrink: 0,
                   }}
                 >
                   <div
                     style={{
-                      width: "100%",
-                      height: "100%",
-                      borderRadius: "50%",
-                      overflow: "hidden",
-                      border: "2.5px solid white",
-                      background: "#f0f0f0",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      fontSize: "20px",
+                      width: "100%", height: "100%", borderRadius: "50%",
+                      overflow: "hidden", border: "2.5px solid white",
+                      background: "#f0f0f0", display: "flex",
+                      alignItems: "center", justifyContent: "center", fontSize: "20px",
                     }}
                   >
                     {emoji}
@@ -221,18 +164,13 @@ export default function KioskPage() {
 
                 <span
                   style={{
-                    fontSize: "10px",
-                    fontWeight: isActive ? 700 : 500,
+                    fontSize: "10px", fontWeight: isActive ? 700 : 500,
                     color: isActive ? "#ea580c" : "#777",
-                    textAlign: "center",
-                    lineHeight: "1.3",
-                    maxWidth: "72px",
+                    textAlign: "center", lineHeight: "1.3", maxWidth: "72px",
                     transition: "color 0.2s ease",
                     fontFamily: "'DM Sans', 'Nunito', sans-serif",
-                    letterSpacing: "-0.01em",
-                    whiteSpace: "nowrap",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
+                    letterSpacing: "-0.01em", whiteSpace: "nowrap",
+                    overflow: "hidden", textOverflow: "ellipsis",
                   }}
                 >
                   {label}
@@ -241,12 +179,10 @@ export default function KioskPage() {
                 {count !== undefined && count > 0 && (
                   <span
                     style={{
-                      fontSize: "9px",
-                      fontWeight: 900,
+                      fontSize: "9px", fontWeight: 900,
                       color: isActive ? "#ea580c" : "#777",
                       background: isActive ? "rgba(249, 115, 22, 0.1)" : "#f3f4f6",
-                      padding: "2px 6px",
-                      borderRadius: "10px",
+                      padding: "2px 6px", borderRadius: "10px",
                       transition: "all 0.2s ease",
                     }}
                   >
@@ -256,10 +192,8 @@ export default function KioskPage() {
 
                 <motion.div
                   style={{
-                    width: isActive ? "20px" : "0px",
-                    height: "3px",
-                    borderRadius: "2px",
-                    background: "#ea580c",
+                    width: isActive ? "20px" : "0px", height: "3px",
+                    borderRadius: "2px", background: "#ea580c",
                     transition: "width 0.3s ease",
                   }}
                 />
@@ -283,9 +217,8 @@ export default function KioskPage() {
         )}
       </div>
 
-      {/* ── Main content area ── */}
+      {/* ── Main content ── */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        {/* Category tabs */}
         <div className="bg-white border-b border-gray-100 z-10 shadow-sm">
           {isLoading ? (
             <CategoryTabsSkeleton />
@@ -301,7 +234,6 @@ export default function KioskPage() {
           )}
         </div>
 
-        {/* Trending strip — only shown on non-combo views */}
         {!isOnCombos && !isLoading && (
           <TrendingStrip
             items={trending}
@@ -311,7 +243,6 @@ export default function KioskPage() {
           />
         )}
 
-        {/* Menu grid */}
         <main className="flex-1 overflow-y-auto scrollbar-hide scrollbar-thumb-orange-200 scrollbar-track-transparent">
           <div className="p-6">
             {isLoading ? (
@@ -334,7 +265,6 @@ export default function KioskPage() {
           </div>
         </main>
 
-        {/* Floating cart button — only when cart is closed */}
         {!isCartOpen && totalItems >= 0 && (
           <button
             onClick={() => setIsCartOpen(true)}
@@ -348,15 +278,13 @@ export default function KioskPage() {
             </div>
             <div className="text-left">
               <p className="text-sm font-black leading-none">View Cart</p>
-              <p className="text-xs font-semibold opacity-80 mt-0.5">
-                ₹{totalPrice.toFixed(2)}
-              </p>
+              <p className="text-xs font-semibold opacity-80 mt-0.5">₹{totalPrice.toFixed(2)}</p>
             </div>
           </button>
         )}
       </div>
 
-      {/* ── Cart sidebar with recommendations ── */}
+      {/* ── Cart sidebar ── */}
       <CartSidebar
         isCartOpen={isCartOpen}
         cart={cart}
@@ -404,142 +332,4 @@ export default function KioskPage() {
       />
     </div>
   );
-}
-
-// ─── Cart reconciliation (unchanged from original) ────────────────────────────
-
-function reconcileCartWithCatalog(
-  cart: CartItem[],
-  menu: MenuCategory[],
-  combos: Combo[]
-): { cart: CartItem[]; alerts: string[]; changed: boolean } {
-  const menuById = new Map<string, MenuItem>();
-  const comboById = new Map<string, Combo>();
-
-  for (const category of menu) {
-    for (const item of category.items || []) {
-      menuById.set(String(item._id), item);
-    }
-  }
-
-  for (const combo of combos) {
-    comboById.set(String(combo._id), combo);
-  }
-
-  const nextCart: CartItem[] = [];
-  const alerts: string[] = [];
-
-  for (const cartItem of cart) {
-    if (cartItem.isCombo) {
-      const combo = comboById.get(cartItem.itemId);
-
-      if (!combo || combo.isActive === false) {
-        alerts.push(`${cartItem.name} was removed because it is no longer available.`);
-        continue;
-      }
-
-      const nextPrice = combo.comboPrice ?? cartItem.price;
-      if (nextPrice !== cartItem.price) {
-        alerts.push(
-          `${cartItem.name} price changed: Rs ${cartItem.price.toFixed(2)} -> Rs ${nextPrice.toFixed(2)}.`
-        );
-      }
-
-      nextCart.push({ ...cartItem, price: nextPrice });
-      continue;
-    }
-
-    const liveItem = menuById.get(cartItem.itemId);
-
-    if (!liveItem || liveItem.isActive === false || liveItem.stockQuantity <= 0) {
-      alerts.push(`${cartItem.name} was removed because it is out of stock.`);
-      continue;
-    }
-
-    const selectedOptions = cartItem.selectedCustomizations || [];
-    const liveOptionsMap = new Map(
-      (liveItem.customizationOptions || []).map((opt) => [opt.itemId, opt])
-    );
-
-    const nextSelectedOptions = [];
-
-    for (const option of selectedOptions) {
-      const liveOption = liveOptionsMap.get(option.itemId);
-      if (!liveOption || liveOption.stockQuantity <= 0) {
-        alerts.push(`${option.name} was removed from ${cartItem.name} because it is unavailable.`);
-        continue;
-      }
-
-      if (liveOption.price !== option.price) {
-        alerts.push(
-          `${option.name} price changed: Rs ${option.price.toFixed(2)} -> Rs ${liveOption.price.toFixed(2)}.`
-        );
-      }
-
-      nextSelectedOptions.push({
-        ...option,
-        price: liveOption.price,
-        stockQuantity: liveOption.stockQuantity,
-        name: liveOption.name,
-      });
-    }
-
-    const optionStockLimit = nextSelectedOptions.length
-      ? Math.min(...nextSelectedOptions.map((opt) => opt.stockQuantity))
-      : liveItem.stockQuantity;
-
-    const effectiveStockLimit = Math.min(liveItem.stockQuantity, optionStockLimit);
-    const reducedQuantity = Math.min(cartItem.quantity, effectiveStockLimit);
-
-    if (reducedQuantity !== cartItem.quantity) {
-      alerts.push(
-        `${cartItem.name} quantity reduced from ${cartItem.quantity} to ${reducedQuantity} due to stock limits.`
-      );
-    }
-
-    const firstOffer = liveItem.offers?.[0];
-
-    if (liveItem.price !== cartItem.price) {
-      alerts.push(
-        `${cartItem.name} price changed: Rs ${cartItem.price.toFixed(2)} -> Rs ${liveItem.price.toFixed(2)}.`
-      );
-    }
-
-    nextCart.push({
-      ...cartItem,
-      price: liveItem.price,
-      quantity: reducedQuantity,
-      stockQuantity: effectiveStockLimit,
-      offerType: firstOffer?.type,
-      discountPercent: firstOffer?.discountPercent,
-      selectedCustomizations: nextSelectedOptions,
-    });
-  }
-
-  const changed = hasCartChanged(cart, nextCart);
-  return { cart: nextCart, alerts, changed };
-}
-
-function hasCartChanged(prev: CartItem[], next: CartItem[]): boolean {
-  if (prev.length !== next.length) return true;
-
-  for (let i = 0; i < prev.length; i += 1) {
-    const a = prev[i];
-    const b = next[i];
-    if (
-      a.cartItemId !== b.cartItemId ||
-      a.itemId !== b.itemId ||
-      a.price !== b.price ||
-      a.quantity !== b.quantity ||
-      a.stockQuantity !== b.stockQuantity ||
-      a.offerType !== b.offerType ||
-      a.discountPercent !== b.discountPercent ||
-      JSON.stringify(a.selectedCustomizations || []) !==
-        JSON.stringify(b.selectedCustomizations || [])
-    ) {
-      return true;
-    }
-  }
-
-  return false;
 }

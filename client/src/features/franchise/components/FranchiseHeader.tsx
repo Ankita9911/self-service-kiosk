@@ -16,7 +16,7 @@ export function FranchiseHeader({ refreshing, onRefresh, onNew }: Props) {
         <p className="text-sm text-slate-500 dark:text-slate-400">
           Monitor and manage franchises across your organization.
         </p>
-     </div>
+      </div>
 
       <div className="flex items-center gap-2">
         <button

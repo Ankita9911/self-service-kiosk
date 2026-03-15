@@ -3,8 +3,6 @@ import { io, type Socket } from "socket.io-client";
 import toast from "react-hot-toast";
 import { getSocketUrl } from "@/shared/lib/socket";
 
-const SOCKET_URL = getSocketUrl();
-
 interface LowStockPayload {
   ingredientId: string;
   ingredientName: string;
@@ -17,7 +15,7 @@ export function useLowStockAlert(outletId?: string) {
   const socketRef = useRef<Socket | null>(null);
 
   useEffect(() => {
-    const socket = io(SOCKET_URL, {
+    const socket = io(getSocketUrl(), {
       withCredentials: true,
       transports: ["websocket"],
     });
@@ -31,13 +29,9 @@ export function useLowStockAlert(outletId?: string) {
       });
     });
 
-    socket.on("connect_error", (err) => {
-      console.warn("[lowStockSocket] connect error:", err.message);
-    });
+    socket.on("connect_error", () => {});
 
-    return () => {
-      socket.disconnect();
-    };
+    return () => { socket.disconnect(); };
   }, [outletId]);
 
   return socketRef;

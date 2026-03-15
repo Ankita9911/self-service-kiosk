@@ -1,16 +1,16 @@
 import express from "express";
-import { authenticate } from "../../../core/auth/middleware/auth.middleware.js";
-import { attachTenant } from "../../../core/tenancy/tenancy.middleware.js";
-import { attachOutletForMenu } from "../../outlets/middleware/outlet.middleware.js";
-import { authorize } from "../../../core/rbac/rbac.middleware.js";
-import { PERMISSIONS } from "../../../core/rbac/permissions.js";
-import { validate } from "../../../shared/validation/validate.middleware.js";
+import { authenticate } from "../../core/auth/middleware/auth.middleware.js";
+import { attachTenant } from "../../core/tenancy/tenancy.middleware.js";
+import { attachOutletForMenu } from "../outlets/middleware/outlet.middleware.js";
+import { authorize } from "../../core/rbac/rbac.middleware.js";
+import { PERMISSIONS } from "../../core/rbac/permissions.js";
+import { validate } from "../../shared/validation/validate.middleware.js";
 import {
   createIngredientSchema,
   updateIngredientSchema,
   adjustStockSchema,
-} from "../validation/ingredient.schemas.js";
-import * as ingredientController from "../controller/ingredient.controller.js";
+} from "./validation/ingredient.schemas.js";
+import * as ingredientController from "./controller/ingredient.controller.js";
 
 const router = express.Router();
 

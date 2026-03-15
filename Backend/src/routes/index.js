@@ -1,19 +1,19 @@
 import express from "express";
 
 import authRoutes from "../core/auth/route/auth.routes.js";
-import franchiseRoutes from "../modules/franchises/route/franchise.routes.js";
-import outletRoutes from "../modules/outlets/route/outlet.routes.js";
-import menuRoutes from "../modules/menu/route/menu.routes.js";
-import comboRoutes from "../modules/menu/route/combo.routes.js";
-import kioskRoutes from "../modules/kiosk/route/kiosk.routes.js";
-import orderRoutes from "../modules/orders/route/order.routes.js";
-import deviceRoutes from "../modules/devices/route/device.routes.js";
-import userRoutes from "../modules/users/route/user.routes.js";
-import ingredientRoutes from "../modules/ingredients/route/ingredient.routes.js";
-import recipeRoutes from "../modules/recipes/route/recipe.routes.js";
-import stockTransactionRoutes from "../modules/stockTransactions/route/stockTransaction.routes.js";
-import uploadRoutes from "../modules/upload/route/upload.routes.js";
-import analyticsRoutes from "../modules/analytics/route/analytics.routes.js";
+import franchiseRoutes from "../modules/franchises/index.js";
+import outletRoutes from "../modules/outlets/index.js";
+import menuRoutes from "../modules/menu/index.js";
+import comboRoutes from "../modules/combo/index.js";
+import kioskRoutes from "../modules/kiosk/index.js";
+import orderRoutes from "../modules/orders/index.js";
+import deviceRoutes from "../modules/devices/index.js";
+import userRoutes from "../modules/users/index.js";
+import ingredientRoutes from "../modules/ingredients/index.js";
+import recipeRoutes from "../modules/recipes/index.js";
+import stockTransactionRoutes from "../modules/stockTransactions/index.js";
+import uploadRoutes from "../modules/upload/index.js";
+import analyticsRoutes from "../modules/analytics/index.js";
 import { authenticate } from "../core/auth/middleware/auth.middleware.js";
 import { attachTenant } from "../core/tenancy/tenancy.middleware.js";
 

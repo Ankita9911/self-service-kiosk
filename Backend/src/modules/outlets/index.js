@@ -1,13 +1,13 @@
 import express from "express";
-import { authenticate } from "../../../core/auth/middleware/auth.middleware.js";
-import { authorize } from "../../../core/rbac/rbac.middleware.js";
-import { PERMISSIONS } from "../../../core/rbac/permissions.js";
-import { validate } from "../../../shared/validation/validate.middleware.js";
+import { authenticate } from "../../core/auth/middleware/auth.middleware.js";
+import { authorize } from "../../core/rbac/rbac.middleware.js";
+import { PERMISSIONS } from "../../core/rbac/permissions.js";
+import { validate } from "../../shared/validation/validate.middleware.js";
 import {
   createOutletSchema,
   updateOutletSchema,
   setOutletStatusSchema,
-} from "../validation/outlet.schemas.js";
+} from "./validation/outlet.schemas.js";
 import {
   createOutletController,
   getOutletsController,
@@ -15,7 +15,7 @@ import {
   deleteOutletController,
   getOutletByIdController,
   setOutletStatusController,
-} from "../controller/outlet.controller.js";
+} from "./controller/outlet.controller.js";
 
 const router = express.Router();
 

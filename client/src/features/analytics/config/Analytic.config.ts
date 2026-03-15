@@ -1,5 +1,5 @@
 import { Users, Store, Activity } from "lucide-react";
-import { PERMISSIONS } from "@/shared/lib/permissions";
+import { PERMISSIONS } from "@/shared/constants/permissions";
 
 export const DASHBOARD_CARDS = [
   {

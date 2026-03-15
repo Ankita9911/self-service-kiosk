@@ -148,7 +148,7 @@ export function useUsers(filters: UserFilters) {
     setRefreshTick((n) => n + 1);
   }, [fetchLookupData]);
 
-  async function handleCreate(payload: any) {
+  async function handleCreate(payload: Parameters<typeof createUser>[0]): Promise<string> {
     const result = await createUser(payload);
     await refreshAll(true);
     return result.tempPassword;

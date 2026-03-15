@@ -1,6 +1,6 @@
 import Category from "../../../modules/menu/model/category.model.js";
 import MenuItem from "../../../modules/menu/model/menuItem.model.js";
-import Combo from "../../../modules/menu/model/combo.model.js";
+import Combo from "../../../modules/combo/model/combo.model.js";
 import { getRedisClient } from "../../cache/redis.client.js";
 import { buildTenantKey } from "../../cache/cache.utils.js";
 import { getIO } from "../../../realtime/realtime.manager.js";
