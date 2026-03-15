@@ -197,7 +197,7 @@ export function CategoryFilter({
                           <div className="flex items-center gap-0.5 shrink-0">
                             <button
                               onClick={() => {
-                                onDeleteCategory(c._id);
+                                onDeleteCategory?.(c._id);
                                 setPendingDelete(null);
                               }}
                               className="h-6 w-6 rounded-lg bg-red-50 dark:bg-red-500/10 flex items-center justify-center text-red-500 hover:bg-red-100 dark:hover:bg-red-500/20 transition-colors"
