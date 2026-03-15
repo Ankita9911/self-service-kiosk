@@ -2,7 +2,12 @@ import express from "express";
 import { authenticate } from "../../core/auth/auth.middleware.js";
 import { authorize } from "../../core/rbac/rbac.middleware.js";
 import { PERMISSIONS } from "../../core/rbac/permissions.js";
-
+import { validate } from "../../shared/validation/validate.middleware.js";
+import {
+  createFranchiseSchema,
+  updateFranchiseSchema,
+  setFranchiseStatusSchema,
+} from "./franchise.schemas.js";
 import {
   createFranchiseController,
   getFranchisesController,
@@ -19,6 +24,7 @@ router.use(authenticate);
 router.post(
   "/",
   authorize(PERMISSIONS.FRANCHISE_CREATE),
+  validate(createFranchiseSchema),
   createFranchiseController
 );
 
@@ -37,6 +43,7 @@ router.post(
 router.put(
   "/:id",
   authorize(PERMISSIONS.FRANCHISE_UPDATE),
+  validate(updateFranchiseSchema),
   updateFranchiseController
 );
 
@@ -49,6 +56,7 @@ router.delete(
 router.patch(
   "/:id/status",
   authorize(PERMISSIONS.FRANCHISE_UPDATE),
+  validate(setFranchiseStatusSchema),
   setFranchiseStatusController
 );
 

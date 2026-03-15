@@ -2,18 +2,12 @@ import StockTransaction from "./stockTransaction.model.js";
 import Ingredient from "../ingredients/ingredient.model.js";
 import { emitOutletEvent } from "../../realtime/realtime.manager.js";
 import AppError from "../../shared/errors/AppError.js";
+import { toBoundedLimit } from "../../shared/utils/pagination.js";
 
 const DEFAULT_LIMIT = 20;
-const MAX_LIMIT = 100;
 
 const VALID_SORT_FIELDS = ["createdAt", "type", "quantity"];
 const VALID_SORT_ORDERS = ["asc", "desc"];
-
-function toBoundedLimit(value) {
-  const parsed = Number.parseInt(String(value ?? DEFAULT_LIMIT), 10);
-  if (Number.isNaN(parsed)) return DEFAULT_LIMIT;
-  return Math.min(Math.max(parsed, 1), MAX_LIMIT);
-}
 
 function getSortConfig(sortBy, sortOrder) {
   const field = VALID_SORT_FIELDS.includes(sortBy) ? sortBy : "createdAt";
@@ -58,10 +52,6 @@ function buildCursorCondition(decoded, field, dir) {
   return { $or: [{ [field]: { $gt: sortVal } }, { [field]: sortVal, _id: { $gt: _id } }] };
 }
 
-/**
- * Internal utility — creates a StockTransaction document inside an optional Mongo session.
- * Called by order.handler.js after ingredient stock is already deducted.
- */
 export async function logTransaction({
   ingredientId,
   type,
@@ -90,28 +80,21 @@ export async function logTransaction({
   return transaction;
 }
 
-/**
- * Bulk variant — creates multiple StockTransactions in one call (used by order handler).
- */
 export async function logTransactionsBulk(transactions, { tenant, session = null } = {}) {
   const docs = transactions.map((t) => ({
-    ingredientId: t.ingredientId,
-    type: t.type,
-    quantity: t.quantity,
+    ingredientId:  t.ingredientId,
+    type:          t.type,
+    quantity:      t.quantity,
     referenceType: t.referenceType,
-    referenceId: t.referenceId ?? null,
-    note: t.note ?? "",
-    franchiseId: tenant.franchiseId,
-    outletId: tenant.outletId,
+    referenceId:   t.referenceId ?? null,
+    note:          t.note ?? "",
+    franchiseId:   tenant.franchiseId,
+    outletId:      tenant.outletId,
   }));
 
   return StockTransaction.insertMany(docs, session ? { session } : {});
 }
 
-/**
- * Manual stock entry (PURCHASE, WASTAGE, ADJUSTMENT) from the API.
- * Also updates Ingredient.currentStock.
- */
 export async function createManualTransaction(data, tenant) {
   const { ingredientId, type, quantity, note } = data;
 
@@ -121,10 +104,6 @@ export async function createManualTransaction(data, tenant) {
       400,
       "INVALID_TRANSACTION_TYPE"
     );
-  }
-
-  if (typeof quantity !== "number" || quantity === 0) {
-    throw new AppError("quantity must be a non-zero number", 400, "INVALID_QUANTITY");
   }
 
   const ingredient = await Ingredient.findOne({
@@ -138,15 +117,12 @@ export async function createManualTransaction(data, tenant) {
     throw new AppError("Ingredient not found", 404, "INGREDIENT_NOT_FOUND");
   }
 
-  // For WASTAGE, quantity must be positive (it represents how much was wasted)
-  // We'll store it as negative delta for currentStock
   let stockDelta;
   if (type === "PURCHASE") {
     stockDelta = Math.abs(quantity);
   } else if (type === "WASTAGE") {
     stockDelta = -Math.abs(quantity);
   } else {
-    // ADJUSTMENT — quantity can be positive or negative directly
     stockDelta = quantity;
   }
 
@@ -190,12 +166,10 @@ export async function getTransactions(
   tenant,
   { ingredientId, type, search, cursor, limit, sortBy, sortOrder } = {}
 ) {
-  const pageLimit = toBoundedLimit(limit);
+  const pageLimit = toBoundedLimit(limit, DEFAULT_LIMIT);
   const { field, dir } = getSortConfig(sortBy, sortOrder);
 
-  const tenantFilter = {
-    franchiseId: tenant.franchiseId,
-  };
+  const tenantFilter = { franchiseId: tenant.franchiseId };
   if (tenant.outletId) tenantFilter.outletId = tenant.outletId;
 
   const baseFilter = { ...tenantFilter };
@@ -203,7 +177,6 @@ export async function getTransactions(
   if (ingredientId) {
     baseFilter.ingredientId = ingredientId;
   } else if (search?.trim()) {
-    // Resolve ingredient IDs by name search (pre-query pattern, same as recipes)
     const matchingIngredients = await Ingredient.find({
       franchiseId: tenant.franchiseId,
       isDeleted: false,
@@ -234,36 +207,31 @@ export async function getTransactions(
     consumptionCount,
     wastageCount,
     adjustmentCount,
-  ] =
-    await Promise.all([
-      StockTransaction.find(queryFilter)
-        .populate("ingredientId", "name unit")
-        .sort(sortSpec)
-        .limit(pageLimit + 1)
-        .lean(),
-      StockTransaction.countDocuments(baseFilter),
-      StockTransaction.countDocuments(tenantFilter),
-      StockTransaction.countDocuments({ ...tenantFilter, type: "PURCHASE" }),
-      StockTransaction.countDocuments({ ...tenantFilter, type: "CONSUMPTION" }),
-      StockTransaction.countDocuments({
-        ...tenantFilter,
-        type: "WASTAGE",
-      }),
-      StockTransaction.countDocuments({ ...tenantFilter, type: "ADJUSTMENT" }),
-    ]);
+  ] = await Promise.all([
+    StockTransaction.find(queryFilter)
+      .populate("ingredientId", "name unit")
+      .sort(sortSpec)
+      .limit(pageLimit + 1)
+      .lean(),
+    StockTransaction.countDocuments(baseFilter),
+    StockTransaction.countDocuments(tenantFilter),
+    StockTransaction.countDocuments({ ...tenantFilter, type: "PURCHASE" }),
+    StockTransaction.countDocuments({ ...tenantFilter, type: "CONSUMPTION" }),
+    StockTransaction.countDocuments({ ...tenantFilter, type: "WASTAGE" }),
+    StockTransaction.countDocuments({ ...tenantFilter, type: "ADJUSTMENT" }),
+  ]);
 
   const hasNext = itemsPlusOne.length > pageLimit;
   const items = hasNext ? itemsPlusOne.slice(0, pageLimit) : itemsPlusOne;
 
   const lastItem = items[items.length - 1];
-  const nextCursor =
-    hasNext && lastItem
-      ? encodeCursor(
-          field === "createdAt"
-            ? { createdAt: lastItem.createdAt, _id: lastItem._id }
-            : { sortVal: lastItem[field], _id: lastItem._id }
-        )
-      : null;
+  const nextCursor = hasNext && lastItem
+    ? encodeCursor(
+        field === "createdAt"
+          ? { createdAt: lastItem.createdAt, _id: lastItem._id }
+          : { sortVal: lastItem[field], _id: lastItem._id }
+      )
+    : null;
 
   return {
     items,

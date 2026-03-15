@@ -6,17 +6,11 @@ import {
   deleteFranchise,
   setFranchiseStatus,
 } from "./franchise.service.js";
-
 import { sendSuccess } from "../../shared/utils/response.js";
 import { asyncHandler } from "../../shared/utils/asyncHandler.js";
-import AppError from "../../shared/errors/AppError.js";
-
 
 export const createFranchiseController = asyncHandler(async (req, res) => {
-  const franchise = await createFranchise(
-    req.body,
-    req.user
-  );
+  const franchise = await createFranchise(req.body, req.user);
 
   return sendSuccess(res, {
     statusCode: 201,
@@ -36,20 +30,7 @@ export const getFranchisesController = asyncHandler(async (req, res) => {
 });
 
 export const getFranchiseByIdController = asyncHandler(async (req, res) => {
-  const { id } = req.params;
-
-  if (!id) {
-    throw new AppError(
-      "Franchise ID is required",
-      400,
-      "VALIDATION_ERROR"
-    );
-  }
-
-  const franchise = await getFranchiseById(
-    id,
-    req.user
-  );
+  const franchise = await getFranchiseById(req.params.id, req.user);
 
   return sendSuccess(res, {
     message: "Franchise fetched successfully",
@@ -58,21 +39,7 @@ export const getFranchiseByIdController = asyncHandler(async (req, res) => {
 });
 
 export const updateFranchiseController = asyncHandler(async (req, res) => {
-  const { id } = req.params;
-
-  if (!id) {
-    throw new AppError(
-      "Franchise ID is required",
-      400,
-      "VALIDATION_ERROR"
-    );
-  }
-
-  const franchise = await updateFranchise(
-    id,
-    req.body,
-    req.user
-  );
+  const franchise = await updateFranchise(req.params.id, req.body, req.user);
 
   return sendSuccess(res, {
     message: "Franchise updated successfully",
@@ -81,16 +48,7 @@ export const updateFranchiseController = asyncHandler(async (req, res) => {
 });
 
 export const deleteFranchiseController = asyncHandler(async (req, res) => {
-  const { id } = req.params;
-
-  if (!id) {
-    throw new AppError(
-      "Franchise ID is required",
-      400,
-      "VALIDATION_ERROR"
-    );
-  }
-  await deleteFranchise(id, req.user);
+  await deleteFranchise(req.params.id, req.user);
 
   return sendSuccess(res, {
     message: "Franchise deleted successfully",
@@ -98,17 +56,10 @@ export const deleteFranchiseController = asyncHandler(async (req, res) => {
 });
 
 export const setFranchiseStatusController = asyncHandler(async (req, res) => {
-  const { id } = req.params;
-  const { status } = req.body;
-
-  if (!id) {
-    throw new AppError("Franchise ID is required", 400, "VALIDATION_ERROR");
-  }
-
-  const franchise = await setFranchiseStatus(id, status, req.user);
+  const franchise = await setFranchiseStatus(req.params.id, req.body.status, req.user);
 
   return sendSuccess(res, {
-    message: `Franchise marked as ${status.toLowerCase()} successfully`,
+    message: `Franchise marked as ${req.body.status.toLowerCase()} successfully`,
     data: franchise,
   });
 });

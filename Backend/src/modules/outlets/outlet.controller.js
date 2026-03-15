@@ -6,10 +6,8 @@ import {
   deleteOutlet,
   setOutletStatus,
 } from "./outlet.service.js";
-
 import { sendSuccess } from "../../shared/utils/response.js";
 import { asyncHandler } from "../../shared/utils/asyncHandler.js";
-import AppError from "../../shared/errors/AppError.js";
 
 export const createOutletController = asyncHandler(async (req, res) => {
   const outlet = await createOutlet(req.body, req.user);
@@ -31,15 +29,8 @@ export const getOutletsController = asyncHandler(async (req, res) => {
   });
 });
 
-
 export const getOutletByIdController = asyncHandler(async (req, res) => {
-  const { id } = req.params;
-
-  if (!id) {
-    throw new AppError("Outlet ID is required", 400, "VALIDATION_ERROR");
-  }
-
-  const outlet = await getOutletById(id, req.user);
+  const outlet = await getOutletById(req.params.id, req.user);
 
   return sendSuccess(res, {
     message: "Outlet fetched successfully",
@@ -48,13 +39,7 @@ export const getOutletByIdController = asyncHandler(async (req, res) => {
 });
 
 export const updateOutletController = asyncHandler(async (req, res) => {
-  const { id } = req.params;
-
-  if (!id) {
-    throw new AppError("Outlet ID is required", 400, "VALIDATION_ERROR");
-  }
-
-  const outlet = await updateOutlet(id, req.body, req.user);
+  const outlet = await updateOutlet(req.params.id, req.body, req.user);
 
   return sendSuccess(res, {
     message: "Outlet updated successfully",
@@ -63,13 +48,7 @@ export const updateOutletController = asyncHandler(async (req, res) => {
 });
 
 export const deleteOutletController = asyncHandler(async (req, res) => {
-  const { id } = req.params;
-
-  if (!id) {
-    throw new AppError("Outlet ID is required", 400, "VALIDATION_ERROR");
-  }
-
-  await deleteOutlet(id, req.user);
+  await deleteOutlet(req.params.id, req.user);
 
   return sendSuccess(res, {
     message: "Outlet deleted successfully",
@@ -77,17 +56,10 @@ export const deleteOutletController = asyncHandler(async (req, res) => {
 });
 
 export const setOutletStatusController = asyncHandler(async (req, res) => {
-  const { id } = req.params;
-  const { status } = req.body;
-
-  if (!id) {
-    throw new AppError("Outlet ID is required", 400, "VALIDATION_ERROR");
-  }
-
-  const outlet = await setOutletStatus(id, status, req.user);
+  const outlet = await setOutletStatus(req.params.id, req.body.status, req.user);
 
   return sendSuccess(res, {
-    message: `Outlet marked as ${status.toLowerCase()} successfully`,
+    message: `Outlet marked as ${req.body.status.toLowerCase()} successfully`,
     data: outlet,
   });
 });

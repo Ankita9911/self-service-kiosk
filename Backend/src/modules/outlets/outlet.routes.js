@@ -2,7 +2,12 @@ import express from "express";
 import { authenticate } from "../../core/auth/auth.middleware.js";
 import { authorize } from "../../core/rbac/rbac.middleware.js";
 import { PERMISSIONS } from "../../core/rbac/permissions.js";
-
+import { validate } from "../../shared/validation/validate.middleware.js";
+import {
+  createOutletSchema,
+  updateOutletSchema,
+  setOutletStatusSchema,
+} from "./outlet.schemas.js";
 import {
   createOutletController,
   getOutletsController,
@@ -19,6 +24,7 @@ router.use(authenticate);
 router.post(
   "/",
   authorize(PERMISSIONS.OUTLET_CREATE),
+  validate(createOutletSchema),
   createOutletController
 );
 
@@ -37,6 +43,7 @@ router.get(
 router.put(
   "/:id",
   authorize(PERMISSIONS.OUTLET_UPDATE),
+  validate(updateOutletSchema),
   updateOutletController
 );
 
@@ -49,6 +56,7 @@ router.delete(
 router.patch(
   "/:id/status",
   authorize(PERMISSIONS.OUTLET_UPDATE),
+  validate(setOutletStatusSchema),
   setOutletStatusController
 );
 

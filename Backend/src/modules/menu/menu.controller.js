@@ -3,10 +3,7 @@ import { sendSuccess } from "../../shared/utils/response.js";
 import { asyncHandler } from "../../shared/utils/asyncHandler.js";
 
 export const createCategory = asyncHandler(async (req, res) => {
-  const result = await menuService.createCategory(
-    req.body,
-    req.tenant
-  );
+  const result = await menuService.createCategory(req.body, req.tenant);
 
   return sendSuccess(res, {
     statusCode: 202,
@@ -25,11 +22,7 @@ export const getCategories = asyncHandler(async (req, res) => {
 });
 
 export const updateCategory = asyncHandler(async (req, res) => {
-  const result = await menuService.updateCategory(
-    req.params.id,
-    req.body,
-    req.tenant
-  );
+  const result = await menuService.updateCategory(req.params.id, req.body, req.tenant);
 
   return sendSuccess(res, {
     statusCode: 202,
@@ -39,10 +32,7 @@ export const updateCategory = asyncHandler(async (req, res) => {
 });
 
 export const deleteCategory = asyncHandler(async (req, res) => {
-  await menuService.deleteCategory(
-    req.params.id,
-    req.tenant
-  );
+  await menuService.deleteCategory(req.params.id, req.tenant);
 
   return sendSuccess(res, {
     statusCode: 202,
@@ -51,10 +41,7 @@ export const deleteCategory = asyncHandler(async (req, res) => {
 });
 
 export const createMenuItem = asyncHandler(async (req, res) => {
-  const result = await menuService.createMenuItem(
-    req.body,
-    req.tenant
-  );
+  const result = await menuService.createMenuItem(req.body, req.tenant);
 
   return sendSuccess(res, {
     statusCode: 202,
@@ -79,11 +66,7 @@ export const getMenuItems = asyncHandler(async (req, res) => {
 });
 
 export const updateMenuItem = asyncHandler(async (req, res) => {
-  const result = await menuService.updateMenuItem(
-    req.params.id,
-    req.body,
-    req.tenant
-  );
+  const result = await menuService.updateMenuItem(req.params.id, req.body, req.tenant);
 
   return sendSuccess(res, {
     statusCode: 202,
@@ -92,14 +75,9 @@ export const updateMenuItem = asyncHandler(async (req, res) => {
   });
 });
 
-
 export const updateItemPrice = asyncHandler(async (req, res) => {
-  const { price } = req.body;
-  const result = await menuService.updateItemPrice(
-    req.params.id,
-    parseFloat(price),
-    req.tenant
-  );
+  const result = await menuService.updateItemPrice(req.params.id, req.body.price, req.tenant);
+
   return sendSuccess(res, {
     statusCode: 202,
     message: "Price update accepted and queued for processing",
@@ -108,12 +86,12 @@ export const updateItemPrice = asyncHandler(async (req, res) => {
 });
 
 export const updateItemStock = asyncHandler(async (req, res) => {
-  const { stockQuantity } = req.body;
   const result = await menuService.updateItemStock(
     req.params.id,
-    parseInt(stockQuantity, 10),
+    req.body.stockQuantity,
     req.tenant
   );
+
   return sendSuccess(res, {
     statusCode: 202,
     message: "Stock update accepted and queued for processing",
@@ -122,10 +100,7 @@ export const updateItemStock = asyncHandler(async (req, res) => {
 });
 
 export const deleteMenuItem = asyncHandler(async (req, res) => {
-  await menuService.deleteMenuItem(
-    req.params.id,
-    req.tenant
-  );
+  await menuService.deleteMenuItem(req.params.id, req.tenant);
 
   return sendSuccess(res, {
     statusCode: 202,
@@ -134,10 +109,8 @@ export const deleteMenuItem = asyncHandler(async (req, res) => {
 });
 
 export const toggleItemStatus = asyncHandler(async (req, res) => {
-  const result = await menuService.toggleItemStatus(
-    req.params.id,
-    req.tenant
-  );
+  const result = await menuService.toggleItemStatus(req.params.id, req.tenant);
+
   return sendSuccess(res, {
     statusCode: 202,
     message: "Item status toggle accepted and queued for processing",

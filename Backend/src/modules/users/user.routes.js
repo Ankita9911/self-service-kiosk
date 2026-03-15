@@ -3,6 +3,14 @@ import { authenticate } from "../../core/auth/auth.middleware.js";
 import { requireUser } from "../devices/device.middleware.js";
 import { authorize } from "../../core/rbac/rbac.middleware.js";
 import { PERMISSIONS } from "../../core/rbac/permissions.js";
+import { validate } from "../../shared/validation/validate.middleware.js";
+import {
+  createUserSchema,
+  updateUserSchema,
+  changeRoleSchema,
+  changeStatusSchema,
+  resetPasswordSchema,
+} from "./user.schemas.js";
 import * as controller from "./user.controller.js";
 
 const router = express.Router();
@@ -12,6 +20,7 @@ router.use(authenticate, requireUser);
 router.post(
   "/",
   authorize(PERMISSIONS.USERS_CREATE),
+  validate(createUserSchema),
   controller.createUserController
 );
 
@@ -30,6 +39,7 @@ router.get(
 router.patch(
   "/:id",
   authorize(PERMISSIONS.USERS_UPDATE),
+  validate(updateUserSchema),
   controller.updateUserController
 );
 
@@ -42,18 +52,21 @@ router.delete(
 router.patch(
   "/:id/role",
   authorize(PERMISSIONS.USERS_CHANGE_ROLE),
+  validate(changeRoleSchema),
   controller.changeRoleController
 );
 
 router.patch(
   "/:id/status",
   authorize(PERMISSIONS.USERS_CHANGE_STATUS),
+  validate(changeStatusSchema),
   controller.changeStatusController
 );
 
 router.post(
   "/:id/reset-password",
   authorize(PERMISSIONS.USERS_RESET_PASSWORD),
+  validate(resetPasswordSchema),
   controller.resetPasswordController
 );
 
