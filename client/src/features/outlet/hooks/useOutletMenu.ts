@@ -29,7 +29,7 @@ import type {
 import {
   getUploadUrl,
   uploadFileToS3,
-} from "@/features/upload/service/upload.service";
+} from "@/features/upload/index";
 import { useMenuSocket } from "@/shared/hooks/useMenuSocket";
 
 const DEFAULT_PAGE_SIZE = 12;
@@ -393,7 +393,6 @@ export function useOutletMenu(
         "menu",
         oidForApi,
       );
-      console.log("image upload to getuplaodurl");
       await uploadFileToS3(uploadUrl, itemForm.imageFile);
 
       imageUrl = publicUrl;

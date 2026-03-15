@@ -15,8 +15,8 @@ export function useKitchen() {
       const data = await getOrders(["CREATED", "IN_KITCHEN", "READY"]);
       setOrders(data);
       setLastUpdated(new Date());
-    } catch (err) {
-      console.error("Failed to fetch orders", err);
+    } catch {
+      // axios interceptor handles error toasts
     }
   }, []);
 
@@ -39,9 +39,7 @@ export function useKitchen() {
         setOrders((prev) => prev.filter((o) => o._id !== orderId));
       } else {
         setOrders((prev) =>
-          prev.map((o) =>
-            o._id === orderId ? { ...o, status } : o
-          )
+          prev.map((o) => (o._id === orderId ? { ...o, status } : o))
         );
       }
     },
@@ -50,30 +48,25 @@ export function useKitchen() {
 
   useSocket(handleNewOrder, handleStatusUpdated);
 
-  const handleAction = async (
-    order: Order,
-    next: OrderStatus
-  ) => {
+  const handleAction = async (order: Order, next: OrderStatus) => {
     setLoadingIds((prev) => new Set(prev).add(order._id));
     try {
       const updated = await updateOrderStatus(order._id, next);
       setOrders((prev) =>
         prev.map((o) => (o._id === updated._id ? updated : o))
       );
-    } catch (err) {
-      console.error("Status update failed", err);
+    } catch {
+      // axios interceptor handles error toasts
     } finally {
       setLoadingIds((prev) => {
-        const nextSet = new Set(prev);
-        nextSet.delete(order._id);
-        return nextSet;
+        const next = new Set(prev);
+        next.delete(order._id);
+        return next;
       });
     }
   };
 
-  const grouped = COLUMN_ORDER.reduce<
-    Record<KitchenStatus, Order[]>
-  >(
+  const grouped = COLUMN_ORDER.reduce<Record<KitchenStatus, Order[]>>(
     (acc, s) => {
       acc[s] = orders.filter((o) => o.status === s);
       return acc;

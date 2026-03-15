@@ -7,17 +7,13 @@ export function initDB(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
     const request = indexedDB.open(DB_NAME, DB_VERSION);
 
-    request.onupgradeneeded = (event) => {
+    request.onupgradeneeded = () => {
       const database = request.result;
-      console.log(event.timeStamp)
       if (!database.objectStoreNames.contains("menuStore")) {
         database.createObjectStore("menuStore", { keyPath: "key" });
       }
-
       if (!database.objectStoreNames.contains("syncQueue")) {
-        database.createObjectStore("syncQueue", {
-          keyPath: "clientOrderId",
-        });
+        database.createObjectStore("syncQueue", { keyPath: "clientOrderId" });
       }
     };
 
