@@ -1,15 +1,15 @@
 import bcrypt from "bcrypt";
 import crypto from "crypto";
-import Device from "./device.model.js";
-import AppError from "../../shared/errors/AppError.js";
-import { forceLogout } from "../../realtime/realtime.manager.js";
+import Device from "../model/device.model.js";
+import AppError from "../../../shared/errors/AppError.js";
+import { forceLogout } from "../../../realtime/realtime.manager.js";
 import {
   toBoundedLimit,
   encodeCursor,
   decodeCursor,
-} from "../../shared/utils/pagination.js";
-import { invalidateAuthStatus } from "../../core/auth/auth.middleware.js";
-import { DEVICE_STATUS } from "./device.constants.js";
+} from "../../../shared/utils/pagination.js";
+import { invalidateAuthStatus } from "../../../core/auth/auth.middleware.js";
+import { DEVICE_STATUS } from "../constant/device.constants.js";
 
 const SALT_ROUNDS = 10;
 const DEFAULT_LIMIT = 10;

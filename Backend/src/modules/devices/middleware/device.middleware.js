@@ -1,5 +1,5 @@
-import AppError from "../../shared/errors/AppError.js";
-import Device from "./device.model.js";
+import AppError from "../../../shared/errors/AppError.js";
+import Device from "../model/device.model.js";
 
 export function requireDevice(req, res, next) {
   if (!req.user || req.user.type !== "DEVICE") {

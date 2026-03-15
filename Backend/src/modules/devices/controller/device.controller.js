@@ -1,6 +1,6 @@
-import * as service from "./device.service.js";
-import { sendSuccess } from "../../shared/utils/response.js";
-import { asyncHandler } from "../../shared/utils/asyncHandler.js";
+import * as service from "../service/device.service.js";
+import { sendSuccess } from "../../../shared/utils/response.js";
+import { asyncHandler } from "../../../shared/utils/asyncHandler.js";
 
 export const createDeviceController = asyncHandler(async (req, res) => {
   const result = await service.createDevice(req.user, req.body);

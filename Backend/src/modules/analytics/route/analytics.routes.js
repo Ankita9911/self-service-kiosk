@@ -3,7 +3,7 @@ import { authenticate } from "../../../core/auth/auth.middleware.js";
 import { attachTenant } from "../../../core/tenancy/tenancy.middleware.js";
 import { authorize } from "../../../core/rbac/rbac.middleware.js";
 import { PERMISSIONS } from "../../../core/rbac/permissions.js";
-import * as controller from "../controllers/analytics.controller.js";
+import * as controller from "../controller/analytics.controller.js";
 
 const router = express.Router();
 

@@ -1,8 +1,8 @@
 import bcrypt from "bcrypt";
-import Device from "./device.model.js";
-import AppError from "../../shared/errors/AppError.js";
+import Device from "../model/device.model.js";
+import AppError from "../../../shared/errors/AppError.js";
 import jwt from "jsonwebtoken";
-import env from "../../config/env.js";
+import env from "../../../config/env.js";
 
 export async function deviceLogin({ deviceId, password }) {
   const device = await Device.findOne({

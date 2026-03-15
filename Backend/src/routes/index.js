@@ -7,13 +7,13 @@ import menuRoutes from "../modules/menu/menu.routes.js";
 import comboRoutes from "../modules/menu/combo.routes.js";
 import kioskRoutes from "../modules/kiosk/kiosk.routes.js";
 import orderRoutes from "../modules/orders/order.routes.js";
-import deviceRoutes from "../modules/devices/device.routes.js";
+import deviceRoutes from "../modules/devices/route/device.routes.js";
 import userRoutes from "../modules/users/user.routes.js";
 import ingredientRoutes from "../modules/ingredients/ingredient.routes.js";
 import recipeRoutes from "../modules/recipes/recipe.routes.js";
 import stockTransactionRoutes from "../modules/stockTransactions/stockTransaction.routes.js";
 import uploadRoutes from "../modules/upload/upload.routes.js";
-import analyticsRoutes from "../modules/analytics/routes/analytics.routes.js";
+import analyticsRoutes from "../modules/analytics/route/analytics.routes.js";
 import { authenticate } from "../core/auth/auth.middleware.js";
 import { attachTenant } from "../core/tenancy/tenancy.middleware.js";
 

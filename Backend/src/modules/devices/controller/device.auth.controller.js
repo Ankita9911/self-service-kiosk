@@ -1,6 +1,6 @@
-import { deviceLogin } from "./device.auth.service.js";
-import { sendSuccess } from "../../shared/utils/response.js";
-import { asyncHandler } from "../../shared/utils/asyncHandler.js";
+import { deviceLogin } from "../service/device.auth.service.js";
+import { sendSuccess } from "../../../shared/utils/response.js";
+import { asyncHandler } from "../../../shared/utils/asyncHandler.js";
 
 export const deviceLoginController = asyncHandler(async (req, res) => {
   const result = await deviceLogin(req.body);

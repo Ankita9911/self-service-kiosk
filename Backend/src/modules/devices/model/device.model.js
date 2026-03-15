@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { DEVICE_STATUS } from "./device.constants.js";
+import { DEVICE_STATUS } from "../constant/device.constants.js";
 
 const { Schema } = mongoose;
 

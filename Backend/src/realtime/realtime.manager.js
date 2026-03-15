@@ -2,7 +2,7 @@ import { Server } from "socket.io";
 import jwt from "jsonwebtoken";
 import env from "../config/env.js";
 import User from "../modules/users/user.model.js";
-import Device from "../modules/devices/device.model.js";
+import Device from "../modules/devices/model/device.model.js";
 
 let io;
 

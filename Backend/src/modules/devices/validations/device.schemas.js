@@ -2,7 +2,7 @@ import { z } from "zod";
 import {
   objectIdSchema,
   statusSchema,
-} from "../../shared/validation/common.schemas.js";
+} from "../../../shared/validation/common.schemas.js";
 
 export const createDeviceSchema = z.object({
   outletId: objectIdSchema,

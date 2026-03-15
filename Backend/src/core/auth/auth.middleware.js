@@ -1,7 +1,7 @@
 import { verifyToken } from "./jwt.service.js";
 import AppError from "../../shared/errors/AppError.js";
 import User from "../../modules/users/user.model.js";
-import Device from "../../modules/devices/device.model.js";
+import Device from "../../modules/devices/model/device.model.js";
 import { getRedisClient } from "../cache/redis.client.js";
 
 const COOKIE_NAME = "auth_token";

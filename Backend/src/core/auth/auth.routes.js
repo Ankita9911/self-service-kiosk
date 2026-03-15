@@ -5,7 +5,7 @@ import {
   meController,
   forceResetPasswordController,
 } from "./auth.controller.js";
-import { requireUser } from "../../modules/devices/device.middleware.js";
+import { requireUser } from "../../modules/devices/middleware/device.middleware.js";
 import { authenticate } from "./auth.middleware.js";
 import { validate } from "../../shared/validation/validate.middleware.js";
 import { loginSchema, forceResetPasswordSchema } from "./auth.schemas.js";
