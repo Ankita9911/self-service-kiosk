@@ -1,6 +1,6 @@
-import { asyncHandler } from "../../shared/utils/asyncHandler.js";
-import { sendSuccess } from "../../shared/utils/response.js";
-import * as stockTransactionService from "./stockTransaction.service.js";
+import { asyncHandler } from "../../../shared/utils/asyncHandler.js";
+import { sendSuccess } from "../../../shared/utils/response.js";
+import * as stockTransactionService from "../service/stockTransaction.service.js";
 
 export const createManualTransaction = asyncHandler(async (req, res) => {
   const transaction = await stockTransactionService.createManualTransaction(

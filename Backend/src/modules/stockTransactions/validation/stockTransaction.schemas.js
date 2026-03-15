@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { objectIdSchema } from "../../shared/validation/common.schemas.js";
-import { TRANSACTION_TYPE } from "./stockTransaction.constants.js";
+import { objectIdSchema } from "../../../shared/validation/common.schemas.js";
+import { TRANSACTION_TYPE } from "../constant/stockTransaction.constants.js";
 
 export const createManualTransactionSchema = z.object({
   ingredientId: objectIdSchema,

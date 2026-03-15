@@ -1,8 +1,8 @@
-import StockTransaction from "./stockTransaction.model.js";
-import Ingredient from "../ingredients/model/ingredient.model.js";
-import { emitOutletEvent } from "../../realtime/realtime.manager.js";
-import AppError from "../../shared/errors/AppError.js";
-import { toBoundedLimit } from "../../shared/utils/pagination.js";
+import StockTransaction from "../model/stockTransaction.model.js";
+import Ingredient from "../../ingredients/model/ingredient.model.js";
+import { emitOutletEvent } from "../../../realtime/realtime.manager.js";
+import AppError from "../../../shared/errors/AppError.js";
+import { toBoundedLimit } from "../../../shared/utils/pagination.js";
 
 const DEFAULT_LIMIT = 20;
 

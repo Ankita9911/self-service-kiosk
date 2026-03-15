@@ -2,7 +2,7 @@ import mongoose, { Schema } from "mongoose";
 import {
   TRANSACTION_TYPE,
   REFERENCE_TYPE,
-} from "./stockTransaction.constants.js";
+} from "../constant/stockTransaction.constants.js";
 
 const stockTransactionSchema = new Schema(
   {

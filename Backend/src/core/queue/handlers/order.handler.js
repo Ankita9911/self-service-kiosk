@@ -5,11 +5,11 @@ import OrderRequest from "../../../modules/orders/orderRequest.model.js";
 import MenuItem from "../../../modules/menu/model/menuItem.model.js";
 import Ingredient from "../../../modules/ingredients/model/ingredient.model.js";
 import Recipe from "../../../modules/recipes/model/recipe.model.js";
-import StockTransaction from "../../../modules/stockTransactions/stockTransaction.model.js";
+import StockTransaction from "../../../modules/stockTransactions/model/stockTransaction.model.js";
 import {
   TRANSACTION_TYPE,
   REFERENCE_TYPE,
-} from "../../../modules/stockTransactions/stockTransaction.constants.js";
+} from "../../../modules/stockTransactions/constant/stockTransaction.constants.js";
 import { enqueue } from "../queue.producer.js";
 import { getRedisClient } from "../../cache/redis.client.js";
 import { buildTenantKey } from "../../cache/cache.utils.js";
