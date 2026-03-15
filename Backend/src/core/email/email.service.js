@@ -1,15 +1,13 @@
 import nodemailer from "nodemailer";
 import env from "../../config/env.js";
 
-// ── Transporter (lazy-init so missing SMTP config doesn't crash startup) ──────
-
 let _transporter = null;
 
 function getTransporter() {
   if (_transporter) return _transporter;
 
   if (!env.SMTP_HOST || !env.SMTP_USER || !env.SMTP_PASS) {
-    return null; // email not configured — silently skip
+    return null; 
   }
 
   _transporter = nodemailer.createTransport({
@@ -24,8 +22,6 @@ function getTransporter() {
 
   return _transporter;
 }
-
-// ── Generic send helper ────────────────────────────────────────────────────────
 
 async function sendMail({ to, subject, html }) {
   const transporter = getTransporter();
@@ -47,8 +43,6 @@ async function sendMail({ to, subject, html }) {
     console.error(`[Email] Failed to send to ${to}:`, err.message);
   }
 }
-
-// ── Templates ─────────────────────────────────────────────────────────────────
 
 export async function sendWelcomeEmail({ name, email, tempPassword, role }) {
   const roleLabel = role
