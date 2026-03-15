@@ -6,7 +6,7 @@ import {
   type DragStartEvent,
   type DragEndEvent,
 } from "@dnd-kit/core";
-import { COLUMN_ORDER } from "../config/kitchen.contant";
+import{ COLUMN_ORDER } from "../config/kitchen.contant";
 import { useKitchen } from "../hooks/useKitchen";
 import { KitchenTopBar } from "../components/KitchenTopBar";
 import { Column } from "../components/KitchenColumn";
