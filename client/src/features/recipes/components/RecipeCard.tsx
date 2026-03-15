@@ -19,11 +19,12 @@ function getServingsInfo(recipe: Recipe) {
   }, Number.POSITIVE_INFINITY);
 
   if (!Number.isFinite(availableServings))
-    return { label: "Recipe linked", color: "slate" };
-  if (availableServings <= 0) return { label: "Out of stock", color: "red" };
+    return { label: "Recipe linked", color: "slate" as const };
+  if (availableServings <= 0)
+    return { label: "Out of stock", color: "red" as const };
   if (availableServings <= 5)
-    return { label: `${availableServings} servings`, color: "amber" };
-  return { label: `${availableServings} servings`, color: "emerald" };
+    return { label: `${availableServings} servings`, color: "amber" as const };
+  return { label: `${availableServings} servings`, color: "emerald" as const };
 }
 
 const stockColors = {
@@ -48,7 +49,7 @@ export function RecipeCard({
   const { label: stockLabel, color: stockColor } = getServingsInfo(recipe);
 
   return (
-    <div className="group rounded-2xl border border-slate-100 dark:border-white/[0.06] bg-white dark:bg-[#1e2130] shadow-sm hover:shadow-md transition-all p-4 flex flex-col gap-3">
+    <div className="group rounded-2xl border border-slate-100 dark:border-white/6 bg-white dark:bg-[#1e2130] shadow-sm hover:shadow-md transition-all p-4 flex flex-col gap-3">
       {/* Header */}
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-2.5 min-w-0">
@@ -103,7 +104,7 @@ export function RecipeCard({
             return (
               <span
                 key={i}
-                className="text-[10px] px-2 py-0.5 rounded-full bg-slate-50 dark:bg-white/5 text-slate-500 dark:text-slate-400 border border-slate-100 dark:border-white/[0.06]"
+                className="text-[10px] px-2 py-0.5 rounded-full bg-slate-50 dark:bg-white/5 text-slate-500 dark:text-slate-400 border border-slate-100 dark:border-white/6"
               >
                 {name}
               </span>
