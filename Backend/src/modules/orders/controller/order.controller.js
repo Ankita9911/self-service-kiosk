@@ -1,6 +1,6 @@
-import * as orderService from "./order.service.js";
-import { sendSuccess } from "../../shared/utils/response.js";
-import { asyncHandler } from "../../shared/utils/asyncHandler.js";
+import * as orderService from "../service/order.service.js";
+import { sendSuccess } from "../../../shared/utils/response.js";
+import { asyncHandler } from "../../../shared/utils/asyncHandler.js";
 
 export const createOrder = asyncHandler(async (req, res) => {
   const result = await orderService.createOrder(

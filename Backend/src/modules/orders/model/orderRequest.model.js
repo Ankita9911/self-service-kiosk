@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { ORDER_REQUEST_STATUS } from "./order.constants.js";
+import { ORDER_REQUEST_STATUS } from "./constant/order.constants.js";
 
 const { Schema } = mongoose;
 

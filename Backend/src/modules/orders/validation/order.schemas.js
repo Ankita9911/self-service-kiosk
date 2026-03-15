@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { objectIdSchema } from "../../shared/validation/common.schemas.js";
-import { ORDER_STATUS, PAYMENT_METHOD } from "./order.constants.js";
+import { objectIdSchema } from "../../../shared/validation/common.schemas.js";
+import { ORDER_STATUS, PAYMENT_METHOD } from "../constant/order.constants.js";
 
 export const createOrderSchema = z.object({
   clientOrderId: z

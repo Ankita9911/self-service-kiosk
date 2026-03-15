@@ -6,7 +6,7 @@ import outletRoutes from "../modules/outlets/outlet.routes.js";
 import menuRoutes from "../modules/menu/route/menu.routes.js";
 import comboRoutes from "../modules/menu/route/combo.routes.js";
 import kioskRoutes from "../modules/kiosk/route/kiosk.routes.js";
-import orderRoutes from "../modules/orders/order.routes.js";
+import orderRoutes from "../modules/orders/route/order.routes.js";
 import deviceRoutes from "../modules/devices/route/device.routes.js";
 import userRoutes from "../modules/users/user.routes.js";
 import ingredientRoutes from "../modules/ingredients/ingredient.routes.js";

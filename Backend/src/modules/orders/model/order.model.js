@@ -3,7 +3,7 @@ import {
   ORDER_STATUS,
   PAYMENT_METHOD,
   PAYMENT_STATUS,
-} from "./order.constants.js";
+} from "../constant/order.constants.js";
 
 const { Schema } = mongoose;
 

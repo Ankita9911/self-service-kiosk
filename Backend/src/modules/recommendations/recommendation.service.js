@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import Order from "../orders/order.model.js";
+import Order from "../orders/model/order.model.js";
 import MenuItem from "../menu/model/menuItem.model.js";
 import Combo from "../menu/model/combo.model.js";
 import { getRedisClient } from "../../core/cache/redis.client.js";
