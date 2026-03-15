@@ -3,17 +3,30 @@ import crypto from "crypto";
 import User from "./user.model.js";
 import AppError from "../../shared/errors/AppError.js";
 import { ROLE_HIERARCHY } from "../../core/rbac/roleHierarchy.js";
-import { sendWelcomeEmail, sendPasswordResetEmail } from "../../core/email/email.service.js";
+import {
+  sendWelcomeEmail,
+  sendPasswordResetEmail,
+} from "../../core/email/email.service.js";
 import { forceLogout } from "../../realtime/realtime.manager.js";
-import { toBoundedLimit, encodeCursor, decodeCursor } from "../../shared/utils/pagination.js";
+import {
+  toBoundedLimit,
+  encodeCursor,
+  decodeCursor,
+} from "../../shared/utils/pagination.js";
+import { invalidateAuthStatus } from "../../core/auth/auth.middleware.js";
 
 const DEFAULT_LIMIT = 10;
 const SALT_ROUNDS = 10;
 
-const OUTLET_SCOPED_ROLES = ["OUTLET_MANAGER", "KITCHEN_STAFF", "PICKUP_STAFF", "KIOSK_DEVICE"];
+const OUTLET_SCOPED_ROLES = [
+  "OUTLET_MANAGER",
+  "KITCHEN_STAFF",
+  "PICKUP_STAFF",
+  "KIOSK_DEVICE",
+];
 const SUPER_ADMIN_CREATABLE_ROLES = ["FRANCHISE_ADMIN"];
 
-// ─── Private helpers ──────────────────────────────────────────────────────────
+// ─── Private helpers
 
 function generateTempPassword() {
   return crypto.randomBytes(6).toString("hex");
@@ -28,20 +41,34 @@ function ensureHigherRole(creatorRole, targetRole) {
 function ensureSameTenant(currentUser, targetUser) {
   if (currentUser.role === "SUPER_ADMIN") return;
 
-  if (currentUser.franchiseId?.toString() !== targetUser.franchiseId?.toString()) {
+  if (
+    currentUser.franchiseId?.toString() !== targetUser.franchiseId?.toString()
+  ) {
     throw new AppError("Cross-tenant access denied", 403);
   }
 }
 
-// ─── Service functions ────────────────────────────────────────────────────────
+// ─── Service functions
 
 export async function createUser(currentUser, payload) {
-  const { name, email, role, franchiseId: payloadFranchiseId, outletId: payloadOutletId } = payload;
+  const {
+    name,
+    email,
+    role,
+    franchiseId: payloadFranchiseId,
+    outletId: payloadOutletId,
+  } = payload;
 
   ensureHigherRole(currentUser.role, role);
 
-  if (currentUser.role === "SUPER_ADMIN" && !SUPER_ADMIN_CREATABLE_ROLES.includes(role)) {
-    throw new AppError("Super admins can only create Franchise Admin accounts", 403);
+  if (
+    currentUser.role === "SUPER_ADMIN" &&
+    !SUPER_ADMIN_CREATABLE_ROLES.includes(role)
+  ) {
+    throw new AppError(
+      "Super admins can only create Franchise Admin accounts",
+      403,
+    );
   }
 
   const existing = await User.findOne({ email });
@@ -94,7 +121,15 @@ export async function createUser(currentUser, payload) {
 }
 
 export async function listUsers(currentUser, query = {}) {
-  const { search, role: roleFilter, franchiseId, outletId, status, cursor, limit } = query;
+  const {
+    search,
+    role: roleFilter,
+    franchiseId,
+    outletId,
+    status,
+    cursor,
+    limit,
+  } = query;
   const pageLimit = toBoundedLimit(limit, DEFAULT_LIMIT);
 
   const currentLevel = ROLE_HIERARCHY[currentUser.role] ?? 0;
@@ -111,7 +146,9 @@ export async function listUsers(currentUser, query = {}) {
 
   // Role filter — validate requested role is a subordinate role
   if (roleFilter && roleFilter !== "ALL") {
-    baseFilter.role = subordinateRoles.includes(roleFilter) ? roleFilter : { $in: [] };
+    baseFilter.role = subordinateRoles.includes(roleFilter)
+      ? roleFilter
+      : { $in: [] };
   } else {
     baseFilter.role = { $in: subordinateRoles };
   }
@@ -147,38 +184,49 @@ export async function listUsers(currentUser, query = {}) {
     ? {
         $or: [
           { createdAt: { $lt: decodedCursor.createdAt } },
-          { createdAt: decodedCursor.createdAt, _id: { $lt: decodedCursor._id } },
+          {
+            createdAt: decodedCursor.createdAt,
+            _id: { $lt: decodedCursor._id },
+          },
         ],
       }
     : null;
 
-  const queryFilter = cursorFilter ? { $and: [baseFilter, cursorFilter] } : baseFilter;
+  const queryFilter = cursorFilter
+    ? { $and: [baseFilter, cursorFilter] }
+    : baseFilter;
 
-  const [usersPlusOne, totalMatching, totalUsers, activeUsers] = await Promise.all([
-    User.find(queryFilter)
-      .sort({ createdAt: -1, _id: -1 })
-      .limit(pageLimit + 1),
-    User.countDocuments(baseFilter),
-    User.countDocuments({
-      isDeleted: false,
-      _id: { $ne: currentUser._id },
-      ...(currentUser.role !== "SUPER_ADMIN" ? { franchiseId: currentUser.franchiseId } : {}),
-    }),
-    User.countDocuments({
-      isDeleted: false,
-      status: "ACTIVE",
-      _id: { $ne: currentUser._id },
-      ...(currentUser.role !== "SUPER_ADMIN" ? { franchiseId: currentUser.franchiseId } : {}),
-    }),
-  ]);
+  const [usersPlusOne, totalMatching, totalUsers, activeUsers] =
+    await Promise.all([
+      User.find(queryFilter)
+        .sort({ createdAt: -1, _id: -1 })
+        .limit(pageLimit + 1),
+      User.countDocuments(baseFilter),
+      User.countDocuments({
+        isDeleted: false,
+        _id: { $ne: currentUser._id },
+        ...(currentUser.role !== "SUPER_ADMIN"
+          ? { franchiseId: currentUser.franchiseId }
+          : {}),
+      }),
+      User.countDocuments({
+        isDeleted: false,
+        status: "ACTIVE",
+        _id: { $ne: currentUser._id },
+        ...(currentUser.role !== "SUPER_ADMIN"
+          ? { franchiseId: currentUser.franchiseId }
+          : {}),
+      }),
+    ]);
 
   const hasNext = usersPlusOne.length > pageLimit;
   const users = hasNext ? usersPlusOne.slice(0, pageLimit) : usersPlusOne;
 
   const lastUser = users[users.length - 1];
-  const nextCursor = hasNext && lastUser
-    ? encodeCursor({ createdAt: lastUser.createdAt, _id: lastUser._id })
-    : null;
+  const nextCursor =
+    hasNext && lastUser
+      ? encodeCursor({ createdAt: lastUser.createdAt, _id: lastUser._id })
+      : null;
 
   return {
     items: users,
@@ -242,6 +290,9 @@ export async function deleteUser(currentUser, id) {
   user.isDeleted = true;
   await user.save();
 
+  // Bust auth cache so next request reflects deletion immediately
+  await invalidateAuthStatus("user", id);
+
   return true;
 }
 
@@ -279,6 +330,9 @@ export async function changeUserStatus(currentUser, id, status) {
   user.status = status;
   await user.save();
 
+  // Bust the auth cache immediately so the new status takes effect on next request
+  await invalidateAuthStatus("user", id);
+
   // Force deactivated users off immediately
   if (status === "INACTIVE") {
     forceLogout("user", id);
@@ -302,7 +356,11 @@ export async function resetPassword(currentUser, id, newPassword) {
   await user.save();
 
   // Fire-and-forget
-  sendPasswordResetEmail({ name: user.name, email: user.email, tempPassword: newPassword }).catch(() => {});
+  sendPasswordResetEmail({
+    name: user.name,
+    email: user.email,
+    tempPassword: newPassword,
+  }).catch(() => {});
 
   return true;
 }

@@ -11,11 +11,12 @@ import { getRedisClient } from "../../cache/redis.client.js";
 import { buildTenantKey } from "../../cache/cache.utils.js";
 import { emitOutletEvent, getIO } from "../../../realtime/realtime.manager.js";
 
+// Private helpers
 async function getNextOrderNumber(outletId, session) {
   const counter = await Counter.findOneAndUpdate(
     { outletId },
     { $inc: { seq: 1 } },
-    { returnDocument: "after", upsert: true, session }
+    { returnDocument: "after", upsert: true, session },
   );
   return counter.seq;
 }
@@ -24,18 +25,316 @@ function emitToOutlet(outletId, event, data) {
   try {
     const io = getIO();
     io.to(`outlet:${outletId}`).emit(event, data);
-  } catch (_) {
-    console.log("Socket not initialized, skipping emit");
+  } catch {
+    // Socket not yet initialised — non-fatal
   }
 }
 
+async function resolveMenuItemStock(
+  itemId,
+  quantity,
+  tenant,
+  session,
+  recipeTargets,
+) {
+  const menuItemBase = await MenuItem.findOne({
+    _id: itemId,
+    outletId: tenant.outletId,
+    franchiseId: tenant.franchiseId,
+    isDeleted: false,
+    isActive: true,
+  }).session(session);
+
+  if (!menuItemBase) {
+    throw new Error(`Invalid item: ${itemId}`);
+  }
+
+  const inventoryMode = menuItemBase.inventoryMode ?? "RECIPE";
+
+  if (inventoryMode === "DIRECT") {
+    const updated = await MenuItem.findOneAndUpdate(
+      {
+        _id: itemId,
+        outletId: tenant.outletId,
+        franchiseId: tenant.franchiseId,
+        isDeleted: false,
+        isActive: true,
+        stockQuantity: { $gte: quantity },
+      },
+      { $inc: { stockQuantity: -quantity } },
+      { returnDocument: "after", session },
+    );
+
+    if (!updated) {
+      throw new Error(`Insufficient stock or invalid item: ${itemId}`);
+    }
+
+    return updated;
+  }
+
+  const recipe = await Recipe.findOne({
+    menuItemId: itemId,
+    franchiseId: tenant.franchiseId,
+    outletId: tenant.outletId,
+    isDeleted: false,
+  }).session(session);
+
+  if (!recipe) {
+    throw new Error(`Recipe not configured for item: ${itemId}`);
+  }
+
+  recipeTargets.push({ itemId: menuItemBase._id, quantity });
+
+  return menuItemBase;
+}
+
+async function resolveCustomizations(
+  item,
+  menuItem,
+  tenant,
+  session,
+  recipeTargets,
+) {
+  const requestedIds = [
+    ...new Set((item.customizationItemIds || []).map(String)),
+  ];
+  const allowedIds = new Set((menuItem.customizationItemIds || []).map(String));
+
+  const selectedCustomizations = [];
+  let customizationUnitTotal = 0;
+
+  for (const customizationItemId of requestedIds) {
+    if (!allowedIds.has(customizationItemId)) {
+      throw new Error(
+        `Invalid customization ${customizationItemId} for item: ${item.itemId}`,
+      );
+    }
+
+    const customizationBase = await MenuItem.findOne({
+      _id: customizationItemId,
+      outletId: tenant.outletId,
+      franchiseId: tenant.franchiseId,
+      isDeleted: false,
+    }).session(session);
+
+    if (!customizationBase) {
+      throw new Error(`Invalid customization item: ${customizationItemId}`);
+    }
+
+    const customizationMode = customizationBase.inventoryMode ?? "RECIPE";
+    let customizationItem = customizationBase;
+
+    if (customizationMode === "DIRECT") {
+      customizationItem = await MenuItem.findOneAndUpdate(
+        {
+          _id: customizationItemId,
+          outletId: tenant.outletId,
+          franchiseId: tenant.franchiseId,
+          isDeleted: false,
+          stockQuantity: { $gte: item.quantity },
+        },
+        { $inc: { stockQuantity: -item.quantity } },
+        { returnDocument: "after", session },
+      );
+
+      if (!customizationItem) {
+        throw new Error(
+          `Insufficient stock or invalid customization item: ${customizationItemId}`,
+        );
+      }
+    } else {
+      const customizationRecipe = await Recipe.findOne({
+        menuItemId: customizationItemId,
+        franchiseId: tenant.franchiseId,
+        outletId: tenant.outletId,
+        isDeleted: false,
+      }).session(session);
+
+      if (!customizationRecipe) {
+        throw new Error(
+          `Recipe not configured for customization item: ${customizationItemId}`,
+        );
+      }
+
+      recipeTargets.push({
+        itemId: customizationBase._id,
+        quantity: item.quantity,
+      });
+    }
+
+    customizationUnitTotal += customizationItem.price;
+
+    selectedCustomizations.push({
+      itemId: customizationItem._id,
+      nameSnapshot: customizationItem.name,
+      priceSnapshot: customizationItem.price,
+      quantity: item.quantity,
+      lineTotal: customizationItem.price * item.quantity,
+    });
+  }
+
+  return { selectedCustomizations, customizationUnitTotal };
+}
+
+async function processOrderItems(items, tenant, session) {
+  const processedItems = [];
+  const recipeTargets = [];
+  let totalAmount = 0;
+
+  for (const item of items) {
+    const menuItem = await resolveMenuItemStock(
+      item.itemId,
+      item.quantity,
+      tenant,
+      session,
+      recipeTargets,
+    );
+
+    const { selectedCustomizations, customizationUnitTotal } =
+      await resolveCustomizations(
+        item,
+        menuItem,
+        tenant,
+        session,
+        recipeTargets,
+      );
+
+    const unitPrice = menuItem.price + customizationUnitTotal;
+    const lineTotal = unitPrice * item.quantity;
+    totalAmount += lineTotal;
+
+    processedItems.push({
+      itemId: menuItem._id,
+      nameSnapshot: menuItem.name,
+      priceSnapshot: menuItem.price,
+      quantity: item.quantity,
+      lineTotal,
+      customizations: selectedCustomizations,
+    });
+  }
+
+  return { processedItems, recipeTargets, totalAmount };
+}
+
+async function deductIngredients(
+  recipeTargets,
+  orderId,
+  orderNumber,
+  tenant,
+  session,
+) {
+  const ingredientDeductions = [];
+
+  for (const target of recipeTargets) {
+    const recipe = await Recipe.findOne({
+      menuItemId: target.itemId,
+      franchiseId: tenant.franchiseId,
+      outletId: tenant.outletId,
+      isDeleted: false,
+    }).session(session);
+
+    if (!recipe) continue; // no recipe — DIRECT stock already handled above
+
+    for (const recipeIngredient of recipe.ingredients) {
+      const totalDeduction = recipeIngredient.quantity * target.quantity;
+
+      const ingredient = await Ingredient.findOneAndUpdate(
+        {
+          _id: recipeIngredient.ingredientId,
+          franchiseId: tenant.franchiseId,
+          outletId: tenant.outletId,
+          isDeleted: false,
+          currentStock: { $gte: totalDeduction },
+        },
+        { $inc: { currentStock: -totalDeduction } },
+        { returnDocument: "after", session },
+      );
+
+      if (!ingredient) {
+        throw new Error(
+          `Insufficient ingredient stock: ${recipeIngredient.ingredientId}`,
+        );
+      }
+
+      ingredientDeductions.push({
+        ingredientId: ingredient._id,
+        ingredientName: ingredient.name,
+        currentStockAfter: ingredient.currentStock,
+        minThreshold: ingredient.minThreshold,
+        deductedQty: totalDeduction,
+      });
+    }
+  }
+
+  if (ingredientDeductions.length > 0) {
+    const txDocs = ingredientDeductions.map((d) => ({
+      ingredientId: d.ingredientId,
+      type: "CONSUMPTION",
+      quantity: -d.deductedQty, // stored as negative delta
+      referenceType: "ORDER",
+      referenceId: orderId,
+      note: `Order #${orderNumber}`,
+      franchiseId: tenant.franchiseId,
+      outletId: tenant.outletId,
+    }));
+    await StockTransaction.insertMany(txDocs, { session });
+  }
+
+  return ingredientDeductions;
+}
+
+async function postCommitSideEffects(ingredientDeductions, order, tenant) {
+  if (ingredientDeductions.length === 0) return;
+
+  // 1. Invalidate ingredient Redis cache
+  try {
+    const redis = getRedisClient();
+    await redis.del(buildTenantKey("ingredients", tenant));
+  } catch {
+    // Non-fatal
+  }
+
+  // 2. Enqueue low-stock alerts for any ingredient that breached its threshold
+  for (const d of ingredientDeductions) {
+    if (d.currentStockAfter < d.minThreshold) {
+      await enqueue("LOW_STOCK_ALERT", {
+        ingredientId: String(d.ingredientId),
+        ingredientName: d.ingredientName,
+        currentStock: d.currentStockAfter,
+        minThreshold: d.minThreshold,
+        franchiseId: String(tenant.franchiseId),
+        outletId: String(tenant.outletId),
+      }).catch((err) =>
+        console.error(
+          "[queue] Failed to enqueue LOW_STOCK_ALERT:",
+          err.message,
+        ),
+      );
+    }
+  }
+
+  // 3. Emit realtime inventory events
+  emitOutletEvent(tenant.outletId, "inventory:updated", {
+    type: "ORDER_CONSUMPTION",
+    orderId: String(order._id),
+  });
+  emitOutletEvent(tenant.outletId, "stock-transactions:updated", {
+    type: "ORDER_CONSUMPTION",
+    orderId: String(order._id),
+  });
+}
+
+// Exported handler
+
 export async function handleOrderPlaced(payload) {
-  const { items, paymentMethod, clientOrderId, orderNumber, tenant, userRole } = payload;
+  const { items, paymentMethod, clientOrderId, orderNumber, tenant, userRole } =
+    payload;
 
   const session = await mongoose.startSession();
   session.startTransaction();
 
   try {
+    // ── 1. Idempotency check ──────────────────────────────────────────────────
     const existing = await Order.findOne({
       outletId: tenant.outletId,
       clientOrderId,
@@ -44,7 +343,6 @@ export async function handleOrderPlaced(payload) {
     if (existing) {
       await session.commitTransaction();
       session.endSession();
-
       await OrderRequest.findOneAndUpdate(
         { outletId: tenant.outletId, clientOrderId },
         {
@@ -54,172 +352,19 @@ export async function handleOrderPlaced(payload) {
             orderNumber: existing.orderNumber,
             errorMessage: null,
           },
-        }
+        },
       );
-
       emitToOutlet(tenant.outletId, "order:new", existing);
       return existing;
     }
 
-    let totalAmount = 0;
-    const processedItems = [];
-    const recipeDeductionTargets = [];
+    // ── 2. Process items: validate stock, resolve customizations ─────────────
+    const { processedItems, recipeTargets, totalAmount } =
+      await processOrderItems(items, tenant, session);
 
-    for (const item of items) {
-      const menuItemBase = await MenuItem.findOne(
-        {
-          _id: item.itemId,
-          outletId: tenant.outletId,
-          franchiseId: tenant.franchiseId,
-          isDeleted: false,
-          isActive: true,
-        }
-      ).session(session);
-
-      if (!menuItemBase) {
-        throw new Error(`Invalid item: ${item.itemId}`);
-      }
-
-      const menuItemMode = menuItemBase.inventoryMode ?? "RECIPE";
-      let menuItem = menuItemBase;
-
-      if (menuItemMode === "DIRECT") {
-        menuItem = await MenuItem.findOneAndUpdate(
-          {
-            _id: item.itemId,
-            outletId: tenant.outletId,
-            franchiseId: tenant.franchiseId,
-            isDeleted: false,
-            isActive: true,
-            stockQuantity: { $gte: item.quantity },
-          },
-          { $inc: { stockQuantity: -item.quantity } },
-          { returnDocument: "after", session }
-        );
-      } else {
-        const recipe = await Recipe.findOne({
-          menuItemId: item.itemId,
-          franchiseId: tenant.franchiseId,
-          outletId: tenant.outletId,
-          isDeleted: false,
-        }).session(session);
-
-        if (!recipe) {
-          throw new Error(`Recipe not configured for item: ${item.itemId}`);
-        }
-
-        recipeDeductionTargets.push({
-          itemId: menuItemBase._id,
-          quantity: item.quantity,
-        });
-      }
-
-      if (!menuItem) {
-        throw new Error(
-          `Insufficient stock or invalid item: ${item.itemId}`
-        );
-      }
-
-      const requestedCustomizationIds = [
-        ...new Set((item.customizationItemIds || []).map((id) => String(id))),
-      ];
-      const allowedCustomizationIds = new Set(
-        (menuItem.customizationItemIds || []).map((id) => String(id))
-      );
-
-      const selectedCustomizations = [];
-      let customizationUnitTotal = 0;
-
-      for (const customizationItemId of requestedCustomizationIds) {
-        if (!allowedCustomizationIds.has(customizationItemId)) {
-          throw new Error(
-            `Invalid customization ${customizationItemId} for item: ${item.itemId}`
-          );
-        }
-
-        const customizationBase = await MenuItem.findOne(
-          {
-            _id: customizationItemId,
-            outletId: tenant.outletId,
-            franchiseId: tenant.franchiseId,
-            isDeleted: false,
-          }
-        ).session(session);
-
-        if (!customizationBase) {
-          throw new Error(
-            `Invalid customization item: ${customizationItemId}`
-          );
-        }
-
-        const customizationMode = customizationBase.inventoryMode ?? "RECIPE";
-        let customizationItem = customizationBase;
-
-        if (customizationMode === "DIRECT") {
-          customizationItem = await MenuItem.findOneAndUpdate(
-            {
-              _id: customizationItemId,
-              outletId: tenant.outletId,
-              franchiseId: tenant.franchiseId,
-              isDeleted: false,
-              stockQuantity: { $gte: item.quantity },
-            },
-            { $inc: { stockQuantity: -item.quantity } },
-            { returnDocument: "after", session }
-          );
-        } else {
-          const customizationRecipe = await Recipe.findOne({
-            menuItemId: customizationItemId,
-            franchiseId: tenant.franchiseId,
-            outletId: tenant.outletId,
-            isDeleted: false,
-          }).session(session);
-
-          if (!customizationRecipe) {
-            throw new Error(
-              `Recipe not configured for customization item: ${customizationItemId}`
-            );
-          }
-
-          recipeDeductionTargets.push({
-            itemId: customizationBase._id,
-            quantity: item.quantity,
-          });
-        }
-
-        if (!customizationItem) {
-          throw new Error(
-            `Insufficient stock or invalid customization item: ${customizationItemId}`
-          );
-        }
-
-        const customizationLineTotal = customizationItem.price * item.quantity;
-        customizationUnitTotal += customizationItem.price;
-
-        selectedCustomizations.push({
-          itemId: customizationItem._id,
-          nameSnapshot: customizationItem.name,
-          priceSnapshot: customizationItem.price,
-          quantity: item.quantity,
-          lineTotal: customizationLineTotal,
-        });
-      }
-
-      const unitPrice = menuItem.price + customizationUnitTotal;
-      const lineTotal = unitPrice * item.quantity;
-      totalAmount += lineTotal;
-
-      processedItems.push({
-        itemId: menuItem._id,
-        nameSnapshot: menuItem.name,
-        priceSnapshot: menuItem.price,
-        quantity: item.quantity,
-        lineTotal,
-        customizations: selectedCustomizations,
-      });
-    }
-   
-    const resolvedOrderNumber = orderNumber ?? await getNextOrderNumber(tenant.outletId, session);
+    // ── 3. Create the Order document ──────────────────────────────────────────
+    const resolvedOrderNumber =
+      orderNumber ?? (await getNextOrderNumber(tenant.outletId, session));
 
     const order = await Order.create(
       [
@@ -235,110 +380,26 @@ export async function handleOrderPlaced(payload) {
           createdByRole: userRole,
         },
       ],
-      { session }
+      { session },
     );
 
-    // ── Ingredient-level inventory deduction ────────────────────────────────
-    // For each ordered item, look up its recipe and deduct ingredient stock.
-    // Items without a configured recipe fall back to the existing MenuItem.stockQuantity path.
-    const ingredientDeductions = []; // { ingredientId, name, quantity, franchiseId, outletId }
+    // ── 4. Deduct ingredients + log stock transactions ────────────────────────
+    const ingredientDeductions = await deductIngredients(
+      recipeTargets,
+      order[0]._id,
+      resolvedOrderNumber,
+      tenant,
+      session,
+    );
 
-    for (const item of recipeDeductionTargets) {
-      const recipe = await Recipe.findOne({
-        menuItemId: item.itemId,
-        franchiseId: tenant.franchiseId,
-        outletId: tenant.outletId,
-        isDeleted: false,
-      }).session(session);
-
-      if (!recipe) continue; // no recipe configured — MenuItem.stockQuantity already deducted above
-
-      for (const recipeIngredient of recipe.ingredients) {
-        const totalDeduction = recipeIngredient.quantity * item.quantity;
-
-        const ingredient = await Ingredient.findOneAndUpdate(
-          {
-            _id: recipeIngredient.ingredientId,
-            franchiseId: tenant.franchiseId,
-            outletId: tenant.outletId,
-            isDeleted: false,
-            currentStock: { $gte: totalDeduction },
-          },
-          { $inc: { currentStock: -totalDeduction } },
-          { returnDocument: "after", session }
-        );
-
-        if (!ingredient) {
-          throw new Error(
-            `Insufficient ingredient stock: ${recipeIngredient.ingredientId}`
-          );
-        }
-
-        ingredientDeductions.push({
-          ingredientId: ingredient._id,
-          ingredientName: ingredient.name,
-          currentStockAfter: ingredient.currentStock,
-          minThreshold: ingredient.minThreshold,
-          deductedQty: totalDeduction,
-        });
-      }
-    }
-
-    // Bulk-log CONSUMPTION transactions within the same Mongo session
-    if (ingredientDeductions.length > 0) {
-      const txDocs = ingredientDeductions.map((d) => ({
-        ingredientId: d.ingredientId,
-        type: "CONSUMPTION",
-        quantity: -d.deductedQty, // stored as negative delta
-        referenceType: "ORDER",
-        referenceId: order[0]._id,
-        note: `Order #${resolvedOrderNumber}`,
-        franchiseId: tenant.franchiseId,
-        outletId: tenant.outletId,
-      }));
-      await StockTransaction.insertMany(txDocs, { session });
-    }
-    // ────────────────────────────────────────────────────────────────────────
-
+    // ── 5. Commit ─────────────────────────────────────────────────────────────
     await session.commitTransaction();
     session.endSession();
 
-    // Post-commit: invalidate ingredient Redis cache
-    if (ingredientDeductions.length > 0) {
-      try {
-        const redis = getRedisClient();
-        const cacheKey = buildTenantKey("ingredients", tenant);
-        await redis.del(cacheKey);
-      } catch (_) {
-        // non-fatal
-      }
+    // ── 6. Post-commit side effects (non-fatal) ───────────────────────────────
+    await postCommitSideEffects(ingredientDeductions, order[0], tenant);
 
-      // Enqueue low-stock alerts for any ingredient that dropped below threshold
-      for (const d of ingredientDeductions) {
-        if (d.currentStockAfter < d.minThreshold) {
-          await enqueue("LOW_STOCK_ALERT", {
-            ingredientId: String(d.ingredientId),
-            ingredientName: d.ingredientName,
-            currentStock: d.currentStockAfter,
-            minThreshold: d.minThreshold,
-            franchiseId: String(tenant.franchiseId),
-            outletId: String(tenant.outletId),
-          }).catch((err) =>
-            console.error("[queue] Failed to enqueue LOW_STOCK_ALERT:", err.message)
-          );
-        }
-      }
-
-      emitOutletEvent(tenant.outletId, "inventory:updated", {
-        type: "ORDER_CONSUMPTION",
-        orderId: String(order[0]._id),
-      });
-      emitOutletEvent(tenant.outletId, "stock-transactions:updated", {
-        type: "ORDER_CONSUMPTION",
-        orderId: String(order[0]._id),
-      });
-    }
-
+    // ── 7. Finalise: mark request success + emit ──────────────────────────────
     await OrderRequest.findOneAndUpdate(
       { outletId: tenant.outletId, clientOrderId },
       {
@@ -348,7 +409,7 @@ export async function handleOrderPlaced(payload) {
           orderNumber: order[0].orderNumber,
           errorMessage: null,
         },
-      }
+      },
     );
 
     emitToOutlet(tenant.outletId, "order:new", order[0]);

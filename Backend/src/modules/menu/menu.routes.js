@@ -1,7 +1,7 @@
 import express from "express";
 import { authenticate } from "../../core/auth/auth.middleware.js";
 import { attachTenant } from "../../core/tenancy/tenancy.middleware.js";
-import { attachOutletForMenu } from "../../core/tenancy/attachOutletForMenu.js";
+import { attachOutletForMenu } from "../outlets/outlet.middleware.js";
 import { authorize } from "../../core/rbac/rbac.middleware.js";
 import { PERMISSIONS } from "../../core/rbac/permissions.js";
 import * as controller from "./menu.controller.js";
@@ -42,7 +42,7 @@ router.post(
 
 router.get(
   "/items",
-  authorize(PERMISSIONS.MENU_MANAGE), 
+  authorize(PERMISSIONS.MENU_MANAGE),
   controller.getMenuItems
 );
 

@@ -34,6 +34,10 @@ const env = {
   // ── SQS ───────────────────────────────────────────────────────────────────
   SQS_QUEUE_URL: requireEnv("SQS_QUEUE_URL"),
 
+  // ── Redis ─────────────────────────────────────────────────────────────────
+  REDIS_HOST: process.env.REDIS_HOST || "127.0.0.1",
+  REDIS_PORT: parseInt(process.env.REDIS_PORT || "6379", 10),
+
   // ── Gemini ────────────────────────────────────────────────────────────────
   GEMINI_API_KEY: process.env.GEMINI_API_KEY || "",
 };

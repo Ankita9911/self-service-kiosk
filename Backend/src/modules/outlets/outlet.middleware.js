@@ -1,4 +1,4 @@
-import Outlet from "../../modules/outlets/outlet.model.js";
+import Outlet from "./outlet.model.js";
 import AppError from "../../shared/errors/AppError.js";
 
 export async function attachOutletForMenu(req, res, next) {
@@ -16,16 +16,24 @@ export async function attachOutletForMenu(req, res, next) {
     if (!outletId && req.method === "GET") {
       return next();
     }
+
     if (!outletId) {
       return next(new AppError("Outlet ID is required for menu operations", 400, "OUTLET_REQUIRED"));
     }
+
     const outlet = await Outlet.findOne({ _id: outletId, isDeleted: false });
+
     if (!outlet) {
       return next(new AppError("Outlet not found", 404, "OUTLET_NOT_FOUND"));
     }
-    if (user.role === "FRANCHISE_ADMIN" && outlet.franchiseId?.toString() !== user.franchiseId?.toString()) {
+
+    if (
+      user.role === "FRANCHISE_ADMIN" &&
+      outlet.franchiseId?.toString() !== user.franchiseId?.toString()
+    ) {
       return next(new AppError("Cannot manage menu for outlet outside your franchise", 403, "FORBIDDEN"));
     }
+
     req.tenant.outletId = outlet._id;
     req.tenant.franchiseId = outlet.franchiseId;
     return next();

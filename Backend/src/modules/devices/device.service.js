@@ -3,13 +3,17 @@ import crypto from "crypto";
 import Device from "./device.model.js";
 import AppError from "../../shared/errors/AppError.js";
 import { forceLogout } from "../../realtime/realtime.manager.js";
+import {
+  toBoundedLimit,
+  encodeCursor,
+  decodeCursor,
+} from "../../shared/utils/pagination.js";
+import { invalidateAuthStatus } from "../../core/auth/auth.middleware.js";
 
 const SALT_ROUNDS = 10;
-const ID_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 const DEFAULT_LIMIT = 10;
-const MAX_LIMIT = 100;
+const ID_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 
-//helpers
 function generateShortDeviceId() {
   let id = "";
   const bytes = crypto.randomBytes(6);
@@ -18,37 +22,9 @@ function generateShortDeviceId() {
   }
   return id;
 }
+
 function generateSecret() {
   return crypto.randomBytes(12).toString("hex");
-}
-
-function toBoundedLimit(value) {
-  const parsed = Number.parseInt(String(value ?? DEFAULT_LIMIT), 10);
-  if (Number.isNaN(parsed)) return DEFAULT_LIMIT;
-  return Math.min(Math.max(parsed, 1), MAX_LIMIT);
-}
-
-function encodeCursor(payload) {
-  return Buffer.from(JSON.stringify(payload)).toString("base64url");
-}
-
-function decodeCursor(cursor) {
-  if (!cursor) return null;
-
-  try {
-    const decoded = JSON.parse(Buffer.from(cursor, "base64url").toString("utf-8"));
-    if (!decoded?.createdAt || !decoded?._id) return null;
-
-    const createdAt = new Date(decoded.createdAt);
-    if (Number.isNaN(createdAt.getTime())) return null;
-
-    return {
-      createdAt,
-      _id: decoded._id,
-    };
-  } catch {
-    return null;
-  }
 }
 
 export async function createDevice(currentUser, payload) {
@@ -62,7 +38,8 @@ export async function createDevice(currentUser, payload) {
     );
   }
 
-  const { outletId, name, landingImage, landingTitle, landingSubtitle } = payload;
+  const { outletId, name, landingImage, landingTitle, landingSubtitle } =
+    payload;
 
   if (!outletId) {
     throw new AppError("Outlet is required when creating a device", 400);
@@ -71,11 +48,11 @@ export async function createDevice(currentUser, payload) {
   if (!currentUser.franchiseId) {
     throw new AppError("Franchise context is required", 403);
   }
+
   if (currentUser.role === "OUTLET_MANAGER") {
     if (!currentUser.outletId) {
       throw new AppError("Outlet context is required", 403);
     }
-
     if (outletId.toString() !== currentUser.outletId.toString()) {
       throw new AppError(
         "Outlet Manager can only create devices for their own outlet",
@@ -83,6 +60,7 @@ export async function createDevice(currentUser, payload) {
       );
     }
   }
+
   let deviceId;
   let attempts = 0;
 
@@ -111,35 +89,26 @@ export async function createDevice(currentUser, payload) {
     ...(landingSubtitle && { landingSubtitle }),
   });
 
-  return {
-    device,
-    secret: plainSecret,
-  };
+  return { device, secret: plainSecret };
 }
 
 export async function listDevices(currentUser, query = {}) {
   const { search, status, franchiseId, outletId, cursor, limit } = query;
-  const pageLimit = toBoundedLimit(limit);
+  const pageLimit = toBoundedLimit(limit, DEFAULT_LIMIT);
   const baseFilter = { isDeleted: false };
 
   if (currentUser.role === "SUPER_ADMIN") {
-    // Super admin can filter by franchise
-    if (franchiseId && franchiseId !== "ALL") baseFilter.franchiseId = franchiseId;
+    if (franchiseId && franchiseId !== "ALL")
+      baseFilter.franchiseId = franchiseId;
   } else {
-    // All other roles are scoped to their franchise
     baseFilter.franchiseId = currentUser.franchiseId;
     if (currentUser.role === "OUTLET_MANAGER") {
-      // Outlet manager is always scoped to their outlet
       baseFilter.outletId = currentUser.outletId;
     }
   }
 
   // Outlet filter (for franchise admin / super admin)
-  if (
-    outletId &&
-    outletId !== "ALL" &&
-    currentUser.role !== "OUTLET_MANAGER"
-  ) {
+  if (outletId && outletId !== "ALL" && currentUser.role !== "OUTLET_MANAGER") {
     baseFilter.outletId = outletId;
   }
 
@@ -159,7 +128,10 @@ export async function listDevices(currentUser, query = {}) {
     ? {
         $or: [
           { createdAt: { $lt: decodedCursor.createdAt } },
-          { createdAt: decodedCursor.createdAt, _id: { $lt: decodedCursor._id } },
+          {
+            createdAt: decodedCursor.createdAt,
+            _id: { $lt: decodedCursor._id },
+          },
         ],
       }
     : null;
@@ -168,29 +140,35 @@ export async function listDevices(currentUser, query = {}) {
     ? { $and: [baseFilter, cursorFilter] }
     : baseFilter;
 
-  const [devicesPlusOne, totalMatching, totalDevices, activeDevices] = await Promise.all([
-    Device.find(queryFilter)
-      .sort({ createdAt: -1, _id: -1 })
-      .limit(pageLimit + 1),
-    Device.countDocuments(baseFilter),
-    Device.countDocuments({
-      isDeleted: false,
-      ...(currentUser.role === "SUPER_ADMIN" ? {} : { franchiseId: currentUser.franchiseId }),
-    }),
-    Device.countDocuments({
-      isDeleted: false,
-      status: "ACTIVE",
-      ...(currentUser.role === "SUPER_ADMIN" ? {} : { franchiseId: currentUser.franchiseId }),
-    }),
-  ]);
+  const [devicesPlusOne, totalMatching, totalDevices, activeDevices] =
+    await Promise.all([
+      Device.find(queryFilter)
+        .sort({ createdAt: -1, _id: -1 })
+        .limit(pageLimit + 1),
+      Device.countDocuments(baseFilter),
+      Device.countDocuments({
+        isDeleted: false,
+        ...(currentUser.role === "SUPER_ADMIN"
+          ? {}
+          : { franchiseId: currentUser.franchiseId }),
+      }),
+      Device.countDocuments({
+        isDeleted: false,
+        status: "ACTIVE",
+        ...(currentUser.role === "SUPER_ADMIN"
+          ? {}
+          : { franchiseId: currentUser.franchiseId }),
+      }),
+    ]);
 
   const hasNext = devicesPlusOne.length > pageLimit;
   const devices = hasNext ? devicesPlusOne.slice(0, pageLimit) : devicesPlusOne;
 
   const lastDevice = devices[devices.length - 1];
-  const nextCursor = hasNext && lastDevice
-    ? encodeCursor({ createdAt: lastDevice.createdAt, _id: lastDevice._id })
-    : null;
+  const nextCursor =
+    hasNext && lastDevice
+      ? encodeCursor({ createdAt: lastDevice.createdAt, _id: lastDevice._id })
+      : null;
 
   return {
     items: devices,
@@ -219,6 +197,7 @@ export async function updateDevice(currentUser, deviceId, payload) {
   if (!device) {
     throw new AppError("Device not found", 404);
   }
+
   if (
     currentUser.role !== "FRANCHISE_ADMIN" &&
     currentUser.role !== "OUTLET_MANAGER"
@@ -228,6 +207,7 @@ export async function updateDevice(currentUser, deviceId, payload) {
       403,
     );
   }
+
   if (currentUser.role === "OUTLET_MANAGER") {
     if (device.outletId.toString() !== currentUser.outletId.toString()) {
       throw new AppError(
@@ -236,12 +216,15 @@ export async function updateDevice(currentUser, deviceId, payload) {
       );
     }
   }
+
   if (payload.name !== undefined) {
     device.name = payload.name;
   }
+
   await device.save();
   return device;
 }
+
 export async function softDeleteDevice(currentUser, deviceId) {
   if (
     currentUser.role !== "FRANCHISE_ADMIN" &&
@@ -252,14 +235,17 @@ export async function softDeleteDevice(currentUser, deviceId) {
       403,
     );
   }
+
   const device = await Device.findOne({
     deviceId,
     franchiseId: currentUser.franchiseId,
     isDeleted: false,
   });
+
   if (!device) {
     throw new AppError("Device not found", 404);
   }
+
   if (currentUser.role === "OUTLET_MANAGER") {
     if (device.outletId.toString() !== currentUser.outletId.toString()) {
       throw new AppError(
@@ -268,8 +254,13 @@ export async function softDeleteDevice(currentUser, deviceId) {
       );
     }
   }
+
   device.isDeleted = true;
   await device.save();
+
+  // Bust auth cache so next request from this device is rejected immediately
+  await invalidateAuthStatus("device", deviceId);
+
   return true;
 }
 
@@ -277,6 +268,7 @@ export async function resetDeviceSecret(currentUser, deviceId) {
   if (currentUser.role !== "FRANCHISE_ADMIN") {
     throw new AppError("Only Franchise Admin can reset device secret", 403);
   }
+
   const device = await Device.findOne({
     deviceId,
     franchiseId: currentUser.franchiseId,
@@ -286,9 +278,11 @@ export async function resetDeviceSecret(currentUser, deviceId) {
   if (!device) {
     throw new AppError("Device not found", 404);
   }
+
   const newSecret = generateSecret();
   device.deviceSecretHash = await bcrypt.hash(newSecret, SALT_ROUNDS);
   await device.save();
+
   return { newSecret };
 }
 
@@ -314,17 +308,21 @@ export async function setDeviceStatus(currentUser, deviceId, status) {
       403,
     );
   }
+
   if (!["ACTIVE", "INACTIVE"].includes(status)) {
     throw new AppError("Invalid status value", 400);
   }
+
   const device = await Device.findOne({
     deviceId,
     franchiseId: currentUser.franchiseId,
     isDeleted: false,
   });
+
   if (!device) {
     throw new AppError("Device not found", 404);
   }
+
   if (currentUser.role === "OUTLET_MANAGER") {
     if (device.outletId.toString() !== currentUser.outletId.toString()) {
       throw new AppError(
@@ -333,10 +331,14 @@ export async function setDeviceStatus(currentUser, deviceId, status) {
       );
     }
   }
+
   device.status = status;
   await device.save();
 
-  // If the device is being deactivated, force it out immediately
+  // Bust auth cache immediately so the new status takes effect on next request
+  await invalidateAuthStatus("device", deviceId);
+
+  // Force deactivated devices off immediately
   if (status === "INACTIVE") {
     forceLogout("device", deviceId);
   }

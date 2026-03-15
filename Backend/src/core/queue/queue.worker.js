@@ -3,42 +3,17 @@ import {
   DeleteMessageCommand,
 } from "@aws-sdk/client-sqs";
 import { getSQSClient } from "./sqs.client.js";
+import { MESSAGE_HANDLERS } from "./message.registry.js";
 import env from "../../config/env.js";
 import { getIO } from "../../realtime/realtime.manager.js";
 import OrderRequest from "../../modules/orders/orderRequest.model.js";
-import { handleOrderPlaced } from "./handlers/order.handler.js";
-import { handleLowStockAlert } from "./handlers/inventory.handler.js";
-import {
-  handleMenuPriceUpdate,
-  handleMenuStockUpdate,
-  handleMenuCategoryCreate,
-  handleMenuCategoryUpdate,
-  handleMenuCategoryDelete,
-  handleMenuItemCreate,
-  handleMenuItemUpdate,
-  handleMenuItemDelete,
-  handleMenuItemStatusUpdate,
-  handleComboCreate,
-  handleComboUpdate,
-  handleComboDelete,
-} from "./handlers/menu.handler.js";
 
-const MESSAGE_HANDLERS = {
-  ORDER_PLACED: handleOrderPlaced,
-  LOW_STOCK_ALERT: handleLowStockAlert,
-  MENU_PRICE_UPDATE: handleMenuPriceUpdate,
-  MENU_STOCK_UPDATE: handleMenuStockUpdate,
-  MENU_CATEGORY_CREATE: handleMenuCategoryCreate,
-  MENU_CATEGORY_UPDATE: handleMenuCategoryUpdate,
-  MENU_CATEGORY_DELETE: handleMenuCategoryDelete,
-  MENU_ITEM_CREATE: handleMenuItemCreate,
-  MENU_ITEM_UPDATE: handleMenuItemUpdate,
-  MENU_ITEM_DELETE: handleMenuItemDelete,
-  MENU_ITEM_STATUS_UPDATE: handleMenuItemStatusUpdate,
-  COMBO_CREATE: handleComboCreate,
-  COMBO_UPDATE: handleComboUpdate,
-  COMBO_DELETE: handleComboDelete,
-};
+const TERMINAL_ORDER_ERROR_PREFIXES = [
+  "Insufficient stock or invalid item:",
+  "Insufficient stock or invalid customization item:",
+  "Invalid customization",
+  "Insufficient ingredient stock:",
+];
 
 let running = false;
 
@@ -62,7 +37,7 @@ async function poll() {
         new ReceiveMessageCommand({
           QueueUrl: env.SQS_QUEUE_URL,
           MaxNumberOfMessages: 10,
-          WaitTimeSeconds: 20,         
+          WaitTimeSeconds: 20,
           MessageAttributeNames: ["All"],
         })
       );
@@ -76,7 +51,7 @@ async function poll() {
       }
     } catch (err) {
       console.error("[queue] Poll error:", err.message);
-      await sleep(5000); 
+      await sleep(5000);
     }
   }
 
@@ -86,6 +61,7 @@ async function poll() {
 async function processMessage(client, message) {
   let type;
   let payload;
+
   try {
     const body = JSON.parse(message.Body);
     type = body.type;
@@ -100,32 +76,12 @@ async function processMessage(client, message) {
       console.log(`[queue] Processed: ${type} (${message.MessageId})`);
     }
 
-    await client.send(
-      new DeleteMessageCommand({
-        QueueUrl: env.SQS_QUEUE_URL,
-        ReceiptHandle: message.ReceiptHandle,
-      })
-    );
+    await deleteMessage(client, message.ReceiptHandle);
   } catch (err) {
-    const terminalBusinessError =
-      type === "ORDER_PLACED" &&
-      typeof err?.message === "string" &&
-      (
-        err.message.startsWith("Insufficient stock or invalid item:") ||
-        err.message.startsWith("Insufficient stock or invalid customization item:") ||
-        err.message.startsWith("Invalid customization") ||
-        err.message.startsWith("Insufficient ingredient stock:")
-      );
-
-    if (terminalBusinessError && payload?.tenant?.outletId && payload?.clientOrderId) {
-      await markOrderRequestFailed(payload, err?.message);
-      emitOrderFailed(payload, err?.message);
-      await client.send(
-        new DeleteMessageCommand({
-          QueueUrl: env.SQS_QUEUE_URL,
-          ReceiptHandle: message.ReceiptHandle,
-        })
-      );
+    if (isTerminalOrderError(type, err)) {
+      await markOrderRequestFailed(payload, err.message);
+      emitOrderFailed(payload, err.message);
+      await deleteMessage(client, message.ReceiptHandle);
     }
 
     console.error(
@@ -133,6 +89,23 @@ async function processMessage(client, message) {
       err.message
     );
   }
+}
+
+//Helpers
+
+function isTerminalOrderError(type, err) {
+  if (type !== "ORDER_PLACED") return false;
+  if (typeof err?.message !== "string") return false;
+  return TERMINAL_ORDER_ERROR_PREFIXES.some((prefix) => err.message.startsWith(prefix));
+}
+
+async function deleteMessage(client, receiptHandle) {
+  await client.send(
+    new DeleteMessageCommand({
+      QueueUrl: env.SQS_QUEUE_URL,
+      ReceiptHandle: receiptHandle,
+    })
+  );
 }
 
 async function markOrderRequestFailed(payload, errorMessage) {
@@ -146,8 +119,8 @@ async function markOrderRequestFailed(payload, errorMessage) {
         },
       }
     );
-  } catch (updateErr) {
-    console.error("[queue] Failed to update order request status:", updateErr.message);
+  } catch (err) {
+    console.error("[queue] Failed to update order request status:", err.message);
   }
 }
 
@@ -159,8 +132,8 @@ function emitOrderFailed(payload, errorMessage) {
       orderNumber: payload.orderNumber,
       message: errorMessage || "Order processing failed",
     });
-  } catch (_) {
-    console.log("Socket not initialized, skipping failed-order emit");
+  } catch {
+    // Socket not yet initialised — non-fatal
   }
 }
 
