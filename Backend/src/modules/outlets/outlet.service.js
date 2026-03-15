@@ -2,21 +2,15 @@ import Outlet from "./outlet.model.js";
 import Franchise from "../franchises/franchise.model.js";
 import User from "../users/user.model.js";
 import Device from "../devices/device.model.js";
-import { forceLogout, broadcastRefresh } from "../../realtime/realtime.manager.js";
+import { forceLogout } from "../../realtime/realtime.manager.js";
 import AppError from "../../shared/errors/AppError.js";
 import { toBoundedLimit, encodeCursor, decodeCursor } from "../../shared/utils/pagination.js";
 import { OUTLET_STATUS } from "./outlet.constants.js";
 
 const DEFAULT_LIMIT = 10;
 
-// ─── Service functions ────────────────────────────────────────────────────────
-
 export async function createOutlet(payload, user) {
   let { franchiseId, name, outletCode, address } = payload;
-
-  if (!name || !outletCode) {
-    throw new AppError("Name and outletCode are required", 400, "VALIDATION_ERROR");
-  }
 
   if (user.role === "SUPER_ADMIN") {
     if (!franchiseId) {
@@ -33,14 +27,12 @@ export async function createOutlet(payload, user) {
     throw new AppError("Franchise not found", 404, "FRANCHISE_NOT_FOUND");
   }
 
-  const outlet = await Outlet.create({
+  return Outlet.create({
     franchiseId,
     name,
     outletCode: outletCode.toUpperCase(),
     address,
   });
-
-  return outlet;
 }
 
 export async function getOutlets(user, query = {}) {
@@ -58,7 +50,6 @@ export async function getOutlets(user, query = {}) {
     throw new AppError("Forbidden", 403, "FORBIDDEN");
   }
 
-  // Full-text search on name and outletCode
   if (search && search.trim()) {
     baseFilter.$or = [
       { name: { $regex: search.trim(), $options: "i" } },
@@ -66,7 +57,6 @@ export async function getOutlets(user, query = {}) {
     ];
   }
 
-  // Status filter
   if (status && status !== "ALL") baseFilter.status = status;
 
   const decodedCursor = decodeCursor(cursor);
@@ -139,21 +129,18 @@ export async function updateOutlet(id, payload, user) {
 export async function deleteOutlet(id, user) {
   const outlet = await getOutletById(id, user);
 
-  // 1. Force-logout + soft-delete all users at this outlet
   const affectedUsers = await User.find({ outletId: outlet._id, isDeleted: false }).select("_id");
   for (const u of affectedUsers) forceLogout("user", u._id.toString());
   if (affectedUsers.length > 0) {
     await User.updateMany({ outletId: outlet._id }, { isDeleted: true, status: OUTLET_STATUS.INACTIVE });
   }
 
-  // 2. Force-logout + soft-delete all devices at this outlet
   const affectedDevices = await Device.find({ outletId: outlet._id, isDeleted: false }).select("_id deviceId");
   for (const d of affectedDevices) forceLogout("device", d.deviceId);
   if (affectedDevices.length > 0) {
     await Device.updateMany({ outletId: outlet._id }, { isDeleted: true, status: OUTLET_STATUS.INACTIVE });
   }
 
-  // 3. Soft-delete the outlet itself
   outlet.isDeleted = true;
   outlet.status = OUTLET_STATUS.INACTIVE;
   await outlet.save();
@@ -162,10 +149,6 @@ export async function deleteOutlet(id, user) {
 }
 
 export async function setOutletStatus(id, status, user) {
-  if (!Object.values(OUTLET_STATUS).includes(status)) {
-    throw new AppError("Invalid status value", 400, "VALIDATION_ERROR");
-  }
-
   const outlet = await getOutletById(id, user);
 
   outlet.status = status;

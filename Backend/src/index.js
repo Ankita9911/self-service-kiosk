@@ -4,22 +4,36 @@ import app from "./app.js";
 import connectMongo from "./shared/utils/mongo.js";
 import { initSocket } from "./realtime/realtime.manager.js";
 import { startWorker } from "./core/queue/queue.worker.js";
+import { getRedisClient } from "./core/cache/redis.client.js";
 
 dotenv.config();
+
 const PORT = process.env.PORT || 3000;
 let server;
 
+async function verifyRedis() {
+  const redis = getRedisClient();
+  await redis.ping();
+}
+
 async function bootstrap() {
   try {
-    console.log("starting Hyper Kitchen Hub Backend...");
+    console.log("Starting Hyper Kitchen Hub Backend...");
+
     await connectMongo();
-    console.log("MongoDB Connected");
+    console.log("MongoDB connected");
+
+    await verifyRedis();
+    console.log("Redis connected");
+
     server = http.createServer(app);
     initSocket(server);
     startWorker();
+
     server.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);
     });
+
     registerShutdownHandlers();
   } catch (error) {
     console.error("Server bootstrap failed:", error);
@@ -29,10 +43,10 @@ async function bootstrap() {
 
 function registerShutdownHandlers() {
   const shutdown = async (signal) => {
-    console.log(`\n${signal} received. Shutting down gracefully...`);
+    console.log(`${signal} received. Shutting down gracefully...`);
     if (server) {
       server.close(() => {
-        console.log(" HTTP server closed");
+        console.log("HTTP server closed");
         process.exit(0);
       });
     }
@@ -41,7 +55,8 @@ function registerShutdownHandlers() {
       process.exit(1);
     }, 10000);
   };
-  process.on("SIGINT", () => shutdown("SIGINT"));
+
+  process.on("SIGINT",  () => shutdown("SIGINT"));
   process.on("SIGTERM", () => shutdown("SIGTERM"));
 }
 

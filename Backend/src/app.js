@@ -19,19 +19,32 @@ app.use(
   })
 );
 app.use(cookieParser());
-
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+app.use((req, res, next) => {
+  const start = Date.now();
+  res.on("finish", () => {
+    console.log(
+      JSON.stringify({
+        method: req.method,
+        url: req.originalUrl,
+        status: res.statusCode,
+        ms: Date.now() - start,
+      })
+    );
+  });
+  next();
+});
 
 app.get("/health", (req, res) => {
   return sendSuccess(res, {
     message: "Service healthy",
-    data: {
-      uptime: process.uptime(),
-    },
+    data: { uptime: process.uptime() },
   });
 });
 
+app.use("/api/v1", routes);
 app.use("/api", routes);
 
 app.use((req, res, next) => {

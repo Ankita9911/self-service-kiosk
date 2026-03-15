@@ -23,19 +23,19 @@ router.get("/tenant-test", authenticate, attachTenant, (req, res) => {
   res.json({ success: true, data: { tenant: req.tenant } });
 });
 
-router.use("/auth", authRoutes);
-router.use("/franchises", franchiseRoutes);
-router.use("/outlets", outletRoutes);
-router.use("/menu", menuRoutes);
-router.use("/combos", comboRoutes);
-router.use("/kiosk", kioskRoutes);           // recommendations are sub-mounted inside kiosk.routes.js
-router.use("/orders", orderRoutes);
-router.use("/devices", deviceRoutes);
-router.use("/users", userRoutes);
-router.use("/upload", uploadRoutes);
-router.use("/analytics", analyticsRoutes);
-router.use("/ingredients", ingredientRoutes);
-router.use("/recipes", recipeRoutes);
+router.use("/auth",               authRoutes);
+router.use("/franchises",         franchiseRoutes);
+router.use("/outlets",            outletRoutes);
+router.use("/menu",               menuRoutes);
+router.use("/combos",             comboRoutes);
+router.use("/kiosk",              kioskRoutes);
+router.use("/orders",             orderRoutes);
+router.use("/devices",            deviceRoutes);
+router.use("/users",              userRoutes);
+router.use("/upload",             uploadRoutes);
+router.use("/analytics",          analyticsRoutes);
+router.use("/ingredients",        ingredientRoutes);
+router.use("/recipes",            recipeRoutes);
 router.use("/stock-transactions", stockTransactionRoutes);
 
 export default router;

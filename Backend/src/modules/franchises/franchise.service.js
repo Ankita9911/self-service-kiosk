@@ -9,18 +9,12 @@ import { FRANCHISE_STATUS } from "./franchise.constants.js";
 
 const DEFAULT_LIMIT = 10;
 
-// ─── Service functions ────────────────────────────────────────────────────────
-
 export async function createFranchise(payload, user) {
   if (user.role !== "SUPER_ADMIN") {
     throw new AppError("Forbidden", 403, "FORBIDDEN");
   }
 
   const { name, brandCode, contactEmail, contactPhone } = payload;
-
-  if (!name || !brandCode) {
-    throw new AppError("Name and brandCode are required", 400, "VALIDATION_ERROR");
-  }
 
   const existing = await Franchise.findOne({
     brandCode: brandCode.toUpperCase(),
@@ -41,14 +35,12 @@ export async function createFranchise(payload, user) {
     }
   }
 
-  const franchise = await Franchise.create({
+  return Franchise.create({
     name,
     brandCode: brandCode.toUpperCase(),
     contactEmail,
     contactPhone,
   });
-
-  return franchise;
 }
 
 export async function getFranchises(user, query = {}) {
@@ -60,7 +52,6 @@ export async function getFranchises(user, query = {}) {
   const pageLimit = toBoundedLimit(limit, DEFAULT_LIMIT);
   const baseFilter = { isDeleted: false };
 
-  // Full-text search on name, brandCode and contactEmail
   if (search && search.trim()) {
     baseFilter.$or = [
       { name: { $regex: search.trim(), $options: "i" } },
@@ -69,7 +60,6 @@ export async function getFranchises(user, query = {}) {
     ];
   }
 
-  // Status filter
   if (status && status !== "ALL") baseFilter.status = status;
 
   const decodedCursor = decodeCursor(cursor);
@@ -155,16 +145,11 @@ export async function setFranchiseStatus(id, status, user) {
     throw new AppError("Forbidden", 403, "FORBIDDEN");
   }
 
-  if (!Object.values(FRANCHISE_STATUS).includes(status)) {
-    throw new AppError("Invalid status value", 400, "VALIDATION_ERROR");
-  }
-
   const franchise = await getFranchiseById(id, user);
 
   franchise.status = status;
   await franchise.save();
 
-  // Collect all outlet IDs under this franchise
   const outletIds = await Outlet.find(
     { franchiseId: franchise._id, isDeleted: false },
     "_id"
