@@ -2,6 +2,8 @@ import AppError from "./AppError.js";
 
 function errorMiddleware(err, req, res, next) {
   console.error("Error:", err);
+
+  // ── Operational errors thrown deliberately via AppError ───────────────────
   if (err instanceof AppError) {
     return res.status(err.statusCode).json({
       success: false,
@@ -9,13 +11,17 @@ function errorMiddleware(err, req, res, next) {
       errorCode: err.errorCode,
     });
   }
-  if (err.name === "ValidationError") {
-    return res.status(400).json({
+
+  // ── JWT: expired token (more specific — must come before JsonWebTokenError) ─
+  if (err.name === "TokenExpiredError") {
+    return res.status(401).json({
       success: false,
-      message: "Validation failed",
-      errorCode: "VALIDATION_ERROR",
+      message: "Session expired, please log in again",
+      errorCode: "TOKEN_EXPIRED",
     });
   }
+
+  // ── JWT: malformed or invalid signature ───────────────────────────────────
   if (err.name === "JsonWebTokenError") {
     return res.status(401).json({
       success: false,
@@ -23,6 +29,26 @@ function errorMiddleware(err, req, res, next) {
       errorCode: "INVALID_TOKEN",
     });
   }
+
+  // ── Mongoose: schema validation failure ───────────────────────────────────
+  if (err.name === "ValidationError") {
+    return res.status(400).json({
+      success: false,
+      message: "Validation failed",
+      errorCode: "VALIDATION_ERROR",
+    });
+  }
+
+  // ── Mongoose: invalid ObjectId (e.g. /api/users/not-an-id) ───────────────
+  if (err.name === "CastError" && err.kind === "ObjectId") {
+    return res.status(400).json({
+      success: false,
+      message: "Invalid ID format",
+      errorCode: "INVALID_ID",
+    });
+  }
+
+  // ── MongoDB: unique index violation ──────────────────────────────────────
   if (err.code === 11000) {
     return res.status(400).json({
       success: false,
@@ -30,6 +56,8 @@ function errorMiddleware(err, req, res, next) {
       errorCode: "DUPLICATE_KEY",
     });
   }
+
+  // ── Catch-all: unexpected errors ──────────────────────────────────────────
   return res.status(500).json({
     success: false,
     message: "Internal Server Error",

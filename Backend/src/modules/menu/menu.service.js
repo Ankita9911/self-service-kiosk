@@ -3,38 +3,9 @@ import MenuItem from "./menuItem.model.js";
 import { getRedisClient } from "../../core/cache/redis.client.js";
 import { buildTenantKey } from "../../core/cache/cache.utils.js";
 import { enqueue } from "../../core/queue/queue.producer.js";
+import { toBoundedLimit, encodeCursor, decodeCursor } from "../../shared/utils/pagination.js";
 
 const DEFAULT_LIMIT = 12;
-const MAX_LIMIT = 100;
-
-function toBoundedLimit(value) {
-  const parsed = Number.parseInt(String(value ?? DEFAULT_LIMIT), 10);
-  if (Number.isNaN(parsed)) return DEFAULT_LIMIT;
-  return Math.min(Math.max(parsed, 1), MAX_LIMIT);
-}
-
-function encodeCursor(payload) {
-  return Buffer.from(JSON.stringify(payload)).toString("base64url");
-}
-
-function decodeCursor(cursor) {
-  if (!cursor) return null;
-
-  try {
-    const decoded = JSON.parse(Buffer.from(cursor, "base64url").toString("utf-8"));
-    if (!decoded?.createdAt || !decoded?._id) return null;
-
-    const createdAt = new Date(decoded.createdAt);
-    if (Number.isNaN(createdAt.getTime())) return null;
-
-    return {
-      createdAt,
-      _id: decoded._id,
-    };
-  } catch {
-    return null;
-  }
-}
 
 export async function createCategory(data, tenant) {
   await enqueue("MENU_CATEGORY_CREATE", { data, tenant });
@@ -82,7 +53,7 @@ export async function createMenuItem(data, tenant) {
 }
 
 export async function getMenuItems(tenant, { categoryId, search, status, cursor, limit } = {}) {
-  const pageLimit = toBoundedLimit(limit);
+  const pageLimit = toBoundedLimit(limit, DEFAULT_LIMIT);
 
   const baseFilter = {
     franchiseId: tenant.franchiseId,
