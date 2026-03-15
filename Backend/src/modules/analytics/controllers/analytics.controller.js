@@ -1,4 +1,4 @@
-import * as analyticsService from "../service/analytics.service.js";
+import * as analyticsService from "../services/analytics.service.js";
 import { sendSuccess } from "../../../shared/utils/response.js";
 import { asyncHandler } from "../../../shared/utils/asyncHandler.js";
 
