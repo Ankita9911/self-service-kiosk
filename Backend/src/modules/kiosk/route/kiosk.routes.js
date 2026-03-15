@@ -4,7 +4,7 @@ import { attachTenant } from "../../../core/tenancy/tenancy.middleware.js";
 import { authorize } from "../../../core/rbac/rbac.middleware.js";
 import { PERMISSIONS } from "../../../core/rbac/permissions.js";
 import * as controller from "../controller/kiosk.controller.js";
-import recommendationRoutes from "../../recommendations/recommendation.routes.js";
+import recommendationRoutes from "../../recommendations/route/recommendation.routes.js";
 
 const router = express.Router();
 

@@ -1,6 +1,6 @@
-import * as recommendationService from "./recommendation.service.js";
-import { sendSuccess } from "../../shared/utils/response.js";
-import { asyncHandler } from "../../shared/utils/asyncHandler.js";
+import * as recommendationService from "../service/recommendation.service.js";
+import { sendSuccess } from "../../../shared/utils/response.js";
+import { asyncHandler } from "../../../shared/utils/asyncHandler.js";
 
 export const getTrending = asyncHandler(async (req, res) => {
   const windowHours = req.query.windowHours ? Number(req.query.windowHours) : 4;
