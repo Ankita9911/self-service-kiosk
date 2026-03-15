@@ -6,13 +6,13 @@ import {
   type DragStartEvent,
   type DragEndEvent,
 } from "@dnd-kit/core";
-import{ COLUMN_ORDER } from "../config/kitchen.contant";
+import { COLUMN_ORDER } from "../config/kitchen.constants";
 import { useKitchen } from "../hooks/useKitchen";
 import { KitchenTopBar } from "../components/KitchenTopBar";
 import { Column } from "../components/KitchenColumn";
 import { OrderCard } from "../components/OrderCard";
 import type { Order, OrderStatus } from "@/features/kiosk/types/order.types";
-import type { KitchenStatus } from "../config/kitchen.contant";
+import type { KitchenStatus } from "../config/kitchen.constants";
 
 export default function KitchenPage() {
   const {
@@ -27,7 +27,9 @@ export default function KitchenPage() {
   const [activeOrder, setActiveOrder] = useState<Order | null>(null);
 
   const handleDragStart = (event: DragStartEvent) => {
-    setActiveOrder((event.active.data.current as { order: Order } | undefined)?.order ?? null);
+    setActiveOrder(
+      (event.active.data.current as { order: Order } | undefined)?.order ?? null
+    );
   };
 
   const handleDragEnd = async (event: DragEndEvent) => {

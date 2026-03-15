@@ -2,6 +2,7 @@ import { lazy, Suspense } from "react";
 import { Routes, Route } from "react-router-dom";
 import ProtectedRoute from "./ProtectedRoute";
 import KioskProtectedRoute from "./KioskProtectedRoute";
+import { PageLoader } from "./PageLoader";
 import AppLayout from "@/shared/components/layout/AppLayout";
 import { PERMISSIONS } from "@/shared/lib/permissions";
 
@@ -24,14 +25,6 @@ const AnalyticsPage = lazy(() => import("@/features/analytics/pages/AnalyticsPag
 const IngredientsPage = lazy(() => import("@/features/ingredients/pages/IngredientsPage"));
 const RecipesPage = lazy(() => import("@/features/recipes/pages/RecipesPage"));
 const StockTransactionsPage = lazy(() => import("@/features/stockTransactions/pages/StockTransactionsPage"));
-
-function PageLoader() {
-  return (
-    <div className="flex items-center justify-center h-screen w-full">
-      <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary" />
-    </div>
-  );
-}
 
 export default function AppRoutes() {
   return (

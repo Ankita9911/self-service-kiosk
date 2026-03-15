@@ -18,7 +18,7 @@ import ProcessingOrderDialouge from "../components/ProcessingOrderDialouge";
 import SuccessDialouge from "../components/SuccessDialouge";
 import FailedOrderDialouge from "../components/FailedOrderDialouge";
 
-import { useKioskMenu } from "../hooks/usekioskMenu";
+import { useKioskMenu } from "../hooks/useKioskMenu";
 import { useKioskCart } from "../hooks/useKioskCart";
 import { useKioskCheckout } from "../hooks/useKioskCheckout";
 import { useKioskForceLogout } from "../hooks/useKioskForceLogout";

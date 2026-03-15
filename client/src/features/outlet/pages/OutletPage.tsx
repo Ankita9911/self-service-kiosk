@@ -1,6 +1,7 @@
 import { useEffect, useCallback, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { io } from "socket.io-client";
+import { getSocketUrl } from "@/shared/lib/socket";
 import useAuth from "@/shared/hooks/useAuth";
 import type { Outlet } from "@/features/outlet/types/outlet.types";
 import type { Franchise } from "@/features/franchise/types/franchise.types";
@@ -179,12 +180,7 @@ export default function OutletPage() {
 
   // Live-refresh when a franchise status cascade changes outlet statuses
   useEffect(() => {
-    const socketUrl = (() => {
-      const apiUrl = import.meta.env.VITE_API_BASE_URL;
-      if (!apiUrl) return "http://localhost:3000";
-      try { return new URL(apiUrl).origin; } catch { return "http://localhost:3000"; }
-    })();
-    const socket = io(socketUrl, { withCredentials: true, transports: ["websocket"] });
+    const socket = io(getSocketUrl(), { withCredentials: true, transports: ["websocket"] });
     socket.on("outlets:refreshNeeded", () => fetchData(true));
     return () => { socket.disconnect(); };
   }, [fetchData]);
