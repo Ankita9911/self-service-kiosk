@@ -3,7 +3,11 @@ import MenuItem from "./menuItem.model.js";
 import { getRedisClient } from "../../core/cache/redis.client.js";
 import { buildTenantKey } from "../../core/cache/cache.utils.js";
 import { enqueue } from "../../core/queue/queue.producer.js";
-import { toBoundedLimit, encodeCursor, decodeCursor } from "../../shared/utils/pagination.js";
+import {
+  toBoundedLimit,
+  encodeCursor,
+  decodeCursor,
+} from "../../shared/utils/pagination.js";
 
 const DEFAULT_LIMIT = 12;
 
@@ -46,13 +50,18 @@ export async function deleteCategory(id, tenant) {
 export async function createMenuItem(data, tenant) {
   const normalizedData = {
     ...data,
-    customizationItemIds: [...new Set((data.customizationItemIds || []).map(String))],
+    customizationItemIds: [
+      ...new Set((data.customizationItemIds || []).map(String)),
+    ],
   };
   await enqueue("MENU_ITEM_CREATE", { data: normalizedData, tenant });
   return { queued: true };
 }
 
-export async function getMenuItems(tenant, { categoryId, search, status, cursor, limit } = {}) {
+export async function getMenuItems(
+  tenant,
+  { categoryId, search, status, cursor, limit } = {},
+) {
   const pageLimit = toBoundedLimit(limit, DEFAULT_LIMIT);
 
   const baseFilter = {
@@ -81,32 +90,34 @@ export async function getMenuItems(tenant, { categoryId, search, status, cursor,
     ];
   }
 
-  const [itemsPlusOne, totalMatching, totalItems, activeItems] = await Promise.all([
-    MenuItem.find(queryFilter)
-      .sort({ createdAt: -1, _id: -1 })
-      .limit(pageLimit + 1)
-      .lean(),
-    MenuItem.countDocuments(baseFilter),
-    MenuItem.countDocuments({
-      franchiseId: tenant.franchiseId,
-      outletId: tenant.outletId,
-      isDeleted: false,
-    }),
-    MenuItem.countDocuments({
-      franchiseId: tenant.franchiseId,
-      outletId: tenant.outletId,
-      isDeleted: false,
-      isActive: { $ne: false },
-    }),
-  ]);
+  const [itemsPlusOne, totalMatching, totalItems, activeItems] =
+    await Promise.all([
+      MenuItem.find(queryFilter)
+        .sort({ createdAt: -1, _id: -1 })
+        .limit(pageLimit + 1)
+        .lean(),
+      MenuItem.countDocuments(baseFilter),
+      MenuItem.countDocuments({
+        franchiseId: tenant.franchiseId,
+        outletId: tenant.outletId,
+        isDeleted: false,
+      }),
+      MenuItem.countDocuments({
+        franchiseId: tenant.franchiseId,
+        outletId: tenant.outletId,
+        isDeleted: false,
+        isActive: { $ne: false },
+      }),
+    ]);
 
   const hasNext = itemsPlusOne.length > pageLimit;
   const items = hasNext ? itemsPlusOne.slice(0, pageLimit) : itemsPlusOne;
 
   const lastItem = items[items.length - 1];
-  const nextCursor = hasNext && lastItem
-    ? encodeCursor({ createdAt: lastItem.createdAt, _id: lastItem._id })
-    : null;
+  const nextCursor =
+    hasNext && lastItem
+      ? encodeCursor({ createdAt: lastItem.createdAt, _id: lastItem._id })
+      : null;
 
   return {
     items,
@@ -134,7 +145,7 @@ export async function updateMenuItem(id, data, tenant) {
             ...new Set(
               data.customizationItemIds
                 .map(String)
-                .filter((itemId) => itemId !== String(id))
+                .filter((itemId) => itemId !== String(id)),
             ),
           ],
         }

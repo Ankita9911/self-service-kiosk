@@ -11,7 +11,10 @@ const s3 = new S3Client({
   },
 });
 
-export async function generatePresignedUploadUrl({ fileName, fileType, folder }, tenant) {
+export async function generatePresignedUploadUrl(
+  { fileName, fileType, folder },
+  tenant,
+) {
   if (!tenant?.franchiseId) {
     throw new AppError("Tenant context missing", 400);
   }
