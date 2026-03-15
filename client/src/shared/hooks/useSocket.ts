@@ -1,23 +1,16 @@
 import { useEffect, useRef } from "react";
 import { io, Socket } from "socket.io-client";
-
-function getSocketUrl(): string {
-  const apiUrl = import.meta.env.VITE_API_BASE_URL;
-  if (!apiUrl) return "http://localhost:3000";
-  try {
-    return new URL(apiUrl).origin; // strips /api — socket.io lives at the root
-  } catch {
-    return "http://localhost:3000";
-  }
-}
+import { getSocketUrl } from "@/shared/lib/socket";
 
 const SOCKET_URL = getSocketUrl();
 
-export function useSocket(onOrderNew: (order: any) => void, onOrderStatusUpdated: (payload: any) => void) {
+export function useSocket(
+  onOrderNew: (order: any) => void,
+  onOrderStatusUpdated: (payload: any) => void
+) {
   const socketRef = useRef<Socket | null>(null);
 
   useEffect(() => {
-    // Auth is now cookie-based — withCredentials lets the browser send the cookie
     const socket = io(SOCKET_URL, {
       withCredentials: true,
       transports: ["websocket"],

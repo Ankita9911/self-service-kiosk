@@ -1,16 +1,7 @@
 import { useEffect, useRef } from "react";
 import { io, type Socket } from "socket.io-client";
 import { getKioskToken } from "@/shared/lib/kioskSession";
-
-function getSocketUrl(): string {
-  const apiUrl = import.meta.env.VITE_API_BASE_URL;
-  if (!apiUrl) return "http://localhost:3000";
-  try {
-    return new URL(apiUrl).origin;
-  } catch {
-    return "http://localhost:3000";
-  }
-}
+import { getSocketUrl } from "@/shared/lib/socket";
 
 const SOCKET_URL = getSocketUrl();
 

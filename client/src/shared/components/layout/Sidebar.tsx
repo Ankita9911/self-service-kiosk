@@ -1,5 +1,5 @@
 import { NavLink, useNavigate } from "react-router-dom";
-import { NAV_ITEMS } from "@/shared/lib/navigation";
+import { NAV_ITEMS } from "@/shared/constants/navigation";
 import { usePermission } from "@/shared/hooks/usePermissions";
 import { ChefHat, PanelLeftClose, PanelLeftOpen, Search, X } from "lucide-react";
 import { useState, useRef, useEffect } from "react";

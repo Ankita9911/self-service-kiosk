@@ -1,7 +1,7 @@
 import { useDroppable } from "@dnd-kit/core";
-import type { KitchenStatus } from "../config/kitchen.contant";
+import type { KitchenStatus } from "../config/kitchen.constants";
 import type { OrderStatus, Order } from "@/features/kiosk/types/order.types";
-import { STATUS_CONFIG } from "../config/kitchen.contant";
+import { STATUS_CONFIG } from "../config/kitchen.constants";
 import { OrderCard } from "./OrderCard";
 import { UtensilsCrossed, Flame, PackageCheck } from "lucide-react";
 

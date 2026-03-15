@@ -2,8 +2,8 @@ import { useEffect, useState, useCallback } from "react";
 import { getOrders, updateOrderStatus } from "@/features/kiosk/services/order.service";
 import { useSocket } from "@/shared/hooks/useSocket";
 import type { Order, OrderStatus } from "@/features/kiosk/types/order.types";
-import { COLUMN_ORDER } from "../config/kitchen.contant";
-import type { KitchenStatus } from "../config/kitchen.contant";
+import { COLUMN_ORDER } from "../config/kitchen.constants";
+import type { KitchenStatus } from "../config/kitchen.constants";
 
 export function useKitchen() {
   const [orders, setOrders] = useState<Order[]>([]);
