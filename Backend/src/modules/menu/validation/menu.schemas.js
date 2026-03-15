@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { objectIdSchema } from "../../shared/validation/common.schemas.js";
-import { INVENTORY_MODE, SERVICE_TYPE, OFFER_TYPE } from "./menu.constants.js";
+import { objectIdSchema } from "../../../shared/validation/common.schemas.js";
+import { INVENTORY_MODE, SERVICE_TYPE, OFFER_TYPE } from "../constant/menu.constants.js";
 
 export const createCategorySchema = z.object({
   name: z.string({ required_error: "name is required" }).min(1).trim(),

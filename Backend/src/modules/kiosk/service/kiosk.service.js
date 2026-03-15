@@ -1,6 +1,6 @@
-import Category from "../../menu/category.model.js";
-import MenuItem from "../../menu/menuItem.model.js";
-import Combo from "../../menu/combo.model.js";
+import Category from "../../menu/model/category.model.js";
+import MenuItem from "../../menu/model/menuItem.model.js";
+import Combo from "../../menu/model/combo.model.js";
 import Recipe from "../../recipes/recipe.model.js";
 import Ingredient from "../../ingredients/ingredient.model.js";
 

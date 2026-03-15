@@ -1,6 +1,6 @@
-import * as comboService from "./combo.service.js";
-import { sendSuccess } from "../../shared/utils/response.js";
-import { asyncHandler } from "../../shared/utils/asyncHandler.js";
+import * as comboService from "../combo.service.js";
+import { sendSuccess } from "../../../shared/utils/response.js";
+import { asyncHandler } from "../../../shared/utils/asyncHandler.js";
 
 export const getCombos = asyncHandler(async (req, res) => {
   const result = await comboService.getCombos(req.tenant);

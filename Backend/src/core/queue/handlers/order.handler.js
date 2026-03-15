@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 import Order from "../../../modules/orders/order.model.js";
 import Counter from "../../../modules/orders/counter.model.js";
 import OrderRequest from "../../../modules/orders/orderRequest.model.js";
-import MenuItem from "../../../modules/menu/menuItem.model.js";
+import MenuItem from "../../../modules/menu/model/menuItem.model.js";
 import Ingredient from "../../../modules/ingredients/ingredient.model.js";
 import Recipe from "../../../modules/recipes/recipe.model.js";
 import StockTransaction from "../../../modules/stockTransactions/stockTransaction.model.js";

@@ -1,6 +1,6 @@
-import * as menuService from "./menu.service.js";
-import { sendSuccess } from "../../shared/utils/response.js";
-import { asyncHandler } from "../../shared/utils/asyncHandler.js";
+import * as menuService from "../service/menu.service.js";
+import { sendSuccess } from "../../../shared/utils/response.js";
+import { asyncHandler } from "../../../shared/utils/asyncHandler.js";
 
 export const createCategory = asyncHandler(async (req, res) => {
   const result = await menuService.createCategory(req.body, req.tenant);

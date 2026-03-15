@@ -1,4 +1,4 @@
-import Combo from "./combo.model.js";
+import Combo from "./model/combo.model.js";
 import { enqueue } from "../../core/queue/queue.producer.js";
 
 export async function getCombos(tenant) {

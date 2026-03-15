@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { INVENTORY_MODE, SERVICE_TYPE, OFFER_TYPE } from "./menu.constants.js";
+import { INVENTORY_MODE, SERVICE_TYPE, OFFER_TYPE } from "../constant/menu.constants.js";
 
 const { Schema } = mongoose;
 
