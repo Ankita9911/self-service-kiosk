@@ -5,7 +5,7 @@ import franchiseRoutes from "../modules/franchises/route/franchise.routes.js";
 import outletRoutes from "../modules/outlets/outlet.routes.js";
 import menuRoutes from "../modules/menu/menu.routes.js";
 import comboRoutes from "../modules/menu/combo.routes.js";
-import kioskRoutes from "../modules/kiosk/kiosk.routes.js";
+import kioskRoutes from "../modules/kiosk/route/kiosk.routes.js";
 import orderRoutes from "../modules/orders/order.routes.js";
 import deviceRoutes from "../modules/devices/route/device.routes.js";
 import userRoutes from "../modules/users/user.routes.js";
