@@ -28,7 +28,7 @@ import {
   PopoverTrigger,
 } from "@/shared/components/ui/popover";
 import { ShimmerCell } from "../components/ShimmerCell";
-import { StatusBadge } from "../components/StatusBadge";
+import { StatusBadge } from "@/shared/components/ui/StatusBadge";
 import { RowMenu } from "../components/RowMenu";
 import { OutletStats } from "../components/OutletStats";
 import { DeleteModal } from "../components/DeleteOutletModal";

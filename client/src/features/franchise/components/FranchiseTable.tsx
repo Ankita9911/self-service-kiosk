@@ -1,7 +1,7 @@
 import { Building2, Mail } from "lucide-react";
-import { StatusBadge } from "./StatusBadge";
+import { StatusBadge } from "@/shared/components/ui/StatusBadge";
 import { RowMenu } from "./RowMenu";
-import { ShimmerCell } from "./ShimmerCell";
+import { ShimmerCell } from "@/shared/components/ui/ShimmerCell";
 import { CursorPagination } from "@/shared/components/ui/CursorPagination";
 import type { Franchise } from "../types/franchise.types";
 import {

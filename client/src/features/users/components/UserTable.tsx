@@ -1,8 +1,8 @@
 import { Users } from "lucide-react";
 import { RoleBadge } from "./RoleBadge";
-import { StatusBadge } from "./StatusBadge";
+import { StatusBadge } from "@/shared/components/ui/StatusBadge";
 import { UserRowMenu } from "./UserRowMenu";
-import { Shimmer, ShimmerCell } from "./ShimmerCell";
+import { Shimmer, ShimmerCell } from "@/shared/components/ui/ShimmerCell";
 import { CursorPagination } from "@/shared/components/ui/CursorPagination";
 import { PERMISSIONS } from "@/shared/lib/permissions";
 import { usePermission } from "@/shared/hooks/usePermissions";

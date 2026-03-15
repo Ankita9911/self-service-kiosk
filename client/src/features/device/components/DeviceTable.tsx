@@ -1,8 +1,8 @@
 import type { Device } from "../types/device.types";
 import type { Outlet } from "@/features/outlet/types/outlet.types";
 import { Cpu } from "lucide-react";
-import { ShimmerCell, Shimmer } from "./ShimmerCell";
-import { StatusBadge } from "./StatusBadge";
+import { ShimmerCell, Shimmer } from "@/shared/components/ui/ShimmerCell";
+import { StatusBadge } from "@/shared/components/ui/StatusBadge";
 import { DeviceRowMenu } from "./DeviceRowMenu";
 import { CursorPagination } from "@/shared/components/ui/CursorPagination";
 
