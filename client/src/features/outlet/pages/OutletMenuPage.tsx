@@ -817,7 +817,7 @@ export default function OutletMenuPage() {
               placeholder="Enter quantity"
               autoFocus
             />
-            <div className="mt-3 rounded-xl border border-slate-200 dark:border-white/8 bg-slate-50/80 dark:bg-white/[0.03] px-3 py-2">
+            <div className="mt-3 rounded-xl border border-slate-200 dark:border-white/8 bg-slate-50/80 dark:bg-white/3 px-3 py-2">
               <p className="text-[11px] text-slate-500 dark:text-slate-400">
                 Use this only for direct-stock items like bottled drinks.
                 Recipe-based items are controlled from ingredients.

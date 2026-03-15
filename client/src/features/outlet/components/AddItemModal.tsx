@@ -65,9 +65,9 @@ type AddItemFormState = {
   price: string;
   stockQuantity: string;
   inventoryMode: InventoryMode;
-  serviceType?: ServiceType;
-  offers?: ItemOfferForm[];
-  customizationItemIds?: string[];
+  serviceType: ServiceType;
+  offers: ItemOfferForm[];
+  customizationItemIds: string[];
 };
 
 type FieldErrors = Partial<Record<keyof CreateMenuItemFormValues, string>>;
