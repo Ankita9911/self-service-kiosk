@@ -5,9 +5,9 @@ import {
   updateOutlet,
   deleteOutlet,
   setOutletStatus,
-} from "./outlet.service.js";
-import { sendSuccess } from "../../shared/utils/response.js";
-import { asyncHandler } from "../../shared/utils/asyncHandler.js";
+} from "../service/outlet.service.js";
+import { sendSuccess } from "../../../shared/utils/response.js";
+import { asyncHandler } from "../../../shared/utils/asyncHandler.js";
 
 export const createOutletController = asyncHandler(async (req, res) => {
   const outlet = await createOutlet(req.body, req.user);

@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { OUTLET_STATUS } from "./outlet.constants.js";
+import { OUTLET_STATUS } from "../constant/outlet.constants.js";
 
 const { Schema } = mongoose;
 

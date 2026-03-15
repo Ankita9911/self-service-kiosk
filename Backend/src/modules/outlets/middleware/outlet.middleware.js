@@ -1,5 +1,5 @@
-import Outlet from "./outlet.model.js";
-import AppError from "../../shared/errors/AppError.js";
+import Outlet from "../model/outlet.model.js";
+import AppError from "../../../shared/errors/AppError.js";
 
 export async function attachOutletForMenu(req, res, next) {
   const user = req.user;

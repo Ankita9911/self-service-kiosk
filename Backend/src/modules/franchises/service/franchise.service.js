@@ -1,6 +1,6 @@
 import Franchise from "../model/franchise.model.js";
 import User from "../../users/user.model.js";
-import Outlet from "../../outlets/outlet.model.js";
+import Outlet from "../../outlets/model/outlet.model.js";
 import Device from "../../devices/model/device.model.js";
 import {
   forceLogout,

@@ -1,15 +1,15 @@
-import Outlet from "./outlet.model.js";
-import Franchise from "../franchises/model/franchise.model.js";
-import User from "../users/user.model.js";
-import Device from "../devices/model/device.model.js";
-import { forceLogout } from "../../realtime/realtime.manager.js";
-import AppError from "../../shared/errors/AppError.js";
+import Outlet from "../model/outlet.model.js";
+import Franchise from "../../franchises/model/franchise.model.js";
+import User from "../../users/user.model.js";
+import Device from "../../devices/model/device.model.js";
+import { forceLogout } from "../../../realtime/realtime.manager.js";
+import AppError from "../../../shared/errors/AppError.js";
 import {
   toBoundedLimit,
   encodeCursor,
   decodeCursor,
-} from "../../shared/utils/pagination.js";
-import { OUTLET_STATUS } from "./outlet.constants.js";
+} from "../../../shared/utils/pagination.js";
+import { OUTLET_STATUS } from "../constant/outlet.constants.js";
 
 const DEFAULT_LIMIT = 10;
 

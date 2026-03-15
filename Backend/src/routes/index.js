@@ -2,7 +2,7 @@ import express from "express";
 
 import authRoutes from "../core/auth/auth.routes.js";
 import franchiseRoutes from "../modules/franchises/route/franchise.routes.js";
-import outletRoutes from "../modules/outlets/outlet.routes.js";
+import outletRoutes from "../modules/outlets/route/outlet.routes.js";
 import menuRoutes from "../modules/menu/route/menu.routes.js";
 import comboRoutes from "../modules/menu/route/combo.routes.js";
 import kioskRoutes from "../modules/kiosk/route/kiosk.routes.js";
