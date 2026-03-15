@@ -91,8 +91,6 @@ async function processMessage(client, message) {
   }
 }
 
-//Helpers
-
 function isTerminalOrderError(type, err) {
   if (type !== "ORDER_PLACED") return false;
   if (typeof err?.message !== "string") return false;
@@ -133,7 +131,7 @@ function emitOrderFailed(payload, errorMessage) {
       message: errorMessage || "Order processing failed",
     });
   } catch {
-    // Socket not yet initialised — non-fatal
+    // non-fatal
   }
 }
 

@@ -5,7 +5,6 @@ import Device from "../../modules/devices/device.model.js";
 import { getRedisClient } from "../cache/redis.client.js";
 
 const COOKIE_NAME = "auth_token";
-
 const AUTH_STATUS_TTL_SECONDS = 60;
 
 export function authStatusKey(type, id) {
@@ -17,7 +16,7 @@ async function getCachedStatus(key) {
     const redis = getRedisClient();
     return await redis.get(key);
   } catch {
-    return null; // Redis unavailable — fall through to DB
+    return null;
   }
 }
 
@@ -26,7 +25,7 @@ async function setCachedStatus(key, status) {
     const redis = getRedisClient();
     await redis.setex(key, AUTH_STATUS_TTL_SECONDS, status);
   } catch {
-    // Non-fatal — DB is source of truth
+    // non-fatal
   }
 }
 
@@ -35,7 +34,7 @@ export async function invalidateAuthStatus(type, id) {
     const redis = getRedisClient();
     await redis.del(authStatusKey(type, id));
   } catch {
-    // Non-fatal
+    // non-fatal
   }
 }
 
@@ -68,10 +67,7 @@ export async function authenticate(req, res, next) {
         return next(new AppError("Device is inactive", 403, "DEVICE_INACTIVE"));
       }
     } else {
-      const device = await Device.findOne({
-        deviceId: decoded.deviceId,
-        isDeleted: false,
-      }).lean();
+      const device = await Device.findOne({ deviceId: decoded.deviceId, isDeleted: false }).lean();
       if (!device || device.status !== "ACTIVE") {
         return next(new AppError("Device is inactive", 403, "DEVICE_INACTIVE"));
       }
@@ -83,16 +79,12 @@ export async function authenticate(req, res, next) {
 
     if (cached) {
       if (cached !== "ACTIVE") {
-        return next(
-          new AppError("Account is inactive", 403, "ACCOUNT_INACTIVE"),
-        );
+        return next(new AppError("Account is inactive", 403, "ACCOUNT_INACTIVE"));
       }
     } else {
       const user = await User.findById(decoded.userId).lean();
       if (!user || user.isDeleted || user.status !== "ACTIVE") {
-        return next(
-          new AppError("Account is inactive", 403, "ACCOUNT_INACTIVE"),
-        );
+        return next(new AppError("Account is inactive", 403, "ACCOUNT_INACTIVE"));
       }
       await setCachedStatus(cacheKey, user.status);
     }

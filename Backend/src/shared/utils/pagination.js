@@ -14,19 +14,14 @@ export function decodeCursor(cursor) {
   if (!cursor) return null;
 
   try {
-    const decoded = JSON.parse(
-      Buffer.from(cursor, "base64url").toString("utf-8"),
-    );
+    const decoded = JSON.parse(Buffer.from(cursor, "base64url").toString("utf-8"));
 
     if (!decoded?.createdAt || !decoded?._id) return null;
 
     const createdAt = new Date(decoded.createdAt);
     if (Number.isNaN(createdAt.getTime())) return null;
 
-    return {
-      createdAt,
-      _id: decoded._id,
-    };
+    return { createdAt, _id: decoded._id };
   } catch {
     return null;
   }

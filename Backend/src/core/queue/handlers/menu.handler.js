@@ -1,7 +1,6 @@
 import Category from "../../../modules/menu/category.model.js";
 import MenuItem from "../../../modules/menu/menuItem.model.js";
 import Combo from "../../../modules/menu/combo.model.js";
-import AppError from "../../../shared/errors/AppError.js";
 import { getRedisClient } from "../../cache/redis.client.js";
 import { buildTenantKey } from "../../cache/cache.utils.js";
 import { getIO } from "../../../realtime/realtime.manager.js";
@@ -9,44 +8,35 @@ import { getIO } from "../../../realtime/realtime.manager.js";
 function emitMenuUpdated(outletId, type) {
   try {
     getIO().to(`outlet:${outletId}`).emit("menu:updated", { type, outletId });
-  } catch (_) {}
+  } catch {
+    // non-fatal
+  }
 }
 
-/**
- * Handles MENU_PRICE_UPDATE messages from the SQS queue.
- */
+async function invalidateMenuCache(keys, tenant) {
+  const redis = getRedisClient();
+  await Promise.all(keys.map((key) => redis.del(buildTenantKey(key, tenant))));
+}
+
 export async function handleMenuPriceUpdate(payload) {
   const { itemId, price, tenant } = payload;
 
   const item = await MenuItem.findOneAndUpdate(
-    {
-      _id: itemId,
-      franchiseId: tenant.franchiseId,
-      outletId: tenant.outletId,
-      isDeleted: false,
-    },
+    { _id: itemId, franchiseId: tenant.franchiseId, outletId: tenant.outletId, isDeleted: false },
     { price },
     { new: true }
   );
 
-  if (!item) {
-    throw new Error(`Menu item not found for price update: ${itemId}`);
-  }
+  if (!item) throw new Error(`Menu item not found for price update: ${itemId}`);
 
-  const redis = getRedisClient();
-  await redis.del(buildTenantKey("menuItems", tenant));
+  await invalidateMenuCache(["menuItems"], tenant);
 
   emitMenuUpdated(tenant.outletId, "MENU_PRICE_UPDATE");
-  console.log(
-    `[queue] Price updated — item=${itemId} price=${price} outlet=${tenant.outletId}`
-  );
+  console.log(`[queue] Price updated — item=${itemId} price=${price} outlet=${tenant.outletId}`);
 
   return item;
 }
 
-/**
- * Handles MENU_STOCK_UPDATE messages from the SQS queue.
- */
 export async function handleMenuStockUpdate(payload) {
   const { itemId, stockQuantity, tenant } = payload;
 
@@ -57,41 +47,27 @@ export async function handleMenuStockUpdate(payload) {
     isDeleted: false,
   });
 
-  if (!currentItem) {
-    throw new Error(`Menu item not found for stock update: ${itemId}`);
-  }
+  if (!currentItem) throw new Error(`Menu item not found for stock update: ${itemId}`);
 
   if ((currentItem.inventoryMode ?? "RECIPE") !== "DIRECT") {
     throw new Error(`Direct stock updates are only allowed for DIRECT inventory items: ${itemId}`);
   }
 
   const item = await MenuItem.findOneAndUpdate(
-    {
-      _id: itemId,
-      franchiseId: tenant.franchiseId,
-      outletId: tenant.outletId,
-      isDeleted: false,
-    },
+    { _id: itemId, franchiseId: tenant.franchiseId, outletId: tenant.outletId, isDeleted: false },
     { stockQuantity },
     { new: true }
   );
 
-  if (!item) {
-    throw new Error(`Menu item not found for stock update: ${itemId}`);
-  }
+  if (!item) throw new Error(`Menu item not found for stock update: ${itemId}`);
 
-  const redis = getRedisClient();
-  await redis.del(buildTenantKey("menuItems", tenant));
+  await invalidateMenuCache(["menuItems"], tenant);
 
   emitMenuUpdated(tenant.outletId, "MENU_STOCK_UPDATE");
-  console.log(
-    `[queue] Stock updated — item=${itemId} qty=${stockQuantity} outlet=${tenant.outletId}`
-  );
+  console.log(`[queue] Stock updated — item=${itemId} qty=${stockQuantity} outlet=${tenant.outletId}`);
 
   return item;
 }
-
-// ─── Category handlers ────────────────────────────────────────────────────────
 
 export async function handleMenuCategoryCreate(payload) {
   const { data, tenant } = payload;
@@ -102,8 +78,7 @@ export async function handleMenuCategoryCreate(payload) {
     outletId: tenant.outletId,
   });
 
-  const redis = getRedisClient();
-  await redis.del(buildTenantKey("categories", tenant));
+  await invalidateMenuCache(["categories"], tenant);
 
   emitMenuUpdated(tenant.outletId, "MENU_CATEGORY_CREATE");
   console.log(`[queue] Category created — id=${category._id} outlet=${tenant.outletId}`);
@@ -121,8 +96,7 @@ export async function handleMenuCategoryUpdate(payload) {
 
   if (!category) throw new Error(`Category not found for update: ${id}`);
 
-  const redis = getRedisClient();
-  await redis.del(buildTenantKey("categories", tenant));
+  await invalidateMenuCache(["categories"], tenant);
 
   emitMenuUpdated(tenant.outletId, "MENU_CATEGORY_UPDATE");
   console.log(`[queue] Category updated — id=${id} outlet=${tenant.outletId}`);
@@ -140,25 +114,17 @@ export async function handleMenuCategoryDelete(payload) {
 
   if (!category) throw new Error(`Category not found for delete: ${id}`);
 
-  // Cascade: soft-delete all items belonging to this category
   await MenuItem.updateMany(
     { categoryId: id, franchiseId: tenant.franchiseId, outletId: tenant.outletId, isDeleted: false },
     { isDeleted: true }
   );
 
-  const redis = getRedisClient();
-  await Promise.all([
-    redis.del(buildTenantKey("categories", tenant)),
-    redis.del(buildTenantKey("menuItems", tenant)),
-    redis.del(buildTenantKey(`menuItems:${id}`, tenant)),
-  ]);
+  await invalidateMenuCache(["categories", "menuItems", `menuItems:${id}`], tenant);
 
   emitMenuUpdated(tenant.outletId, "MENU_CATEGORY_DELETE");
   console.log(`[queue] Category deleted (cascade) — id=${id} outlet=${tenant.outletId}`);
   return category;
 }
-
-// ─── Menu item handlers ───────────────────────────────────────────────────────
 
 export async function handleMenuItemCreate(payload) {
   const { data, tenant } = payload;
@@ -169,11 +135,9 @@ export async function handleMenuItemCreate(payload) {
     outletId: tenant.outletId,
   });
 
-  const redis = getRedisClient();
-  await redis.del(buildTenantKey("menuItems", tenant));
-  if (data.categoryId) {
-    await redis.del(buildTenantKey(`menuItems:${data.categoryId}`, tenant));
-  }
+  const keys = ["menuItems"];
+  if (data.categoryId) keys.push(`menuItems:${data.categoryId}`);
+  await invalidateMenuCache(keys, tenant);
 
   emitMenuUpdated(tenant.outletId, "MENU_ITEM_CREATE");
   console.log(`[queue] Menu item created — id=${item._id} outlet=${tenant.outletId}`);
@@ -191,11 +155,9 @@ export async function handleMenuItemUpdate(payload) {
 
   if (!item) throw new Error(`Menu item not found for update: ${id}`);
 
-  const redis = getRedisClient();
-  await redis.del(buildTenantKey("menuItems", tenant));
-  if (item.categoryId) {
-    await redis.del(buildTenantKey(`menuItems:${item.categoryId}`, tenant));
-  }
+  const keys = ["menuItems"];
+  if (item.categoryId) keys.push(`menuItems:${item.categoryId}`);
+  await invalidateMenuCache(keys, tenant);
 
   emitMenuUpdated(tenant.outletId, "MENU_ITEM_UPDATE");
   console.log(`[queue] Menu item updated — id=${id} outlet=${tenant.outletId}`);
@@ -213,11 +175,9 @@ export async function handleMenuItemDelete(payload) {
 
   if (!item) throw new Error(`Menu item not found for delete: ${id}`);
 
-  const redis = getRedisClient();
-  await redis.del(buildTenantKey("menuItems", tenant));
-  if (item.categoryId) {
-    await redis.del(buildTenantKey(`menuItems:${item.categoryId}`, tenant));
-  }
+  const keys = ["menuItems"];
+  if (item.categoryId) keys.push(`menuItems:${item.categoryId}`);
+  await invalidateMenuCache(keys, tenant);
 
   emitMenuUpdated(tenant.outletId, "MENU_ITEM_DELETE");
   console.log(`[queue] Menu item deleted — id=${id} outlet=${tenant.outletId}`);
@@ -242,18 +202,14 @@ export async function handleMenuItemStatusUpdate(payload) {
     { new: true }
   );
 
-  const redis = getRedisClient();
-  await redis.del(buildTenantKey("menuItems", tenant));
-  if (item.categoryId) {
-    await redis.del(buildTenantKey(`menuItems:${item.categoryId}`, tenant));
-  }
+  const keys = ["menuItems"];
+  if (item.categoryId) keys.push(`menuItems:${item.categoryId}`);
+  await invalidateMenuCache(keys, tenant);
 
   emitMenuUpdated(tenant.outletId, "MENU_ITEM_STATUS_UPDATE");
   console.log(`[queue] Item status toggled — id=${id} isActive=${item.isActive} outlet=${tenant.outletId}`);
   return item;
 }
-
-// ─── Combo handlers ───────────────────────────────────────────────────────────
 
 export async function handleComboCreate(payload) {
   const { data, tenant } = payload;

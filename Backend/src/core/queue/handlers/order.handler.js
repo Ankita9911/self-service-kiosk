@@ -12,8 +12,6 @@ import { getRedisClient } from "../../cache/redis.client.js";
 import { buildTenantKey } from "../../cache/cache.utils.js";
 import { emitOutletEvent, getIO } from "../../../realtime/realtime.manager.js";
 
-// ─── Private helpers ──────────────────────────────────────────────────────────
-
 async function getNextOrderNumber(outletId, session) {
   const counter = await Counter.findOneAndUpdate(
     { outletId },
@@ -28,15 +26,10 @@ function emitToOutlet(outletId, event, data) {
     const io = getIO();
     io.to(`outlet:${outletId}`).emit(event, data);
   } catch {
-    // Socket not yet initialised — non-fatal
+    // non-fatal
   }
 }
 
-/**
- * Validates a menu item and deducts stock if DIRECT-mode.
- * For RECIPE-mode items, pushes to recipeTargets for later ingredient deduction.
- * Returns the resolved MenuItem document.
- */
 async function resolveMenuItemStock(itemId, quantity, tenant, session, recipeTargets) {
   const menuItemBase = await MenuItem.findOne({
     _id: itemId,
@@ -73,7 +66,6 @@ async function resolveMenuItemStock(itemId, quantity, tenant, session, recipeTar
     return updated;
   }
 
-  // RECIPE mode — verify recipe exists, defer ingredient deduction
   const recipe = await Recipe.findOne({
     menuItemId: itemId,
     franchiseId: tenant.franchiseId,
@@ -90,11 +82,6 @@ async function resolveMenuItemStock(itemId, quantity, tenant, session, recipeTar
   return menuItemBase;
 }
 
-/**
- * Validates customizations for a single order item and deducts their stock.
- * Pushes RECIPE-mode customizations to recipeTargets.
- * Returns { selectedCustomizations, customizationUnitTotal }.
- */
 async function resolveCustomizations(item, menuItem, tenant, session, recipeTargets) {
   const requestedIds = [...new Set((item.customizationItemIds || []).map(String))];
   const allowedIds = new Set((menuItem.customizationItemIds || []).map(String));
@@ -166,10 +153,6 @@ async function resolveCustomizations(item, menuItem, tenant, session, recipeTarg
   return { selectedCustomizations, customizationUnitTotal };
 }
 
-/**
- * Processes all order items — validates stock, resolves customizations.
- * Returns { processedItems, recipeTargets, totalAmount }.
- */
 async function processOrderItems(items, tenant, session) {
   const processedItems = [];
   const recipeTargets = [];
@@ -200,11 +183,6 @@ async function processOrderItems(items, tenant, session) {
   return { processedItems, recipeTargets, totalAmount };
 }
 
-/**
- * Deducts ingredient stock for all recipe-mode items/customizations.
- * Bulk-inserts StockTransaction records within the active session.
- * Returns ingredientDeductions[] for post-commit alerting.
- */
 async function deductIngredients(recipeTargets, orderId, orderNumber, tenant, session) {
   const ingredientDeductions = [];
 
@@ -216,7 +194,7 @@ async function deductIngredients(recipeTargets, orderId, orderNumber, tenant, se
       isDeleted: false,
     }).session(session);
 
-    if (!recipe) continue; // no recipe — DIRECT stock already handled above
+    if (!recipe) continue;
 
     for (const recipeIngredient of recipe.ingredients) {
       const totalDeduction = recipeIngredient.quantity * target.quantity;
@@ -247,12 +225,11 @@ async function deductIngredients(recipeTargets, orderId, orderNumber, tenant, se
     }
   }
 
-  // Bulk-log CONSUMPTION transactions within the same Mongo session
   if (ingredientDeductions.length > 0) {
     const txDocs = ingredientDeductions.map((d) => ({
       ingredientId:  d.ingredientId,
       type:          TRANSACTION_TYPE.CONSUMPTION,
-      quantity:      -d.deductedQty,          // stored as negative delta
+      quantity:      -d.deductedQty,
       referenceType: REFERENCE_TYPE.ORDER,
       referenceId:   orderId,
       note:          `Order #${orderNumber}`,
@@ -265,22 +242,16 @@ async function deductIngredients(recipeTargets, orderId, orderNumber, tenant, se
   return ingredientDeductions;
 }
 
-/**
- * Runs after the transaction commits — non-fatal if any step fails.
- * Invalidates Redis cache, enqueues low-stock alerts, emits realtime events.
- */
 async function postCommitSideEffects(ingredientDeductions, order, tenant) {
   if (ingredientDeductions.length === 0) return;
 
-  // 1. Invalidate ingredient Redis cache
   try {
     const redis = getRedisClient();
     await redis.del(buildTenantKey("ingredients", tenant));
   } catch {
-    // Non-fatal
+    // non-fatal
   }
 
-  // 2. Enqueue low-stock alerts for any ingredient that breached its threshold
   for (const d of ingredientDeductions) {
     if (d.currentStockAfter < d.minThreshold) {
       await enqueue("LOW_STOCK_ALERT", {
@@ -296,7 +267,6 @@ async function postCommitSideEffects(ingredientDeductions, order, tenant) {
     }
   }
 
-  // 3. Emit realtime inventory events
   emitOutletEvent(tenant.outletId, "inventory:updated", {
     type: "ORDER_CONSUMPTION",
     orderId: String(order._id),
@@ -307,8 +277,6 @@ async function postCommitSideEffects(ingredientDeductions, order, tenant) {
   });
 }
 
-// ─── Exported handler ─────────────────────────────────────────────────────────
-
 export async function handleOrderPlaced(payload) {
   const { items, paymentMethod, clientOrderId, orderNumber, tenant, userRole } = payload;
 
@@ -316,7 +284,6 @@ export async function handleOrderPlaced(payload) {
   session.startTransaction();
 
   try {
-    // ── 1. Idempotency check ──────────────────────────────────────────────────
     const existing = await Order.findOne({ outletId: tenant.outletId, clientOrderId }).session(session);
 
     if (existing) {
@@ -330,11 +297,9 @@ export async function handleOrderPlaced(payload) {
       return existing;
     }
 
-    // ── 2. Process items: validate stock, resolve customizations ─────────────
     const { processedItems, recipeTargets, totalAmount } =
       await processOrderItems(items, tenant, session);
 
-    // ── 3. Create the Order document ──────────────────────────────────────────
     const resolvedOrderNumber = orderNumber ?? await getNextOrderNumber(tenant.outletId, session);
 
     const order = await Order.create(
@@ -352,19 +317,15 @@ export async function handleOrderPlaced(payload) {
       { session }
     );
 
-    // ── 4. Deduct ingredients + log stock transactions ────────────────────────
     const ingredientDeductions = await deductIngredients(
       recipeTargets, order[0]._id, resolvedOrderNumber, tenant, session
     );
 
-    // ── 5. Commit ─────────────────────────────────────────────────────────────
     await session.commitTransaction();
     session.endSession();
 
-    // ── 6. Post-commit side effects (non-fatal) ───────────────────────────────
     await postCommitSideEffects(ingredientDeductions, order[0], tenant);
 
-    // ── 7. Finalise: mark request success + emit ──────────────────────────────
     await OrderRequest.findOneAndUpdate(
       { outletId: tenant.outletId, clientOrderId },
       { $set: { status: "SUCCESS", orderId: order[0]._id, orderNumber: order[0].orderNumber, errorMessage: null } }
