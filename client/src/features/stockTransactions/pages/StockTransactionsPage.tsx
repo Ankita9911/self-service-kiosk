@@ -97,6 +97,10 @@ export default function StockTransactionsPage() {
     setFilters((prev) => ({ ...prev, search: "", ingredientId: "", type: "" }));
   };
 
+  const handleSubmitTransaction = async (payload: Parameters<typeof handleCreate>[0]) => {
+    await handleCreate(payload);
+  };
+
   const tableLoading = loading || filterLoading;
 
   if (!listOutletId && !isFranchiseAdmin) {
@@ -185,7 +189,7 @@ export default function StockTransactionsPage() {
         <LogTransactionModal
           allIngredients={allIngredients}
           onClose={() => setShowForm(false)}
-          onSubmit={handleCreate}
+          onSubmit={handleSubmitTransaction}
         />
       )}
     </div>
