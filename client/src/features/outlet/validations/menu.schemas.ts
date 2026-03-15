@@ -69,10 +69,13 @@ const menuItemBaseSchema = z.object({
     ),
 });
 
-function withInventoryModeRefinement<T extends z.ZodObject>(schema: T) {
+function withInventoryModeRefinement<T extends z.ZodObject<z.ZodRawShape>>(
+  schema: T,
+) {
   return schema.superRefine((data, ctx) => {
-    if (data.inventoryMode === "DIRECT") {
-      if (!data.stockQuantity || data.stockQuantity.trim() === "") {
+    const d = data as { inventoryMode?: string; stockQuantity?: string };
+    if (d.inventoryMode === "DIRECT") {
+      if (!d.stockQuantity || d.stockQuantity.trim() === "") {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           path: ["stockQuantity"],
@@ -82,9 +85,9 @@ function withInventoryModeRefinement<T extends z.ZodObject>(schema: T) {
       }
 
       if (
-        !/^\d+$/.test(data.stockQuantity) ||
-        Number.parseInt(data.stockQuantity, 10) < 0 ||
-        Number.parseInt(data.stockQuantity, 10) > 1000
+        !/^\d+$/.test(d.stockQuantity) ||
+        Number.parseInt(d.stockQuantity, 10) < 0 ||
+        Number.parseInt(d.stockQuantity, 10) > 1000
       ) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
