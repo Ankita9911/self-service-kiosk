@@ -1,6 +1,6 @@
 import { GoogleGenAI } from "@google/genai";
 import Recipe from "./recipe.model.js";
-import Ingredient from "../ingredients/ingredient.model.js";
+import Ingredient from "../ingredients/model/ingredient.model.js";
 import MenuItem from "../menu/model/menuItem.model.js";
 import { getRedisClient } from "../../core/cache/redis.client.js";
 import { buildTenantKey } from "../../core/cache/cache.utils.js";

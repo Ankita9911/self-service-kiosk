@@ -1,5 +1,5 @@
 import mongoose, { Schema } from "mongoose";
-import { INGREDIENT_UNIT } from "./ingredient.constants.js";
+import { INGREDIENT_UNIT } from "../constant/ingredient.constants.js";
 
 const ingredientSchema = new Schema(
   {

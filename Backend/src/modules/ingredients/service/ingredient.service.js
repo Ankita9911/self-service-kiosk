@@ -1,9 +1,9 @@
-import Ingredient from "./ingredient.model.js";
-import { getRedisClient } from "../../core/cache/redis.client.js";
-import { buildTenantKey } from "../../core/cache/cache.utils.js";
-import { emitOutletEvent } from "../../realtime/realtime.manager.js";
-import AppError from "../../shared/errors/AppError.js";
-import { toBoundedLimit } from "../../shared/utils/pagination.js";
+import Ingredient from "../model/ingredient.model.js";
+import { getRedisClient } from "../../../core/cache/redis.client.js";
+import { buildTenantKey } from "../../../core/cache/cache.utils.js";
+import { emitOutletEvent } from "../../../realtime/realtime.manager.js";
+import AppError from "../../../shared/errors/AppError.js";
+import { toBoundedLimit } from "../../../shared/utils/pagination.js";
 
 const CACHE_TTL = 300;
 const DEFAULT_LIMIT = 20;

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { INGREDIENT_UNIT } from "./ingredient.constants.js";
+import { INGREDIENT_UNIT } from "../constant/ingredient.constants.js";
 
 export const createIngredientSchema = z.object({
   name: z.string({ required_error: "name is required" }).min(1).trim(),

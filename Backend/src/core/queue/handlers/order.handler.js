@@ -3,7 +3,7 @@ import Order from "../../../modules/orders/model/order.model.js";
 import Counter from "../../../modules/orders/model/counter.model.js";
 import OrderRequest from "../../../modules/orders/orderRequest.model.js";
 import MenuItem from "../../../modules/menu/model/menuItem.model.js";
-import Ingredient from "../../../modules/ingredients/ingredient.model.js";
+import Ingredient from "../../../modules/ingredients/model/ingredient.model.js";
 import Recipe from "../../../modules/recipes/recipe.model.js";
 import StockTransaction from "../../../modules/stockTransactions/stockTransaction.model.js";
 import {

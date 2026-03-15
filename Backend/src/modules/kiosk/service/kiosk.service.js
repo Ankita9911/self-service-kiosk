@@ -2,7 +2,7 @@ import Category from "../../menu/model/category.model.js";
 import MenuItem from "../../menu/model/menuItem.model.js";
 import Combo from "../../menu/model/combo.model.js";
 import Recipe from "../../recipes/recipe.model.js";
-import Ingredient from "../../ingredients/ingredient.model.js";
+import Ingredient from "../../ingredients/model/ingredient.model.js";
 
 function computeItemStock(item, recipe, ingredientMap) {
   const inventoryMode = item.inventoryMode ?? "RECIPE";

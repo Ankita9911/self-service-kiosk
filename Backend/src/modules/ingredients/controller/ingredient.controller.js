@@ -1,6 +1,6 @@
-import { asyncHandler } from "../../shared/utils/asyncHandler.js";
-import { sendSuccess } from "../../shared/utils/response.js";
-import * as ingredientService from "./ingredient.service.js";
+import { asyncHandler } from "../../../shared/utils/asyncHandler.js";
+import { sendSuccess } from "../../../shared/utils/response.js";
+import * as ingredientService from "../service/ingredient.service.js";
 
 export const createIngredient = asyncHandler(async (req, res) => {
   const ingredient = await ingredientService.createIngredient(
