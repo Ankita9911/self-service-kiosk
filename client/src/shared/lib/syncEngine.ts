@@ -1,4 +1,4 @@
-import axiosInstance from "@/shared/lib/axiosInstance";
+import kioskAxios from "@/shared/lib/kioskAxios";
 import { getPendingOrders, markOrderSynced } from "./orderQueue";
 
 export async function processQueue() {
@@ -6,7 +6,7 @@ export async function processQueue() {
 
   for (const order of pending) {
     try {
-      await axiosInstance.post("/orders", order.payload);
+      await kioskAxios.post("/orders", order.payload);
       await markOrderSynced(order.clientOrderId);
     } catch (error: unknown) {
       if (!(error as { response?: unknown }).response) {
