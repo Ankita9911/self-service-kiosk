@@ -1,4 +1,4 @@
-import { verifyToken } from "../jwt.service.js";
+import { verifyToken } from "../service/jwt.service.js";
 import AppError from "../../../shared/errors/AppError.js";
 import User from "../../../modules/users/model/user.model.js";
 import Device from "../../../modules/devices/model/device.model.js";

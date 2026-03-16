@@ -1,6 +1,6 @@
 import Order from "../model/order.model.js";
 import Counter from "../model/counter.model.js";
-import OrderRequest from "../orderRequest.model.js";
+import OrderRequest from "../model/orderRequest.model.js";
 import AppError from "../../../shared/errors/AppError.js";
 import { getIO } from "../../../realtime/realtime.manager.js";
 import { enqueue } from "../../../core/queue/queue.producer.js";

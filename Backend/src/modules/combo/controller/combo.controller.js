@@ -1,4 +1,4 @@
-import * as comboService from "../combo.service.js";
+import * as comboService from "../service/combo.service.js";
 import { sendSuccess } from "../../../shared/utils/response.js";
 import { asyncHandler } from "../../../shared/utils/asyncHandler.js";
 

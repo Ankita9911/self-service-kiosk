@@ -6,7 +6,7 @@ import { getSQSClient } from "./sqs.client.js";
 import { MESSAGE_HANDLERS } from "./message.registry.js";
 import env from "../../config/env.js";
 import { getIO } from "../../realtime/realtime.manager.js";
-import OrderRequest from "../../modules/orders/orderRequest.model.js";
+import OrderRequest from "../../modules/orders/model/orderRequest.model.js";
 
 const TERMINAL_ORDER_ERROR_PREFIXES = [
   "Insufficient stock or invalid item:",

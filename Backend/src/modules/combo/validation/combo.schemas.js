@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { objectIdSchema } from "../../../shared/validation/common.schemas.js";
-import { SERVICE_TYPE } from "../constant/menu.constants.js";
+import { SERVICE_TYPE } from "../../menu/constant/menu.constants.js";
 
 const comboItemSchema = z.object({
   menuItemId: objectIdSchema,

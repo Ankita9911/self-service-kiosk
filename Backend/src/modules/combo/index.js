@@ -5,7 +5,10 @@ import { attachOutletForMenu } from "../outlets/middleware/outlet.middleware.js"
 import { authorize } from "../../core/rbac/rbac.middleware.js";
 import { PERMISSIONS } from "../../core/rbac/permissions.js";
 import { validate } from "../../shared/validation/validate.middleware.js";
-import { createComboSchema, updateComboSchema } from "../validation/combo.schemas.js";
+import {
+  createComboSchema,
+  updateComboSchema,
+} from "./validation/combo.schemas.js";
 import * as controller from "./controller/combo.controller.js";
 
 const router = express.Router();
