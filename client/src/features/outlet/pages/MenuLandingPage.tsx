@@ -197,7 +197,7 @@ export default function MenuLandingPage() {
               <OutletSelectionCard
                 key={o._id}
                 outlet={o}
-                onClick={() => navigate(`/outlets/${o._id}/menu`)}
+                onClick={() => navigate(`/menu/${o._id}`)}
               />
             ))}
           </div>

@@ -548,7 +548,7 @@ export default function OutletPage() {
                       <div className="flex items-center gap-1.5">
                         {canManageMenu && (
                           <button
-                            onClick={() => navigate(`/outlets/${o._id}/menu`)}
+                            onClick={() => navigate(`/menu/${o._id}`)}
                             className="opacity-0 group-hover:opacity-100 h-7 px-2.5 rounded-lg flex items-center gap-1.5 text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-500/10 hover:bg-indigo-100 dark:hover:bg-indigo-500/20 border border-indigo-100 dark:border-indigo-500/20 transition-all"
                           >
                             <UtensilsCrossed className="w-3 h-3" />
@@ -566,7 +566,7 @@ export default function OutletPage() {
                             setOpen(true);
                           }}
                           onDelete={() => setDeleteTarget(o)}
-                          onMenu={() => navigate(`/outlets/${o._id}/menu`)}
+                          onMenu={() => navigate(`/menu/${o._id}`)}
                           onToggleStatus={() => handleToggleStatus(o)}
                         />
                       </div>

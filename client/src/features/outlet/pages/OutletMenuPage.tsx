@@ -149,7 +149,7 @@ export default function OutletMenuPage() {
       (user?.role === "FRANCHISE_ADMIN" || user?.role === "SUPER_ADMIN") &&
       !outletId
     ) {
-      navigate("/outlets");
+      navigate("/menu");
     }
   }, [user?.role, user?.outletId, outletId, canManage, navigate]);
 

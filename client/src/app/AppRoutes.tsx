@@ -139,7 +139,7 @@ export default function AppRoutes() {
             }
           />
           <Route
-            path="/outlets/:outletId/menu"
+            path="/menu/:outletId"
             element={
               <ProtectedRoute requiredPermission={PERMISSIONS.MENU_MANAGE}>
                 <OutletMenuPage />
