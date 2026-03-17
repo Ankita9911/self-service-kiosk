@@ -4,7 +4,7 @@ import { createUser } from "@/features/users/services/user.service";
 import type { Franchise } from "@/features/franchise/types/franchise.types";
 import type { Outlet } from "@/features/outlet/types/outlet.types";
 import {
-  createUserSchema,
+  getCreateUserSchema,
   OUTLET_SCOPED_ROLES,
   type UserRole,
 } from "../validations/user.schemas";
@@ -78,16 +78,13 @@ export function CreateUserModal({
       franchiseId: form.franchiseId || undefined,
       outletId: form.outletId || undefined,
     };
-    const result = createUserSchema.safeParse(payload);
-    const fieldErrors: FieldErrors = result.success
-      ? {}
-      : getZodFieldErrors<FormState>(result.error);
+    const result = getCreateUserSchema(currentUser?.role).safeParse(payload);
+    if (result.success) {
+      setErrors({});
+      return true;
+    }
 
-    if (needsFranchise && !form.franchiseId)
-      fieldErrors.franchiseId = "Please select a franchise";
-    if (needsOutlet && !form.outletId)
-      fieldErrors.outletId = "Please select an outlet";
-
+    const fieldErrors = getZodFieldErrors<FormState>(result.error);
     setErrors(fieldErrors);
     return Object.keys(fieldErrors).length === 0;
   }

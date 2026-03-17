@@ -11,6 +11,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/components/ui/select";
+import { ingredientFormSchema } from "@/features/ingredients/validations/ingredient.schemas";
+import { getZodFieldErrors } from "@/shared/utils/zod.utils";
 
 export const UNITS = [
   { value: "gram", label: "Gram (g)" },
@@ -48,6 +50,9 @@ export function IngredientFormModal({
     minThreshold: ingredient?.minThreshold ?? 0,
   });
   const [submitting, setSubmitting] = useState(false);
+  const [errors, setErrors] = useState<
+    Partial<Record<keyof IngredientFormState, string>>
+  >({});
 
   useEffect(() => {
     setForm({
@@ -61,7 +66,13 @@ export function IngredientFormModal({
   if (!open) return null;
 
   const handleSubmit = async () => {
-    if (!form.name.trim()) return;
+    const result = ingredientFormSchema.safeParse(form);
+    if (!result.success) {
+      setErrors(getZodFieldErrors<IngredientFormState>(result.error));
+      return;
+    }
+
+    setErrors({});
     setSubmitting(true);
     try {
       if (isEdit && ingredient) {
@@ -132,9 +143,23 @@ export function IngredientFormModal({
             <input
               placeholder="e.g. Chicken Breast"
               value={form.name}
-              onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
-              className="w-full h-10 px-3.5 rounded-xl border border-slate-200 dark:border-white/8 bg-slate-50 dark:bg-white/4 text-sm text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-400/15 focus:border-indigo-300 dark:focus:border-indigo-500/40 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-600"
+              onChange={(e) => {
+                setForm((p) => ({ ...p, name: e.target.value }));
+                if (errors.name)
+                  setErrors((prev) => ({ ...prev, name: undefined }));
+              }}
+              className={`w-full h-10 px-3.5 rounded-xl border bg-slate-50 dark:bg-white/4 text-sm text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-600 ${
+                errors.name
+                  ? "border-red-400 dark:border-red-500 focus:ring-red-400/15 focus:border-red-400"
+                  : "border-slate-200 dark:border-white/8 focus:ring-indigo-400/15 focus:border-indigo-300 dark:focus:border-indigo-500/40"
+              }`}
             />
+            {errors.name && (
+              <p className="text-[11px] text-red-500 dark:text-red-400 flex items-center gap-1">
+                <span className="inline-block h-1 w-1 rounded-full bg-current" />
+                {errors.name}
+              </p>
+            )}
           </div>
 
           {/* Unit */}
@@ -208,7 +233,7 @@ export function IngredientFormModal({
           </div>
 
           {/* Inventory note box */}
-          <div className="rounded-2xl border border-slate-100 dark:border-white/8 bg-slate-50/80 dark:bg-white/[0.03] px-4 py-3">
+          <div className="rounded-2xl border border-slate-100 dark:border-white/8 bg-slate-50/80 dark:bg-white/3 px-4 py-3">
             <div className="flex items-start gap-3">
               <div className="h-8 w-8 rounded-xl bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center shrink-0">
                 <Package className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />

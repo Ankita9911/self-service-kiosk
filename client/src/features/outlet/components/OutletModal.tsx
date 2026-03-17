@@ -6,7 +6,7 @@ import type {
 import { useState, useEffect } from "react";
 import { X, CheckCircle2, Loader2, MapPin } from "lucide-react";
 import toast from "react-hot-toast";
-import { outletSchema } from "../validations/outlet.schemas";
+import { getOutletSchema } from "../validations/outlet.schemas";
 import { getZodFieldErrors } from "@/shared/utils/zod.utils";
 
 const COUNTRIES_API = "https://restcountries.com/v3.1/all?fields=name,cca2";
@@ -138,11 +138,7 @@ export function OutletModal({
   }
 
   function validate(): boolean {
-    if (isSuperAdmin && !form.franchiseId) {
-      setErrors({ franchiseId: "Please select a franchise" });
-      return false;
-    }
-    const result = outletSchema.safeParse(form);
+    const result = getOutletSchema(isSuperAdmin).safeParse(form);
     if (result.success) {
       setErrors({});
       return true;
@@ -160,8 +156,30 @@ export function OutletModal({
       toast.success(editing ? "Outlet updated!" : "Outlet registered!");
       setDone(true);
       setTimeout(onClose, 900);
-    } catch {
-      toast.error("Failed to save outlet. Please try again.");
+    } catch (error: unknown) {
+      const response = (
+        error as {
+          response?: {
+            data?: { message?: string; errorCode?: string; code?: string };
+          };
+        }
+      ).response;
+      const apiMessage = response?.data?.message?.trim() || "";
+      const apiErrorCode = response?.data?.errorCode || response?.data?.code;
+      const normalizedMessage = apiMessage.toLowerCase();
+
+      if (
+        apiErrorCode === "DUPLICATE_KEY" ||
+        normalizedMessage.includes("duplicate")
+      ) {
+        setErrors((prev) => ({
+          ...prev,
+          outletCode: "Outlet code already exists for this franchise",
+        }));
+        return;
+      }
+
+      toast.error(apiMessage || "Failed to save outlet. Please try again.");
     } finally {
       setSubmitting(false);
     }

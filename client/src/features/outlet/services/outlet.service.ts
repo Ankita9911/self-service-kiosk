@@ -99,12 +99,22 @@ export async function createOutlet(payload: {
   outletCode: string;
   address?: OutletAddress;
 }) {
-  const response = await axiosInstance.post("/outlets", payload);
+  const response = await axiosInstance.post("/outlets", payload, {
+    headers: {
+      "x-skip-error-toast": "true",
+      "x-skip-success-toast": "true",
+    },
+  });
   return response.data.data;
 }
 
 export async function updateOutlet(id: string, payload: Partial<Outlet>) {
-  const response = await axiosInstance.put(`/outlets/${id}`, payload);
+  const response = await axiosInstance.put(`/outlets/${id}`, payload, {
+    headers: {
+      "x-skip-error-toast": "true",
+      "x-skip-success-toast": "true",
+    },
+  });
 
   return response.data.data;
 }

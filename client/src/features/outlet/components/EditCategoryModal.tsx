@@ -1,6 +1,7 @@
 import { Dialog, DialogContent } from "@/shared/components/ui/dialog";
 import { toast } from "react-hot-toast";
 import { categorySchema } from "../validations/menu.schemas";
+import { getZodFieldErrors } from "@/shared/utils/zod.utils";
 import { useState } from "react";
 import { Tag, X, RefreshCcw, ImageIcon } from "lucide-react";
 import type { CategoryFormState } from "../types/outlet.types";
@@ -46,11 +47,10 @@ export function EditCategoryModal({
       setErrors({});
       return true;
     }
-    const fieldErrors: { name?: string; description?: string } = {};
-    result.error.issues.forEach((issue) => {
-      const key = issue.path[0] as "name" | "description";
-      if (!fieldErrors[key]) fieldErrors[key] = issue.message;
-    });
+    const fieldErrors = getZodFieldErrors<{
+      name: string;
+      description: string;
+    }>(result.error);
     setErrors(fieldErrors);
     return false;
   }

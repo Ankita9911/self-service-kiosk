@@ -39,4 +39,28 @@ export const createUserSchema = z.object({
   outletId: z.string().optional(),
 });
 
+export function getCreateUserSchema(actorRole?: string) {
+  return createUserSchema.superRefine((data, ctx) => {
+    const needsFranchise =
+      actorRole === "SUPER_ADMIN" && data.role !== "SUPER_ADMIN";
+    const needsOutlet = OUTLET_SCOPED_ROLES.includes(data.role);
+
+    if (needsFranchise && !data.franchiseId?.trim()) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["franchiseId"],
+        message: "Please select a franchise",
+      });
+    }
+
+    if (needsOutlet && !data.outletId?.trim()) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["outletId"],
+        message: "Please select an outlet",
+      });
+    }
+  });
+}
+
 export type CreateUserFormValues = z.infer<typeof createUserSchema>;

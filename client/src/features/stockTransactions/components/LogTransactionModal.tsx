@@ -19,6 +19,11 @@ import {
 import type { Ingredient } from "@/features/ingredients/types/ingredient.types";
 import type { ManualTransactionPayload } from "../types/stockTransaction.types";
 import { shortUnit } from "../utils/stockTransaction.utils";
+import {
+  logTransactionSchema,
+  type LogTransactionFormValues,
+} from "../validations/stockTransaction.schemas";
+import { getZodFieldErrors } from "@/shared/utils/zod.utils";
 
 const TRANSACTION_TYPES = [
   {
@@ -65,14 +70,19 @@ export function LogTransactionModal({
 
   const handleSubmit = async () => {
     setError("");
-    if (!formData.ingredientId) {
-      setError("Please select an ingredient.");
+    const result = logTransactionSchema.safeParse(formData);
+    if (!result.success) {
+      const fieldErrors = getZodFieldErrors<LogTransactionFormValues>(
+        result.error,
+      );
+      setError(
+        fieldErrors.ingredientId ||
+          fieldErrors.quantity ||
+          "Validation failed.",
+      );
       return;
     }
-    if (!formData.quantity || formData.quantity === 0) {
-      setError("Quantity must be non-zero.");
-      return;
-    }
+
     setSaving(true);
     try {
       await onSubmit(formData);

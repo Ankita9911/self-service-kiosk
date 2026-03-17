@@ -9,10 +9,21 @@ const axiosInstance = axios.create({
 // Prevent multiple simultaneous 401/403 responses from spamming logout/toasts
 let isLoggingOut = false;
 
+function hasToastHeader(headers: unknown, key: string): boolean {
+  if (!headers || typeof headers !== "object") return false;
+  const record = headers as Record<string, unknown>;
+  const val = record[key] ?? record[key.toLowerCase()];
+  return val === true || val === "true";
+}
+
 axiosInstance.interceptors.response.use(
   (response) => {
     const message = response.data?.message;
-    if (message && response.config.method !== "get") {
+    const skipSuccessToast = hasToastHeader(
+      response.config.headers,
+      "x-skip-success-toast",
+    );
+    if (message && response.config.method !== "get" && !skipSuccessToast) {
       toast.success(message);
     }
 
@@ -37,6 +48,12 @@ axiosInstance.interceptors.response.use(
         }
         return Promise.reject(error);
       }
+
+      const skipErrorToast = hasToastHeader(
+        error.config?.headers,
+        "x-skip-error-toast",
+      );
+      if (skipErrorToast) return Promise.reject(error);
 
       const errorMessage =
         error.response.data?.message ||

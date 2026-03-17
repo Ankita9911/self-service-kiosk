@@ -20,6 +20,11 @@ import {
 } from "@/shared/components/ui/select";
 import { findIngredientMatch } from "@/features/recipes/lib/ingredientMatching";
 import { Plus, Trash2, Loader2, ChefHat, Pencil, X } from "lucide-react";
+import {
+  recipeFormSchema,
+  type RecipeFormValues,
+} from "@/features/recipes/validations/recipe.schemas";
+import { getZodFieldErrors } from "@/shared/utils/zod.utils";
 
 interface MenuItem {
   _id: string;
@@ -106,6 +111,7 @@ export function RecipeFormModal({
     initForm(recipe, initialForm),
   );
   const [saving, setSaving] = useState(false);
+  const [formError, setFormError] = useState("");
   const [creatingIngredientNames, setCreatingIngredientNames] = useState<
     string[]
   >([]);
@@ -215,7 +221,20 @@ export function RecipeFormModal({
   };
 
   const handleSubmit = async () => {
-    if (!form.menuItemId) return;
+    setFormError("");
+    const result = recipeFormSchema.safeParse(form);
+    if (!result.success) {
+      const fieldErrors = getZodFieldErrors<RecipeFormValues>(result.error);
+      setFormError(
+        fieldErrors.menuItemId ||
+          fieldErrors.ingredients ||
+          fieldErrors["ingredients.0.ingredientId"] ||
+          fieldErrors["ingredients.0.quantity"] ||
+          "Please fix validation errors before saving",
+      );
+      return;
+    }
+
     setSaving(true);
     try {
       if (isEdit && recipe) {
@@ -262,6 +281,12 @@ export function RecipeFormModal({
         </div>
 
         <div className="space-y-5 px-6 py-5">
+          {formError && (
+            <div className="px-3 py-2.5 rounded-xl bg-red-50 dark:bg-red-500/10 border border-red-100 dark:border-red-500/20 text-xs text-red-600 dark:text-red-400">
+              {formError}
+            </div>
+          )}
+
           {/* Menu Item */}
           <div className="space-y-1.5">
             <Label>Menu Item</Label>
@@ -544,7 +569,7 @@ export function RecipeFormModal({
           <div className="space-y-1.5">
             <Label>Instructions</Label>
             <textarea
-              className="flex min-h-[120px] w-full rounded-2xl border border-slate-200 dark:border-white/8 bg-slate-50 dark:bg-white/5 px-3 py-2 text-sm text-slate-800 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/30"
+              className="flex min-h-30 w-full rounded-2xl border border-slate-200 dark:border-white/8 bg-slate-50 dark:bg-white/5 px-3 py-2 text-sm text-slate-800 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/30"
               placeholder="Step-by-step preparation instructions…"
               value={form.instructions}
               onChange={(e) =>
