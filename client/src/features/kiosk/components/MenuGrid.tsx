@@ -116,10 +116,12 @@ export default function MenuGrid({
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3 }}
-              className={`bg-white rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 flex flex-col h-full border-2 ${
+              className={`bg-white rounded-3xl overflow-hidden shadow-lg transition-all duration-300 flex flex-col h-full border-2 ${
                 isOutOfStock
-                  ? "border-gray-200 opacity-60"
-                  : "border-white hover:border-orange-200"
+                  ? "border-gray-200 opacity-60 grayscale"
+                  : isAtMaxStock
+                    ? "border-gray-200 opacity-65 grayscale hover:shadow-lg"
+                    : "border-white hover:shadow-2xl hover:border-orange-200"
               }`}
             >
               <div className="relative h-48 bg-linear-to-br from-orange-50 via-amber-50 to-orange-50 overflow-hidden group">

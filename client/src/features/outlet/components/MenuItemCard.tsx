@@ -33,11 +33,18 @@ export function MenuItemCard({
   const isLowStock = item.stockStatus === "LOW_STOCK";
   const isOutOfStock = item.stockStatus === "OUT_OF_STOCK";
   const hasRecipeStock = item.stockSource === "RECIPE";
+  const isUnavailable = item.isActive === false || isOutOfStock;
   const [preview, setPreview] = useState(false);
 
   return (
     <>
-      <div className="group relative bg-white dark:bg-[#1e2130] rounded-2xl border border-slate-100 dark:border-white/[0.07] overflow-hidden shadow-sm hover:shadow-md hover:-translate-y-px transition-all duration-200">
+      <div
+        className={`group relative bg-white dark:bg-[#1e2130] rounded-2xl border overflow-hidden shadow-sm transition-all duration-200 ${
+          isUnavailable
+            ? "border-slate-200 dark:border-white/4 opacity-60 grayscale hover:shadow-sm"
+            : "border-slate-100 dark:border-white/[0.07] hover:shadow-md hover:-translate-y-px"
+        }`}
+      >
         {/* Image area */}
         <div className="relative aspect-4/3 bg-slate-100 dark:bg-white/4">
           {item.imageUrl ? (
@@ -54,8 +61,8 @@ export function MenuItemCard({
 
           {/* status badge */}
           {item.isActive === false && (
-            <div className="absolute top-2 left-2">
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-800/70 text-white backdrop-blur-sm">
+            <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-[1px] flex items-center justify-center">
+              <span className="text-xs font-bold px-3 py-1 rounded-full bg-slate-800/80 text-white shadow">
                 Inactive
               </span>
             </div>
@@ -103,7 +110,7 @@ export function MenuItemCard({
           </div>
 
           {/* out of stock overlay */}
-          {isOutOfStock && (
+          {isOutOfStock && item.isActive !== false && (
             <div className="absolute inset-0 bg-white/50 dark:bg-black/30 backdrop-blur-[1px] flex items-center justify-center">
               <span className="text-xs font-bold px-3 py-1 rounded-full bg-red-500 text-white shadow">
                 Out of Stock

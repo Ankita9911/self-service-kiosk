@@ -45,6 +45,7 @@ export function MenuItemTableRow({
   const isLowStock = item.stockStatus === "LOW_STOCK";
   const isOutOfStock = item.stockStatus === "OUT_OF_STOCK";
   const hasRecipeStock = item.stockSource === "RECIPE";
+  const isUnavailable = item.isActive === false || isOutOfStock;
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [preview, setPreview] = useState(false);
@@ -140,8 +141,12 @@ export function MenuItemTableRow({
   return (
     <>
       <tr
-        className={`group border-b border-slate-100 dark:border-white/5 transition-colors hover:bg-slate-50/70 dark:hover:bg-white/2 ${
-          index % 2 === 0 ? "" : "bg-slate-50/30 dark:bg-white/1"
+        className={`group border-b border-slate-100 dark:border-white/5 transition-colors ${
+          isUnavailable
+            ? "opacity-55 grayscale bg-slate-50/60 dark:bg-white/[0.01] hover:bg-slate-100/60 dark:hover:bg-white/[0.02]"
+            : `hover:bg-slate-50/70 dark:hover:bg-white/2 ${
+                index % 2 === 0 ? "" : "bg-slate-50/30 dark:bg-white/1"
+              }`
         }`}
       >
         {/* # */}
