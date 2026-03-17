@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { BarChart2, List, ShieldAlert } from "lucide-react";
+import { BarChart2, List, Search, ShieldAlert, X } from "lucide-react";
 import { usePermission } from "@/shared/hooks/usePermissions";
 import { PERMISSIONS } from "@/shared/constants/permissions";
 import useAuth from "@/shared/hooks/useAuth";
@@ -7,7 +7,10 @@ import { getFranchises } from "@/features/franchise/services/franchise.service";
 import { getOutlets } from "@/features/outlet/services/outlet.service";
 import type { Franchise } from "@/features/franchise/types/franchise.types";
 import type { Outlet } from "@/features/outlet/types/outlet.types";
-import type { OrderHistoryFilters, OrderHistoryItem } from "../types/order.types";
+import type {
+  OrderHistoryFilters,
+  OrderHistoryItem,
+} from "../types/order.types";
 import { useOrders } from "../hooks/useOrders";
 import { useOrderStats } from "../hooks/useOrderStats";
 import { OrdersHeader } from "../components/OrdersHeader";
@@ -39,17 +42,34 @@ export default function OrdersPage() {
 
   const [filters, setFilters] = useState<OrderHistoryFilters>(DEFAULT_FILTERS);
   const [viewMode, setViewMode] = useState<ViewMode>("table");
-  const [selectedOrder, setSelectedOrder] = useState<OrderHistoryItem | null>(null);
+  const [selectedOrder, setSelectedOrder] = useState<OrderHistoryItem | null>(
+    null,
+  );
   const [franchises, setFranchises] = useState<Franchise[]>([]);
   const [allOutlets, setAllOutlets] = useState<Outlet[]>([]);
 
   const {
-    orders, loading, refreshing, filterLoading,
-    totalMatching, page, pageSize, hasPrevPage, hasNextPage,
-    goToNextPage, goToPrevPage, setPageSize, resetToFirstPage, refresh,
+    orders,
+    loading,
+    refreshing,
+    filterLoading,
+    totalMatching,
+    page,
+    pageSize,
+    hasPrevPage,
+    hasNextPage,
+    goToNextPage,
+    goToPrevPage,
+    setPageSize,
+    resetToFirstPage,
+    refresh,
   } = useOrders(filters);
 
-  const { stats, loading: statsLoading, refresh: refreshStats } = useOrderStats({
+  const {
+    stats,
+    loading: statsLoading,
+    refresh: refreshStats,
+  } = useOrderStats({
     period: filters.period,
     date: filters.date,
     search: filters.search,
@@ -62,7 +82,9 @@ export default function OrdersPage() {
   useEffect(() => {
     if (!canView) return;
     if (isSuperAdmin) {
-      getFranchises().then(setFranchises).catch(() => {});
+      getFranchises()
+        .then(setFranchises)
+        .catch(() => {});
     }
     getOutlets(isSuperAdmin ? {} : { franchiseId: user?.franchiseId ?? "" })
       .then(setAllOutlets)
@@ -104,7 +126,9 @@ export default function OrdersPage() {
     return (
       <div className="flex flex-col items-center justify-center min-h-[40vh] gap-3 text-center">
         <ShieldAlert className="w-10 h-10 text-slate-300 dark:text-slate-600" />
-        <p className="font-medium text-slate-600 dark:text-slate-300">Access Restricted</p>
+        <p className="font-medium text-slate-600 dark:text-slate-300">
+          Access Restricted
+        </p>
         <p className="text-slate-400 dark:text-slate-500 text-sm">
           You don't have permission to view orders.
         </p>
@@ -118,8 +142,53 @@ export default function OrdersPage() {
 
       <OrdersStats stats={stats} loading={statsLoading} />
 
-      <div className="flex items-center justify-between gap-3 flex-wrap">
-        <div className="flex-1 min-w-0">
+      <div className="space-y-3">
+        <div className="flex items-center justify-between gap-3 flex-wrap sm:flex-nowrap">
+          <div className="relative flex-1 min-w-0">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 dark:text-slate-500 pointer-events-none" />
+            <input
+              placeholder="Search by order number..."
+              className="w-full h-9 pl-9 pr-9 rounded-xl bg-white dark:bg-[#161920] border border-slate-100 dark:border-white/8 text-[13px] text-slate-700 dark:text-slate-200 placeholder:text-slate-400 dark:placeholder:text-slate-600 focus:outline-none focus:border-indigo-400 dark:focus:border-indigo-500/60 focus:ring-2 focus:ring-indigo-400/15 dark:focus:ring-indigo-500/10 transition-all"
+              value={filters.search}
+              onChange={(e) => handleFilterChange({ search: e.target.value })}
+            />
+            {filters.search && (
+              <button
+                onClick={() => handleFilterChange({ search: "" })}
+                className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 rounded-full bg-slate-200 dark:bg-white/10 hover:bg-slate-300 dark:hover:bg-white/15 flex items-center justify-center transition-colors"
+              >
+                <X className="w-2.5 h-2.5 text-slate-500 dark:text-slate-400" />
+              </button>
+            )}
+          </div>
+
+          <div className="flex items-center gap-1 bg-white dark:bg-[#161920] border border-slate-100 dark:border-white/8 rounded-xl p-1 shrink-0">
+            <button
+              onClick={() => setViewMode("table")}
+              className={`flex items-center gap-1.5 h-7 px-3 rounded-lg text-[12px] font-semibold transition-all ${
+                viewMode === "table"
+                  ? "bg-indigo-600 text-white shadow-sm"
+                  : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-white/5"
+              }`}
+            >
+              <List className="w-3.5 h-3.5" />
+              Table
+            </button>
+            <button
+              onClick={() => setViewMode("charts")}
+              className={`flex items-center gap-1.5 h-7 px-3 rounded-lg text-[12px] font-semibold transition-all ${
+                viewMode === "charts"
+                  ? "bg-indigo-600 text-white shadow-sm"
+                  : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-white/5"
+              }`}
+            >
+              <BarChart2 className="w-3.5 h-3.5" />
+              Charts
+            </button>
+          </div>
+        </div>
+
+        <div className="w-full">
           <OrdersFilters
             filters={filters}
             isSuperAdmin={isSuperAdmin}
@@ -130,31 +199,6 @@ export default function OrdersPage() {
             onFilterChange={handleFilterChange}
             onClear={handleClear}
           />
-        </div>
-
-        <div className="flex items-center gap-1 bg-white dark:bg-[#161920] border border-slate-100 dark:border-white/8 rounded-xl p-1 shrink-0">
-          <button
-            onClick={() => setViewMode("table")}
-            className={`flex items-center gap-1.5 h-7 px-3 rounded-lg text-[12px] font-semibold transition-all ${
-              viewMode === "table"
-                ? "bg-indigo-600 text-white shadow-sm"
-                : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-white/5"
-            }`}
-          >
-            <List className="w-3.5 h-3.5" />
-            Table
-          </button>
-          <button
-            onClick={() => setViewMode("charts")}
-            className={`flex items-center gap-1.5 h-7 px-3 rounded-lg text-[12px] font-semibold transition-all ${
-              viewMode === "charts"
-                ? "bg-indigo-600 text-white shadow-sm"
-                : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-white/5"
-            }`}
-          >
-            <BarChart2 className="w-3.5 h-3.5" />
-            Charts
-          </button>
         </div>
       </div>
 
