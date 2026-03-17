@@ -26,10 +26,10 @@ import {
 import type { FranchiseAdminAnalytics } from "../types/analytics.types";
 
 const FA_PERIODS = [
-  { value: "7d", label: "7D" },
-  { value: "30d", label: "30D" },
-  { value: "90d", label: "90D" },
-  { value: "12m", label: "365D" },
+  { value: "7d", label: "7 Days" },
+  { value: "30d", label: "30 Days" },
+  { value: "90d", label: "90 Days" },
+  { value: "12m", label: "12 Months" },
 ];
 const FA_PERIOD_LABELS: Record<string, string> = {
   "7d": "Last 7 Days",

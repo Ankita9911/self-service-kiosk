@@ -25,9 +25,9 @@ import type { OutletManagerAnalytics } from "../types/analytics.types";
 
 const OM_PERIODS = [
   { value: "today", label: "Today" },
-  { value: "7d", label: "7D" },
-  { value: "30d", label: "30D" },
-  { value: "90d", label: "90D" },
+  { value: "7d", label: "7 Days" },
+  { value: "30d", label: "30 Days" },
+  { value: "90d", label: "90 Days" },
 ];
 const OM_PERIOD_LABELS: Record<string, string> = {
   today: "Today",
