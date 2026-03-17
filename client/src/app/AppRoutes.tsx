@@ -50,6 +50,7 @@ const RecipesPage = lazy(() => import("@/features/recipes/pages/RecipesPage"));
 const StockTransactionsPage = lazy(
   () => import("@/features/stockTransactions/pages/StockTransactionsPage"),
 );
+const OrdersPage = lazy(() => import("@/features/orders/pages/OrdersPage"));
 
 export default function AppRoutes() {
   return (
@@ -176,6 +177,14 @@ export default function AppRoutes() {
             element={
               <ProtectedRoute requiredPermission={PERMISSIONS.DEVICE_VIEW}>
                 <DevicePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/orders"
+            element={
+              <ProtectedRoute requiredPermission={PERMISSIONS.ORDERS_VIEW}>
+                <OrdersPage />
               </ProtectedRoute>
             }
           />

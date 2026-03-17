@@ -9,6 +9,7 @@ import {
   Package,
   BookOpen,
   ArrowUpDown,
+  ClipboardList,
 } from "lucide-react";
 import { PERMISSIONS } from "@/shared/constants/permissions";
 
@@ -66,6 +67,12 @@ export const NAV_ITEMS = [
     path: "/stock-transactions",
     icon: ArrowUpDown,
     permission: PERMISSIONS.INVENTORY_MANAGE,
+  },
+  {
+    label: "Orders",
+    path: "/orders",
+    icon: ClipboardList,
+    permission: PERMISSIONS.ORDERS_VIEW,
   },
   {
     label: "Kitchen Display",

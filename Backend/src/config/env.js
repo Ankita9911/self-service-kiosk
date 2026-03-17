@@ -35,6 +35,8 @@ const env = {
   REDIS_PORT: parseInt(process.env.REDIS_PORT || "6379", 10),
 
   GEMINI_API_KEY: process.env.GEMINI_API_KEY || "",
+
+  TIMEZONE: process.env.TIMEZONE || "Asia/Kolkata",
 };
 
 export default env;
