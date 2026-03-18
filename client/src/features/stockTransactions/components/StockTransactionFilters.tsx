@@ -1,11 +1,5 @@
 import { Search, FlaskConical, Store, X } from "lucide-react";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/shared/components/ui/select";
+import { Combobox } from "@/shared/components/ui/combobox";
 import type { Ingredient } from "@/features/ingredients/types/ingredient.types";
 import type { Outlet } from "@/features/outlet/types/outlet.types";
 import type { StockTransactionFilters } from "../hooks/useStockTransactions";
@@ -46,8 +40,22 @@ export function StockTransactionFilters({
   onClearFilters,
   onResetPage,
 }: StockTransactionFiltersProps) {
+  const outletOptions = [
+    { value: "ALL", label: "All Outlets" },
+    ...outlets.map((o) => ({ value: o._id, label: o.name })),
+  ];
+
+  const ingredientOptions = [
+    { value: "ALL", label: "All Ingredients" },
+    ...allIngredients.map((ing) => ({
+      value: ing._id,
+      label: `${ing.name} (${shortUnit(ing.unit)})`,
+    })),
+  ];
+
   return (
     <div className="flex flex-col sm:flex-row gap-3 flex-wrap">
+      {/* Search */}
       <div className="relative flex-1 min-w-52">
         <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 dark:text-slate-500 pointer-events-none" />
         <input
@@ -66,72 +74,33 @@ export function StockTransactionFilters({
         )}
       </div>
 
+      {/* Outlet — combobox */}
       {isFranchiseAdmin && !hasOutletId && (
-        <Select
+        <Combobox
           value={outletFilter}
-          onValueChange={(v) => {
-            onOutletChange(v);
-            onResetPage();
-          }}
-        >
-          <SelectTrigger className="h-9 w-44 rounded-xl border-slate-100 dark:border-white/8 bg-white dark:bg-[#161920] text-[13px] text-slate-700 dark:text-slate-200 focus:ring-indigo-400/20">
-            <div className="flex items-center gap-2 min-w-0">
-              <Store className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 shrink-0" />
-              <SelectValue placeholder="All Outlets" />
-            </div>
-          </SelectTrigger>
-          <SelectContent className="rounded-xl border-slate-100 dark:border-white/8 bg-white dark:bg-[#1a1d26]">
-            <SelectItem value="ALL" className="text-[13px] rounded-lg">
-              All Outlets
-            </SelectItem>
-            {outlets.map((o) => (
-              <SelectItem
-                key={o._id}
-                value={o._id}
-                className="text-[13px] rounded-lg"
-              >
-                {o.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+          onValueChange={(v) => { onOutletChange(v); onResetPage(); }}
+          options={outletOptions}
+          placeholder="All Outlets"
+          searchPlaceholder="Search outlets…"
+          emptyText="No outlets found"
+          icon={<Store className="w-3.5 h-3.5" />}
+          className="w-44"
+        />
       )}
 
-      <Select
+      {/* Ingredient — combobox */}
+      <Combobox
         value={filters.ingredientId || "ALL"}
-        onValueChange={(v) =>
-          onFilterChange({ ingredientId: v === "ALL" ? "" : v })
-        }
-      >
-        <SelectTrigger className="h-9 w-52 rounded-xl border-slate-100 dark:border-white/8 bg-white dark:bg-[#161920] text-[13px] text-slate-700 dark:text-slate-200 focus:ring-indigo-400/20 overflow-hidden">
-          <div className="flex items-center gap-1.5 min-w-0 overflow-hidden">
-            <FlaskConical className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 shrink-0" />
-            <span className="truncate min-w-0 flex-1">
-              <SelectValue placeholder="All Ingredients" />
-            </span>
-          </div>
-        </SelectTrigger>
-        <SelectContent className="rounded-xl border-slate-100 dark:border-white/8 bg-white dark:bg-[#1a1d26] max-w-56">
-          <SelectItem
-            value="ALL"
-            className="text-[13px] rounded-lg px-2 py-1.5"
-          >
-            All Ingredients
-          </SelectItem>
-          {allIngredients.map((ing) => (
-            <SelectItem
-              key={ing._id}
-              value={ing._id}
-              className="text-[13px] rounded-lg px-2 py-1.5"
-            >
-              <span className="truncate block max-w-44">
-                {ing.name} ({shortUnit(ing.unit)})
-              </span>
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+        onValueChange={(v) => onFilterChange({ ingredientId: v === "ALL" ? "" : v })}
+        options={ingredientOptions}
+        placeholder="All Ingredients"
+        searchPlaceholder="Search ingredients…"
+        emptyText="No ingredients found"
+        icon={<FlaskConical className="w-3.5 h-3.5" />}
+        className="w-52"
+      />
 
+      {/* Type toggle — small fixed list, keep as pill buttons */}
       <div className="flex gap-1 bg-white dark:bg-[#161920] border border-slate-100 dark:border-white/8 rounded-xl p-1 flex-wrap">
         {TYPE_OPTIONS.map((opt) => (
           <button
@@ -148,6 +117,7 @@ export function StockTransactionFilters({
         ))}
       </div>
 
+      {/* Clear */}
       {hasActiveFilters && (
         <button
           onClick={onClearFilters}

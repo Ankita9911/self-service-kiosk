@@ -1,11 +1,5 @@
 import { Search, X, Building2, Store } from "lucide-react";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/shared/components/ui/select";
+import { Combobox } from "@/shared/components/ui/combobox";
 import type { Franchise } from "@/features/franchise/types/franchise.types";
 import type { Outlet } from "@/features/outlet/types/outlet.types";
 
@@ -14,16 +8,13 @@ interface Props {
   statusFilter: "ALL" | "ACTIVE" | "INACTIVE";
   onSearchChange: (v: string) => void;
   onStatusChange: (v: "ALL" | "ACTIVE" | "INACTIVE") => void;
-  // franchise filter (super admin only)
   isSuperAdmin?: boolean;
   franchises?: Franchise[];
   franchiseFilter?: string;
   onFranchiseChange?: (v: string) => void;
-  // outlet filter
   filterableOutlets?: Outlet[];
   outletFilter?: string;
   onOutletChange?: (v: string) => void;
-  // clear all
   hasActiveFilters?: boolean;
   onClearFilters?: () => void;
 }
@@ -43,9 +34,18 @@ export function DeviceFilters({
   hasActiveFilters,
   onClearFilters,
 }: Props) {
+  const franchiseOptions = [
+    { value: "ALL", label: "All Franchises" },
+    ...(franchises ?? []).map((f) => ({ value: f._id, label: f.name })),
+  ];
+
+  const outletOptions = [
+    { value: "ALL", label: "All Outlets" },
+    ...(filterableOutlets ?? []).map((o) => ({ value: o._id, label: o.name })),
+  ];
+
   return (
     <div className="flex flex-col sm:flex-row gap-3 flex-wrap">
-      {/* Search */}
       <div className="relative flex-1 min-w-52">
         <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 dark:text-slate-500 pointer-events-none" />
         <input
@@ -64,67 +64,32 @@ export function DeviceFilters({
         )}
       </div>
 
-      {/* Franchise filter — super admin only */}
       {isSuperAdmin && franchises && onFranchiseChange && (
-        <Select
+        <Combobox
           value={franchiseFilter ?? "ALL"}
           onValueChange={onFranchiseChange}
-        >
-          <SelectTrigger className="h-9 w-44 rounded-xl border-slate-100 dark:border-white/8 bg-white dark:bg-[#161920] text-[13px] text-slate-700 dark:text-slate-200 focus:ring-indigo-400/20 overflow-hidden">
-            <div className="flex items-center gap-1.5 min-w-0 overflow-hidden">
-              <Building2 className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 shrink-0" />
-              <span className="truncate min-w-0 flex-1">
-                <SelectValue placeholder="All Franchises" />
-              </span>
-            </div>
-          </SelectTrigger>
-          <SelectContent className="rounded-xl border-slate-100 dark:border-white/8 bg-white dark:bg-[#1a1d26] max-w-50">
-            <SelectItem
-              value="ALL"
-              className="text-[13px] rounded-lg px-2 py-1.5"
-            >
-              All Franchises
-            </SelectItem>
-            {franchises.map((f) => (
-              <SelectItem
-                key={f._id}
-                value={f._id}
-                className="text-[13px] rounded-lg px-2 py-1.5"
-              >
-                <span className="truncate block max-w-40">{f.name}</span>
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+          options={franchiseOptions}
+          placeholder="All Franchises"
+          searchPlaceholder="Search franchises…"
+          emptyText="No franchises found"
+          icon={<Building2 className="w-3.5 h-3.5" />}
+          className="w-44"
+        />
       )}
 
-      {/* Outlet filter */}
       {filterableOutlets && onOutletChange && (
-        <Select value={outletFilter ?? "ALL"} onValueChange={onOutletChange}>
-          <SelectTrigger className="h-9 w-44 rounded-xl border-slate-100 dark:border-white/8 bg-white dark:bg-[#161920] text-[13px] text-slate-700 dark:text-slate-200 focus:ring-indigo-400/20">
-            <div className="flex items-center gap-2 min-w-0">
-              <Store className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 shrink-0" />
-              <SelectValue placeholder="All Outlets" />
-            </div>
-          </SelectTrigger>
-          <SelectContent className="rounded-xl border-slate-100 dark:border-white/8 bg-white dark:bg-[#1a1d26]">
-            <SelectItem value="ALL" className="text-[13px] rounded-lg">
-              All Outlets
-            </SelectItem>
-            {filterableOutlets.map((o) => (
-              <SelectItem
-                key={o._id}
-                value={o._id}
-                className="text-[13px] rounded-lg"
-              >
-                {o.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <Combobox
+          value={outletFilter ?? "ALL"}
+          onValueChange={onOutletChange}
+          options={outletOptions}
+          placeholder="All Outlets"
+          searchPlaceholder="Search outlets…"
+          emptyText="No outlets found"
+          icon={<Store className="w-3.5 h-3.5" />}
+          className="w-44"
+        />
       )}
 
-      {/* Status toggle */}
       <div className="flex gap-1 bg-white dark:bg-[#161920] border border-slate-100 dark:border-white/8 rounded-xl p-1">
         {(["ALL", "ACTIVE", "INACTIVE"] as const).map((s) => (
           <button
@@ -141,7 +106,6 @@ export function DeviceFilters({
         ))}
       </div>
 
-      {/* Clear filters */}
       {hasActiveFilters && onClearFilters && (
         <button
           onClick={onClearFilters}

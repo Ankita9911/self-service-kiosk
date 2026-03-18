@@ -16,6 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/components/ui/select";
+import { Combobox } from "@/shared/components/ui/combobox";
 
 type FormState = {
   name: string;
@@ -253,38 +254,17 @@ export function CreateUserModal({
               <label className={LabelCls}>
                 Franchise <span className="text-red-400">*</span>
               </label>
-              <Select
+              <Combobox
                 value={form.franchiseId}
-                onValueChange={(val) =>
-                  setForm((prev) => ({
-                    ...prev,
-                    franchiseId: val,
-                    outletId: "",
-                  }))
-                }
-              >
-                <SelectTrigger className={triggerCls("franchiseId")}>
-                  <SelectValue placeholder="Select a franchise..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {franchises.length === 0 ? (
-                    <div className="px-3 py-4 text-center space-y-0.5">
-                      <p className="text-[12px] font-medium text-slate-500 dark:text-slate-400">
-                        No franchises found
-                      </p>
-                      <p className="text-[11px] text-slate-400 dark:text-slate-500">
-                        Please create a franchise first.
-                      </p>
-                    </div>
-                  ) : (
-                    franchises.map((f) => (
-                      <SelectItem key={f._id} value={f._id}>
-                        {f.name}
-                      </SelectItem>
-                    ))
-                  )}
-                </SelectContent>
-              </Select>
+                onValueChange={(val) => setForm((prev) => ({ ...prev, franchiseId: val, outletId: "" }))}
+                options={franchises.map((f) => ({ value: f._id, label: f.name }))}
+                placeholder="Select a franchise…"
+                searchPlaceholder="Search franchises…"
+                emptyText="No franchises found. Create one first."
+                variant="form"
+                error={!!errors.franchiseId}
+                className="w-full"
+              />
               <ErrMsg field="franchiseId" />
             </div>
           )}
@@ -294,32 +274,17 @@ export function CreateUserModal({
               <label className={LabelCls}>
                 Outlet <span className="text-red-400">*</span>
               </label>
-              <Select
+              <Combobox
                 value={form.outletId}
                 onValueChange={(val) => handleChange("outletId", val)}
-              >
-                <SelectTrigger className={triggerCls("outletId")}>
-                  <SelectValue placeholder="Select an outlet..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {outletsForSelection.length === 0 ? (
-                    <div className="px-3 py-4 text-center space-y-0.5">
-                      <p className="text-[12px] font-medium text-slate-500 dark:text-slate-400">
-                        No outlets found
-                      </p>
-                      <p className="text-[11px] text-slate-400 dark:text-slate-500">
-                        Please create an outlet first.
-                      </p>
-                    </div>
-                  ) : (
-                    outletsForSelection.map((o) => (
-                      <SelectItem key={o._id} value={o._id}>
-                        {o.name}
-                      </SelectItem>
-                    ))
-                  )}
-                </SelectContent>
-              </Select>
+                options={outletsForSelection.map((o) => ({ value: o._id, label: o.name }))}
+                placeholder="Select an outlet…"
+                searchPlaceholder="Search outlets…"
+                emptyText="No outlets found. Create one first."
+                variant="form"
+                error={!!errors.outletId}
+                className="w-full"
+              />
               <ErrMsg field="outletId" />
             </div>
           )}

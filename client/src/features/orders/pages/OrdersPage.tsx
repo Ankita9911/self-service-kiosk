@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { BarChart2, List, Search, ShieldAlert, X } from "lucide-react";
+import { BarChart2, List, ShieldAlert } from "lucide-react";
 import { usePermission } from "@/shared/hooks/usePermissions";
 import { PERMISSIONS } from "@/shared/constants/permissions";
 import useAuth from "@/shared/hooks/useAuth";
@@ -143,25 +143,7 @@ export default function OrdersPage() {
       <OrdersStats stats={stats} loading={statsLoading} />
 
       <div className="space-y-3">
-        <div className="flex items-center justify-between gap-3 flex-wrap sm:flex-nowrap">
-          <div className="relative flex-1 min-w-0">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 dark:text-slate-500 pointer-events-none" />
-            <input
-              placeholder="Search by order number..."
-              className="w-full h-9 pl-9 pr-9 rounded-xl bg-white dark:bg-[#161920] border border-slate-100 dark:border-white/8 text-[13px] text-slate-700 dark:text-slate-200 placeholder:text-slate-400 dark:placeholder:text-slate-600 focus:outline-none focus:border-indigo-400 dark:focus:border-indigo-500/60 focus:ring-2 focus:ring-indigo-400/15 dark:focus:ring-indigo-500/10 transition-all"
-              value={filters.search}
-              onChange={(e) => handleFilterChange({ search: e.target.value })}
-            />
-            {filters.search && (
-              <button
-                onClick={() => handleFilterChange({ search: "" })}
-                className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 rounded-full bg-slate-200 dark:bg-white/10 hover:bg-slate-300 dark:hover:bg-white/15 flex items-center justify-center transition-colors"
-              >
-                <X className="w-2.5 h-2.5 text-slate-500 dark:text-slate-400" />
-              </button>
-            )}
-          </div>
-
+        <div className="flex items-center justify-end">
           <div className="flex items-center gap-1 bg-white dark:bg-[#161920] border border-slate-100 dark:border-white/8 rounded-xl p-1 shrink-0">
             <button
               onClick={() => setViewMode("table")}

@@ -18,6 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/components/ui/select";
+import { Combobox } from "@/shared/components/ui/combobox";
 import { findIngredientMatch } from "@/features/recipes/lib/ingredientMatching";
 import { Plus, Trash2, Loader2, ChefHat, Pencil, X } from "lucide-react";
 import {
@@ -290,24 +291,17 @@ export function RecipeFormModal({
           {/* Menu Item */}
           <div className="space-y-1.5">
             <Label>Menu Item</Label>
-            <Select
+            <Combobox
               value={form.menuItemId}
-              onValueChange={(v) =>
-                setForm((prev) => ({ ...prev, menuItemId: v }))
-              }
+              onValueChange={(v) => setForm((prev) => ({ ...prev, menuItemId: v }))}
+              options={menuItems.map((mi) => ({ value: mi._id, label: mi.name }))}
+              placeholder="Select menu item…"
+              searchPlaceholder="Search menu items…"
+              emptyText="No menu items found"
+              variant="form"
               disabled={isEdit}
-            >
-              <SelectTrigger className="h-10 rounded-xl bg-slate-50 dark:bg-white/5 border-slate-200 dark:border-white/8">
-                <SelectValue placeholder="Select menu item…" />
-              </SelectTrigger>
-              <SelectContent>
-                {menuItems.map((mi) => (
-                  <SelectItem key={mi._id} value={mi._id}>
-                    {mi.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+              className="w-full"
+            />
           </div>
 
           {/* Ingredients */}
@@ -394,31 +388,19 @@ export function RecipeFormModal({
                           Ingredient
                         </span>
                       )}
-                      <Select
+                      <Combobox
                         value={row.ingredientId}
                         onValueChange={(v) => updateRow(idx, "ingredientId", v)}
-                      >
-                        <SelectTrigger className="h-10 rounded-xl bg-slate-50 dark:bg-white/5 border-slate-200 dark:border-white/8">
-                          <SelectValue placeholder="Select…" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {ingredients.map((ing) => (
-                            <SelectItem key={ing._id} value={ing._id}>
-                              <span className="flex items-center justify-between w-full gap-3">
-                                <span>{ing.name}</span>
-                                <span className="text-[11px] text-slate-400 font-mono shrink-0">
-                                  {ing.currentStock}{" "}
-                                  {ing.unit === "gram"
-                                    ? "g"
-                                    : ing.unit === "liter"
-                                      ? "L"
-                                      : ing.unit}
-                                </span>
-                              </span>
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                        options={ingredients.map((ing) => ({
+                          value: ing._id,
+                          label: `${ing.name} — ${ing.currentStock}${ing.unit === "gram" ? "g" : ing.unit === "liter" ? "L" : " " + ing.unit}`,
+                        }))}
+                        placeholder="Select…"
+                        searchPlaceholder="Search ingredients…"
+                        emptyText="No ingredients found"
+                        variant="form"
+                        className="w-full"
+                      />
                     </div>
 
                     <div className="space-y-1">

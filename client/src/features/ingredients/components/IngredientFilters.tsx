@@ -1,4 +1,5 @@
-import { Search, X, AlertTriangle, Store } from "lucide-react";
+import { Search, X, AlertTriangle } from "lucide-react";
+import { Store } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -6,6 +7,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/components/ui/select";
+import { Combobox } from "@/shared/components/ui/combobox";
 import type { Outlet } from "@/features/outlet/types/outlet.types";
 
 export const UNIT_OPTIONS = [
@@ -62,6 +64,11 @@ export function IngredientFilters({
 }: Props) {
   const sortValue = `${sortBy}:${sortOrder}`;
 
+  const outletOptions = [
+    { value: "ALL", label: "All Outlets" },
+    ...(filterableOutlets ?? []).map((o) => ({ value: o._id, label: o.name })),
+  ];
+
   return (
     <div className="flex flex-col sm:flex-row gap-3 flex-wrap">
       {/* Search */}
@@ -83,50 +90,35 @@ export function IngredientFilters({
         )}
       </div>
 
-      {/* Unit filter */}
+      {/* Unit — keep as Select (7 fixed options) */}
       <Select value={unitFilter} onValueChange={onUnitChange}>
         <SelectTrigger className="h-9 w-40 rounded-xl border-slate-100 dark:border-white/8 bg-white dark:bg-[#161920] text-[13px] text-slate-700 dark:text-slate-200 focus:ring-indigo-400/20">
           <SelectValue placeholder="All Units" />
         </SelectTrigger>
         <SelectContent className="rounded-xl border-slate-100 dark:border-white/8 bg-white dark:bg-[#1a1d26]">
           {UNIT_OPTIONS.map((u) => (
-            <SelectItem
-              key={u.value}
-              value={u.value}
-              className="text-[13px] rounded-lg px-2 py-1.5"
-            >
+            <SelectItem key={u.value} value={u.value} className="text-[13px] rounded-lg px-2 py-1.5">
               {u.label}
             </SelectItem>
           ))}
         </SelectContent>
       </Select>
 
+      {/* Outlet — combobox (dynamic data) */}
       {filterableOutlets && onOutletChange && (
-        <Select value={outletFilter ?? "ALL"} onValueChange={onOutletChange}>
-          <SelectTrigger className="h-9 w-44 rounded-xl border-slate-100 dark:border-white/8 bg-white dark:bg-[#161920] text-[13px] text-slate-700 dark:text-slate-200 focus:ring-indigo-400/20">
-            <div className="flex items-center gap-2 min-w-0">
-              <Store className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 shrink-0" />
-              <SelectValue placeholder="All Outlets" />
-            </div>
-          </SelectTrigger>
-          <SelectContent className="rounded-xl border-slate-100 dark:border-white/8 bg-white dark:bg-[#1a1d26]">
-            <SelectItem value="ALL" className="text-[13px] rounded-lg">
-              All Outlets
-            </SelectItem>
-            {filterableOutlets.map((o) => (
-              <SelectItem
-                key={o._id}
-                value={o._id}
-                className="text-[13px] rounded-lg"
-              >
-                {o.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <Combobox
+          value={outletFilter ?? "ALL"}
+          onValueChange={onOutletChange}
+          options={outletOptions}
+          placeholder="All Outlets"
+          searchPlaceholder="Search outlets…"
+          emptyText="No outlets found"
+          icon={<Store className="w-3.5 h-3.5" />}
+          className="w-44"
+        />
       )}
 
-      {/* Sort */}
+      {/* Sort — keep as Select (6 fixed options) */}
       <Select
         value={sortValue}
         onValueChange={(v) => {
@@ -139,11 +131,7 @@ export function IngredientFilters({
         </SelectTrigger>
         <SelectContent className="rounded-xl border-slate-100 dark:border-white/8 bg-white dark:bg-[#1a1d26]">
           {SORT_OPTIONS.map((s) => (
-            <SelectItem
-              key={s.value}
-              value={s.value}
-              className="text-[13px] rounded-lg px-2 py-1.5"
-            >
+            <SelectItem key={s.value} value={s.value} className="text-[13px] rounded-lg px-2 py-1.5">
               {s.label}
             </SelectItem>
           ))}

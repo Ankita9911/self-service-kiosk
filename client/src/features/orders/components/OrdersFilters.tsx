@@ -1,4 +1,4 @@
-import { X, Store, Building2, CalendarDays } from "lucide-react";
+import { Search, X, Store, Building2, CalendarDays } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -6,32 +6,33 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/components/ui/select";
+import { Combobox } from "@/shared/components/ui/combobox";
 import type { OrderHistoryFilters, OrderPeriod } from "../types/order.types";
 import type { Franchise } from "@/features/franchise/types/franchise.types";
 import type { Outlet } from "@/features/outlet/types/outlet.types";
 
 const PERIOD_OPTIONS: { value: OrderPeriod; label: string }[] = [
-  { value: "today", label: "Today" },
+  { value: "today",     label: "Today" },
   { value: "yesterday", label: "Yesterday" },
-  { value: "7d", label: "Last 7 days" },
-  { value: "30d", label: "Last 30 days" },
-  { value: "90d", label: "Last 90 days" },
+  { value: "7d",        label: "Last 7 days" },
+  { value: "30d",       label: "Last 30 days" },
+  { value: "90d",       label: "Last 90 days" },
 ];
 
 const STATUS_OPTIONS = [
-  { value: "ALL", label: "All Statuses" },
-  { value: "CREATED", label: "Created" },
+  { value: "ALL",        label: "All Statuses" },
+  { value: "CREATED",    label: "Created" },
   { value: "IN_KITCHEN", label: "In Kitchen" },
-  { value: "READY", label: "Ready" },
-  { value: "PICKED_UP", label: "Picked Up" },
-  { value: "COMPLETED", label: "Completed" },
+  { value: "READY",      label: "Ready" },
+  { value: "PICKED_UP",  label: "Picked Up" },
+  { value: "COMPLETED",  label: "Completed" },
 ] as const;
 
 const PAYMENT_OPTIONS = [
-  { value: "ALL", label: "All Payments" },
+  { value: "ALL",  label: "All Payments" },
   { value: "CASH", label: "Cash" },
   { value: "CARD", label: "Card" },
-  { value: "UPI", label: "UPI" },
+  { value: "UPI",  label: "UPI" },
 ] as const;
 
 function todayLocal(): string {
@@ -67,10 +68,40 @@ export function OrdersFilters({
     onFilterChange({ period: value, date: "" });
   };
 
+  const franchiseOptions = [
+    { value: "ALL", label: "All Franchises" },
+    ...franchises.map((f) => ({ value: f._id, label: f.name })),
+  ];
+
+  const outletOptions = [
+    { value: "ALL", label: "All Outlets" },
+    ...outlets.map((o) => ({ value: o._id, label: o.name })),
+  ];
+
   return (
     <div className="w-full overflow-x-auto pb-1">
       <div className="flex items-center gap-3 w-max min-w-full">
-        {/* Calendar date picker — overrides period when set */}
+
+        {/* Search */}
+        <div className="relative min-w-52 flex-1">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 dark:text-slate-500 pointer-events-none" />
+          <input
+            placeholder="Search by order number…"
+            className="w-full h-9 pl-9 pr-9 rounded-xl bg-white dark:bg-[#161920] border border-slate-100 dark:border-white/8 text-[13px] text-slate-700 dark:text-slate-200 placeholder:text-slate-400 dark:placeholder:text-slate-600 focus:outline-none focus:border-indigo-400 dark:focus:border-indigo-500/60 focus:ring-2 focus:ring-indigo-400/15 dark:focus:ring-indigo-500/10 transition-all"
+            value={filters.search}
+            onChange={(e) => onFilterChange({ search: e.target.value })}
+          />
+          {filters.search && (
+            <button
+              onClick={() => onFilterChange({ search: "" })}
+              className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 rounded-full bg-slate-200 dark:bg-white/10 hover:bg-slate-300 dark:hover:bg-white/15 flex items-center justify-center transition-colors"
+            >
+              <X className="w-2.5 h-2.5 text-slate-500 dark:text-slate-400" />
+            </button>
+          )}
+        </div>
+
+        {/* Calendar date picker */}
         <div className="flex items-center gap-1.5 shrink-0">
           <div
             className={`flex items-center gap-2 h-9 pl-3 pr-2 rounded-xl border bg-white dark:bg-[#161920] transition-all ${
@@ -85,9 +116,7 @@ export function OrdersFilters({
               max={todayLocal()}
               value={filters.date}
               onChange={(e) => handleDateChange(e.target.value)}
-              className={`h-full bg-transparent text-[13px] text-slate-700 dark:text-slate-200 focus:outline-none cursor-pointer
-              ${filters.date ? "w-32" : "w-28"}
-            `}
+              className={`h-full bg-transparent text-[13px] text-slate-700 dark:text-slate-200 focus:outline-none cursor-pointer ${filters.date ? "w-32" : "w-28"}`}
               style={{ colorScheme: "dark" }}
             />
           </div>
@@ -102,22 +131,15 @@ export function OrdersFilters({
           )}
         </div>
 
-        {/* Period preset — hidden when a specific date is active */}
+        {/* Period — keep as Select (5 fixed options, hidden when date active) */}
         {!filters.date && (
-          <Select
-            value={filters.period}
-            onValueChange={(v) => handlePeriodChange(v as OrderPeriod)}
-          >
+          <Select value={filters.period} onValueChange={(v) => handlePeriodChange(v as OrderPeriod)}>
             <SelectTrigger className="h-9 w-38 rounded-xl border-slate-100 dark:border-white/8 bg-white dark:bg-[#161920] text-[13px] text-slate-700 dark:text-slate-200 focus:ring-indigo-400/20 shrink-0">
               <SelectValue placeholder="Period" />
             </SelectTrigger>
             <SelectContent className="rounded-xl border-slate-100 dark:border-white/8 bg-white dark:bg-[#1a1d26]">
               {PERIOD_OPTIONS.map((o) => (
-                <SelectItem
-                  key={o.value}
-                  value={o.value}
-                  className="text-[13px] rounded-lg"
-                >
+                <SelectItem key={o.value} value={o.value} className="text-[13px] rounded-lg">
                   {o.label}
                 </SelectItem>
               ))}
@@ -125,121 +147,66 @@ export function OrdersFilters({
           </Select>
         )}
 
-        {/* Status */}
+        {/* Status — keep as Select (6 fixed options) */}
         <Select
           value={filters.status}
-          onValueChange={(v) =>
-            onFilterChange({ status: v as OrderHistoryFilters["status"] })
-          }
+          onValueChange={(v) => onFilterChange({ status: v as OrderHistoryFilters["status"] })}
         >
           <SelectTrigger className="h-9 w-38 rounded-xl border-slate-100 dark:border-white/8 bg-white dark:bg-[#161920] text-[13px] text-slate-700 dark:text-slate-200 focus:ring-indigo-400/20 shrink-0">
             <SelectValue placeholder="Status" />
           </SelectTrigger>
           <SelectContent className="rounded-xl border-slate-100 dark:border-white/8 bg-white dark:bg-[#1a1d26]">
             {STATUS_OPTIONS.map((o) => (
-              <SelectItem
-                key={o.value}
-                value={o.value}
-                className="text-[13px] rounded-lg"
-              >
+              <SelectItem key={o.value} value={o.value} className="text-[13px] rounded-lg">
                 {o.label}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
 
-        {/* Payment method */}
+        {/* Payment — keep as Select (4 fixed options) */}
         <Select
           value={filters.paymentMethod}
-          onValueChange={(v) =>
-            onFilterChange({
-              paymentMethod: v as OrderHistoryFilters["paymentMethod"],
-            })
-          }
+          onValueChange={(v) => onFilterChange({ paymentMethod: v as OrderHistoryFilters["paymentMethod"] })}
         >
           <SelectTrigger className="h-9 w-38 rounded-xl border-slate-100 dark:border-white/8 bg-white dark:bg-[#161920] text-[13px] text-slate-700 dark:text-slate-200 focus:ring-indigo-400/20 shrink-0">
             <SelectValue placeholder="Payment" />
           </SelectTrigger>
           <SelectContent className="rounded-xl border-slate-100 dark:border-white/8 bg-white dark:bg-[#1a1d26]">
             {PAYMENT_OPTIONS.map((o) => (
-              <SelectItem
-                key={o.value}
-                value={o.value}
-                className="text-[13px] rounded-lg"
-              >
+              <SelectItem key={o.value} value={o.value} className="text-[13px] rounded-lg">
                 {o.label}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
 
-        {/* Franchise filter — super admin only */}
+        {/* Franchise — combobox (dynamic) */}
         {isSuperAdmin && (
-          <Select
+          <Combobox
             value={filters.franchiseId || "ALL"}
-            onValueChange={(v) =>
-              onFilterChange({
-                franchiseId: v === "ALL" ? "" : v,
-                outletId: "",
-              })
-            }
-          >
-            <SelectTrigger className="h-9 w-44 rounded-xl border-slate-100 dark:border-white/8 bg-white dark:bg-[#161920] text-[13px] text-slate-700 dark:text-slate-200 focus:ring-indigo-400/20 overflow-hidden shrink-0">
-              <div className="flex items-center gap-1.5 min-w-0 overflow-hidden">
-                <Building2 className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 shrink-0" />
-                <span className="truncate min-w-0 flex-1">
-                  <SelectValue placeholder="All Franchises" />
-                </span>
-              </div>
-            </SelectTrigger>
-            <SelectContent className="rounded-xl border-slate-100 dark:border-white/8 bg-white dark:bg-[#1a1d26]">
-              <SelectItem value="ALL" className="text-[13px] rounded-lg">
-                All Franchises
-              </SelectItem>
-              {franchises.map((f) => (
-                <SelectItem
-                  key={f._id}
-                  value={f._id}
-                  className="text-[13px] rounded-lg"
-                >
-                  <span className="truncate block max-w-40">{f.name}</span>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            onValueChange={(v) => onFilterChange({ franchiseId: v === "ALL" ? "" : v, outletId: "" })}
+            options={franchiseOptions}
+            placeholder="All Franchises"
+            searchPlaceholder="Search franchises…"
+            emptyText="No franchises found"
+            icon={<Building2 className="w-3.5 h-3.5" />}
+            className="w-44 shrink-0"
+          />
         )}
 
-        {/* Outlet filter — admin + franchise admin */}
+        {/* Outlet — combobox (dynamic) */}
         {(isSuperAdmin || isFranchiseAdmin) && (
-          <Select
+          <Combobox
             value={filters.outletId || "ALL"}
-            onValueChange={(v) =>
-              onFilterChange({ outletId: v === "ALL" ? "" : v })
-            }
-          >
-            <SelectTrigger className="h-9 w-44 rounded-xl border-slate-100 dark:border-white/8 bg-white dark:bg-[#161920] text-[13px] text-slate-700 dark:text-slate-200 focus:ring-indigo-400/20 overflow-hidden shrink-0">
-              <div className="flex items-center gap-1.5 min-w-0 overflow-hidden">
-                <Store className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 shrink-0" />
-                <span className="truncate min-w-0 flex-1">
-                  <SelectValue placeholder="All Outlets" />
-                </span>
-              </div>
-            </SelectTrigger>
-            <SelectContent className="rounded-xl border-slate-100 dark:border-white/8 bg-white dark:bg-[#1a1d26]">
-              <SelectItem value="ALL" className="text-[13px] rounded-lg">
-                All Outlets
-              </SelectItem>
-              {outlets.map((o) => (
-                <SelectItem
-                  key={o._id}
-                  value={o._id}
-                  className="text-[13px] rounded-lg"
-                >
-                  <span className="truncate block max-w-40">{o.name}</span>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            onValueChange={(v) => onFilterChange({ outletId: v === "ALL" ? "" : v })}
+            options={outletOptions}
+            placeholder="All Outlets"
+            searchPlaceholder="Search outlets…"
+            emptyText="No outlets found"
+            icon={<Store className="w-3.5 h-3.5" />}
+            className="w-44 shrink-0"
+          />
         )}
 
         {/* Clear all */}

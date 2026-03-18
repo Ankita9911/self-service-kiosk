@@ -15,13 +15,7 @@ import {
   setOutletStatus,
 } from "@/features/outlet/services/outlet.service";
 import { CursorPagination } from "@/shared/components/ui/CursorPagination";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/shared/components/ui/select";
+import { Combobox } from "@/shared/components/ui/combobox";
 import {
   Popover,
   PopoverContent,
@@ -334,39 +328,19 @@ export default function OutletPage() {
           </div>
 
           {isSuperAdmin && franchises.length > 0 && (
-            <Select
+            <Combobox
               value={franchiseFilter}
-              onValueChange={(v) => {
-                setFranchiseFilter(v);
-                resetToFirstPage();
-              }}
-            >
-              <SelectTrigger className="h-9 w-45 rounded-xl border-slate-100 dark:border-white/8 bg-white dark:bg-[#161920] text-[13px] text-slate-700 dark:text-slate-200 focus:ring-indigo-400/20 overflow-hidden">
-                <div className="flex items-center gap-1.5 min-w-0 overflow-hidden">
-                  <Building2 className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 shrink-0" />
-                  <span className="truncate min-w-0 flex-1">
-                    <SelectValue placeholder="All Franchises" />
-                  </span>
-                </div>
-              </SelectTrigger>
-              <SelectContent className="rounded-xl border-slate-100 dark:border-white/8 bg-white dark:bg-[#1a1d26] max-w-50">
-                <SelectItem
-                  value="ALL"
-                  className="text-[13px] rounded-lg px-2 py-1.5"
-                >
-                  All Franchises
-                </SelectItem>
-                {franchises.map((f) => (
-                  <SelectItem
-                    key={f._id}
-                    value={f._id}
-                    className="text-[13px] rounded-lg px-2 py-1.5"
-                  >
-                    <span className="truncate block max-w-40">{f.name}</span>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+              onValueChange={(v) => { setFranchiseFilter(v); resetToFirstPage(); }}
+              options={[
+                { value: "ALL", label: "All Franchises" },
+                ...franchises.map((f) => ({ value: f._id, label: f.name })),
+              ]}
+              placeholder="All Franchises"
+              searchPlaceholder="Search franchises…"
+              emptyText="No franchises found"
+              icon={<Building2 className="w-3.5 h-3.5" />}
+              className="w-44"
+            />
           )}
 
           <div className="flex gap-1 bg-white dark:bg-[#161920] border border-slate-100 dark:border-white/8 rounded-xl p-1">

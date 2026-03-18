@@ -9,13 +9,7 @@ import {
 } from "lucide-react";
 import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/shared/components/ui/select";
+import { Combobox } from "@/shared/components/ui/combobox";
 import type { Ingredient } from "@/features/ingredients/types/ingredient.types";
 import type { ManualTransactionPayload } from "../types/stockTransaction.types";
 import { shortUnit } from "../utils/stockTransaction.utils";
@@ -136,30 +130,19 @@ export function LogTransactionModal({
             <Label className="text-xs font-semibold text-slate-600 dark:text-slate-300">
               Ingredient
             </Label>
-            <Select
+            <Combobox
               value={formData.ingredientId}
-              onValueChange={(v) =>
-                setFormData((prev) => ({ ...prev, ingredientId: v }))
-              }
-            >
-              <SelectTrigger className="h-10 rounded-xl bg-slate-50 dark:bg-white/5 border-slate-200 dark:border-white/8 text-[13px]">
-                <SelectValue placeholder="Select ingredient…" />
-              </SelectTrigger>
-              <SelectContent className="rounded-xl border-slate-100 dark:border-white/8 bg-white dark:bg-[#1a1d26]">
-                {allIngredients.map((ing) => (
-                  <SelectItem
-                    key={ing._id}
-                    value={ing._id}
-                    className="text-[13px] rounded-lg"
-                  >
-                    {ing.name}
-                    <span className="ml-1.5 text-slate-400 text-[11px]">
-                      ({ing.currentStock} {shortUnit(ing.unit)})
-                    </span>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+              onValueChange={(v) => setFormData((prev) => ({ ...prev, ingredientId: v }))}
+              options={allIngredients.map((ing) => ({
+                value: ing._id,
+                label: `${ing.name} (${ing.currentStock} ${shortUnit(ing.unit)})`,
+              }))}
+              placeholder="Select ingredient…"
+              searchPlaceholder="Search ingredients…"
+              emptyText="No ingredients found"
+              variant="form"
+              className="w-full"
+            />
           </div>
 
           <div className="space-y-1.5">

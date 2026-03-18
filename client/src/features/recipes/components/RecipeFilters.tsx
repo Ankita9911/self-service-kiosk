@@ -1,11 +1,6 @@
-import { Search, X, Sparkles, LayoutGrid, List, Store } from "lucide-react";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/shared/components/ui/select";
+import { Search, X, Sparkles, LayoutGrid, List } from "lucide-react";
+import { Store } from "lucide-react";
+import { Combobox } from "@/shared/components/ui/combobox";
 import type { Outlet } from "@/features/outlet/types/outlet.types";
 
 interface Props {
@@ -35,6 +30,11 @@ export function RecipeFilters({
   hasActiveFilters,
   onClearFilters,
 }: Props) {
+  const outletOptions = [
+    { value: "ALL", label: "All Outlets" },
+    ...(filterableOutlets ?? []).map((o) => ({ value: o._id, label: o.name })),
+  ];
+
   return (
     <div className="flex flex-col sm:flex-row gap-3 flex-wrap items-center">
       {/* Search */}
@@ -56,29 +56,18 @@ export function RecipeFilters({
         )}
       </div>
 
+      {/* Outlet — combobox */}
       {filterableOutlets && onOutletChange && (
-        <Select value={outletFilter ?? "ALL"} onValueChange={onOutletChange}>
-          <SelectTrigger className="h-9 w-44 rounded-xl border-slate-100 dark:border-white/8 bg-white dark:bg-[#161920] text-[13px] text-slate-700 dark:text-slate-200 focus:ring-indigo-400/20">
-            <div className="flex items-center gap-2 min-w-0">
-              <Store className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 shrink-0" />
-              <SelectValue placeholder="All Outlets" />
-            </div>
-          </SelectTrigger>
-          <SelectContent className="rounded-xl border-slate-100 dark:border-white/8 bg-white dark:bg-[#1a1d26]">
-            <SelectItem value="ALL" className="text-[13px] rounded-lg">
-              All Outlets
-            </SelectItem>
-            {filterableOutlets.map((o) => (
-              <SelectItem
-                key={o._id}
-                value={o._id}
-                className="text-[13px] rounded-lg"
-              >
-                {o.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <Combobox
+          value={outletFilter ?? "ALL"}
+          onValueChange={onOutletChange}
+          options={outletOptions}
+          placeholder="All Outlets"
+          searchPlaceholder="Search outlets…"
+          emptyText="No outlets found"
+          icon={<Store className="w-3.5 h-3.5" />}
+          className="w-44"
+        />
       )}
 
       {/* AI only toggle */}

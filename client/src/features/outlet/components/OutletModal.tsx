@@ -1,4 +1,5 @@
 import type { Franchise } from "@/features/franchise/types/franchise.types";
+import { Combobox } from "@/shared/components/ui/combobox";
 import type {
   Outlet,
   OutletAddress,
@@ -272,20 +273,17 @@ export function OutletModal({
                   <label className={LabelCls}>
                     Franchise <span className="text-indigo-500">*</span>
                   </label>
-                  <select
+                  <Combobox
                     value={form.franchiseId}
-                    onChange={(e) =>
-                      handleChange("franchiseId", e.target.value)
-                    }
-                    className={selectCls("franchiseId")}
-                  >
-                    <option value="">Select a franchise…</option>
-                    {franchises.map((f) => (
-                      <option key={f._id} value={f._id}>
-                        {f.name}
-                      </option>
-                    ))}
-                  </select>
+                    onValueChange={(val) => handleChange("franchiseId", val)}
+                    options={franchises.map((f) => ({ value: f._id, label: f.name }))}
+                    placeholder="Select a franchise…"
+                    searchPlaceholder="Search franchises…"
+                    emptyText="No franchises found"
+                    variant="form"
+                    error={!!errors["franchiseId"]}
+                    className="w-full"
+                  />
                   <ErrMsg field="franchiseId" />
                 </div>
               )}
@@ -352,80 +350,48 @@ export function OutletModal({
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1.5">
                     <label className={LabelCls}>Country</label>
-                    <div className="relative">
-                      <select
-                        value={form.address.country || ""}
-                        onChange={(e) =>
-                          handleAddressChange("country", e.target.value)
-                        }
-                        disabled={loadingCountries}
-                        className={selectCls(
-                          "address.country",
-                          loadingCountries,
-                        )}
-                      >
-                        <option value="">
-                          {loadingCountries ? "Loading…" : "Select country"}
-                        </option>
-                        {countries.map((c) => (
-                          <option key={c.cca2} value={c.name}>
-                            {c.name}
-                          </option>
-                        ))}
-                      </select>
-                      {loadingCountries && (
-                        <Loader2 className="w-3.5 h-3.5 text-slate-400 animate-spin absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-                      )}
-                    </div>
+                    <Combobox
+                      value={form.address.country || ""}
+                      onValueChange={(val) => handleAddressChange("country", val)}
+                      options={countries.map((c) => ({ value: c.name, label: c.name }))}
+                      placeholder={loadingCountries ? "Loading…" : "Select country"}
+                      searchPlaceholder="Search countries…"
+                      emptyText="No country found"
+                      variant="form"
+                      error={!!errors["address.country"]}
+                      disabled={loadingCountries}
+                      className="w-full"
+                    />
                     <ErrMsg field="address.country" />
                   </div>
 
                   <div className="space-y-1.5">
                     <label className={LabelCls}>State / Province</label>
-                    <div className="relative">
-                      {states.length > 0 ? (
-                        <select
-                          value={form.address.state || ""}
-                          onChange={(e) =>
-                            handleAddressChange("state", e.target.value)
-                          }
-                          disabled={loadingStates}
-                          className={selectCls("address.state", loadingStates)}
-                        >
-                          <option value="">
-                            {loadingStates ? "Loading…" : "Select state"}
-                          </option>
-                          {states.map((s) => (
-                            <option key={s} value={s}>
-                              {s}
-                            </option>
-                          ))}
-                        </select>
-                      ) : (
-                        <input
-                          type="text"
-                          value={form.address.state || ""}
-                          onChange={(e) =>
-                            handleAddressChange("state", e.target.value)
-                          }
-                          placeholder={
-                            loadingStates
-                              ? "Loading states…"
-                              : form.address.country
-                                ? "Enter state / province"
-                                : "Select country first"
-                          }
-                          disabled={loadingStates || !form.address.country}
-                          className={selectCls(
-                            "address.state",
-                            loadingStates || !form.address.country,
-                          )}
-                        />
-                      )}
-                      {loadingStates && (
-                        <Loader2 className="w-3.5 h-3.5 text-slate-400 animate-spin absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-                      )}
-                    </div>
+                    {states.length > 0 ? (
+                      <Combobox
+                        value={form.address.state || ""}
+                        onValueChange={(val) => handleAddressChange("state", val)}
+                        options={states.map((s) => ({ value: s, label: s }))}
+                        placeholder={loadingStates ? "Loading…" : "Select state"}
+                        searchPlaceholder="Search states…"
+                        emptyText="No state found"
+                        variant="form"
+                        error={!!errors["address.state"]}
+                        disabled={loadingStates}
+                        className="w-full"
+                      />
+                    ) : (
+                      <input
+                        type="text"
+                        value={form.address.state || ""}
+                        onChange={(e) => handleAddressChange("state", e.target.value)}
+                        placeholder={
+                          loadingStates ? "Loading states…" : form.address.country ? "Enter state / province" : "Select country first"
+                        }
+                        disabled={loadingStates || !form.address.country}
+                        className={selectCls("address.state", loadingStates || !form.address.country)}
+                      />
+                    )}
                     <ErrMsg field="address.state" />
                   </div>
                 </div>

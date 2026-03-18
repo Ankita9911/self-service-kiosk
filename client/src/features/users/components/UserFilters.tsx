@@ -6,15 +6,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/components/ui/select";
+import { Combobox } from "@/shared/components/ui/combobox";
 import type { Franchise } from "@/features/franchise/types/franchise.types";
 import type { Outlet } from "@/features/outlet/types/outlet.types";
 
 const ALL_ROLES = [
-  "ALL",
-  "FRANCHISE_ADMIN",
-  "OUTLET_MANAGER",
-  "KITCHEN_STAFF",
-  "PICKUP_STAFF",
+  { value: "ALL",             label: "All Roles" },
+  { value: "FRANCHISE_ADMIN", label: "Franchise Admin" },
+  { value: "OUTLET_MANAGER",  label: "Outlet Manager" },
+  { value: "KITCHEN_STAFF",   label: "Kitchen Staff" },
+  { value: "PICKUP_STAFF",    label: "Pickup Staff" },
 ];
 
 const STATUS_OPTIONS = ["ALL", "ACTIVE", "INACTIVE"] as const;
@@ -58,6 +59,16 @@ export function UserFilters({
   onClearFilters,
   onResetPage,
 }: UserFiltersProps) {
+  const franchiseOptions = [
+    { value: "ALL", label: "All Franchises" },
+    ...franchises.map((f) => ({ value: f._id, label: f.name })),
+  ];
+
+  const outletOptions = [
+    { value: "ALL", label: "All Outlets" },
+    ...outlets.map((o) => ({ value: o._id, label: o.name })),
+  ];
+
   return (
     <div className="flex flex-col sm:flex-row gap-3 flex-wrap">
       <div className="relative flex-1 min-w-52">
@@ -66,99 +77,47 @@ export function UserFilters({
           placeholder="Search by name or email…"
           className="w-full h-9 pl-9 pr-3.5 rounded-xl bg-white dark:bg-[#161920] border border-slate-100 dark:border-white/8 text-[13px] text-slate-700 dark:text-slate-200 placeholder:text-slate-400 dark:placeholder:text-slate-600 focus:outline-none focus:border-indigo-400 dark:focus:border-indigo-500/60 focus:ring-2 focus:ring-indigo-400/15 dark:focus:ring-indigo-500/10 transition-all"
           value={searchTerm}
-          onChange={(e) => {
-            onSearchChange(e.target.value);
-            onResetPage();
-          }}
+          onChange={(e) => { onSearchChange(e.target.value); onResetPage(); }}
         />
       </div>
 
       {isSuperAdmin && (
-        <Select
+        <Combobox
           value={franchiseFilter}
-          onValueChange={(v) => {
-            onFranchiseChange(v);
-            onResetPage();
-          }}
-        >
-          <SelectTrigger className="h-9 w-44 rounded-xl border-slate-100 dark:border-white/8 bg-white dark:bg-[#161920] text-[13px] text-slate-700 dark:text-slate-200 focus:ring-indigo-400/20 overflow-hidden">
-            <div className="flex items-center gap-1.5 min-w-0 overflow-hidden">
-              <Building2 className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 shrink-0" />
-              <span className="truncate min-w-0 flex-1">
-                <SelectValue placeholder="All Franchises" />
-              </span>
-            </div>
-          </SelectTrigger>
-          <SelectContent className="rounded-xl border-slate-100 dark:border-white/8 bg-white dark:bg-[#1a1d26] max-w-50">
-            <SelectItem
-              value="ALL"
-              className="text-[13px] rounded-lg px-2 py-1.5"
-            >
-              All Franchises
-            </SelectItem>
-            {franchises.map((f) => (
-              <SelectItem
-                key={f._id}
-                value={f._id}
-                className="text-[13px] rounded-lg px-2 py-1.5"
-              >
-                <span className="truncate block max-w-40">{f.name}</span>
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+          onValueChange={(v) => { onFranchiseChange(v); onResetPage(); }}
+          options={franchiseOptions}
+          placeholder="All Franchises"
+          searchPlaceholder="Search franchises…"
+          emptyText="No franchises found"
+          icon={<Building2 className="w-3.5 h-3.5" />}
+          className="w-44"
+        />
       )}
 
       {(isSuperAdmin || isFranchiseAdmin) && (
-        <Select
+        <Combobox
           value={outletFilter}
-          onValueChange={(v) => {
-            onOutletChange(v);
-            onResetPage();
-          }}
-        >
-          <SelectTrigger className="h-9 w-44 rounded-xl border-slate-100 dark:border-white/8 bg-white dark:bg-[#161920] text-[13px] text-slate-700 dark:text-slate-200 focus:ring-indigo-400/20 overflow-hidden">
-            <div className="flex items-center gap-1.5 min-w-0 overflow-hidden">
-              <Store className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 shrink-0" />
-              <span className="truncate min-w-0 flex-1">
-                <SelectValue placeholder="All Outlets" />
-              </span>
-            </div>
-          </SelectTrigger>
-          <SelectContent className="rounded-xl border-slate-100 dark:border-white/8 bg-white dark:bg-[#1a1d26] max-w-50">
-            <SelectItem
-              value="ALL"
-              className="text-[13px] rounded-lg px-2 py-1.5"
-            >
-              All Outlets
-            </SelectItem>
-            {outlets.map((o) => (
-              <SelectItem
-                key={o._id}
-                value={o._id}
-                className="text-[13px] rounded-lg px-2 py-1.5"
-              >
-                <span className="truncate block max-w-40">{o.name}</span>
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+          onValueChange={(v) => { onOutletChange(v); onResetPage(); }}
+          options={outletOptions}
+          placeholder="All Outlets"
+          searchPlaceholder="Search outlets…"
+          emptyText="No outlets found"
+          icon={<Store className="w-3.5 h-3.5" />}
+          className="w-44"
+        />
       )}
 
       <Select
         value={roleFilter}
-        onValueChange={(v) => {
-          onRoleChange(v);
-          onResetPage();
-        }}
+        onValueChange={(v) => { onRoleChange(v); onResetPage(); }}
       >
         <SelectTrigger className="h-9 w-40 rounded-xl border-slate-100 dark:border-white/8 bg-white dark:bg-[#161920] text-[13px] text-slate-700 dark:text-slate-200 focus:ring-indigo-400/20">
           <SelectValue placeholder="All Roles" />
         </SelectTrigger>
         <SelectContent className="rounded-xl border-slate-100 dark:border-white/8 bg-white dark:bg-[#1a1d26]">
           {ALL_ROLES.map((r) => (
-            <SelectItem key={r} value={r} className="text-[13px] rounded-lg">
-              {r === "ALL" ? "All Roles" : r.replace(/_/g, " ")}
+            <SelectItem key={r.value} value={r.value} className="text-[13px] rounded-lg">
+              {r.label}
             </SelectItem>
           ))}
         </SelectContent>
