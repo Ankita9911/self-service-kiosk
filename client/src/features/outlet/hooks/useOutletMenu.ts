@@ -36,6 +36,76 @@ import { useMenuSocket } from "@/shared/hooks/useMenuSocket";
 const DEFAULT_PAGE_SIZE = 12;
 const LOW_STOCK_THRESHOLD = 5;
 
+type ImageFrame = {
+  width: number;
+  height: number;
+};
+
+const IMAGE_FRAMES: Record<"category" | "menu" | "combo", ImageFrame> = {
+  category: { width: 1200, height: 1200 },
+  menu: { width: 1200, height: 900 },
+  combo: { width: 1280, height: 720 },
+};
+
+function loadImage(file: File): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      resolve(img);
+    };
+
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error("Failed to load image file"));
+    };
+
+    img.src = url;
+  });
+}
+
+async function normalizeImageForUpload(
+  file: File,
+  frame: ImageFrame,
+): Promise<File> {
+  const img = await loadImage(file);
+  const canvas = document.createElement("canvas");
+  canvas.width = frame.width;
+  canvas.height = frame.height;
+
+  const ctx = canvas.getContext("2d");
+  if (!ctx) {
+    throw new Error("Canvas context is not available");
+  }
+
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(0, 0, frame.width, frame.height);
+
+  const scale = Math.min(frame.width / img.width, frame.height / img.height);
+  const drawWidth = img.width * scale;
+  const drawHeight = img.height * scale;
+  const dx = (frame.width - drawWidth) / 2;
+  const dy = (frame.height - drawHeight) / 2;
+
+  ctx.drawImage(img, dx, dy, drawWidth, drawHeight);
+
+  const blob = await new Promise<Blob | null>((resolve) => {
+    canvas.toBlob((value) => resolve(value), "image/jpeg", 0.92);
+  });
+
+  if (!blob) {
+    throw new Error("Failed to convert image");
+  }
+
+  const baseName = file.name.replace(/\.[^/.]+$/, "");
+  return new File([blob], `${baseName}.jpg`, {
+    type: "image/jpeg",
+    lastModified: Date.now(),
+  });
+}
+
 function getRecipeAvailability(recipe: Recipe) {
   const ingredients = Array.isArray(recipe?.ingredients)
     ? recipe.ingredients
@@ -377,12 +447,12 @@ export function useOutletMenu(
   async function addCategory() {
     let imageUrl: string | undefined;
     if (catForm.imageFile) {
-      const upload = await getUploadUrl(
+      const normalizedImage = await normalizeImageForUpload(
         catForm.imageFile,
-        "category",
-        oidForApi,
+        IMAGE_FRAMES.category,
       );
-      await uploadFileToS3(upload.uploadUrl, catForm.imageFile);
+      const upload = await getUploadUrl(normalizedImage, "category", oidForApi);
+      await uploadFileToS3(upload.uploadUrl, normalizedImage);
       imageUrl = upload.publicUrl;
     }
 
@@ -406,12 +476,12 @@ export function useOutletMenu(
   async function editCategory(id: string) {
     let imageUrl = editCatForm.imageUrl;
     if (editCatForm.imageFile) {
-      const upload = await getUploadUrl(
+      const normalizedImage = await normalizeImageForUpload(
         editCatForm.imageFile,
-        "category",
-        oidForApi,
+        IMAGE_FRAMES.category,
       );
-      await uploadFileToS3(upload.uploadUrl, editCatForm.imageFile);
+      const upload = await getUploadUrl(normalizedImage, "category", oidForApi);
+      await uploadFileToS3(upload.uploadUrl, normalizedImage);
       imageUrl = upload.publicUrl;
     }
 
@@ -439,12 +509,16 @@ export function useOutletMenu(
     let imageUrl: string | undefined;
 
     if (itemForm.imageFile) {
-      const { uploadUrl, publicUrl } = await getUploadUrl(
+      const normalizedImage = await normalizeImageForUpload(
         itemForm.imageFile,
+        IMAGE_FRAMES.menu,
+      );
+      const { uploadUrl, publicUrl } = await getUploadUrl(
+        normalizedImage,
         "menu",
         oidForApi,
       );
-      await uploadFileToS3(uploadUrl, itemForm.imageFile);
+      await uploadFileToS3(uploadUrl, normalizedImage);
 
       imageUrl = publicUrl;
     }
@@ -504,13 +578,17 @@ export function useOutletMenu(
     };
 
     if (itemForm.imageFile) {
-      const { uploadUrl, publicUrl } = await getUploadUrl(
+      const normalizedImage = await normalizeImageForUpload(
         itemForm.imageFile,
+        IMAGE_FRAMES.menu,
+      );
+      const { uploadUrl, publicUrl } = await getUploadUrl(
+        normalizedImage,
         "menu",
         oidForApi,
       );
 
-      await uploadFileToS3(uploadUrl, itemForm.imageFile);
+      await uploadFileToS3(uploadUrl, normalizedImage);
 
       payload.imageUrl = publicUrl;
     }
@@ -558,12 +636,16 @@ export function useOutletMenu(
     let imageUrl = data.imageUrl;
 
     if (data.imageFile) {
-      const { uploadUrl, publicUrl } = await getUploadUrl(
+      const normalizedImage = await normalizeImageForUpload(
         data.imageFile,
+        IMAGE_FRAMES.combo,
+      );
+      const { uploadUrl, publicUrl } = await getUploadUrl(
+        normalizedImage,
         "combo",
         oidForApi,
       );
-      await uploadFileToS3(uploadUrl, data.imageFile);
+      await uploadFileToS3(uploadUrl, normalizedImage);
       imageUrl = publicUrl;
     }
 
@@ -579,12 +661,16 @@ export function useOutletMenu(
     let imageUrl = data.imageUrl;
 
     if (data.imageFile) {
-      const { uploadUrl, publicUrl } = await getUploadUrl(
+      const normalizedImage = await normalizeImageForUpload(
         data.imageFile,
+        IMAGE_FRAMES.combo,
+      );
+      const { uploadUrl, publicUrl } = await getUploadUrl(
+        normalizedImage,
         "combo",
         oidForApi,
       );
-      await uploadFileToS3(uploadUrl, data.imageFile);
+      await uploadFileToS3(uploadUrl, normalizedImage);
       imageUrl = publicUrl;
     }
 

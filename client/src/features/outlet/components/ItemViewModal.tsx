@@ -7,6 +7,7 @@ import {
   BookOpen,
 } from "lucide-react";
 import type { MenuItem, Category } from "@/features/kiosk/types/menu.types";
+import { AdminOfferBadge } from "@/features/kiosk/components/OfferBadge";
 
 interface Props {
   item: MenuItem;
@@ -104,6 +105,23 @@ export function ItemViewModal({
             <p className="text-sm text-slate-400 dark:text-slate-600 italic">
               No description provided.
             </p>
+          )}
+
+          {/* Full offer badges */}
+          {item.offers && item.offers.length > 0 && (
+            <div className="space-y-1.5 pt-0.5">
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                Offers
+              </p>
+              <div className="flex flex-wrap gap-1.5">
+                {item.offers.map((offer, index) => (
+                  <AdminOfferBadge
+                    key={`${offer.type}-${index}`}
+                    offer={offer}
+                  />
+                ))}
+              </div>
+            </div>
           )}
 
           {/* Stock + Status pills */}

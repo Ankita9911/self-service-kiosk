@@ -82,13 +82,20 @@ const ADMIN_OFFER_CONFIG: Record<
   },
 };
 
-export function AdminOfferBadge({ offer }: { offer: ItemOffer }) {
+export function AdminOfferBadge({
+  offer,
+  className,
+}: {
+  offer: ItemOffer;
+  className?: string;
+}) {
   const config = ADMIN_OFFER_CONFIG[offer.type];
   if (!config) return null;
   const text = offer.label || config.label(offer);
   return (
     <span
-      className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold ${config.className}`}
+      className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap ${config.className} ${className ?? ""}`}
+      title={text}
     >
       {text}
     </span>
