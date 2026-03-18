@@ -9,6 +9,8 @@ import type {
 
 export interface StockTransactionFilterParams {
   ingredientId?: string;
+  itemId?: string;
+  sourceType?: "INGREDIENT" | "MENU_ITEM";
   type?: string;
   search?: string;
   sortBy?: StockTransactionSortBy;
@@ -39,6 +41,8 @@ export async function getStockTransactionsPage(
   const p: Record<string, string> = {};
   if (outletId) p.outletId = outletId;
   if (params.ingredientId) p.ingredientId = params.ingredientId;
+  if (params.itemId) p.itemId = params.itemId;
+  if (params.sourceType) p.sourceType = params.sourceType.trim().toUpperCase();
   if (params.type) p.type = params.type;
   if (params.search?.trim()) p.search = params.search.trim();
   if (params.sortBy) p.sortBy = params.sortBy;

@@ -140,7 +140,7 @@ export function StockTransactionTable({
                 </span>
               </th>
               <th className="text-left px-4 py-3 text-[11px] uppercase tracking-wider text-slate-400 font-semibold">
-                Ingredient
+                Item
               </th>
               <th
                 className="text-left px-4 py-3 text-[11px] uppercase tracking-wider text-slate-400 font-semibold cursor-pointer select-none hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
@@ -181,12 +181,21 @@ export function StockTransactionTable({
           >
             {transactions.map((txn) => {
               const cfg = TYPE_CONFIG[txn.type] ?? TYPE_CONFIG.ADJUSTMENT;
-              const ingredientName =
-                typeof txn.ingredientId === "object" && txn.ingredientId
+              const isMenuItemSource =
+                txn.sourceType === "MENU_ITEM" || Boolean(txn.menuItemId);
+
+              const itemName = isMenuItemSource
+                ? typeof txn.menuItemId === "object" && txn.menuItemId
+                  ? (txn.menuItemId as { name: string }).name
+                  : String(txn.menuItemId || "-")
+                : typeof txn.ingredientId === "object" && txn.ingredientId
                   ? (txn.ingredientId as { name: string }).name
-                  : String(txn.ingredientId);
+                  : String(txn.ingredientId || "-");
+
               const unit =
-                typeof txn.ingredientId === "object" && txn.ingredientId
+                !isMenuItemSource &&
+                typeof txn.ingredientId === "object" &&
+                txn.ingredientId
                   ? ((txn.ingredientId as { unit?: string }).unit ?? "")
                   : "";
 
@@ -199,12 +208,21 @@ export function StockTransactionTable({
                     {formatDate(txn.createdAt)}
                   </td>
                   <td className="px-4 py-3 font-medium text-slate-700 dark:text-slate-200 whitespace-nowrap">
-                    {ingredientName}
+                    {itemName}
                     {unit && (
                       <span className="ml-1 text-[11px] text-slate-400 font-normal">
                         ({shortUnit(unit)})
                       </span>
                     )}
+                    <span
+                      className={`ml-2 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold ${
+                        isMenuItemSource
+                          ? "bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400"
+                          : "bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-400"
+                      }`}
+                    >
+                      {isMenuItemSource ? "Direct" : "Ingredient"}
+                    </span>
                   </td>
                   <td className="px-4 py-3">
                     <span

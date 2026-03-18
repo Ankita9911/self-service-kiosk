@@ -1,6 +1,7 @@
 import { Search, FlaskConical, Store, X } from "lucide-react";
 import { Combobox } from "@/shared/components/ui/combobox";
 import type { Ingredient } from "@/features/ingredients/types/ingredient.types";
+import type { MenuItem } from "@/features/kiosk/types/menu.types";
 import type { Outlet } from "@/features/outlet/types/outlet.types";
 import type { StockTransactionFilters } from "../hooks/useStockTransactions";
 import { shortUnit } from "../utils/stockTransaction.utils";
@@ -16,6 +17,7 @@ const TYPE_OPTIONS = [
 interface StockTransactionFiltersProps {
   filters: StockTransactionFilters;
   allIngredients: Ingredient[];
+  directStockItems: MenuItem[];
   outlets: Outlet[];
   outletFilter: string;
   isFranchiseAdmin: boolean;
@@ -30,6 +32,7 @@ interface StockTransactionFiltersProps {
 export function StockTransactionFilters({
   filters,
   allIngredients,
+  directStockItems,
   outlets,
   outletFilter,
   isFranchiseAdmin,
@@ -50,6 +53,26 @@ export function StockTransactionFilters({
     ...allIngredients.map((ing) => ({
       value: ing._id,
       label: `${ing.name} (${shortUnit(ing.unit)})`,
+    })),
+  ];
+
+  const directItemOptions = [
+    { value: "ALL", label: "All Direct Stock Items" },
+    ...directStockItems.map((item) => ({
+      value: item._id,
+      label: item.name,
+    })),
+  ];
+
+  const mixedItemOptions = [
+    { value: "ALL", label: "All Items" },
+    ...allIngredients.map((ing) => ({
+      value: `ING:${ing._id}`,
+      label: `[Ingredient] ${ing.name} (${shortUnit(ing.unit)})`,
+    })),
+    ...directStockItems.map((item) => ({
+      value: `DIR:${item._id}`,
+      label: `[Direct] ${item.name}`,
     })),
   ];
 
@@ -90,12 +113,81 @@ export function StockTransactionFilters({
 
       {/* Ingredient — combobox */}
       <Combobox
-        value={filters.ingredientId || "ALL"}
-        onValueChange={(v) => onFilterChange({ ingredientId: v === "ALL" ? "" : v })}
-        options={ingredientOptions}
-        placeholder="All Ingredients"
-        searchPlaceholder="Search ingredients…"
-        emptyText="No ingredients found"
+        value={filters.sourceType || "ALL"}
+        onValueChange={(v) =>
+          onFilterChange({
+            sourceType:
+              v === "ALL" ? "" : (v as "INGREDIENT" | "MENU_ITEM"),
+            itemId: "",
+          })
+        }
+        options={[
+          { value: "ALL", label: "All Sources" },
+          { value: "INGREDIENT", label: "Ingredients" },
+          { value: "MENU_ITEM", label: "Direct Stock Items" },
+        ]}
+        placeholder="All Sources"
+        searchPlaceholder="Search sources…"
+        emptyText="No sources found"
+        className="w-48"
+      />
+
+      <Combobox
+        value={filters.itemId || "ALL"}
+        onValueChange={(v) => {
+          if (v === "ALL") {
+            onFilterChange({ itemId: "" });
+            return;
+          }
+
+          if (filters.sourceType === "") {
+            if (v.startsWith("ING:")) {
+              onFilterChange({
+                sourceType: "INGREDIENT",
+                itemId: v.replace(/^ING:/, ""),
+              });
+              return;
+            }
+
+            if (v.startsWith("DIR:")) {
+              onFilterChange({
+                sourceType: "MENU_ITEM",
+                itemId: v.replace(/^DIR:/, ""),
+              });
+              return;
+            }
+          }
+
+          onFilterChange({ itemId: v });
+        }}
+        options={
+          filters.sourceType === "MENU_ITEM"
+            ? directItemOptions
+            : filters.sourceType === "INGREDIENT"
+              ? ingredientOptions
+              : mixedItemOptions
+        }
+        placeholder={
+          filters.sourceType === "MENU_ITEM"
+            ? "All Direct Stock Items"
+            : filters.sourceType === "INGREDIENT"
+              ? "All Ingredients"
+              : "All Items"
+        }
+        searchPlaceholder={
+          filters.sourceType === "MENU_ITEM"
+            ? "Search direct stock items…"
+            : filters.sourceType === "INGREDIENT"
+              ? "Search ingredients…"
+              : "Search ingredients and direct stock items…"
+        }
+        emptyText={
+          filters.sourceType === "MENU_ITEM"
+            ? "No direct stock items found"
+            : filters.sourceType === "INGREDIENT"
+              ? "No ingredients found"
+              : "No items found"
+        }
         icon={<FlaskConical className="w-3.5 h-3.5" />}
         className="w-52"
       />

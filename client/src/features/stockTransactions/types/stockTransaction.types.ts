@@ -1,6 +1,8 @@
 export interface StockTransaction {
   _id: string;
-  ingredientId: string | { _id: string; name: string; unit: string };
+  sourceType?: "INGREDIENT" | "MENU_ITEM";
+  ingredientId?: string | { _id: string; name: string; unit: string } | null;
+  menuItemId?: string | { _id: string; name: string } | null;
   type: "PURCHASE" | "CONSUMPTION" | "WASTAGE" | "ADJUSTMENT";
   quantity: number;
   referenceType: "ORDER" | "MANUAL";
@@ -13,7 +15,8 @@ export interface StockTransaction {
 }
 
 export interface ManualTransactionPayload {
-  ingredientId: string;
+  sourceType: "INGREDIENT" | "MENU_ITEM";
+  itemId: string;
   type: "PURCHASE" | "WASTAGE" | "ADJUSTMENT";
   quantity: number;
   note?: string;

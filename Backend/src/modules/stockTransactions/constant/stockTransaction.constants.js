@@ -9,3 +9,8 @@ export const REFERENCE_TYPE = {
   ORDER:  "ORDER",
   MANUAL: "MANUAL",
 };
+
+export const SOURCE_TYPE = {
+  INGREDIENT: "INGREDIENT",
+  MENU_ITEM: "MENU_ITEM",
+};

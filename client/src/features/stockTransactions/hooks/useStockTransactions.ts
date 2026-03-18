@@ -17,7 +17,8 @@ const DEFAULT_PAGE_SIZE = 20;
 
 export interface StockTransactionFilters {
   search: string;
-  ingredientId: string;
+  itemId: string;
+  sourceType: "" | "INGREDIENT" | "MENU_ITEM";
   type: string;
   sortBy: StockTransactionSortBy;
   sortOrder: StockTransactionSortOrder;
@@ -25,7 +26,8 @@ export interface StockTransactionFilters {
 
 const DEFAULT_FILTERS: StockTransactionFilters = {
   search: "",
-  ingredientId: "",
+  itemId: "",
+  sourceType: "",
   type: "",
   sortBy: "createdAt",
   sortOrder: "desc",
@@ -79,7 +81,8 @@ export function useStockTransactions(
           outletId,
           {
             search: debouncedSearch || undefined,
-            ingredientId: filters.ingredientId || undefined,
+            itemId: filters.itemId || undefined,
+            sourceType: filters.sourceType || undefined,
             type: filters.type || undefined,
             sortBy: filters.sortBy,
             sortOrder: filters.sortOrder,
@@ -107,7 +110,8 @@ export function useStockTransactions(
     [
       outletId,
       debouncedSearch,
-      filters.ingredientId,
+      filters.itemId,
+      filters.sourceType,
       filters.type,
       filters.sortBy,
       filters.sortOrder,

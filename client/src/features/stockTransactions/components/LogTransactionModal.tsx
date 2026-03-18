@@ -6,11 +6,14 @@ import {
   PackagePlus,
   PackageMinus,
   ArrowRightLeft,
+  FlaskConical,
+  CookingPot,
 } from "lucide-react";
 import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
 import { Combobox } from "@/shared/components/ui/combobox";
 import type { Ingredient } from "@/features/ingredients/types/ingredient.types";
+import type { MenuItem } from "@/features/kiosk/types/menu.types";
 import type { ManualTransactionPayload } from "../types/stockTransaction.types";
 import { shortUnit } from "../utils/stockTransaction.utils";
 import {
@@ -39,17 +42,20 @@ const TRANSACTION_TYPES = [
 
 interface LogTransactionModalProps {
   allIngredients: Ingredient[];
+  directStockItems: MenuItem[];
   onClose: () => void;
   onSubmit: (payload: ManualTransactionPayload) => Promise<void>;
 }
 
 export function LogTransactionModal({
   allIngredients,
+  directStockItems,
   onClose,
   onSubmit,
 }: LogTransactionModalProps) {
   const [formData, setFormData] = useState<ManualTransactionPayload>({
-    ingredientId: "",
+    sourceType: "INGREDIENT",
+    itemId: "",
     type: "PURCHASE",
     quantity: 0,
     note: "",
@@ -70,7 +76,7 @@ export function LogTransactionModal({
         result.error,
       );
       setError(
-        fieldErrors.ingredientId ||
+        fieldErrors.itemId ||
           fieldErrors.quantity ||
           "Validation failed.",
       );
@@ -128,20 +134,83 @@ export function LogTransactionModal({
 
           <div className="space-y-1.5">
             <Label className="text-xs font-semibold text-slate-600 dark:text-slate-300">
-              Ingredient
+              Source
+            </Label>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    sourceType: "INGREDIENT",
+                    itemId: "",
+                  }))
+                }
+                className={`flex items-center justify-center gap-1.5 py-2.5 rounded-xl border text-xs font-semibold transition-all ${
+                  formData.sourceType === "INGREDIENT"
+                    ? "border-indigo-400 dark:border-indigo-500/60 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-300"
+                    : "border-slate-200 dark:border-white/8 bg-white dark:bg-white/3 text-slate-500 dark:text-slate-400"
+                }`}
+              >
+                <FlaskConical className="w-3.5 h-3.5" /> Ingredients
+              </button>
+              <button
+                type="button"
+                onClick={() =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    sourceType: "MENU_ITEM",
+                    itemId: "",
+                  }))
+                }
+                className={`flex items-center justify-center gap-1.5 py-2.5 rounded-xl border text-xs font-semibold transition-all ${
+                  formData.sourceType === "MENU_ITEM"
+                    ? "border-indigo-400 dark:border-indigo-500/60 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-300"
+                    : "border-slate-200 dark:border-white/8 bg-white dark:bg-white/3 text-slate-500 dark:text-slate-400"
+                }`}
+              >
+                <CookingPot className="w-3.5 h-3.5" /> Direct Stock Items
+              </button>
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label className="text-xs font-semibold text-slate-600 dark:text-slate-300">
+              {formData.sourceType === "MENU_ITEM"
+                ? "Direct Stock Item"
+                : "Ingredient"}
             </Label>
             <Combobox
-              value={formData.ingredientId}
+              value={formData.itemId}
               onValueChange={(v) =>
-                setFormData((prev) => ({ ...prev, ingredientId: v }))
+                setFormData((prev) => ({ ...prev, itemId: v }))
               }
-              options={allIngredients.map((ing) => ({
-                value: ing._id,
-                label: `${ing.name} (${ing.currentStock} ${shortUnit(ing.unit)})`,
-              }))}
-              placeholder="Select ingredient…"
-              searchPlaceholder="Search ingredients…"
-              emptyText="No ingredients found"
+              options={
+                formData.sourceType === "MENU_ITEM"
+                  ? directStockItems.map((item) => ({
+                      value: item._id,
+                      label: `${item.name} (${item.stockQuantity} units)`,
+                    }))
+                  : allIngredients.map((ing) => ({
+                      value: ing._id,
+                      label: `${ing.name} (${ing.currentStock} ${shortUnit(ing.unit)})`,
+                    }))
+              }
+              placeholder={
+                formData.sourceType === "MENU_ITEM"
+                  ? "Select direct stock item…"
+                  : "Select ingredient…"
+              }
+              searchPlaceholder={
+                formData.sourceType === "MENU_ITEM"
+                  ? "Search direct stock items…"
+                  : "Search ingredients…"
+              }
+              emptyText={
+                formData.sourceType === "MENU_ITEM"
+                  ? "No direct stock items found"
+                  : "No ingredients found"
+              }
               variant="form"
               className="w-full"
             />
@@ -232,7 +301,7 @@ export function LogTransactionModal({
           <button
             type="button"
             onClick={handleSubmit}
-            disabled={saving || !formData.ingredientId || !formData.quantity}
+            disabled={saving || !formData.itemId || !formData.quantity}
             className="flex-1 h-10 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
           >
             {saving && <Loader2 className="w-4 h-4 animate-spin" />}

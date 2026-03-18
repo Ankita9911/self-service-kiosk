@@ -5,19 +5,22 @@ import {
   type StockTransactionFilters,
 } from "@/features/stockTransactions/hooks/useStockTransactions";
 import { getAllIngredients } from "@/features/ingredients/services/ingredient.service";
+import { getMenuItems } from "@/features/kiosk/services/menu.service";
 import { getOutlets } from "@/features/outlet/services/outlet.service";
 import { StockTransactionStats } from "../components/StockTransactionStats";
 import { StockTransactionFilters as TransactionFilters } from "../components/StockTransactionFilters";
 import { StockTransactionTable } from "../components/StockTransactionTable";
 import { LogTransactionModal } from "../components/LogTransactionModal";
 import type { Ingredient } from "@/features/ingredients/types/ingredient.types";
+import type { MenuItem } from "@/features/kiosk/types/menu.types";
 import type { Outlet } from "@/features/outlet/types/outlet.types";
 import type { StockTransactionSortBy } from "../types/stockTransaction.types";
 import { Plus, Loader2, RefreshCcw, ShieldAlert } from "lucide-react";
 
 const DEFAULT_FILTERS: StockTransactionFilters = {
   search: "",
-  ingredientId: "",
+  itemId: "",
+  sourceType: "",
   type: "",
   sortBy: "createdAt",
   sortOrder: "desc",
@@ -37,6 +40,7 @@ export default function StockTransactionsPage() {
   const [filters, setFilters] =
     useState<StockTransactionFilters>(DEFAULT_FILTERS);
   const [allIngredients, setAllIngredients] = useState<Ingredient[]>([]);
+  const [directStockItems, setDirectStockItems] = useState<MenuItem[]>([]);
   const [showForm, setShowForm] = useState(false);
 
   useEffect(() => {
@@ -55,9 +59,32 @@ export default function StockTransactionsPage() {
     }
   }, [listOutletId]);
 
+  const fetchDirectStockItems = useCallback(async () => {
+    try {
+      const result = await getMenuItems(
+        listOutletId,
+        undefined,
+        undefined,
+        "ALL",
+        { limit: 200 },
+      );
+      setDirectStockItems(
+        result.items.filter(
+          (item) => (item.inventoryMode ?? "RECIPE") === "DIRECT",
+        ),
+      );
+    } catch {
+      // non-fatal
+    }
+  }, [listOutletId]);
+
   useEffect(() => {
     fetchIngredients();
   }, [fetchIngredients]);
+
+  useEffect(() => {
+    fetchDirectStockItems();
+  }, [fetchDirectStockItems]);
 
   const {
     transactions,
@@ -88,7 +115,8 @@ export default function StockTransactionsPage() {
     const prev = prevFiltersRef.current;
     const changed =
       prev.search !== filters.search ||
-      prev.ingredientId !== filters.ingredientId ||
+      prev.itemId !== filters.itemId ||
+      prev.sourceType !== filters.sourceType ||
       prev.type !== filters.type ||
       prev.sortBy !== filters.sortBy ||
       prev.sortOrder !== filters.sortOrder;
@@ -96,7 +124,8 @@ export default function StockTransactionsPage() {
     prevFiltersRef.current = filters;
   }, [
     filters.search,
-    filters.ingredientId,
+    filters.itemId,
+    filters.sourceType,
     filters.type,
     filters.sortBy,
     filters.sortOrder,
@@ -114,13 +143,20 @@ export default function StockTransactionsPage() {
 
   const hasActiveFilters =
     filters.search !== "" ||
-    filters.ingredientId !== "" ||
+    filters.itemId !== "" ||
+    filters.sourceType !== "" ||
     filters.type !== "" ||
     (isFranchiseAdmin && !user?.outletId && outletFilter !== "ALL");
 
   const clearFilters = () => {
     if (isFranchiseAdmin && !user?.outletId) setOutletFilter("ALL");
-    setFilters((prev) => ({ ...prev, search: "", ingredientId: "", type: "" }));
+    setFilters((prev) => ({
+      ...prev,
+      search: "",
+      itemId: "",
+      sourceType: "",
+      type: "",
+    }));
   };
 
   const handleSubmitTransaction = async (
@@ -182,6 +218,7 @@ export default function StockTransactionsPage() {
       <TransactionFilters
         filters={filters}
         allIngredients={allIngredients}
+        directStockItems={directStockItems}
         outlets={outlets}
         outletFilter={outletFilter}
         isFranchiseAdmin={isFranchiseAdmin}
@@ -222,6 +259,7 @@ export default function StockTransactionsPage() {
       {showForm && (
         <LogTransactionModal
           allIngredients={allIngredients}
+          directStockItems={directStockItems}
           onClose={() => setShowForm(false)}
           onSubmit={handleSubmitTransaction}
         />

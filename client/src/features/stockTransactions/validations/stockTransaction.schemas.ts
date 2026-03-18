@@ -1,7 +1,8 @@
 import { z } from "zod";
 
 export const logTransactionSchema = z.object({
-  ingredientId: z.string().trim().min(1, "Please select an ingredient."),
+  sourceType: z.enum(["INGREDIENT", "MENU_ITEM"]),
+  itemId: z.string().trim().min(1, "Please select an item."),
   type: z.enum(["PURCHASE", "WASTAGE", "ADJUSTMENT"]),
   quantity: z
     .number({ message: "Quantity is required." })
