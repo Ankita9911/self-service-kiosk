@@ -10,6 +10,7 @@ import {
   ZoomIn,
   Power,
   Eye,
+  Info,
   BookOpen,
 } from "lucide-react";
 import type { MenuItem, Category } from "@/features/kiosk/types/menu.types";
@@ -143,7 +144,7 @@ export function MenuItemTableRow({
       <tr
         className={`group border-b border-slate-100 dark:border-white/5 transition-colors ${
           isUnavailable
-            ? "opacity-55 grayscale bg-slate-50/60 dark:bg-white/[0.01] hover:bg-slate-100/60 dark:hover:bg-white/[0.02]"
+            ? "opacity-55 grayscale bg-slate-50/60 dark:bg-white/1 hover:bg-slate-100/60 dark:hover:bg-white/2"
             : `hover:bg-slate-50/70 dark:hover:bg-white/2 ${
                 index % 2 === 0 ? "" : "bg-slate-50/30 dark:bg-white/1"
               }`
@@ -175,9 +176,19 @@ export function MenuItemTableRow({
               )}
             </div>
             <div className="min-w-0">
-              <p className="text-sm font-semibold text-slate-800 dark:text-white truncate max-w-40">
-                {item.name}
-              </p>
+              <div className="flex items-center gap-2">
+                <p className="text-sm font-semibold text-slate-800 dark:text-white truncate max-w-40">
+                  {item.name}
+                </p>
+                <button
+                  type="button"
+                  onClick={onView}
+                  className="h-7 w-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-violet-600 dark:hover:text-violet-400 hover:bg-slate-100 dark:hover:bg-white/8 transition-all shrink-0"
+                  title="View details"
+                >
+                  <Info className="w-4 h-4" />
+                </button>
+              </div>
               {item.description && (
                 <p className="text-[11px] text-slate-400 dark:text-slate-500 truncate max-w-40 mt-0.5">
                   {item.description}
@@ -275,7 +286,10 @@ export function MenuItemTableRow({
 
         {/* Actions — three dots dropdown */}
         <td className="px-4 py-3 text-right">
-          <div className="relative inline-block" ref={menuRef}>
+          <div
+            className="relative inline-flex items-center gap-1"
+            ref={menuRef}
+          >
             <button
               ref={btnRef}
               onClick={() => {
