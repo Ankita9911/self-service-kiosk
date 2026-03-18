@@ -5,6 +5,7 @@ import { getZodFieldErrors } from "@/shared/utils/zod.utils";
 import { useState } from "react";
 import { Tag, X, RefreshCcw, ImageIcon } from "lucide-react";
 import type { CategoryFormState } from "../types/outlet.types";
+import { ImagePreviewModal } from "./ImagePreviewModal";
 
 interface Props {
   open: boolean;
@@ -37,6 +38,7 @@ export function EditCategoryModal({
     {},
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isImagePreviewOpen, setIsImagePreviewOpen] = useState(false);
 
   function validate(): boolean {
     const result = categorySchema.safeParse({
@@ -77,7 +79,7 @@ export function EditCategoryModal({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-sm p-0 border border-slate-100 dark:border-white/8 bg-white dark:bg-[#1e2130] rounded-2xl overflow-hidden shadow-2xl shadow-black/20">
+      <DialogContent className="sm:max-w-md p-0 border border-slate-100 dark:border-white/8 bg-white dark:bg-[#1e2130] rounded-2xl overflow-hidden shadow-2xl shadow-black/20">
         <div className="flex items-center justify-between px-6 py-5 border-b border-slate-100 dark:border-white/8">
           <div className="flex items-center gap-3">
             <div className="h-9 w-9 rounded-xl bg-violet-50 dark:bg-violet-500/10 border border-violet-100 dark:border-violet-500/20 flex items-center justify-center">
@@ -159,7 +161,7 @@ export function EditCategoryModal({
                 (optional)
               </span>
             </LabelEl>
-            <div className="flex gap-2 items-center">
+            <div className="space-y-2">
               <input
                 type="file"
                 accept="image/jpeg,image/png,image/webp,image/gif"
@@ -169,18 +171,28 @@ export function EditCategoryModal({
                     imageFile: e.target.files?.[0] || null,
                   }));
                 }}
-                className="flex-1 h-10 rounded-xl border px-3 text-sm bg-slate-50 dark:bg-white/5 text-slate-600 dark:text-slate-400 file:mr-3 file:text-xs file:font-semibold file:text-indigo-600 dark:file:text-indigo-400 file:bg-transparent file:border-0 file:py-2 border-slate-200 dark:border-white/8"
+                className="w-full h-10 rounded-xl border px-3 text-sm bg-slate-50 dark:bg-white/5 text-slate-600 dark:text-slate-400 file:mr-3 file:text-xs file:font-semibold file:text-indigo-600 dark:file:text-indigo-400 file:bg-transparent file:border-0 file:py-2 border-slate-200 dark:border-white/8"
               />
-              <div className="h-10 w-10 rounded-xl border border-slate-200 dark:border-white/8 overflow-hidden bg-slate-100 dark:bg-white/5 flex items-center justify-center shrink-0">
-                {previewSrc ? (
-                  <img
-                    src={previewSrc}
-                    alt="Preview"
-                    className="h-full w-full object-cover"
-                  />
-                ) : (
-                  <ImageIcon className="w-4 h-4 text-slate-400" />
-                )}
+              <div className="flex items-center justify-between gap-3">
+                <div className="h-12 w-12 rounded-xl border border-slate-200 dark:border-white/8 overflow-hidden bg-slate-100 dark:bg-white/5 flex items-center justify-center shrink-0">
+                  {previewSrc ? (
+                    <img
+                      src={previewSrc}
+                      alt="Preview"
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <ImageIcon className="w-4 h-4 text-slate-400" />
+                  )}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsImagePreviewOpen(true)}
+                  disabled={!previewSrc}
+                  className="h-10 px-3 rounded-xl border border-slate-200 dark:border-white/8 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Preview Image
+                </button>
               </div>
             </div>
           </div>
@@ -207,6 +219,14 @@ export function EditCategoryModal({
           </div>
         </form>
       </DialogContent>
+
+      {isImagePreviewOpen && previewSrc && (
+        <ImagePreviewModal
+          src={previewSrc}
+          alt={form.name || "Category image preview"}
+          onClose={() => setIsImagePreviewOpen(false)}
+        />
+      )}
     </Dialog>
   );
 }

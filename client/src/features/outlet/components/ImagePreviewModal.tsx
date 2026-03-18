@@ -1,5 +1,6 @@
 import { X, ZoomIn } from "lucide-react";
 import { useEffect } from "react";
+import { createPortal } from "react-dom";
 
 interface Props {
   src: string;
@@ -16,9 +17,9 @@ export function ImagePreviewModal({ src, alt, onClose }: Props) {
     return () => document.removeEventListener("keydown", onKey);
   }, [onClose]);
 
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
+      className="fixed inset-0 z-120 flex items-center justify-center bg-black/80 backdrop-blur-sm"
       onClick={onClose}
     >
       {/* close button */}
@@ -45,7 +46,8 @@ export function ImagePreviewModal({ src, alt, onClose }: Props) {
           {alt}
         </p>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
 

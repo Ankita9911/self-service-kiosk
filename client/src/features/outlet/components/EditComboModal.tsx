@@ -3,6 +3,7 @@ import { Dialog, DialogContent } from "@/shared/components/ui/dialog";
 import { Plus, X, Layers, RefreshCcw, Minus, ImageIcon } from "lucide-react";
 import type { MenuItem } from "@/features/kiosk/types/menu.types";
 import type { ServiceType } from "@/features/outlet/types/outlet.types";
+import { ImagePreviewModal } from "./ImagePreviewModal";
 
 const SERVICE_OPTIONS: { value: ServiceType; label: string }[] = [
   { value: "DINE_IN", label: "Dine In" },
@@ -60,6 +61,7 @@ export function EditComboModal({
   const [selectedItems, setSelectedItems] = useState<ComboItemEntry[]>([]);
   const [addItemId, setAddItemId] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isImagePreviewOpen, setIsImagePreviewOpen] = useState(false);
 
   // Initialise from combo items (cross-reference with items list for prices)
   useEffect(() => {
@@ -229,7 +231,7 @@ export function EditComboModal({
                 }}
                 className="flex-1 h-10 rounded-xl border px-3 text-sm bg-slate-50 dark:bg-white/5 text-slate-600 dark:text-slate-400 file:mr-3 file:text-xs file:font-semibold file:text-indigo-600 dark:file:text-indigo-400 file:bg-transparent file:border-0 file:py-2 border-slate-200 dark:border-white/8"
               />
-              <div className="h-10 w-10 rounded-xl border border-slate-200 dark:border-white/8 overflow-hidden bg-slate-100 dark:bg-white/5 flex items-center justify-center shrink-0">
+              <div className="h-12 w-12 rounded-xl border border-slate-200 dark:border-white/8 overflow-hidden bg-slate-100 dark:bg-white/5 flex items-center justify-center shrink-0">
                 {previewSrc ? (
                   <img
                     src={previewSrc}
@@ -240,6 +242,14 @@ export function EditComboModal({
                   <ImageIcon className="w-4 h-4 text-slate-400" />
                 )}
               </div>
+              <button
+                type="button"
+                onClick={() => setIsImagePreviewOpen(true)}
+                disabled={!previewSrc}
+                className="h-10 px-3 rounded-xl border border-slate-200 dark:border-white/8 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Preview
+              </button>
             </div>
           </div>
 
@@ -396,6 +406,14 @@ export function EditComboModal({
           </div>
         </form>
       </DialogContent>
+
+      {isImagePreviewOpen && previewSrc && (
+        <ImagePreviewModal
+          src={previewSrc}
+          alt={name || "Combo image preview"}
+          onClose={() => setIsImagePreviewOpen(false)}
+        />
+      )}
     </Dialog>
   );
 }

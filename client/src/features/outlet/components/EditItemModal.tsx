@@ -7,6 +7,7 @@ import { getZodFieldErrors } from "@/shared/utils/zod.utils";
 import { useState } from "react";
 import { Pencil, X, ImageIcon, RefreshCcw } from "lucide-react";
 import { toast } from "react-hot-toast";
+import { ImagePreviewModal } from "./ImagePreviewModal";
 import {
   Select,
   SelectContent,
@@ -92,6 +93,7 @@ export function EditItemModal({
 }: Props) {
   const [errors, setErrors] = useState<FieldErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isImagePreviewOpen, setIsImagePreviewOpen] = useState(false);
 
   function validate(): boolean {
     const payload = {
@@ -259,7 +261,7 @@ export function EditItemModal({
                 }}
                 className={`flex-1 h-10 rounded-xl border px-3 text-sm bg-slate-50 dark:bg-white/5 text-slate-600 dark:text-slate-400 file:mr-3 file:text-xs file:font-semibold file:text-indigo-600 dark:file:text-indigo-400 file:bg-transparent file:border-0 file:py-2 ${errors.imageFile ? "border-red-400" : "border-slate-200 dark:border-white/8"}`}
               />
-              <div className="h-10 w-10 rounded-xl border border-slate-200 dark:border-white/8 overflow-hidden bg-slate-100 dark:bg-white/5 flex items-center justify-center shrink-0">
+              <div className="h-12 w-12 rounded-xl border border-slate-200 dark:border-white/8 overflow-hidden bg-slate-100 dark:bg-white/5 flex items-center justify-center shrink-0">
                 {previewSrc ? (
                   <img
                     src={previewSrc}
@@ -270,6 +272,14 @@ export function EditItemModal({
                   <ImageIcon className="w-4 h-4 text-slate-400" />
                 )}
               </div>
+              <button
+                type="button"
+                onClick={() => setIsImagePreviewOpen(true)}
+                disabled={!previewSrc}
+                className="h-10 px-3 rounded-xl border border-slate-200 dark:border-white/8 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Preview
+              </button>
             </div>
             <ErrTxt msg={errors.imageFile} />
           </div>
@@ -454,6 +464,14 @@ export function EditItemModal({
           </div>
         </form>
       </DialogContent>
+
+      {isImagePreviewOpen && previewSrc && (
+        <ImagePreviewModal
+          src={previewSrc}
+          alt={form.name || "Item image preview"}
+          onClose={() => setIsImagePreviewOpen(false)}
+        />
+      )}
     </Dialog>
   );
 }
