@@ -293,8 +293,13 @@ export function RecipeFormModal({
             <Label>Menu Item</Label>
             <Combobox
               value={form.menuItemId}
-              onValueChange={(v) => setForm((prev) => ({ ...prev, menuItemId: v }))}
-              options={menuItems.map((mi) => ({ value: mi._id, label: mi.name }))}
+              onValueChange={(v) =>
+                setForm((prev) => ({ ...prev, menuItemId: v }))
+              }
+              options={menuItems.map((mi) => ({
+                value: mi._id,
+                label: mi.name,
+              }))}
               placeholder="Select menu item…"
               searchPlaceholder="Search menu items…"
               emptyText="No menu items found"

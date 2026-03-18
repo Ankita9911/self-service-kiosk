@@ -132,7 +132,9 @@ export function LogTransactionModal({
             </Label>
             <Combobox
               value={formData.ingredientId}
-              onValueChange={(v) => setFormData((prev) => ({ ...prev, ingredientId: v }))}
+              onValueChange={(v) =>
+                setFormData((prev) => ({ ...prev, ingredientId: v }))
+              }
               options={allIngredients.map((ing) => ({
                 value: ing._id,
                 label: `${ing.name} (${ing.currentStock} ${shortUnit(ing.unit)})`,

@@ -256,8 +256,17 @@ export function CreateUserModal({
               </label>
               <Combobox
                 value={form.franchiseId}
-                onValueChange={(val) => setForm((prev) => ({ ...prev, franchiseId: val, outletId: "" }))}
-                options={franchises.map((f) => ({ value: f._id, label: f.name }))}
+                onValueChange={(val) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    franchiseId: val,
+                    outletId: "",
+                  }))
+                }
+                options={franchises.map((f) => ({
+                  value: f._id,
+                  label: f.name,
+                }))}
                 placeholder="Select a franchise…"
                 searchPlaceholder="Search franchises…"
                 emptyText="No franchises found. Create one first."
@@ -277,7 +286,10 @@ export function CreateUserModal({
               <Combobox
                 value={form.outletId}
                 onValueChange={(val) => handleChange("outletId", val)}
-                options={outletsForSelection.map((o) => ({ value: o._id, label: o.name }))}
+                options={outletsForSelection.map((o) => ({
+                  value: o._id,
+                  label: o.name,
+                }))}
                 placeholder="Select an outlet…"
                 searchPlaceholder="Search outlets…"
                 emptyText="No outlets found. Create one first."
