@@ -31,6 +31,7 @@ import { DeleteItemModal } from "../components/DeleteItemModal";
 import { ItemViewModal } from "../components/ItemViewModal";
 import { CreateComboModal } from "../components/CreateComboModal";
 import { EditComboModal } from "../components/EditComboModal";
+import { ComboViewModal } from "../components/ComboViewModal";
 import { RecipeFormModal } from "@/features/recipes/components/RecipeFormModal";
 import { useRecipes } from "@/features/recipes/hooks/useRecipes";
 import { useIngredients } from "@/features/ingredients/hooks/useIngredients";
@@ -120,6 +121,7 @@ export default function OutletMenuPage() {
   const [activeTab, setActiveTab] = useState<ActiveTab>("items");
   const [addComboOpen, setAddComboOpen] = useState(false);
   const [editComboData, setEditComboData] = useState<Combo | null>(null);
+  const [viewCombo, setViewCombo] = useState<Combo | null>(null);
   const [recipeDraft, setRecipeDraft] = useState<RecipeFormState | null>(null);
 
   const recipeMenuItems = Array.from(
@@ -420,6 +422,7 @@ export default function OutletMenuPage() {
                 <div
                   key={combo._id}
                   className="bg-white dark:bg-[#1e2130] rounded-2xl border border-slate-100 dark:border-white/[0.07] shadow-sm overflow-hidden"
+                  onClick={() => setViewCombo(combo)}
                 >
                   {/* Image / header */}
                   <div className="relative aspect-video bg-linear-to-br from-orange-50 to-amber-50 dark:from-orange-900/20 dark:to-amber-900/20 flex items-center justify-center">
@@ -499,14 +502,18 @@ export default function OutletMenuPage() {
                       </span>
                       <div className="flex gap-1.5">
                         <button
-                          onClick={() => setEditComboData(combo)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setEditComboData(combo);
+                          }}
                           className="h-7 w-7 rounded-lg bg-slate-100 dark:bg-white/6 flex items-center justify-center text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 transition-colors"
                           title="Edit combo"
                         >
                           <Pencil className="w-3 h-3" />
                         </button>
                         <button
-                          onClick={async () => {
+                          onClick={async (e) => {
+                            e.stopPropagation();
                             await removeCombo(combo._id);
                           }}
                           className="h-7 w-7 rounded-lg bg-slate-100 dark:bg-white/6 flex items-center justify-center text-slate-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-400/10 transition-colors"
@@ -915,6 +922,9 @@ export default function OutletMenuPage() {
           onClose={() => setViewItem(null)}
           onCreateRecipe={() => openCreateRecipe(viewItem)}
         />
+      )}
+      {viewCombo && (
+        <ComboViewModal combo={viewCombo} onClose={() => setViewCombo(null)} />
       )}
       {recipeDraft && (
         <RecipeFormModal

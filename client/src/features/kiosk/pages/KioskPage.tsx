@@ -7,6 +7,7 @@ import { processQueue } from "@/shared/lib/syncEngine";
 import CategoryTabs from "../components/CategoryTabs";
 import MenuGrid from "../components/MenuGrid";
 import ComboGrid from "../components/ComboGrid";
+import ComboDetailsDialog from "../components/ComboDetailsDialog";
 import TrendingStrip from "../components/TrendingStrip";
 import {
   CategoryTabsSkeleton,
@@ -26,7 +27,7 @@ import { useRecommendations } from "../hooks/useRecommendations";
 import { reconcileCartWithCatalog } from "../utils/cartReconcile";
 import { getKioskToken } from "@/shared/lib/kioskSession";
 import type { OfferType } from "../types/menu.types";
-import type { MenuItem } from "../types/menu.types";
+import type { Combo, MenuItem } from "../types/menu.types";
 
 const OFFER_CHIPS: { value: OfferType | null; label: string; emoji: string }[] =
   [
@@ -40,6 +41,7 @@ const OFFER_CHIPS: { value: OfferType | null; label: string; emoji: string }[] =
 export default function KioskPage() {
   const navigate = useNavigate();
   const [isCartOpen, setIsCartOpen] = useState(true);
+  const [selectedCombo, setSelectedCombo] = useState<Combo | null>(null);
   const [cartSyncAlerts, setCartSyncAlerts] = useState<string[]>([]);
 
   useKioskForceLogout();
@@ -305,6 +307,7 @@ export default function KioskPage() {
               <ComboGrid
                 combos={combos}
                 cart={cart}
+                onViewCombo={(combo) => setSelectedCombo(combo)}
                 onAddToCart={handleAddToCart}
                 onUpdateQuantity={handleUpdateQuantity}
               />
@@ -385,6 +388,19 @@ export default function KioskPage() {
         open={showFailedDialog}
         message={failedMessage}
         onClose={() => setShowFailedDialog(false)}
+      />
+
+      <ComboDetailsDialog
+        open={Boolean(selectedCombo)}
+        combo={selectedCombo}
+        quantityInCart={
+          selectedCombo
+            ? (cart.find((c) => c.itemId === String(selectedCombo._id))
+                ?.quantity ?? 0)
+            : 0
+        }
+        onClose={() => setSelectedCombo(null)}
+        onAddToCart={(combo) => handleAddComboToCart(combo)}
       />
     </div>
   );

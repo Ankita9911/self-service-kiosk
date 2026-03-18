@@ -6,6 +6,7 @@ import type { CartItem } from "../types/cartItem.types";
 interface ComboGridProps {
   combos: Combo[];
   cart: CartItem[];
+  onViewCombo: (combo: Combo) => void;
   onAddToCart: (item: {
     _id: string;
     name: string;
@@ -19,6 +20,7 @@ interface ComboGridProps {
 export default function ComboGrid({
   combos,
   cart,
+  onViewCombo,
   onAddToCart,
   onUpdateQuantity,
 }: ComboGridProps) {
@@ -52,7 +54,8 @@ export default function ComboGrid({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
-            className="bg-white rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 flex flex-col border-2 border-orange-100 hover:border-orange-300"
+            className="bg-white rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 flex flex-col border-2 border-orange-100 hover:border-orange-300 cursor-pointer"
+            onClick={() => onViewCombo(combo)}
           >
             {/* Image */}
             <div className="relative h-48 bg-linear-to-br from-orange-50 via-amber-50 to-orange-50 overflow-hidden group">
@@ -122,6 +125,18 @@ export default function ComboGrid({
                 </div>
               )}
 
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onViewCombo(combo);
+                }}
+                className="self-start text-[11px] font-black text-orange-600 hover:text-orange-700 underline underline-offset-2"
+                style={{ fontFamily: "var(--font-body)" }}
+              >
+                View full combo details
+              </button>
+
               <div className="flex-1" />
 
               <div className="flex items-center justify-between gap-4 mt-4">
@@ -153,15 +168,16 @@ export default function ComboGrid({
 
                 {quantity === 0 ? (
                   <motion.button
-                    onClick={() =>
+                    onClick={(e) => {
+                      e.stopPropagation();
                       onAddToCart({
                         ...combo,
                         _id: combo._id,
                         price: combo.comboPrice,
                         comboPrice: combo.comboPrice,
                         stockQuantity: 999,
-                      })
-                    }
+                      });
+                    }}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     className="p-4 rounded-2xl font-black flex items-center justify-center shadow-lg transition-all bg-linear-to-br from-orange-500 via-orange-600 to-orange-500 hover:from-orange-600 hover:via-orange-700 hover:to-orange-600 text-white shadow-orange-300"
@@ -171,7 +187,8 @@ export default function ComboGrid({
                 ) : (
                   <div className="flex items-center gap-2 bg-white rounded-2xl p-1.5 shadow-xl border-2 border-orange-100">
                     <motion.button
-                      onClick={() => {
+                      onClick={(e) => {
+                        e.stopPropagation();
                         if (!cartItem) return;
                         onUpdateQuantity(cartItem.cartItemId, -1);
                       }}
@@ -188,15 +205,16 @@ export default function ComboGrid({
                       {quantity}
                     </span>
                     <motion.button
-                      onClick={() =>
+                      onClick={(e) => {
+                        e.stopPropagation();
                         onAddToCart({
                           ...combo,
                           _id: combo._id,
                           price: combo.comboPrice,
                           comboPrice: combo.comboPrice,
                           stockQuantity: 999,
-                        })
-                      }
+                        });
+                      }}
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.9 }}
                       className="w-9 h-9 rounded-xl bg-linear-to-br from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-md flex items-center justify-center transition-all"
