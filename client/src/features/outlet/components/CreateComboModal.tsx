@@ -33,6 +33,7 @@ interface Props {
     name: string;
     description?: string;
     imageUrl?: string;
+    imageFile?: File | null;
     items: { menuItemId: string; name: string; quantity: number }[];
     originalPrice: number;
     comboPrice: number;
@@ -43,11 +44,14 @@ interface Props {
 export function CreateComboModal({ open, onClose, items, onSubmit }: Props) {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
+  const [imageFile, setImageFile] = useState<File | null>(null);
   const [comboPrice, setComboPrice] = useState("");
   const [serviceType, setServiceType] = useState<ServiceType>("BOTH");
   const [selectedItems, setSelectedItems] = useState<ComboItemEntry[]>([]);
   const [addItemId, setAddItemId] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const previewSrc = imageFile ? URL.createObjectURL(imageFile) : undefined;
 
   const originalPrice = selectedItems.reduce(
     (s, i) => s + i.price * i.quantity,
@@ -98,6 +102,7 @@ export function CreateComboModal({ open, onClose, items, onSubmit }: Props) {
       await onSubmit({
         name,
         description: description || undefined,
+        imageFile,
         items: selectedItems.map(({ menuItemId, name, quantity }) => ({
           menuItemId,
           name,
@@ -109,6 +114,7 @@ export function CreateComboModal({ open, onClose, items, onSubmit }: Props) {
       });
       setName("");
       setDescription("");
+      setImageFile(null);
       setComboPrice("");
       setSelectedItems([]);
       setServiceType("BOTH");
@@ -173,6 +179,36 @@ export function CreateComboModal({ open, onClose, items, onSubmit }: Props) {
               placeholder="Short description"
               className={inputBase}
             />
+          </div>
+
+          <div>
+            <LabelEl>
+              Image{" "}
+              <span className="text-slate-400 font-medium normal-case">
+                (optional)
+              </span>
+            </LabelEl>
+            <div className="flex gap-2 items-center">
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/webp,image/gif"
+                onChange={(e) => {
+                  setImageFile(e.target.files?.[0] || null);
+                }}
+                className="flex-1 h-10 rounded-xl border px-3 text-sm bg-slate-50 dark:bg-white/5 text-slate-600 dark:text-slate-400 file:mr-3 file:text-xs file:font-semibold file:text-indigo-600 dark:file:text-indigo-400 file:bg-transparent file:border-0 file:py-2 border-slate-200 dark:border-white/8"
+              />
+              <div className="h-10 w-10 rounded-xl border border-slate-200 dark:border-white/8 overflow-hidden bg-slate-100 dark:bg-white/5 flex items-center justify-center shrink-0">
+                {previewSrc ? (
+                  <img
+                    src={previewSrc}
+                    alt="Preview"
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <ImageIcon className="w-4 h-4 text-slate-400" />
+                )}
+              </div>
+            </div>
           </div>
 
           {/* Available For */}

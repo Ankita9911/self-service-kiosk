@@ -549,17 +549,47 @@ export function useOutletMenu(
     name: string;
     description?: string;
     imageUrl?: string;
+    imageFile?: File | null;
     items: { menuItemId: string; name: string; quantity: number }[];
     originalPrice?: number;
     comboPrice: number;
     serviceType?: "DINE_IN" | "TAKE_AWAY" | "BOTH";
   }) {
-    await createCombo(data, oidForApi);
+    let imageUrl = data.imageUrl;
+
+    if (data.imageFile) {
+      const { uploadUrl, publicUrl } = await getUploadUrl(
+        data.imageFile,
+        "combo",
+        oidForApi,
+      );
+      await uploadFileToS3(uploadUrl, data.imageFile);
+      imageUrl = publicUrl;
+    }
+
+    const { imageFile: _imageFile, ...rest } = data;
+    await createCombo({ ...rest, imageUrl }, oidForApi);
     await refreshMenuData();
   }
 
-  async function editCombo(id: string, data: Partial<Combo>) {
-    await updateCombo(id, data, oidForApi);
+  async function editCombo(
+    id: string,
+    data: Partial<Combo> & { imageFile?: File | null },
+  ) {
+    let imageUrl = data.imageUrl;
+
+    if (data.imageFile) {
+      const { uploadUrl, publicUrl } = await getUploadUrl(
+        data.imageFile,
+        "combo",
+        oidForApi,
+      );
+      await uploadFileToS3(uploadUrl, data.imageFile);
+      imageUrl = publicUrl;
+    }
+
+    const { imageFile: _imageFile, ...rest } = data;
+    await updateCombo(id, { ...rest, imageUrl }, oidForApi);
     await refreshMenuData();
   }
 
