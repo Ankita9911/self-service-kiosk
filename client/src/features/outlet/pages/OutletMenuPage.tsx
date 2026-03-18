@@ -606,27 +606,29 @@ export default function OutletMenuPage() {
         </div>
       )}
 
-      <CategoryFilter
-        categories={categories}
-        selectedCategoryId={selectedCategoryId}
-        onSelect={(id) => {
-          setSelectedCategoryId(id);
-          resetToFirstPage();
-        }}
-        onEditCategory={(category) => {
-          setEditingCategoryId(category._id);
-          setEditCatForm({
-            name: category.name,
-            description: category.description ?? "",
-            imageFile: null,
-            imageUrl: category.imageUrl,
-          });
-        }}
-        onDeleteCategory={async (id) => {
-          await removeCategory(id);
-          if (selectedCategoryId === id) setSelectedCategoryId("ALL");
-        }}
-      />
+      {activeTab === "items" && (
+        <CategoryFilter
+          categories={categories}
+          selectedCategoryId={selectedCategoryId}
+          onSelect={(id) => {
+            setSelectedCategoryId(id);
+            resetToFirstPage();
+          }}
+          onEditCategory={(category) => {
+            setEditingCategoryId(category._id);
+            setEditCatForm({
+              name: category.name,
+              description: category.description ?? "",
+              imageFile: null,
+              imageUrl: category.imageUrl,
+            });
+          }}
+          onDeleteCategory={async (id) => {
+            await removeCategory(id);
+            if (selectedCategoryId === id) setSelectedCategoryId("ALL");
+          }}
+        />
+      )}
 
       {/* ── Content ── */}
       {activeTab === "items" &&
