@@ -101,7 +101,10 @@ export function StockTransactionFilters({
       {isFranchiseAdmin && !hasOutletId && (
         <Combobox
           value={outletFilter}
-          onValueChange={(v) => { onOutletChange(v); onResetPage(); }}
+          onValueChange={(v) => {
+            onOutletChange(v);
+            onResetPage();
+          }}
           options={outletOptions}
           placeholder="All Outlets"
           searchPlaceholder="Search outlets…"
@@ -116,8 +119,7 @@ export function StockTransactionFilters({
         value={filters.sourceType || "ALL"}
         onValueChange={(v) =>
           onFilterChange({
-            sourceType:
-              v === "ALL" ? "" : (v as "INGREDIENT" | "MENU_ITEM"),
+            sourceType: v === "ALL" ? "" : (v as "INGREDIENT" | "MENU_ITEM"),
             itemId: "",
           })
         }

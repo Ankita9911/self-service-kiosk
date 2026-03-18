@@ -76,9 +76,7 @@ export function LogTransactionModal({
         result.error,
       );
       setError(
-        fieldErrors.itemId ||
-          fieldErrors.quantity ||
-          "Validation failed.",
+        fieldErrors.itemId || fieldErrors.quantity || "Validation failed.",
       );
       return;
     }
