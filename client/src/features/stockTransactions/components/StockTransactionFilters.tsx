@@ -1,5 +1,11 @@
 import { Search, FlaskConical, Store, X } from "lucide-react";
 import { Combobox } from "@/shared/components/ui/combobox";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+} from "@/shared/components/ui/select";
 import type { Ingredient } from "@/features/ingredients/types/ingredient.types";
 import type { MenuItem } from "@/features/kiosk/types/menu.types";
 import type { Outlet } from "@/features/outlet/types/outlet.types";
@@ -7,7 +13,7 @@ import type { StockTransactionFilters } from "../hooks/useStockTransactions";
 import { shortUnit } from "../utils/stockTransaction.utils";
 
 const TYPE_OPTIONS = [
-  { value: "", label: "All Types" },
+  { value: "ALL", label: "All Types" },
   { value: "PURCHASE", label: "Purchase" },
   { value: "CONSUMPTION", label: "Consumption" },
   { value: "WASTAGE", label: "Wastage" },
@@ -194,22 +200,28 @@ export function StockTransactionFilters({
         className="w-52"
       />
 
-      {/* Type toggle — small fixed list, keep as pill buttons */}
-      <div className="flex gap-1 bg-white dark:bg-[#161920] border border-slate-100 dark:border-white/8 rounded-xl p-1 flex-wrap">
-        {TYPE_OPTIONS.map((opt) => (
-          <button
-            key={opt.value}
-            onClick={() => onFilterChange({ type: opt.value })}
-            className={`px-3 h-7 rounded-lg text-[12px] font-semibold transition-all whitespace-nowrap ${
-              filters.type === opt.value
-                ? "bg-indigo-600 text-white shadow-sm"
-                : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-white/5"
-            }`}
-          >
-            {opt.label}
-          </button>
-        ))}
-      </div>
+      {/* Type — dropdown */}
+      <Select
+        value={filters.type || "ALL"}
+        onValueChange={(v) => onFilterChange({ type: v === "ALL" ? "" : v })}
+      >
+        <SelectTrigger className="h-9 w-40 rounded-xl border-slate-100 dark:border-white/8 bg-white dark:bg-[#161920] text-[13px] text-slate-700 dark:text-slate-200 focus:ring-indigo-400/20">
+          {filters.type
+            ? TYPE_OPTIONS.find((opt) => opt.value === filters.type)?.label
+            : "All Types"}
+        </SelectTrigger>
+        <SelectContent className="rounded-xl border-slate-100 dark:border-white/8 bg-white dark:bg-[#1a1d26]">
+          {TYPE_OPTIONS.map((opt) => (
+            <SelectItem
+              key={opt.value}
+              value={opt.value}
+              className="text-[13px] rounded-lg"
+            >
+              {opt.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
 
       {/* Clear */}
       {hasActiveFilters && (
