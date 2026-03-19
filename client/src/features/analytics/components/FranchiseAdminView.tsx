@@ -189,6 +189,7 @@ export function FranchiseAdminView({
         <WidgetCard
           title="Best Sellers"
           subtitle="Most sold items across all outlets"
+          className="h-full"
           noPad
           loading={loading}
           loadingHeight="h-[238px]"
@@ -210,6 +211,7 @@ export function FranchiseAdminView({
         <WidgetCard
           title="Revenue by Category"
           subtitle="Which food categories drive the most sales"
+          className="h-full"
           loading={loading}
           loadingHeight="h-[238px]"
         >
@@ -227,22 +229,18 @@ export function FranchiseAdminView({
           <ShoppingCart className="w-3.5 h-3.5 text-emerald-500" />
           Order Status Breakdown
         </SectionTitle>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          <div className="lg:col-start-2">
-            <WidgetCard
-              title="Order Status"
-              subtitle="Distribution across all order statuses"
-              loading={loading}
-              loadingHeight="h-[220px]"
-            >
-              {Object.keys(statusBreakdown).length > 0 ? (
-                <StatusDonutChart breakdown={statusBreakdown} />
-              ) : (
-                <EmptyState message="No order status data yet." />
-              )}
-            </WidgetCard>
-          </div>
-        </div>
+        <WidgetCard
+          title="Order Status"
+          subtitle="Distribution across all order statuses"
+          loading={loading}
+          loadingHeight="h-[240px]"
+        >
+          {Object.keys(statusBreakdown).length > 0 ? (
+            <StatusDonutChart breakdown={statusBreakdown} />
+          ) : (
+            <EmptyState message="No order status data yet." />
+          )}
+        </WidgetCard>
       </section>
     ),
   };
@@ -264,7 +262,7 @@ export function FranchiseAdminView({
       widgets.push(
         <div
           key={`${id}+${nextId}`}
-          className="grid grid-cols-1 lg:grid-cols-2 gap-4"
+          className="grid grid-cols-1 lg:grid-cols-2 gap-4 [&>section]:min-w-0"
         >
           {widgetRenderers[id]()}
           {widgetRenderers[nextId]()}

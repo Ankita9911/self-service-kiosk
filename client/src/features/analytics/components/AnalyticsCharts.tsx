@@ -207,10 +207,10 @@ export function CategoryPieChart({ data }: { data: CategoryRevenue[] }) {
       <PieChart>
         <Pie
           data={formatted}
-          cx="38%"
-          cy="50%"
-          innerRadius={64}
-          outerRadius={96}
+          cx="50%"
+          cy="45%"
+          innerRadius={60}
+          outerRadius={90}
           paddingAngle={3}
           dataKey="value"
         >
@@ -226,11 +226,12 @@ export function CategoryPieChart({ data }: { data: CategoryRevenue[] }) {
           ]}
         />
         <Legend
-          layout="vertical"
-          align="right"
-          verticalAlign="middle"
+          layout="horizontal"
+          align="center"
+          verticalAlign="bottom"
           iconType="circle"
           iconSize={8}
+          wrapperStyle={{ paddingTop: 8 }}
           formatter={(v) => (
             <span
               style={{
@@ -622,14 +623,14 @@ export function StatusDonutChart({
   }));
 
   return (
-    <ResponsiveContainer width="100%" height={200}>
+    <ResponsiveContainer width="100%" height={220}>
       <PieChart>
         <Pie
           data={data}
           cx="50%"
-          cy="50%"
-          innerRadius={52}
-          outerRadius={78}
+          cy="46%"
+          innerRadius={54}
+          outerRadius={82}
           paddingAngle={3}
           dataKey="value"
         >
@@ -645,8 +646,12 @@ export function StatusDonutChart({
           ]}
         />
         <Legend
+          layout="horizontal"
+          align="center"
+          verticalAlign="bottom"
           iconType="circle"
           iconSize={7}
+          wrapperStyle={{ paddingTop: 8 }}
           formatter={(v) => (
             <span
               style={{

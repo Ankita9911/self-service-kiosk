@@ -216,22 +216,18 @@ export function OutletManagerView({
           <ShoppingCart className="w-3.5 h-3.5 text-emerald-500" />
           Order Status — {periodLabel}
         </SectionTitle>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          <div className="lg:col-start-2">
-            <WidgetCard
-              title="Status Distribution"
-              subtitle="Order breakdown across all statuses"
-              loading={loading}
-              loadingHeight="h-[220px]"
-            >
-              {Object.keys(statusBreakdown).length > 0 ? (
-                <StatusDonutChart breakdown={statusBreakdown} />
-              ) : (
-                <EmptyState message="No orders for this period." />
-              )}
-            </WidgetCard>
-          </div>
-        </div>
+        <WidgetCard
+          title="Status Distribution"
+          subtitle="Order breakdown across all statuses"
+          loading={loading}
+          loadingHeight="h-[220px]"
+        >
+          {Object.keys(statusBreakdown).length > 0 ? (
+            <StatusDonutChart breakdown={statusBreakdown} />
+          ) : (
+            <EmptyState message="No orders for this period." />
+          )}
+        </WidgetCard>
       </section>
     ),
   };
@@ -253,7 +249,7 @@ export function OutletManagerView({
       widgets.push(
         <div
           key={`${id}+${nextId}`}
-          className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-stretch"
+          className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-stretch [&>section]:min-w-0"
         >
           {widgetRenderers[id]()}
           {widgetRenderers[nextId]()}
