@@ -330,7 +330,10 @@ export default function OutletPage() {
           {isSuperAdmin && franchises.length > 0 && (
             <Combobox
               value={franchiseFilter}
-              onValueChange={(v) => { setFranchiseFilter(v); resetToFirstPage(); }}
+              onValueChange={(v) => {
+                setFranchiseFilter(v);
+                resetToFirstPage();
+              }}
               options={[
                 { value: "ALL", label: "All Franchises" },
                 ...franchises.map((f) => ({ value: f._id, label: f.name })),
