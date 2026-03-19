@@ -4,6 +4,7 @@ import OrderRequest from "../model/orderRequest.model.js";
 import AppError from "../../../shared/errors/AppError.js";
 import { getIO } from "../../../realtime/realtime.manager.js";
 import { enqueue } from "../../../core/queue/queue.producer.js";
+import { ANALYTICS_EVENT_TYPE } from "../../analytics/constant/analytics.constants.js";
 import { VALID_STATUS_TRANSITIONS } from "../constant/order.constants.js";
 
 export async function createOrder(data, tenant, userRole) {
@@ -128,8 +129,22 @@ export async function updateOrderStatus(orderId, newStatus, tenant) {
     );
   }
 
+  const previousStatus = order.status;
   order.status = newStatus;
   await order.save();
+
+  await enqueue(ANALYTICS_EVENT_TYPE.ORDER_STATUS_CHANGED, {
+    franchiseId: String(order.franchiseId),
+    outletId: String(order.outletId),
+    createdAt: order.createdAt,
+    fromStatus: previousStatus,
+    toStatus: newStatus,
+  }).catch((err) =>
+    console.error(
+      "[queue] Failed to enqueue ANALYTICS_ORDER_STATUS_CHANGED:",
+      err.message,
+    ),
+  );
 
   try {
     const io = getIO();

@@ -1,7 +1,7 @@
-import { notifyLowStock } from "../../modules/stockTransactions/services/lowStockAlert.service.js";
-import Ingredient from "../../modules/ingredients/model/ingredient.model.js";
-import Outlet from "../../modules/outlets/model/outlet.model.js";
-import Franchise from "../../modules/franchises/model/franchise.model.js";
+import { notifyLowStock } from "../../../modules/stockTransactions/service/lowStockAlert.service.js";
+import Ingredient from "../../../modules/ingredients/model/ingredient.model.js";
+import Outlet from "../../../modules/outlets/model/outlet.model.js";
+import Franchise from "../../../modules/franchises/model/franchise.model.js";
 
 export async function handleLowStockAlertQueue(payload) {
   const { ingredientId, outletId, franchiseId } = payload;

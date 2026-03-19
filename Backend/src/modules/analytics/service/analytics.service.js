@@ -6,14 +6,11 @@ import Outlet from "../../outlets/model/outlet.model.js";
 import Device from "../../devices/model/device.model.js";
 import { getRedisClient } from "../../../core/cache/redis.client.js";
 import { buildTenantKey } from "../../../core/cache/cache.utils.js";
-
-const TTL = {
-  SUPER_ADMIN: 900,
-  FRANCHISE_ADMIN: 300,
-  OUTLET_MANAGER: 120,
-  KITCHEN_STAFF: 60,
-  PICKUP_STAFF: 60,
-};
+import { DEFAULT_ANALYTICS_TTL } from "../constant/analytics.constants.js";
+import {
+  getFranchiseAdminAnalyticsFromAggregates,
+  getOutletManagerAnalyticsFromAggregates,
+} from "./analytics.aggregate.service.js";
 
 async function withCache(key, ttl, fn) {
   let redis;
@@ -204,7 +201,7 @@ async function getSuperAdminAnalytics(period = "12m") {
   };
 }
 
-async function getFranchiseAdminAnalytics(tenant, period = "30d") {
+async function getFranchiseAdminAnalyticsLegacy(tenant, period = "30d") {
   const franchiseId = new mongoose.Types.ObjectId(tenant.franchiseId);
   const periodStart = getPeriodStart(period);
   const trendFormat = getTrendFormat(period);
@@ -364,7 +361,7 @@ async function getFranchiseAdminAnalytics(tenant, period = "30d") {
   };
 }
 
-async function getOutletManagerAnalytics(tenant, period = "7d") {
+async function getOutletManagerAnalyticsLegacy(tenant, period = "7d") {
   const outletId = new mongoose.Types.ObjectId(tenant.outletId);
   const now = new Date();
   const todayStart = new Date(now);
@@ -607,7 +604,7 @@ async function getPickupStaffAnalytics(tenant) {
 
 export async function getAnalyticsOverview(tenant, period) {
   const { role, franchiseId, outletId } = tenant;
-  const ttl = TTL[role] || 300;
+  const ttl = DEFAULT_ANALYTICS_TTL[role] || 300;
   const cacheKey = buildTenantKey(
     `analytics:overview:${role}:${period || "default"}`,
     { franchiseId, outletId },
@@ -617,10 +614,35 @@ export async function getAnalyticsOverview(tenant, period) {
     switch (role) {
       case "SUPER_ADMIN":
         return getSuperAdminAnalytics(period);
-      case "FRANCHISE_ADMIN":
-        return getFranchiseAdminAnalytics(tenant, period);
-      case "OUTLET_MANAGER":
-        return getOutletManagerAnalytics(tenant, period);
+      case "FRANCHISE_ADMIN": {
+        const aggregateData =
+          await getFranchiseAdminAnalyticsFromAggregates(tenant, period);
+        if (aggregateData) {
+          const totalUsers = await User.countDocuments({
+            franchiseId: new mongoose.Types.ObjectId(tenant.franchiseId),
+            isDeleted: false,
+          });
+
+          return {
+            ...aggregateData,
+            summary: {
+              ...aggregateData.summary,
+              totalUsers,
+            },
+          };
+        }
+
+        return getFranchiseAdminAnalyticsLegacy(tenant, period);
+      }
+      case "OUTLET_MANAGER": {
+        const aggregateData = await getOutletManagerAnalyticsFromAggregates(
+          tenant,
+          period,
+        );
+
+        if (aggregateData) return aggregateData;
+        return getOutletManagerAnalyticsLegacy(tenant, period);
+      }
       case "KITCHEN_STAFF":
         return getKitchenStaffAnalytics(tenant);
       case "PICKUP_STAFF":

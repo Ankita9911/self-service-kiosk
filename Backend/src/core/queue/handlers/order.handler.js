@@ -10,6 +10,7 @@ import {
   TRANSACTION_TYPE,
   REFERENCE_TYPE,
 } from "../../../modules/stockTransactions/constant/stockTransaction.constants.js";
+import { ANALYTICS_EVENT_TYPE } from "../../../modules/analytics/constant/analytics.constants.js";
 import { enqueue } from "../queue.producer.js";
 import { getRedisClient } from "../../cache/redis.client.js";
 import { buildTenantKey } from "../../cache/cache.utils.js";
@@ -408,6 +409,20 @@ export async function handleOrderPlaced(payload) {
       type: "ORDER_STOCK_CHANGED",
       outletId: tenant.outletId,
     });
+
+    await enqueue(ANALYTICS_EVENT_TYPE.ORDER_PLACED, {
+      franchiseId: String(tenant.franchiseId),
+      outletId: String(tenant.outletId),
+      createdAt: order[0].createdAt,
+      totalAmount: order[0].totalAmount,
+      status: order[0].status,
+      items: order[0].items,
+    }).catch((err) =>
+      console.error(
+        "[queue] Failed to enqueue ANALYTICS_ORDER_PLACED:",
+        err.message,
+      ),
+    );
 
     return order[0];
   } catch (error) {

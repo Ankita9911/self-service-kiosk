@@ -2,6 +2,10 @@ import { handleOrderPlaced } from "./handlers/order.handler.js";
 import { handleLowStockAlert } from "./handlers/inventory.handler.js";
 import { handleLowStockAlertQueue } from "./handlers/lowStockAlert.handler.js";
 import {
+  handleAnalyticsOrderPlaced,
+  handleAnalyticsOrderStatusChanged,
+} from "./handlers/analytics.handler.js";
+import {
   handleMenuPriceUpdate,
   handleMenuStockUpdate,
   handleMenuCategoryCreate,
@@ -18,6 +22,8 @@ import {
 
 export const MESSAGE_HANDLERS = {
   ORDER_PLACED: handleOrderPlaced,
+  ANALYTICS_ORDER_PLACED: handleAnalyticsOrderPlaced,
+  ANALYTICS_ORDER_STATUS_CHANGED: handleAnalyticsOrderStatusChanged,
   LOW_STOCK_ALERT: handleLowStockAlert,
   MENU_PRICE_UPDATE: handleMenuPriceUpdate,
   MENU_STOCK_UPDATE: handleMenuStockUpdate,
