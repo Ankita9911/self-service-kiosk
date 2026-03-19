@@ -101,9 +101,8 @@ export function MetricCard({
   if (loading) {
     return (
       <div className="bg-white dark:bg-[#161920] rounded-2xl border border-slate-100 dark:border-white/6 p-5">
-        <div className="flex items-start justify-between mb-4">
+        <div className="mb-4">
           <AnalyticsShimmer className="h-10 w-10 rounded-xl" />
-          <AnalyticsShimmer className="h-4 w-4 rounded" />
         </div>
         <AnalyticsShimmer className="h-6 w-28 mb-2" />
         <AnalyticsShimmer className="h-3.5 w-20" />
@@ -118,16 +117,13 @@ export function MetricCard({
   const isPositive = (trend?.value ?? 0) >= 0;
 
   return (
-    <div className="bg-white dark:bg-[#161920] rounded-2xl border border-slate-100 dark:border-white/6 p-5 hover:border-slate-200 dark:hover:border-white/10 transition-colors group">
-      <div className="flex items-start justify-between mb-4">
+    <div className="bg-white dark:bg-[#161920] rounded-2xl border border-slate-100 dark:border-white/6 p-5 hover:border-slate-200 dark:hover:border-white/10 transition-colors">
+      <div className="mb-4">
         <div
           className={`h-10 w-10 rounded-xl ${a.iconBg} flex items-center justify-center shrink-0`}
         >
           {icon}
         </div>
-        <button className="text-slate-300 dark:text-slate-600 hover:text-slate-500 dark:hover:text-slate-400 transition opacity-0 group-hover:opacity-100">
-          <MoreHorizontal className="w-4 h-4" />
-        </button>
       </div>
       <p className="text-[21px] font-bold text-slate-800 dark:text-white tracking-tight leading-none mb-1.5">
         {value}
