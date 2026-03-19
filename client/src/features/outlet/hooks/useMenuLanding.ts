@@ -46,7 +46,7 @@ export function useMenuLanding(
       return;
     }
     if (user?.role === "OUTLET_MANAGER" && user?.outletId) {
-      navigate(`/outlets/${user.outletId}/menu`, { replace: true });
+      navigate(`/menu/${user.outletId}`, { replace: true });
     }
   }, [user?.role, user?.outletId, hasPermission, navigate]);
 
