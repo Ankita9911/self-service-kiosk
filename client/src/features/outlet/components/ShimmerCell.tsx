@@ -1,4 +1,4 @@
-import { cn } from "@/shared/utils/commonFunction";
+import { cn } from "@/shared/lib/cn";
 
 export function ShimmerCell({ w = "w-24" }: { w?: string }) {
   return (

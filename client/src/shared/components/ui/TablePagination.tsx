@@ -1,5 +1,5 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { cn } from "@/shared/utils/commonFunction";
+import { cn } from "@/shared/lib/cn";
 import {
   Select,
   SelectContent,

@@ -1,6 +1,6 @@
 import { Clock, CheckCircle2, Timer, ShoppingBag } from "lucide-react";
 import type { Order } from "@/features/kiosk/types/order.types";
-import { elapsedMinutes, formatTime } from "@/shared/utils/commonFunction";
+import { elapsedMinutes, formatTime } from "@/shared/utils/time";
 
 interface PickupCardProps {
   order: Order;

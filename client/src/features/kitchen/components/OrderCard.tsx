@@ -3,7 +3,7 @@ import { GripVertical, Clock, ArrowRight } from "lucide-react";
 import type { Order, OrderStatus } from "@/features/kiosk/types/order.types";
 import type { KitchenStatus } from "../config/kitchen.constants";
 import { STATUS_CONFIG } from "../config/kitchen.constants";
-import { formatTime, elapsedMinutes } from "@/shared/utils/commonFunction";
+import { formatTime, elapsedMinutes } from "@/shared/utils/time";
 
 const CARD_THEME: Record<
   KitchenStatus,
