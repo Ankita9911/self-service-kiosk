@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Dialog, DialogContent } from "@/shared/components/ui/dialog";
 import { Plus, X, Layers, RefreshCcw, Minus, ImageIcon } from "lucide-react";
+import { Combobox } from "@/shared/components/ui/combobox";
 import type { MenuItem } from "@/features/kiosk/types/menu.types";
 import type { ServiceType } from "@/features/outlet/types/outlet.types";
 
@@ -48,7 +49,6 @@ export function CreateComboModal({ open, onClose, items, onSubmit }: Props) {
   const [comboPrice, setComboPrice] = useState("");
   const [serviceType, setServiceType] = useState<ServiceType>("BOTH");
   const [selectedItems, setSelectedItems] = useState<ComboItemEntry[]>([]);
-  const [addItemId, setAddItemId] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const previewSrc = imageFile ? URL.createObjectURL(imageFile) : undefined;
@@ -58,8 +58,8 @@ export function CreateComboModal({ open, onClose, items, onSubmit }: Props) {
     0,
   );
 
-  function addItem() {
-    const found = items.find((i) => i._id === addItemId);
+  function addItem(itemId: string) {
+    const found = items.find((i) => i._id === itemId);
     if (!found) return;
     setSelectedItems((prev) => {
       const existing = prev.find((e) => e.menuItemId === found._id);
@@ -77,7 +77,6 @@ export function CreateComboModal({ open, onClose, items, onSubmit }: Props) {
         },
       ];
     });
-    setAddItemId("");
   }
 
   function removeItem(id: string) {
@@ -123,6 +122,15 @@ export function CreateComboModal({ open, onClose, items, onSubmit }: Props) {
       setIsSubmitting(false);
     }
   }
+
+  const availableItems = items.filter(
+    (item) => !selectedItems.some((entry) => entry.menuItemId === item._id),
+  );
+
+  const comboOptions = availableItems.map((item) => ({
+    value: item._id,
+    label: `${item.name} — ₹${item.price}`,
+  }));
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -237,28 +245,15 @@ export function CreateComboModal({ open, onClose, items, onSubmit }: Props) {
             <LabelEl>
               Combo Items <span className="text-red-400 normal-case">*</span>
             </LabelEl>
-            <div className="flex gap-2">
-              <select
-                value={addItemId}
-                onChange={(e) => setAddItemId(e.target.value)}
-                className="flex-1 px-3 h-10 rounded-xl border border-slate-200 dark:border-white/8 bg-slate-50 dark:bg-white/5 text-sm text-slate-700 dark:text-slate-300 focus:outline-none"
-              >
-                <option value="">Select item to add…</option>
-                {items.map((i) => (
-                  <option key={i._id} value={i._id}>
-                    {i.name} — ₹{i.price}
-                  </option>
-                ))}
-              </select>
-              <button
-                type="button"
-                onClick={addItem}
-                disabled={!addItemId}
-                className="h-10 px-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold disabled:opacity-40 transition-colors"
-              >
-                <Plus className="w-4 h-4" />
-              </button>
-            </div>
+            <Combobox
+              variant="form"
+              value=""
+              onValueChange={addItem}
+              options={comboOptions}
+              placeholder="Select item to add..."
+              searchPlaceholder="Search menu item..."
+              emptyText="No more items available"
+            />
 
             {selectedItems.length > 0 && (
               <div className="mt-2 space-y-2">

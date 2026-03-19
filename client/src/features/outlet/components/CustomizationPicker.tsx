@@ -1,11 +1,5 @@
 import { useMemo, useState } from "react";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/shared/components/ui/select";
+import { Combobox } from "@/shared/components/ui/combobox";
 import { X } from "lucide-react";
 import type { MenuItem } from "@/features/kiosk/types/menu.types";
 
@@ -45,28 +39,22 @@ export function CustomizationPicker({
     setSelectedToAdd("");
   };
 
+  const options = available.map((item) => ({
+    value: item._id,
+    label: `${item.name} - Rs ${item.price.toFixed(2)}`,
+  }));
+
   return (
     <div className="space-y-2.5">
-      <Select value={selectedToAdd} onValueChange={handleAdd}>
-        <SelectTrigger className="h-10 rounded-xl text-sm bg-slate-50 dark:bg-white/5 border-slate-200 dark:border-white/8">
-          <SelectValue placeholder="Select items to add as customization..." />
-        </SelectTrigger>
-        <SelectContent className="rounded-xl border-slate-200 dark:border-white/8 bg-white dark:bg-[#1e2130] shadow-xl">
-          {available.length === 0 ? (
-            <div className="px-3 py-4 text-center">
-              <p className="text-[12px] font-medium text-slate-500 dark:text-slate-400">
-                No more items available
-              </p>
-            </div>
-          ) : (
-            available.map((item) => (
-              <SelectItem key={item._id} value={item._id} className="text-sm">
-                {item.name} - Rs {item.price.toFixed(2)}
-              </SelectItem>
-            ))
-          )}
-        </SelectContent>
-      </Select>
+      <Combobox
+        variant="form"
+        value={selectedToAdd}
+        onValueChange={handleAdd}
+        options={options}
+        placeholder="Select items to add as customization..."
+        searchPlaceholder="Search customization item..."
+        emptyText="No more items available"
+      />
 
       {selectedItems.length > 0 && (
         <div className="space-y-2">
