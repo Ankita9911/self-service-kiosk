@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getOutletsPage } from "@/features/outlet/services/outlet.service";
 import type { Outlet } from "@/features/outlet/types/outlet.types";
-import { PERMISSIONS } from "@/shared/lib/permissions";
+import { PERMISSIONS } from "@/shared/constants/permissions";
 import { useDebounce } from "@/shared/hooks/useDebounce";
 
 const PAGE_SIZE = 3;

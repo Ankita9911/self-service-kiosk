@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import useAuth from "@/shared/hooks/useAuth";
 import { usePermission } from "@/shared/hooks/usePermissions";
-import { PERMISSIONS } from "@/shared/lib/permissions";
+import { PERMISSIONS } from "@/shared/constants/permissions";
 import {
   ArrowLeft,
   Package,

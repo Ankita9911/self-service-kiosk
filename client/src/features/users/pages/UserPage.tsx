@@ -1,7 +1,7 @@
 import { useState } from "react";
 import useAuth from "@/shared/hooks/useAuth";
 import { usePermission } from "@/shared/hooks/usePermissions";
-import { PERMISSIONS } from "@/shared/lib/permissions";
+import { PERMISSIONS } from "@/shared/constants/permissions";
 import { useUsers } from "../hooks/useUsers";
 import { UserStats } from "../components/UserStats";
 import { UserFilters } from "../components/UserFilters";

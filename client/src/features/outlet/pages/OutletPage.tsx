@@ -5,7 +5,7 @@ import { getSocketUrl } from "@/shared/lib/socket";
 import useAuth from "@/shared/hooks/useAuth";
 import { usePermission } from "@/shared/hooks/usePermissions";
 import { useDebounce } from "@/shared/hooks/useDebounce";
-import { PERMISSIONS } from "@/shared/lib/permissions";
+import { PERMISSIONS } from "@/shared/constants/permissions";
 import { getFranchises } from "@/features/franchise/services/franchise.service";
 import {
   getOutletsPage,

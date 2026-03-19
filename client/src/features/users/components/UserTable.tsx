@@ -4,7 +4,7 @@ import { StatusBadge } from "@/shared/components/ui/StatusBadge";
 import { UserRowMenu } from "./UserRowMenu";
 import { Shimmer, ShimmerCell } from "@/shared/components/ui/ShimmerCell";
 import { CursorPagination } from "@/shared/components/ui/CursorPagination";
-import { PERMISSIONS } from "@/shared/lib/permissions";
+import { PERMISSIONS } from "@/shared/constants/permissions";
 import { usePermission } from "@/shared/hooks/usePermissions";
 import type { User } from "../types/user.types";
 import type { UserRole } from "../validations/user.schemas";
