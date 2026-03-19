@@ -184,8 +184,8 @@ export default function OrdersPage() {
       {viewMode === "table" ? (
         <OrdersTable
           orders={orders}
-          loading={loading}
-          filterLoading={filterLoading}
+          loading={loading || refreshing}
+          filterLoading={filterLoading && !refreshing}
           totalMatching={totalMatching}
           page={page}
           pageSize={pageSize}

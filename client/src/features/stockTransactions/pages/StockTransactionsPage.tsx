@@ -234,8 +234,8 @@ export default function StockTransactionsPage() {
 
       <StockTransactionTable
         transactions={transactions}
-        loading={tableLoading && !refreshing}
-        filterLoading={filterLoading}
+        loading={tableLoading || refreshing}
+        filterLoading={filterLoading && !refreshing}
         hasActiveFilters={hasActiveFilters}
         sortBy={filters.sortBy}
         sortOrder={filters.sortOrder}
