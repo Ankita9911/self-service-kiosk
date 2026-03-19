@@ -6,6 +6,7 @@ import AppError from "../../../shared/errors/AppError.js";
 import { toBoundedLimit } from "../../../shared/utils/pagination.js";
 import { SOURCE_TYPE } from "../constant/stockTransaction.constants.js";
 
+import { produceQueueMessage } from "../../../core/queue/queue.producer.js";
 const DEFAULT_LIMIT = 20;
 
 const VALID_SORT_FIELDS = ["createdAt", "type", "quantity"];
@@ -228,6 +229,25 @@ export async function createManualTransaction(data, tenant) {
     await Ingredient.findByIdAndUpdate(resolvedItemId, {
       $inc: { currentStock: stockDelta },
     });
+
+    // Queue low stock alert email if stock is below threshold
+    const updatedIngredient = await Ingredient.findById(resolvedItemId);
+    if (
+      updatedIngredient &&
+      updatedIngredient.currentStock < updatedIngredient.minThreshold &&
+      updatedIngredient.minThreshold > 0
+    ) {
+      await produceQueueMessage({
+        type: "LOW_STOCK_ALERT_EMAIL",
+        payload: {
+          ingredientId: String(resolvedItemId),
+          outletId: String(tenant.outletId),
+          franchiseId: String(tenant.franchiseId),
+        },
+      }).catch((err) => {
+        console.error("[StockTransaction] Failed to queue low stock alert:", err.message);
+      });
+    }
 
     transaction = await StockTransaction.create({
       ingredientId: resolvedItemId,

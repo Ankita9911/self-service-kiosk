@@ -23,7 +23,7 @@ function getTransporter() {
   return _transporter;
 }
 
-async function sendMail({ to, subject, html }) {
+async function sendMail({ to, cc, subject, html }) {
   const transporter = getTransporter();
   if (!transporter) {
     console.warn(`[Email] SMTP not configured — skipping email to ${to}`);
@@ -31,13 +31,20 @@ async function sendMail({ to, subject, html }) {
   }
 
   try {
-    await transporter.sendMail({
+    const mailOptions = {
       from: env.SMTP_FROM || `"HyperHub Kitchen" <${env.SMTP_USER}>`,
       to,
       subject,
       html,
-    });
-    console.info(`[Email] Sent "${subject}" → ${to}`);
+    };
+
+    // Add CC if provided
+    if (cc) {
+      mailOptions.cc = cc;
+    }
+
+    await transporter.sendMail(mailOptions);
+    console.info(`[Email] Sent "${subject}" → ${to}${cc ? ` (cc: ${cc})` : ""}`);
   } catch (err) {
     // Fire-and-forget: never crash the main request
     console.error(`[Email] Failed to send to ${to}:`, err.message);
@@ -283,3 +290,35 @@ export async function sendPasswordChangedEmail({ name, email }) {
     html,
   });
 }
+
+  export async function sendLowStockAlert({
+    to,
+    cc,
+    ingredientName,
+    currentStock,
+    minThreshold,
+    unit,
+    outletName,
+    franchiseName,
+  }) {
+    const { getLowStockAlertTemplate } = await import(
+      "./templates/lowStockAlert.template.js"
+    );
+
+    const appName = "HyperHub Kitchen";
+    const html = getLowStockAlertTemplate({
+      ingredientName,
+      currentStock,
+      minThreshold,
+      unit,
+      outletName,
+      franchiseName,
+    });
+
+    await sendMail({
+      to,
+      cc,
+      subject: `${appName} — Low Stock Alert: ${ingredientName}`,
+      html,
+    });
+  }

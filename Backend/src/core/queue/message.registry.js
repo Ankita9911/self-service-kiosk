@@ -1,5 +1,6 @@
 import { handleOrderPlaced } from "./handlers/order.handler.js";
 import { handleLowStockAlert } from "./handlers/inventory.handler.js";
+import { handleLowStockAlertQueue } from "./handlers/lowStockAlert.handler.js";
 import {
   handleMenuPriceUpdate,
   handleMenuStockUpdate,
@@ -30,4 +31,5 @@ export const MESSAGE_HANDLERS = {
   COMBO_CREATE: handleComboCreate,
   COMBO_UPDATE: handleComboUpdate,
   COMBO_DELETE: handleComboDelete,
+  LOW_STOCK_ALERT_EMAIL: handleLowStockAlertQueue,
 };
