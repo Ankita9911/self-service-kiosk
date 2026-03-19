@@ -64,7 +64,9 @@ function getPeriodStart(period) {
 
 async function getItemCategoryMeta(items, franchiseId, outletId) {
   const itemIds = [
-    ...new Set((items || []).map((item) => String(item.itemId)).filter(Boolean)),
+    ...new Set(
+      (items || []).map((item) => String(item.itemId)).filter(Boolean),
+    ),
   ].map((id) => new mongoose.Types.ObjectId(id));
 
   if (itemIds.length === 0) {
@@ -81,7 +83,9 @@ async function getItemCategoryMeta(items, franchiseId, outletId) {
     .lean();
 
   const categoryIds = [
-    ...new Set(menuItems.map((item) => String(item.categoryId)).filter(Boolean)),
+    ...new Set(
+      menuItems.map((item) => String(item.categoryId)).filter(Boolean),
+    ),
   ].map((id) => new mongoose.Types.ObjectId(id));
 
   const categories = await Category.find({
@@ -98,7 +102,13 @@ async function getItemCategoryMeta(items, franchiseId, outletId) {
   return new Map(
     menuItems.map((item) => {
       const categoryId = String(item.categoryId || "uncategorized");
-      return [String(item._id), { categoryId, categoryName: categoryMap.get(categoryId) || "Uncategorized" }];
+      return [
+        String(item._id),
+        {
+          categoryId,
+          categoryName: categoryMap.get(categoryId) || "Uncategorized",
+        },
+      ];
     }),
   );
 }
@@ -121,7 +131,11 @@ export async function recordOrderPlacedAggregate(payload) {
   };
 
   const { date, dateKey, hour } = toDateBucket(createdAt);
-  const categoryMeta = await getItemCategoryMeta(items, ids.franchiseId, ids.outletId);
+  const categoryMeta = await getItemCategoryMeta(
+    items,
+    ids.franchiseId,
+    ids.outletId,
+  );
 
   const inc = {
     ordersCount: 1,
@@ -138,7 +152,8 @@ export async function recordOrderPlacedAggregate(payload) {
     const itemId = String(item.itemId);
     if (!itemId) continue;
 
-    inc[`itemSalesQty.${itemId}`] = (inc[`itemSalesQty.${itemId}`] || 0) + (item.quantity || 0);
+    inc[`itemSalesQty.${itemId}`] =
+      (inc[`itemSalesQty.${itemId}`] || 0) + (item.quantity || 0);
     inc[`itemSalesRevenue.${itemId}`] =
       (inc[`itemSalesRevenue.${itemId}`] || 0) + (item.lineTotal || 0);
     set[`itemSalesName.${itemId}`] = item.nameSnapshot || "Item";
@@ -151,7 +166,8 @@ export async function recordOrderPlacedAggregate(payload) {
     inc[`categorySalesQty.${meta.categoryId}`] =
       (inc[`categorySalesQty.${meta.categoryId}`] || 0) + (item.quantity || 0);
     inc[`categorySalesRevenue.${meta.categoryId}`] =
-      (inc[`categorySalesRevenue.${meta.categoryId}`] || 0) + (item.lineTotal || 0);
+      (inc[`categorySalesRevenue.${meta.categoryId}`] || 0) +
+      (item.lineTotal || 0);
     set[`categorySalesName.${meta.categoryId}`] = meta.categoryName;
   }
 
@@ -178,7 +194,13 @@ export async function recordOrderPlacedAggregate(payload) {
 export async function recordOrderStatusChangeAggregate(payload) {
   const { franchiseId, outletId, createdAt, fromStatus, toStatus } = payload;
 
-  if (!franchiseId || !outletId || !fromStatus || !toStatus || fromStatus === toStatus) {
+  if (
+    !franchiseId ||
+    !outletId ||
+    !fromStatus ||
+    !toStatus ||
+    fromStatus === toStatus
+  ) {
     return;
   }
 
@@ -231,7 +253,10 @@ function sortTopEntries(valueMap, valueNameMap, qtyMap, limit = 5) {
     }));
 }
 
-export async function getOutletManagerAnalyticsFromAggregates(tenant, period = "7d") {
+export async function getOutletManagerAnalyticsFromAggregates(
+  tenant,
+  period = "7d",
+) {
   const franchiseId = new mongoose.Types.ObjectId(tenant.franchiseId);
   const outletId = new mongoose.Types.ObjectId(tenant.outletId);
   const periodStart = getPeriodStart(period);
@@ -384,7 +409,10 @@ export async function getFranchiseAdminAnalyticsFromAggregates(
     mergeNameMap(categoryNames, doc.categorySalesName);
   }
 
-  const totalOutlets = await Outlet.countDocuments({ franchiseId, isDeleted: false });
+  const totalOutlets = await Outlet.countDocuments({
+    franchiseId,
+    isDeleted: false,
+  });
 
   const outletIds = [...outletCounter.keys()].map(
     (id) => new mongoose.Types.ObjectId(id),
@@ -399,7 +427,10 @@ export async function getFranchiseAdminAnalyticsFromAggregates(
     .lean();
 
   const outletNameMap = new Map(
-    outletDetails.map((o) => [String(o._id), { name: o.name, outletCode: o.outletCode }]),
+    outletDetails.map((o) => [
+      String(o._id),
+      { name: o.name, outletCode: o.outletCode },
+    ]),
   );
 
   const outletBreakdown = [...outletCounter.entries()]

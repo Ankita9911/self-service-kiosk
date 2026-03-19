@@ -69,7 +69,10 @@ export async function notifyLowStock({ ingredient, outlet, franchise }) {
       franchiseName: franchise.name,
     });
   } catch (error) {
-    console.error("[LowStockAlert] Failed to send low-stock alert:", error.message);
+    console.error(
+      "[LowStockAlert] Failed to send low-stock alert:",
+      error.message,
+    );
   }
 }
 
