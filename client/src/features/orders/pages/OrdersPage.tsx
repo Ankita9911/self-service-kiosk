@@ -142,46 +142,43 @@ export default function OrdersPage() {
 
       <OrdersStats stats={stats} loading={statsLoading} />
 
-      <div className="space-y-3">
-        <div className="flex items-center justify-end">
-          <div className="flex items-center gap-1 bg-white dark:bg-[#161920] border border-slate-100 dark:border-white/8 rounded-xl p-1 shrink-0">
-            <button
-              onClick={() => setViewMode("table")}
-              className={`flex items-center gap-1.5 h-7 px-3 rounded-lg text-[12px] font-semibold transition-all ${
-                viewMode === "table"
-                  ? "bg-indigo-600 text-white shadow-sm"
-                  : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-white/5"
-              }`}
-            >
-              <List className="w-3.5 h-3.5" />
-              Table
-            </button>
-            <button
-              onClick={() => setViewMode("charts")}
-              className={`flex items-center gap-1.5 h-7 px-3 rounded-lg text-[12px] font-semibold transition-all ${
-                viewMode === "charts"
-                  ? "bg-indigo-600 text-white shadow-sm"
-                  : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-white/5"
-              }`}
-            >
-              <BarChart2 className="w-3.5 h-3.5" />
-              Charts
-            </button>
-          </div>
-        </div>
-
-        <div className="w-full">
-          <OrdersFilters
-            filters={filters}
-            isSuperAdmin={isSuperAdmin}
-            isFranchiseAdmin={isFranchiseAdmin}
-            franchises={franchises}
-            outlets={visibleOutlets}
-            hasActiveFilters={hasActiveFilters}
-            onFilterChange={handleFilterChange}
-            onClear={handleClear}
-          />
-        </div>
+      <div>
+        <OrdersFilters
+          filters={filters}
+          isSuperAdmin={isSuperAdmin}
+          isFranchiseAdmin={isFranchiseAdmin}
+          franchises={franchises}
+          outlets={visibleOutlets}
+          hasActiveFilters={hasActiveFilters}
+          chartToggle={
+            <div className="flex items-center gap-1 bg-white dark:bg-[#161920] border border-slate-100 dark:border-white/8 rounded-xl p-1">
+              <button
+                onClick={() => setViewMode("table")}
+                className={`flex items-center gap-1.5 h-7 px-3 rounded-lg text-[12px] font-semibold transition-all ${
+                  viewMode === "table"
+                    ? "bg-indigo-600 text-white shadow-sm"
+                    : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-white/5"
+                }`}
+              >
+                <List className="w-3.5 h-3.5" />
+                Table
+              </button>
+              <button
+                onClick={() => setViewMode("charts")}
+                className={`flex items-center gap-1.5 h-7 px-3 rounded-lg text-[12px] font-semibold transition-all ${
+                  viewMode === "charts"
+                    ? "bg-indigo-600 text-white shadow-sm"
+                    : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-white/5"
+                }`}
+              >
+                <BarChart2 className="w-3.5 h-3.5" />
+                Charts
+              </button>
+            </div>
+          }
+          onFilterChange={handleFilterChange}
+          onClear={handleClear}
+        />
       </div>
 
       {viewMode === "table" ? (
