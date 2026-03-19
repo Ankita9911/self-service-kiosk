@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { ChevronDown, KeyRound, LogOut, Sun, Moon } from "lucide-react";
 import { useTheme } from "@/shared/providers/ThemeProvider";
+import { ChangePasswordModal } from "@/features/auth/components/ChangePasswordModal";
 import type { User } from "@/features/users/types/user.types";
 
 interface UserDropdownProps {
@@ -20,9 +20,9 @@ function getInitials(name?: string): string {
 }
 
 export function UserDropdown({ user, onLogoutRequest }: UserDropdownProps) {
-  const navigate = useNavigate();
   const { toggleTheme, isDark } = useTheme();
   const [open, setOpen] = useState(false);
+  const [showChangePassword, setShowChangePassword] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -100,7 +100,7 @@ export function UserDropdown({ user, onLogoutRequest }: UserDropdownProps) {
             <button
               onClick={() => {
                 setOpen(false);
-                navigate("/reset-password");
+                setShowChangePassword(true);
               }}
               className="w-full flex items-center gap-3 px-4 py-2.5 text-[12.5px] text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/[0.04] hover:text-slate-900 dark:hover:text-slate-200 transition"
             >
@@ -123,6 +123,11 @@ export function UserDropdown({ user, onLogoutRequest }: UserDropdownProps) {
           </div>
         </div>
       )}
+
+      <ChangePasswordModal
+        open={showChangePassword}
+        onClose={() => setShowChangePassword(false)}
+      />
     </div>
   );
 }
