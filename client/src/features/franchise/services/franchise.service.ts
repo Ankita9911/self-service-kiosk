@@ -11,6 +11,10 @@ export interface CursorPageOptions {
   limit?: number;
 }
 
+interface RequestBehaviorOptions {
+  suppressErrorToast?: boolean;
+}
+
 export interface PaginatedFranchisesResult {
   items: Franchise[];
   pagination: {
@@ -35,6 +39,7 @@ export interface CreateFranchiseDTO {
 export async function getFranchisesPage(
   params: FranchiseFilterParams = {},
   options: CursorPageOptions = {},
+  requestOptions: RequestBehaviorOptions = {},
 ): Promise<PaginatedFranchisesResult> {
   const query: Record<string, string> = {};
   if (params.search?.trim()) query.search = params.search.trim();
@@ -56,7 +61,12 @@ export async function getFranchisesPage(
         activeItems?: number;
       };
     };
-  }>("/franchises", { params: query });
+  }>("/franchises", {
+    params: query,
+    ...(requestOptions.suppressErrorToast
+      ? { headers: { "x-skip-error-toast": "true" } }
+      : {}),
+  });
 
   const pagination = response.data.meta?.pagination ?? {};
   const stats = response.data.meta?.stats ?? {};
@@ -80,12 +90,17 @@ export async function getFranchisesPage(
 
 export async function getFranchises(
   params: FranchiseFilterParams = {},
+  requestOptions: RequestBehaviorOptions = {},
 ): Promise<Franchise[]> {
   const allFranchises: Franchise[] = [];
   let cursor: string | undefined;
 
   while (true) {
-    const page = await getFranchisesPage(params, { cursor, limit: 100 });
+    const page = await getFranchisesPage(
+      params,
+      { cursor, limit: 100 },
+      requestOptions,
+    );
     allFranchises.push(...page.items);
     if (!page.pagination.hasNext || !page.pagination.nextCursor) break;
     cursor = page.pagination.nextCursor;

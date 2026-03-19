@@ -15,6 +15,10 @@ export interface CursorPageOptions {
   limit?: number;
 }
 
+interface RequestBehaviorOptions {
+  suppressErrorToast?: boolean;
+}
+
 export interface PaginatedOutletsResult {
   items: Outlet[];
   pagination: {
@@ -32,6 +36,7 @@ export interface PaginatedOutletsResult {
 export async function getOutletsPage(
   params: OutletFilterParams = {},
   options: CursorPageOptions = {},
+  requestOptions: RequestBehaviorOptions = {},
 ): Promise<PaginatedOutletsResult> {
   const query: Record<string, string> = {};
   if (params.search?.trim()) query.search = params.search.trim();
@@ -55,7 +60,12 @@ export async function getOutletsPage(
         activeItems?: number;
       };
     };
-  }>("/outlets", { params: query });
+  }>("/outlets", {
+    params: query,
+    ...(requestOptions.suppressErrorToast
+      ? { headers: { "x-skip-error-toast": "true" } }
+      : {}),
+  });
 
   const pagination = response.data.meta?.pagination ?? {};
   const stats = response.data.meta?.stats ?? {};
@@ -79,12 +89,17 @@ export async function getOutletsPage(
 
 export async function getOutlets(
   params: OutletFilterParams = {},
+  requestOptions: RequestBehaviorOptions = {},
 ): Promise<Outlet[]> {
   const allOutlets: Outlet[] = [];
   let cursor: string | undefined;
 
   while (true) {
-    const page = await getOutletsPage(params, { cursor, limit: 100 });
+    const page = await getOutletsPage(
+      params,
+      { cursor, limit: 100 },
+      requestOptions,
+    );
     allOutlets.push(...page.items);
     if (!page.pagination.hasNext || !page.pagination.nextCursor) break;
     cursor = page.pagination.nextCursor;

@@ -25,7 +25,16 @@ export interface UserFilters {
   status: "ALL" | "ACTIVE" | "INACTIVE";
 }
 
-export function useUsers(filters: UserFilters) {
+interface UserLookupOptions {
+  canViewFranchises?: boolean;
+  canViewOutlets?: boolean;
+}
+
+export function useUsers(
+  filters: UserFilters,
+  lookupOptions: UserLookupOptions = {},
+) {
+  const { canViewFranchises = false, canViewOutlets = false } = lookupOptions;
   const [users, setUsers] = useState<User[]>([]);
   const [franchises, setFranchises] = useState<Franchise[]>([]);
   const [outlets, setOutlets] = useState<Outlet[]>([]);
@@ -52,13 +61,24 @@ export function useUsers(filters: UserFilters) {
   const hasPrevPage = page > 1;
 
   const fetchLookupData = useCallback(async () => {
+    if (!canViewFranchises) setFranchises([]);
+    if (!canViewOutlets) setOutlets([]);
+
     const [franchiseList, outletList] = await Promise.all([
-      getFranchises().catch(() => []),
-      getOutlets({ franchiseId: filters.franchiseId }).catch(() => []),
+      canViewFranchises
+        ? getFranchises({}, { suppressErrorToast: true }).catch(() => [])
+        : Promise.resolve([]),
+      canViewOutlets
+        ? getOutlets(
+            { franchiseId: filters.franchiseId },
+            { suppressErrorToast: true },
+          ).catch(() => [])
+        : Promise.resolve([]),
     ]);
+
     setFranchises(franchiseList);
     setOutlets(outletList);
-  }, [filters.franchiseId]);
+  }, [canViewFranchises, canViewOutlets, filters.franchiseId]);
 
   useEffect(() => {
     fetchLookupData();

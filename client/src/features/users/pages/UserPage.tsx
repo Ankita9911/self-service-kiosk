@@ -23,6 +23,8 @@ export default function UserPage() {
 
   const isSuperAdmin = currentUser?.role === "SUPER_ADMIN";
   const isFranchiseAdmin = currentUser?.role === "FRANCHISE_ADMIN";
+  const canViewFranchises = hasPermission(PERMISSIONS.FRANCHISE_VIEW);
+  const canViewOutlets = hasPermission(PERMISSIONS.OUTLET_VIEW);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState("ALL");
@@ -55,13 +57,19 @@ export default function UserPage() {
     handleChangeRole,
     handleChangeStatus,
     handleResetPassword,
-  } = useUsers({
-    search: searchTerm,
-    role: roleFilter,
-    franchiseId: franchiseFilter,
-    outletId: outletFilter,
-    status: statusFilter,
-  });
+  } = useUsers(
+    {
+      search: searchTerm,
+      role: roleFilter,
+      franchiseId: franchiseFilter,
+      outletId: outletFilter,
+      status: statusFilter,
+    },
+    {
+      canViewFranchises,
+      canViewOutlets,
+    },
+  );
 
   const [open, setOpen] = useState(false);
   const [createdUser, setCreatedUser] = useState<{
