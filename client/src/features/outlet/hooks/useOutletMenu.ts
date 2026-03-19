@@ -202,6 +202,7 @@ function decorateMenuItems(
 export interface OutletMenuFilters {
   search: string;
   status: "ALL" | "ACTIVE" | "INACTIVE";
+  serviceType?: "DINE_IN" | "TAKE_AWAY" | "BOTH";
 }
 
 export function useOutletMenu(
@@ -371,6 +372,7 @@ export function useOutletMenu(
             cursor: currentCursor ?? undefined,
             limit: pageSize,
           },
+          filters?.serviceType,
         );
 
         if (cancelled) return;
@@ -403,6 +405,7 @@ export function useOutletMenu(
     selectedCategoryId,
     debouncedSearch,
     filters?.status,
+    filters?.serviceType,
     currentCursor,
     pageSize,
     refreshTick,

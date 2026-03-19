@@ -55,12 +55,13 @@ export const createMenuItem = asyncHandler(async (req, res) => {
 });
 
 export const getMenuItems = asyncHandler(async (req, res) => {
-  const { categoryId, search, status, cursor, limit } = req.query;
+  const { categoryId, search, status, serviceType, cursor, limit } = req.query;
 
   const result = await menuService.getMenuItems(req.tenant, {
     categoryId,
     search,
     status,
+    serviceType,
     cursor,
     limit,
   });

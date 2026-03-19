@@ -42,11 +42,17 @@ export function MenuItemTableRow({
   onView,
   onCreateRecipe,
 }: Props) {
+  const MAX_VISIBLE_OFFERS = 3;
   const category = categories.find((c) => c._id === item.categoryId);
   const isLowStock = item.stockStatus === "LOW_STOCK";
   const isOutOfStock = item.stockStatus === "OUT_OF_STOCK";
   const hasRecipeStock = item.stockSource === "RECIPE";
   const isUnavailable = item.isActive === false || isOutOfStock;
+  const visibleOffers = item.offers?.slice(0, MAX_VISIBLE_OFFERS) ?? [];
+  const hiddenOfferCount = Math.max(
+    (item.offers?.length ?? 0) - visibleOffers.length,
+    0,
+  );
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [preview, setPreview] = useState(false);
@@ -194,11 +200,20 @@ export function MenuItemTableRow({
                   {item.description}
                 </p>
               )}
-              {item.offers && item.offers.length > 0 && (
-                <div className="flex flex-wrap gap-1 mt-1">
-                  {item.offers.map((offer, i) => (
-                    <AdminOfferBadge key={i} offer={offer} />
+              {visibleOffers.length > 0 && (
+                <div className="flex items-center gap-1 mt-1 min-w-0 overflow-hidden">
+                  {visibleOffers.map((offer, i) => (
+                    <AdminOfferBadge
+                      key={`${offer.type}-${i}`}
+                      offer={offer}
+                      className="max-w-30 truncate"
+                    />
                   ))}
+                  {hiddenOfferCount > 0 && (
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600 dark:bg-white/10 dark:text-slate-300 border border-slate-200 dark:border-white/10 shrink-0">
+                      +{hiddenOfferCount}
+                    </span>
+                  )}
                 </div>
               )}
             </div>

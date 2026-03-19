@@ -58,6 +58,7 @@ export async function getMenuItems(
   search?: string,
   status?: "ALL" | "ACTIVE" | "INACTIVE",
   options?: { cursor?: string; limit?: number },
+  serviceType?: "DINE_IN" | "TAKE_AWAY" | "BOTH",
 ): Promise<{
   items: MenuItem[];
   pagination: {
@@ -76,6 +77,7 @@ export async function getMenuItems(
   if (categoryId) p.categoryId = categoryId;
   if (search?.trim()) p.search = search.trim();
   if (status && status !== "ALL") p.status = status;
+  if (serviceType) p.serviceType = serviceType;
   if (options?.cursor) p.cursor = options.cursor;
   if (typeof options?.limit === "number") p.limit = String(options.limit);
 

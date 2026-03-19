@@ -60,6 +60,9 @@ export default function OutletMenuPage() {
   const [itemStatusFilter, setItemStatusFilter] = useState<
     "ALL" | "ACTIVE" | "INACTIVE"
   >("ALL");
+  const [itemServiceFilter, setItemServiceFilter] = useState<
+    "DINE_IN" | "TAKE_AWAY" | "BOTH" | undefined
+  >(undefined);
 
   const {
     categories,
@@ -103,6 +106,7 @@ export default function OutletMenuPage() {
   } = useOutletMenu(outletId, user?.role, canManage, {
     search,
     status: itemStatusFilter,
+    serviceType: itemServiceFilter,
   });
 
   const [addCategoryOpen, setAddCategoryOpen] = useState(false);
@@ -155,7 +159,10 @@ export default function OutletMenuPage() {
   const activeCount = activeItems;
 
   const isFiltered =
-    search !== "" || itemStatusFilter !== "ALL" || selectedCategoryId !== "ALL";
+    search !== "" ||
+    itemStatusFilter !== "ALL" ||
+    Boolean(itemServiceFilter) ||
+    selectedCategoryId !== "ALL";
 
   const handleSearchChange = (v: string) => {
     setSearch(v);
@@ -165,9 +172,14 @@ export default function OutletMenuPage() {
     setItemStatusFilter(v);
     resetToFirstPage();
   };
+  const handleServiceChange = (v: "DINE_IN" | "TAKE_AWAY" | "BOTH") => {
+    setItemServiceFilter((prev) => (prev === v ? undefined : v));
+    resetToFirstPage();
+  };
   const clearFilters = () => {
     setSearch("");
     setItemStatusFilter("ALL");
+    setItemServiceFilter(undefined);
     setSelectedCategoryId("ALL");
     resetToFirstPage();
   };
@@ -566,6 +578,25 @@ export default function OutletMenuPage() {
                   }`}
                 >
                   {s === "ALL" ? "All" : s === "ACTIVE" ? "Active" : "Inactive"}
+                </button>
+              ))}
+            </div>
+            <div className="inline-flex shrink-0 items-center bg-white dark:bg-[#161920] border border-slate-200 dark:border-white/8 rounded-xl p-1 gap-0.5">
+              {(["DINE_IN", "TAKE_AWAY", "BOTH"] as const).map((s) => (
+                <button
+                  key={s}
+                  onClick={() => handleServiceChange(s)}
+                  className={`h-7 px-2.5 rounded-lg text-[11px] font-semibold transition-all ${
+                    itemServiceFilter === s
+                      ? "bg-indigo-600 text-white shadow-sm"
+                      : "text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                  }`}
+                >
+                  {s === "DINE_IN"
+                    ? "Dine In"
+                    : s === "TAKE_AWAY"
+                      ? "Take Away"
+                      : "Both"}
                 </button>
               ))}
             </div>
