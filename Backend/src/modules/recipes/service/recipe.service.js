@@ -127,7 +127,10 @@ export async function getRecipes(
     await Promise.all([
       Recipe.find(queryFilter)
         .populate("menuItemId", "name price categoryId")
-        .populate("ingredients.ingredientId", "name unit currentStock")
+        .populate(
+          "ingredients.ingredientId",
+          "name unit currentStock minThreshold",
+        )
         .sort({ createdAt: -1, _id: -1 })
         .limit(pageLimit + 1)
         .lean(),
@@ -163,7 +166,7 @@ export async function getRecipeById(id, tenant) {
     ...(tenant.outletId ? { outletId: tenant.outletId } : {}),
   })
     .populate("menuItemId", "name price categoryId")
-    .populate("ingredients.ingredientId", "name unit currentStock")
+    .populate("ingredients.ingredientId", "name unit currentStock minThreshold")
     .lean();
 
   if (!recipe) {
@@ -245,7 +248,7 @@ export async function updateRecipe(id, data, tenant) {
     { new: true, runValidators: true },
   )
     .populate("menuItemId", "name price categoryId")
-    .populate("ingredients.ingredientId", "name unit currentStock");
+    .populate("ingredients.ingredientId", "name unit currentStock minThreshold");
 
   if (!recipe) {
     throw new AppError("Recipe not found", 404, "RECIPE_NOT_FOUND");

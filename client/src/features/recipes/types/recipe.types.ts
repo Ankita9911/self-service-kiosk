@@ -1,7 +1,13 @@
 export interface RecipeIngredient {
   ingredientId:
     | string
-    | { _id: string; name: string; unit: string; currentStock: number };
+    | {
+        _id: string;
+        name: string;
+        unit: string;
+        currentStock: number;
+        minThreshold?: number;
+      };
   quantity: number;
   unit: string;
 }

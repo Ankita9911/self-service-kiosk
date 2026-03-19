@@ -12,8 +12,10 @@ import { RecipeCard } from "@/features/recipes/components/RecipeCard";
 import { RecipeTableRow } from "@/features/recipes/components/RecipeTableRow";
 import { RecipeDeleteModal } from "@/features/recipes/components/RecipeDeleteModal";
 import { RecipeFormModal } from "@/features/recipes/components/RecipeFormModal";
+import { RecipeViewModal } from "@/features/recipes/components/RecipeViewModal";
 import { AIRecipeModal } from "@/features/recipes/components/AIRecipeModal";
 import { findIngredientMatch } from "@/features/recipes/lib/ingredientMatching";
+import { getRecipeById } from "@/features/recipes/services/recipe.service";
 import { CursorPagination } from "@/shared/components/ui/CursorPagination";
 import { Shimmer } from "@/shared/components/ui/ShimmerCell";
 import type {
@@ -104,6 +106,9 @@ export default function RecipesPage() {
   const [showForm, setShowForm] = useState(false);
   const [showAI, setShowAI] = useState(false);
   const [editingRecipe, setEditingRecipe] = useState<Recipe | null>(null);
+  const [viewingRecipe, setViewingRecipe] = useState<Recipe | null>(null);
+  const [viewModalOpen, setViewModalOpen] = useState(false);
+  const [viewLoading, setViewLoading] = useState(false);
   const [deletingRecipe, setDeletingRecipe] = useState<Recipe | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [aiPrefill, setAiPrefill] = useState<RecipeFormState | null>(null);
@@ -173,6 +178,25 @@ export default function RecipesPage() {
     setEditingRecipe(recipe);
     setAiPrefill(null);
     setShowForm(true);
+  };
+
+  const handleView = async (recipe: Recipe) => {
+    setViewingRecipe(recipe);
+    setViewModalOpen(true);
+    setViewLoading(true);
+    try {
+      const fullRecipe = await getRecipeById(recipe._id, listOutletId);
+      setViewingRecipe(fullRecipe);
+    } catch {
+      // handled by interceptor; fallback to already loaded row data
+    } finally {
+      setViewLoading(false);
+    }
+  };
+
+  const handleEditFromView = (recipe: Recipe) => {
+    setViewModalOpen(false);
+    handleEdit(recipe);
   };
 
   const confirmDelete = async () => {
@@ -286,7 +310,7 @@ export default function RecipesPage() {
               {Array.from({ length: pageSize }).map((_, i) => (
                 <div
                   key={i}
-                  className="rounded-2xl border border-slate-100 dark:border-white/[0.06] bg-white dark:bg-[#1e2130] p-4 space-y-3"
+                  className="rounded-2xl border border-slate-100 dark:border-white/6 bg-white dark:bg-[#1e2130] p-4 space-y-3"
                 >
                   <Shimmer w="w-3/4" />
                   <div className="flex gap-2">
@@ -309,6 +333,7 @@ export default function RecipesPage() {
                 <RecipeCard
                   key={recipe._id}
                   recipe={recipe}
+                  onView={handleView}
                   onEdit={handleEdit}
                   onDelete={setDeletingRecipe}
                   showActions={Boolean(actionOutletId)}
@@ -384,6 +409,7 @@ export default function RecipesPage() {
                     key={recipe._id}
                     recipe={recipe}
                     index={index}
+                    onView={handleView}
                     onEdit={handleEdit}
                     onDelete={setDeletingRecipe}
                     showActions={Boolean(actionOutletId)}
@@ -441,6 +467,15 @@ export default function RecipesPage() {
           onClear={clearAISuggestion}
         />
       )}
+
+      <RecipeViewModal
+        open={viewModalOpen}
+        loading={viewLoading}
+        recipe={viewingRecipe}
+        showActions={Boolean(actionOutletId)}
+        onClose={() => setViewModalOpen(false)}
+        onEdit={handleEditFromView}
+      />
 
       <RecipeDeleteModal
         open={Boolean(deletingRecipe)}

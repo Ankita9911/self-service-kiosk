@@ -4,6 +4,7 @@ import { RecipeRowMenu } from "@/features/recipes/components/RecipeRowMenu";
 
 interface Props {
   recipe: Recipe;
+  onView: (recipe: Recipe) => void;
   onEdit: (recipe: Recipe) => void;
   onDelete: (recipe: Recipe) => void;
   showActions?: boolean;
@@ -37,6 +38,7 @@ const stockColors = {
 
 export function RecipeCard({
   recipe,
+  onView,
   onEdit,
   onDelete,
   showActions = true,
@@ -49,7 +51,10 @@ export function RecipeCard({
   const { label: stockLabel, color: stockColor } = getServingsInfo(recipe);
 
   return (
-    <div className="group rounded-2xl border border-slate-100 dark:border-white/6 bg-white dark:bg-[#1e2130] shadow-sm hover:shadow-md transition-all p-4 flex flex-col gap-3">
+    <div
+      onClick={() => onView(recipe)}
+      className="group cursor-pointer rounded-2xl border border-slate-100 dark:border-white/6 bg-white dark:bg-[#1e2130] shadow-sm hover:shadow-md transition-all p-4 flex flex-col gap-3"
+    >
       {/* Header */}
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-2.5 min-w-0">

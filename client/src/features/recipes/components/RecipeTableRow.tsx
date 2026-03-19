@@ -5,6 +5,7 @@ import { RecipeRowMenu } from "@/features/recipes/components/RecipeRowMenu";
 interface Props {
   recipe: Recipe;
   index: number;
+  onView: (recipe: Recipe) => void;
   onEdit: (recipe: Recipe) => void;
   onDelete: (recipe: Recipe) => void;
   showActions?: boolean;
@@ -46,6 +47,7 @@ function getServingsInfo(recipe: Recipe) {
 export function RecipeTableRow({
   recipe,
   index,
+  onView,
   onEdit,
   onDelete,
   showActions = true,
@@ -66,7 +68,10 @@ export function RecipeTableRow({
     );
 
   return (
-    <tr className="group hover:bg-indigo-50/30 dark:hover:bg-indigo-500/4 transition-colors">
+    <tr
+      onClick={() => onView(recipe)}
+      className="group cursor-pointer hover:bg-indigo-50/30 dark:hover:bg-indigo-500/4 transition-colors"
+    >
       {/* # */}
       <td className="px-5 py-3.5 text-[12px] text-slate-400 dark:text-slate-500 font-mono">
         {index + 1}
@@ -79,7 +84,7 @@ export function RecipeTableRow({
             <ChefHat className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
           </div>
           <div className="min-w-0">
-            <p className="text-sm font-medium text-slate-800 dark:text-white truncate max-w-[160px]">
+            <p className="text-sm font-medium text-slate-800 dark:text-white truncate max-w-40">
               {menuItemName}
             </p>
             {recipe.aiGenerated && (
@@ -97,7 +102,7 @@ export function RecipeTableRow({
           {ingredientNames.map((name, i) => (
             <span
               key={i}
-              className="text-[10px] px-1.5 py-0.5 rounded-md bg-slate-50 dark:bg-white/5 text-slate-500 dark:text-slate-400 border border-slate-100 dark:border-white/[0.06]"
+              className="text-[10px] px-1.5 py-0.5 rounded-md bg-slate-50 dark:bg-white/5 text-slate-500 dark:text-slate-400 border border-slate-100 dark:border-white/6"
             >
               {name}
             </span>

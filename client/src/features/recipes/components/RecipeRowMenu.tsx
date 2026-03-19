@@ -26,7 +26,8 @@ export function RecipeRowMenu({ onEdit, onDelete }: Props) {
     <div className="relative" ref={ref}>
       <button
         ref={btnRef}
-        onClick={() => {
+        onClick={(e) => {
+          e.stopPropagation();
           if (btnRef.current) {
             const rect = btnRef.current.getBoundingClientRect();
             setOpenAbove(window.innerHeight - rect.bottom < 140);
@@ -45,7 +46,8 @@ export function RecipeRowMenu({ onEdit, onDelete }: Props) {
           } w-44 bg-white dark:bg-[#1a1d26] rounded-xl border border-slate-200 dark:border-white/8 shadow-xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-1 duration-150`}
         >
           <button
-            onClick={() => {
+            onClick={(e) => {
+              e.stopPropagation();
               setMenuOpen(false);
               onEdit();
             }}
@@ -56,7 +58,8 @@ export function RecipeRowMenu({ onEdit, onDelete }: Props) {
           </button>
           <div className="h-px bg-slate-100 dark:bg-white/6 mx-3" />
           <button
-            onClick={() => {
+            onClick={(e) => {
+              e.stopPropagation();
               setMenuOpen(false);
               onDelete();
             }}
