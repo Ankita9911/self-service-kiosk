@@ -79,10 +79,7 @@ export async function getMenuItems(
   if (status === "ACTIVE") baseFilter.isActive = { $ne: false };
   if (status === "INACTIVE") baseFilter.isActive = false;
 
-  if (
-    serviceType &&
-    ["DINE_IN", "TAKE_AWAY", "BOTH"].includes(serviceType)
-  ) {
+  if (serviceType && ["DINE_IN", "TAKE_AWAY", "BOTH"].includes(serviceType)) {
     baseFilter.serviceType = serviceType;
   }
 

@@ -245,7 +245,10 @@ export async function createManualTransaction(data, tenant) {
           franchiseId: String(tenant.franchiseId),
         },
       }).catch((err) => {
-        console.error("[StockTransaction] Failed to queue low stock alert:", err.message);
+        console.error(
+          "[StockTransaction] Failed to queue low stock alert:",
+          err.message,
+        );
       });
     }
 
