@@ -15,7 +15,7 @@ import type { Ingredient } from "@/features/ingredients/types/ingredient.types";
 import type { MenuItem } from "@/features/kiosk/types/menu.types";
 import type { Outlet } from "@/features/outlet/types/outlet.types";
 import type { StockTransactionSortBy } from "../types/stockTransaction.types";
-import { Plus, Loader2, RefreshCcw, ShieldAlert } from "lucide-react";
+import { Plus, RefreshCcw, ShieldAlert } from "lucide-react";
 
 const DEFAULT_FILTERS: StockTransactionFilters = {
   search: "",
@@ -232,29 +232,24 @@ export default function StockTransactionsPage() {
         onResetPage={resetToFirstPage}
       />
 
-      {tableLoading && !refreshing ? (
-        <div className="flex items-center justify-center py-20">
-          <Loader2 className="w-6 h-6 animate-spin text-slate-400" />
-        </div>
-      ) : (
-        <StockTransactionTable
-          transactions={transactions}
-          filterLoading={filterLoading}
-          hasActiveFilters={hasActiveFilters}
-          sortBy={filters.sortBy}
-          sortOrder={filters.sortOrder}
-          total={totalMatching}
-          page={page}
-          pageSize={pageSize}
-          hasPrevPage={hasPrevPage}
-          hasNextPage={hasNextPage}
-          onSort={handleSort}
-          onClearFilters={clearFilters}
-          onPrevPage={goToPrevPage}
-          onNextPage={goToNextPage}
-          onPageSizeChange={setPageSize}
-        />
-      )}
+      <StockTransactionTable
+        transactions={transactions}
+        loading={tableLoading && !refreshing}
+        filterLoading={filterLoading}
+        hasActiveFilters={hasActiveFilters}
+        sortBy={filters.sortBy}
+        sortOrder={filters.sortOrder}
+        total={totalMatching}
+        page={page}
+        pageSize={pageSize}
+        hasPrevPage={hasPrevPage}
+        hasNextPage={hasNextPage}
+        onSort={handleSort}
+        onClearFilters={clearFilters}
+        onPrevPage={goToPrevPage}
+        onNextPage={goToNextPage}
+        onPageSizeChange={setPageSize}
+      />
 
       {showForm && (
         <LogTransactionModal
