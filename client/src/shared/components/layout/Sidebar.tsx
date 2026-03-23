@@ -242,7 +242,7 @@ export default function Sidebar({ collapsed, onCollapseChange }: SidebarProps) {
         </div>
       )}
 
-      <nav className="flex-1 overflow-y-auto py-2 px-2 space-y-0.5 scrollbar-hide">
+      <nav className="flex-1 overflow-y-auto py-2 px-2 space-y-1 scrollbar-hide">
         {groups.map((group, gi) => (
           <div
             key={gi}
@@ -265,7 +265,7 @@ export default function Sidebar({ collapsed, onCollapseChange }: SidebarProps) {
                   to={item.path}
                   title={collapsed ? item.label : undefined}
                   className={({ isActive }) => `
-                    group flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-[12.5px] font-medium
+                    group flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[12.5px] font-medium mb-1 last:mb-0
                     transition-all duration-150 relative
                     ${
                       isActive
