@@ -29,182 +29,186 @@ export default function CompleteMealSuggestion({
   if (!isLoading && !hasContent) return null;
 
   return (
-    <div className="border-t border-[#dff1ec] pt-3 px-4 pb-3 bg-[#fcfffe]">
-      {/* Header */}
-      <div className="flex items-center gap-2 mb-3">
-        <div className="flex items-center gap-1.5 bg-[#e8f7f3] px-3 py-1 rounded-full">
-          <UtensilsCrossed
-            className="w-3.5 h-3.5 text-[#0e9f89]"
-            strokeWidth={2.5}
-          />
-          <span
-            className="text-xs font-black text-[#0e9f89] uppercase tracking-wide"
-            style={{ fontFamily: "var(--font-display)" }}
-          >
-            Complete your meal
-          </span>
+    <div className="border-t border-[#dff1ec] pt-3 pb-4 bg-[#fcfffe]">
+      <div className="mx-auto w-full max-w-5xl px-4">
+        {/* Header */}
+        <div className="flex items-center gap-2 mb-3">
+          <div className="flex items-center gap-1.5 bg-[#e8f7f3] px-3 py-1 rounded-full">
+            <UtensilsCrossed
+              className="w-3.5 h-3.5 text-[#0e9f89]"
+              strokeWidth={2.5}
+            />
+            <span
+              className="text-xs font-black text-[#0e9f89] uppercase tracking-wide"
+              style={{ fontFamily: "var(--font-display)" }}
+            >
+              Complete your meal
+            </span>
+          </div>
+          <div className="h-px flex-1 bg-linear-to-r from-[#bce9de] to-transparent" />
         </div>
-        <div className="h-px flex-1 bg-linear-to-r from-[#bce9de] to-transparent" />
-      </div>
 
-      <AnimatePresence>
-        {/* Combo deal highlight — shown first if available */}
-        {comboDeal && (
-          <motion.div
-            key="combo-deal"
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0 }}
-            className="mb-3 rounded-2xl bg-linear-to-r from-[#ecfaf6] to-[#e4f6f1] border-2 border-[#bde7de] p-3"
-          >
-            <div className="flex items-start gap-2 mb-2">
-              <Tag
-                className="w-3.5 h-3.5 text-[#0e9f89] mt-0.5 shrink-0"
-                strokeWidth={2.5}
-              />
-              <div className="flex-1 min-w-0">
-                <p
-                  className="text-xs font-black text-[#0b8b78] leading-tight"
-                  style={{ fontFamily: "var(--font-display)" }}
-                >
-                  Better deal available!
-                </p>
-                <p
-                  className="text-[11px] text-[#0e9f89] font-semibold mt-0.5 truncate"
-                  style={{ fontFamily: "var(--font-body)" }}
-                >
-                  {comboDeal.name}
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div className="flex items-baseline gap-1.5">
-                {comboDeal.originalPrice > comboDeal.comboPrice && (
-                  <span className="text-xs line-through text-gray-400">
-                    ₹{comboDeal.originalPrice.toFixed(0)}
-                  </span>
-                )}
-                <span
-                  className="text-base font-black text-[#0e9f89]"
-                  style={{ fontFamily: "var(--font-display)" }}
-                >
-                  ₹{comboDeal.comboPrice.toFixed(0)}
-                </span>
-                {comboDeal.originalPrice > comboDeal.comboPrice && (
-                  <span className="text-[9px] font-black text-white bg-emerald-500 px-1.5 py-0.5 rounded-full">
-                    SAVE ₹
-                    {(comboDeal.originalPrice - comboDeal.comboPrice).toFixed(
-                      0,
-                    )}
-                  </span>
-                )}
+        <AnimatePresence>
+          {/* Combo deal highlight — shown first if available */}
+          {comboDeal && (
+            <motion.div
+              key="combo-deal"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              className="mb-3 rounded-2xl bg-linear-to-r from-[#ecfaf6] to-[#e4f6f1] border-2 border-[#bde7de] p-3"
+            >
+              <div className="flex items-start gap-2 mb-2">
+                <Tag
+                  className="w-3.5 h-3.5 text-[#0e9f89] mt-0.5 shrink-0"
+                  strokeWidth={2.5}
+                />
+                <div className="flex-1 min-w-0">
+                  <p
+                    className="text-xs font-black text-[#0b8b78] leading-tight"
+                    style={{ fontFamily: "var(--font-display)" }}
+                  >
+                    Better deal available!
+                  </p>
+                  <p
+                    className="text-[11px] text-[#0e9f89] font-semibold mt-0.5 truncate"
+                    style={{ fontFamily: "var(--font-body)" }}
+                  >
+                    {comboDeal.name}
+                  </p>
+                </div>
               </div>
 
-              <motion.button
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.97 }}
-                onClick={() =>
-                  onAddComboToCart({
-                    _id: String(comboDeal._id),
-                    name: comboDeal.name,
-                    comboPrice: comboDeal.comboPrice,
-                    imageUrl: comboDeal.imageUrl,
-                  })
-                }
-                className="flex items-center gap-1 bg-[#0e9f89] hover:bg-[#0b8b78] text-white text-[10px] font-black px-3 py-1.5 rounded-xl shadow-sm transition-colors"
-                style={{ fontFamily: "var(--font-display)" }}
-              >
-                <Plus className="w-3 h-3" strokeWidth={3} />
-                Add Combo
-              </motion.button>
-            </div>
-          </motion.div>
-        )}
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="flex items-baseline gap-1.5">
+                  {comboDeal.originalPrice > comboDeal.comboPrice && (
+                    <span className="text-xs line-through text-gray-400">
+                      ₹{comboDeal.originalPrice.toFixed(0)}
+                    </span>
+                  )}
+                  <span
+                    className="text-base font-black text-[#0e9f89]"
+                    style={{ fontFamily: "var(--font-display)" }}
+                  >
+                    ₹{comboDeal.comboPrice.toFixed(0)}
+                  </span>
+                  {comboDeal.originalPrice > comboDeal.comboPrice && (
+                    <span className="text-[9px] font-black text-white bg-emerald-500 px-1.5 py-0.5 rounded-full">
+                      SAVE ₹
+                      {(comboDeal.originalPrice - comboDeal.comboPrice).toFixed(
+                        0,
+                      )}
+                    </span>
+                  )}
+                </div>
 
-        {/* Category gap suggestions */}
-        {suggestions.length > 0 && (
-          <div className="grid grid-cols-2 gap-2">
-            {suggestions.map((item, index) => {
-              const alreadyInCart = cart.some(
-                (c) => c.itemId === String(item._id),
-              );
-              const discountOffer = (item.offers ?? []).find(
-                (o) => o.type === "DISCOUNT" && o.discountPercent,
-              );
-              const effectivePrice = discountOffer?.discountPercent
-                ? item.price * (1 - discountOffer.discountPercent / 100)
-                : item.price;
-
-              return (
-                <motion.div
-                  key={String(item._id)}
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: index * 0.07, duration: 0.2 }}
-                  className={`rounded-xl overflow-hidden border transition-all ${
-                    alreadyInCart
-                      ? "border-[#bde7de] bg-[#e9f8f4]"
-                      : "border-[#e0f2ed] bg-white hover:border-[#bde7de]"
-                  }`}
+                <motion.button
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
+                  onClick={() =>
+                    onAddComboToCart({
+                      _id: String(comboDeal._id),
+                      name: comboDeal.name,
+                      comboPrice: comboDeal.comboPrice,
+                      imageUrl: comboDeal.imageUrl,
+                    })
+                  }
+                  className="flex items-center gap-1 bg-[#0e9f89] hover:bg-[#0b8b78] text-white text-[10px] font-black px-3 py-1.5 rounded-xl shadow-sm transition-colors"
+                  style={{ fontFamily: "var(--font-display)" }}
                 >
-                  {/* Thumbnail */}
-                  <div className="h-16 bg-linear-to-br from-[#e8f7f3] to-[#def3ec] overflow-hidden relative">
-                    {item.imageUrl ? (
-                      <img
-                        src={item.imageUrl}
-                        alt={item.name}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <ImageOff
-                          className="w-6 h-6 text-gray-300"
-                          strokeWidth={1.5}
+                  <Plus className="w-3 h-3" strokeWidth={3} />
+                  Add Combo
+                </motion.button>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Category gap suggestions */}
+          {suggestions.length > 0 && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+              {suggestions.map((item, index) => {
+                const alreadyInCart = cart.some(
+                  (c) => c.itemId === String(item._id),
+                );
+                const discountOffer = (item.offers ?? []).find(
+                  (o) => o.type === "DISCOUNT" && o.discountPercent,
+                );
+                const effectivePrice = discountOffer?.discountPercent
+                  ? item.price * (1 - discountOffer.discountPercent / 100)
+                  : item.price;
+
+                return (
+                  <motion.div
+                    key={String(item._id)}
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: index * 0.07, duration: 0.2 }}
+                    className={`rounded-xl overflow-hidden border transition-all ${
+                      alreadyInCart
+                        ? "border-[#bde7de] bg-[#e9f8f4]"
+                        : "border-[#e0f2ed] bg-white hover:border-[#bde7de]"
+                    }`}
+                  >
+                    {/* Thumbnail */}
+                    <div className="h-24 bg-linear-to-br from-[#e8f7f3] to-[#def3ec] overflow-hidden relative">
+                      {item.imageUrl ? (
+                        <img
+                          src={item.imageUrl}
+                          alt={item.name}
+                          className="w-full h-full object-cover"
                         />
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Info + add */}
-                  <div className="p-2">
-                    <p
-                      className="text-[11px] font-bold text-gray-900 truncate leading-tight"
-                      style={{ fontFamily: "var(--font-display)" }}
-                    >
-                      {item.name}
-                    </p>
-                    <div className="flex items-center justify-between mt-1.5">
-                      <span
-                        className="text-xs font-black text-[#0e9f89]"
-                        style={{ fontFamily: "var(--font-display)" }}
-                      >
-                        ₹{effectivePrice.toFixed(0)}
-                      </span>
-                      {alreadyInCart ? (
-                        <span className="text-[9px] font-black text-emerald-600">
-                          ✓
-                        </span>
                       ) : (
-                        <motion.button
-                          whileHover={{ scale: 1.15 }}
-                          whileTap={{ scale: 0.9 }}
-                          onClick={() =>
-                            onAddToCart(item as unknown as MenuItem)
-                          }
-                          className="w-6 h-6 rounded-lg bg-[#0e9f89] hover:bg-[#0b8b78] text-white flex items-center justify-center shadow-sm transition-colors"
-                        >
-                          <Plus className="w-3 h-3" strokeWidth={3} />
-                        </motion.button>
+                        <div className="w-full h-full flex items-center justify-center">
+                          <ImageOff
+                            className="w-6 h-6 text-gray-300"
+                            strokeWidth={1.5}
+                          />
+                        </div>
                       )}
                     </div>
-                  </div>
-                </motion.div>
-              );
-            })}
-          </div>
-        )}
-      </AnimatePresence>
+
+                    {/* Info + add */}
+                    <div className="p-2.5">
+                      <p
+                        className="text-[11px] font-bold text-gray-900 truncate leading-tight"
+                        style={{ fontFamily: "var(--font-display)" }}
+                      >
+                        {item.name}
+                      </p>
+                      <div className="flex items-center justify-between mt-2">
+                        <span
+                          className="text-xs font-black text-[#0e9f89]"
+                          style={{ fontFamily: "var(--font-display)" }}
+                        >
+                          ₹{effectivePrice.toFixed(0)}
+                        </span>
+                        {alreadyInCart ? (
+                          <span className="text-[10px] font-black text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
+                            ✓ Added
+                          </span>
+                        ) : (
+                          <motion.button
+                            whileHover={{ scale: 1.06 }}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={() =>
+                              onAddToCart(item as unknown as MenuItem)
+                            }
+                            className="h-7 rounded-lg bg-[#0e9f89] hover:bg-[#0b8b78] text-white flex items-center justify-center shadow-sm transition-colors px-2.5 text-[10px] font-black"
+                            style={{ fontFamily: "var(--font-display)" }}
+                          >
+                            <Plus className="w-3 h-3 mr-1" strokeWidth={3} />
+                            Add
+                          </motion.button>
+                        )}
+                      </div>
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </div>
+          )}
+        </AnimatePresence>
+      </div>
     </div>
   );
 }
