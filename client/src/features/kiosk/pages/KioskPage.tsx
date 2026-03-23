@@ -40,7 +40,7 @@ const OFFER_CHIPS: { value: OfferType | null; label: string; emoji: string }[] =
 
 export default function KioskPage() {
   const navigate = useNavigate();
-  const [isCartOpen, setIsCartOpen] = useState(true);
+  const [isCartOpen, setIsCartOpen] = useState(false);
   const [selectedCombo, setSelectedCombo] = useState<Combo | null>(null);
   const [cartSyncAlerts, setCartSyncAlerts] = useState<string[]>([]);
 
@@ -137,7 +137,7 @@ export default function KioskPage() {
 
   return (
     <div className="h-screen overflow-hidden bg-linear-to-br from-[#e7f8f4] via-[#f4fbf9] to-white p-3">
-      <div className="h-full w-full flex flex-row overflow-hidden rounded-[30px] border border-[#d9efe9] bg-white/90 shadow-[0_18px_60px_rgba(14,159,137,0.14)] backdrop-blur-sm">
+      <div className="relative h-full w-full flex flex-row overflow-hidden rounded-[30px] border border-[#d9efe9] bg-white/90 shadow-[0_18px_60px_rgba(14,159,137,0.14)] backdrop-blur-sm">
         {/* ── Offer filter sidebar ── */}
         <div className="w-29 min-w-29 shrink-0 flex flex-col bg-linear-to-b from-[#f8fdfc] to-white border-r border-[#dff1ec] shadow-sm overflow-y-auto scrollbar-none">
           <div className="px-10 py-9.5 flex flex-col bg-transparent overflow-y-auto scrollbar-none">

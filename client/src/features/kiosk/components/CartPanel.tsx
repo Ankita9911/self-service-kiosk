@@ -75,14 +75,14 @@ export default function CartPanel({
     return (
       <div className="flex flex-col items-center justify-center h-full p-8 text-center">
         <div className="relative mb-6">
-          <div className="w-32 h-32 bg-gradient-to-br from-orange-100 to-amber-100 rounded-full flex items-center justify-center relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-t from-orange-200/20 to-transparent"></div>
+          <div className="w-32 h-32 bg-linear-to-br from-[#e7f8f4] to-[#d9f1eb] rounded-full flex items-center justify-center relative overflow-hidden">
+            <div className="absolute inset-0 bg-linear-to-t from-[#9fded2]/20 to-transparent"></div>
             <ShoppingCart
-              className="w-16 h-16 text-orange-400 relative z-10"
+              className="w-16 h-16 text-[#5dbfae] relative z-10"
               strokeWidth={1.5}
             />
           </div>
-          <div className="absolute -bottom-1 -right-1 w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center shadow-lg">
+          <div className="absolute -bottom-1 -right-1 w-10 h-10 bg-[#0e9f89] rounded-full flex items-center justify-center shadow-lg">
             <Plus className="w-5 h-5 text-white" strokeWidth={3} />
           </div>
         </div>
@@ -105,7 +105,7 @@ export default function CartPanel({
   return (
     <div className="flex flex-col h-full">
       {/* ── Scrollable area: cart items + recommendations ── */}
-      <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-orange-200 scrollbar-track-transparent">
+      <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-[#9fded2] scrollbar-track-transparent">
         {/* Cart sync alerts */}
         <div className="p-4 space-y-3">
           {cartSyncAlerts.length > 0 && (
@@ -141,7 +141,7 @@ export default function CartPanel({
             return (
               <div
                 key={item.cartItemId}
-                className="bg-gradient-to-br from-white to-gray-50 rounded-2xl p-4 border-2 border-gray-100 hover:border-orange-200 transition-all shadow-sm hover:shadow-md"
+                className="bg-linear-to-br from-white to-gray-50 rounded-2xl p-4 border-2 border-gray-100 hover:border-[#b6e6dc] transition-all shadow-sm hover:shadow-md"
               >
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex-1 pr-2">
@@ -151,7 +151,7 @@ export default function CartPanel({
                     >
                       {item.name}
                       {item.isCombo && (
-                        <span className="ml-1.5 text-[10px] font-black bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded-full">
+                        <span className="ml-1.5 text-[10px] font-black bg-[#e7f8f4] text-[#0e9f89] px-1.5 py-0.5 rounded-full">
                           COMBO
                         </span>
                       )}
@@ -254,7 +254,7 @@ export default function CartPanel({
                       className={`w-9 h-9 rounded-lg flex items-center justify-center transition-all ${
                         isAtMaxStock
                           ? "bg-gray-100 text-gray-300 cursor-not-allowed"
-                          : "bg-gradient-to-br from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-md active:scale-95"
+                          : "bg-linear-to-br from-[#16b8a1] to-[#0e9f89] hover:from-[#0fb39a] hover:to-[#0b8b78] text-white shadow-md active:scale-95"
                       }`}
                     >
                       <Plus className="w-4 h-4" strokeWidth={2.5} />
@@ -269,7 +269,7 @@ export default function CartPanel({
                       SUBTOTAL
                     </p>
                     <p
-                      className="text-xl font-black bg-gradient-to-r from-orange-600 to-orange-500 bg-clip-text text-transparent"
+                      className="text-xl font-black bg-linear-to-r from-[#0e9f89] to-[#16b8a1] bg-clip-text text-transparent"
                       style={{ fontFamily: "var(--font-display)" }}
                     >
                       ₹{effectiveLineTotal(item).toFixed(2)}
@@ -303,7 +303,7 @@ export default function CartPanel({
       </div>
 
       {/* ── Sticky footer: totals + checkout ── */}
-      <div className="border-t-4 border-gradient-to-r from-orange-100 via-orange-200 to-orange-100 bg-white p-5 shadow-2xl">
+      <div className="border-t border-[#dff1ec] bg-white p-5 shadow-[0_-8px_20px_rgba(15,23,42,0.06)]">
         <div className="space-y-3 mb-5">
           <div className="flex justify-between items-center">
             <span
@@ -333,7 +333,7 @@ export default function CartPanel({
               ₹{tax.toFixed(2)}
             </span>
           </div>
-          <div className="h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent my-2" />
+          <div className="h-px bg-linear-to-r from-transparent via-gray-300 to-transparent my-2" />
           <div className="flex justify-between items-center pt-1">
             <span
               className="text-base font-bold text-gray-900"
@@ -342,7 +342,7 @@ export default function CartPanel({
               TOTAL
             </span>
             <span
-              className="text-3xl font-black bg-gradient-to-r from-orange-600 to-orange-500 bg-clip-text text-transparent"
+              className="text-3xl font-black bg-linear-to-r from-[#0e9f89] to-[#16b8a1] bg-clip-text text-transparent"
               style={{ fontFamily: "var(--font-display)" }}
             >
               ₹{total.toFixed(2)}
@@ -353,7 +353,7 @@ export default function CartPanel({
         <Button
           onClick={onPlaceOrder}
           disabled={isProcessing}
-          className="w-full h-16 bg-gradient-to-r from-orange-500 via-orange-600 to-orange-500 hover:from-orange-600 hover:via-orange-700 hover:to-orange-600 text-white font-black text-xl rounded-2xl shadow-xl hover:shadow-2xl transition-all active:scale-98 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full h-16 bg-linear-to-r from-[#16b8a1] via-[#0e9f89] to-[#16b8a1] hover:from-[#0fb39a] hover:via-[#0b8b78] hover:to-[#0fb39a] text-white font-black text-xl rounded-2xl shadow-xl shadow-[#8edfd1]/45 hover:shadow-2xl transition-all active:scale-98 disabled:opacity-50 disabled:cursor-not-allowed"
           style={{ fontFamily: "var(--font-display)" }}
         >
           {isProcessing ? (

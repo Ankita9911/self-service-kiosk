@@ -1,5 +1,5 @@
-import { motion } from "framer-motion";
-import { ShoppingBag, X } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import { ArrowLeft, X } from "lucide-react";
 import CartPanel from "./CartPanel";
 import type { CartItem } from "../types/cartItem.types";
 import type {
@@ -49,41 +49,62 @@ export default function CartSidebar({
   onAddComboToCart,
 }: CartSidebarProps) {
   return (
-    <motion.aside
-      initial={false}
-      animate={{ width: isCartOpen ? 384 : 0 }}
-      transition={{ type: "spring", stiffness: 400, damping: 35 }}
-      className="h-full bg-white flex flex-col border-l-4 border-orange-500 shadow-2xl z-20 shrink-0 overflow-hidden"
-      style={{ minWidth: 0 }}
-    >
-      <div className="w-96 min-w-96 flex flex-col h-full">
+    <>
+      <AnimatePresence>
+        {isCartOpen && (
+          <motion.button
+            type="button"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="absolute inset-0 z-30 bg-black/35 backdrop-blur-[1px]"
+            onClick={onClose}
+          />
+        )}
+      </AnimatePresence>
+
+      <motion.section
+        initial={false}
+        animate={{ y: isCartOpen ? 0 : "105%" }}
+        transition={{ type: "spring", stiffness: 320, damping: 34 }}
+        className="absolute inset-x-0 bottom-0 z-40 h-[88%] rounded-t-[30px] border-t border-[#bde7de] bg-white shadow-[0_-22px_50px_rgba(15,23,42,0.28)] flex flex-col overflow-hidden"
+      >
         {/* Header */}
-        <div className="py-8 p-5 border-b-4 border-orange-100 bg-gradient-to-br from-orange-500 via-orange-600 to-orange-500 relative overflow-hidden">
-          <div className="relative z-10 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="p-2.5 bg-white/20 backdrop-blur-sm rounded-xl">
-                <ShoppingBag className="text-white w-6 h-6" strokeWidth={2.5} />
-              </div>
-              <div>
-                <h2 className="text-2xl font-black text-white tracking-tight">
-                  Your Order
-                </h2>
-                <p className="text-orange-100 text-sm font-bold">
-                  {totalItems} item{totalItems !== 1 ? "s" : ""}
-                </p>
-              </div>
-            </div>
+        <div className="border-b border-[#ddf2ed] bg-linear-to-r from-[#f4fbf9] via-white to-[#edf9f6] px-5 py-3.5">
+          <div className="mb-2 flex justify-center">
+            <div className="h-1.5 w-14 rounded-full bg-[#bde7de]" />
+          </div>
+
+          <div className="flex items-center justify-between">
             <button
               onClick={onClose}
-              className="p-2.5 hover:bg-white/20 rounded-xl transition-all"
+              className="inline-flex items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-sm font-bold text-slate-500 hover:bg-[#eaf7f3] hover:text-[#0e9f89] transition-colors"
             >
-              <X className="w-6 h-6 text-white" strokeWidth={2.5} />
+              <ArrowLeft className="w-4 h-4" strokeWidth={2.5} />
+              Cart
+            </button>
+
+            <div className="text-center">
+              <h2 className="text-base font-black text-slate-800 tracking-tight">
+                Your Cart
+              </h2>
+              <p className="text-[11px] font-semibold text-slate-400">
+                {totalItems} item{totalItems !== 1 ? "s" : ""}
+              </p>
+            </div>
+
+            <button
+              onClick={onClose}
+              className="p-2 rounded-xl text-slate-400 hover:bg-[#eaf7f3] hover:text-[#0e9f89] transition-colors"
+            >
+              <X className="w-5 h-5" strokeWidth={2.5} />
             </button>
           </div>
         </div>
 
         {/* Body */}
-        <div className="flex-1 overflow-hidden">
+        <div className="flex-1 min-h-0 overflow-hidden">
           <CartPanel
             cart={cart}
             cartSyncAlerts={cartSyncAlerts}
@@ -99,7 +120,7 @@ export default function CartSidebar({
             onAddComboToCart={onAddComboToCart}
           />
         </div>
-      </div>
-    </motion.aside>
+      </motion.section>
+    </>
   );
 }
