@@ -55,7 +55,6 @@ export default function KioskPage() {
     selectedItems,
     offerFilter,
     setOfferFilter,
-    offerCounts,
     isLoading,
     loadMenu,
     COMBOS_CATEGORY_ID,
@@ -139,7 +138,7 @@ export default function KioskPage() {
   return (
     <div className="h-screen flex flex-row bg-gray-50 overflow-hidden">
       {/* ── Offer filter sidebar ── */}
-      <div className="w-[104px] min-w-20 shrink-0 flex flex-col bg-white border-r border-gray-100 shadow-sm overflow-y-auto scrollbar-none">
+      <div className="w-29 min-w-29 shrink-0 flex flex-col bg-white border-r border-gray-100 shadow-sm overflow-y-auto scrollbar-none">
         <div className="px-10 py-9.5 flex flex-col bg-white border-r border-gray-100 shadow-sm overflow-y-auto scrollbar-none">
           <button
             className="text-gray-400 hover:text-orange-500 hover:bg-orange-50 transition-all active:scale-95"
@@ -150,10 +149,9 @@ export default function KioskPage() {
           </button>
         </div>
 
-        <div className="flex flex-col gap-1 px-2 pt-2">
+        <div className="flex flex-col gap-2 px-2.5 pt-2">
           {OFFER_CHIPS.map(({ value, label, emoji }, index) => {
             if (isOnCombos && value !== null) return null;
-            const count = value === null ? undefined : offerCounts[value];
             const isActive = offerFilter === value;
 
             return (
@@ -167,24 +165,38 @@ export default function KioskPage() {
                   duration: 0.3,
                   ease: "easeOut",
                 }}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="flex flex-col items-center focus:outline-none"
-                style={{ gap: "6px", minWidth: "72px" }}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.97 }}
+                className="flex flex-col items-center justify-start focus:outline-none"
+                style={{
+                  width: "100%",
+                  minHeight: "118px",
+                  borderRadius: "26px",
+                  padding: "9px 8px 10px",
+                  background: isActive
+                    ? "linear-gradient(170deg, #16b8a1 0%, #0e9f89 100%)"
+                    : "#ffffff",
+                  border: isActive
+                    ? "1px solid rgba(12, 154, 133, 0.75)"
+                    : "1px solid #eff1f3",
+                  boxShadow: isActive
+                    ? "0 10px 22px rgba(22, 184, 161, 0.34)"
+                    : "0 4px 14px rgba(15, 23, 42, 0.08)",
+                  gap: "8px",
+                  transition: "all 0.25s ease",
+                }}
               >
                 <div
                   style={{
-                    width: "48px",
-                    height: "48px",
+                    width: "54px",
+                    height: "54px",
                     borderRadius: "50%",
-                    padding: "3px",
-                    background: isActive
-                      ? "linear-gradient(135deg, #f97316, #ea580c)"
-                      : "linear-gradient(135deg, #e4e4e4, #cecece)",
+                    padding: "2px",
+                    background: "#ffffff",
                     boxShadow: isActive
-                      ? "0 4px 14px rgba(249, 115, 22, 0.4)"
-                      : "0 2px 6px rgba(0,0,0,0.08)",
-                    transition: "all 0.3s ease",
+                      ? "0 4px 10px rgba(6, 120, 104, 0.28)"
+                      : "0 3px 8px rgba(0, 0, 0, 0.14)",
+                    transition: "all 0.25s ease",
                     position: "relative",
                     flexShrink: 0,
                   }}
@@ -195,12 +207,12 @@ export default function KioskPage() {
                       height: "100%",
                       borderRadius: "50%",
                       overflow: "hidden",
-                      border: "2.5px solid white",
+                      border: "2px solid rgba(255,255,255,0.95)",
                       background: "#f0f0f0",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
-                      fontSize: "20px",
+                      fontSize: "22px",
                     }}
                   >
                     {emoji}
@@ -210,61 +222,36 @@ export default function KioskPage() {
                 <span
                   style={{
                     fontSize: "10px",
-                    fontWeight: isActive ? 700 : 500,
-                    color: isActive ? "#ea580c" : "#777",
+                    fontWeight: isActive ? 700 : 600,
+                    color: isActive ? "#ffffff" : "#475569",
                     textAlign: "center",
-                    lineHeight: "1.3",
-                    maxWidth: "72px",
+                    lineHeight: "1.25",
+                    maxWidth: "78px",
                     transition: "color 0.2s ease",
                     fontFamily: "'DM Sans', 'Nunito', sans-serif",
                     letterSpacing: "-0.01em",
-                    whiteSpace: "nowrap",
+                    display: "-webkit-box",
+                    WebkitLineClamp: 2,
+                    WebkitBoxOrient: "vertical",
                     overflow: "hidden",
                     textOverflow: "ellipsis",
+                    minHeight: "26px",
                   }}
                 >
                   {label}
                 </span>
-
-                {count !== undefined && count > 0 && (
-                  <span
-                    style={{
-                      fontSize: "9px",
-                      fontWeight: 900,
-                      color: isActive ? "#ea580c" : "#777",
-                      background: isActive
-                        ? "rgba(249, 115, 22, 0.1)"
-                        : "#f3f4f6",
-                      padding: "2px 6px",
-                      borderRadius: "10px",
-                      transition: "all 0.2s ease",
-                    }}
-                  >
-                    {count}
-                  </span>
-                )}
-
-                <motion.div
-                  style={{
-                    width: isActive ? "20px" : "0px",
-                    height: "3px",
-                    borderRadius: "2px",
-                    background: "#ea580c",
-                    transition: "width 0.3s ease",
-                  }}
-                />
               </motion.button>
             );
           })}
         </div>
 
         {offerFilter !== null && !isOnCombos && (
-          <div className="px-2 pt-1 pb-4">
+          <div className="px-2.5 pt-1.5 pb-4">
             <div className="h-px bg-gray-100 mb-2" />
             <button
               onClick={() => setOfferFilter(null)}
-              className="flex flex-col items-center gap-1 w-full py-2.5 px-1 rounded-2xl bg-red-50 text-red-400 hover:bg-red-100 transition-all active:scale-95"
-              style={{ fontFamily: "var(--font-body)" }}
+              className="flex flex-col items-center gap-1 w-full py-3 px-1 rounded-[22px] bg-white text-slate-500 border border-slate-200 shadow-sm hover:border-red-200 hover:bg-red-50 hover:text-red-500 transition-all active:scale-95"
+              style={{ fontFamily: "'DM Sans', 'Nunito', sans-serif" }}
             >
               <span className="text-base leading-none font-black">✕</span>
               <span className="text-[10px] font-bold">Clear</span>

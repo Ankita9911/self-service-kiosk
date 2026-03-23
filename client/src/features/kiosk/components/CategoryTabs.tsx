@@ -22,12 +22,12 @@ export default function CategoryTabs({
     <div
       className="overflow-x-auto scrollbar-hide"
       style={{
-        background: "linear-gradient(to bottom, #ffffff, #f9f9f9)",
-        borderBottom: "1px solid #f0f0f0",
-        padding: "12px 16px",
+        background: "#ffffff",
+        borderBottom: "1px solid #f1f2f4",
+        padding: "10px 14px",
       }}
     >
-      <div className="flex gap-3" style={{ minWidth: "max-content" }}>
+      <div className="flex gap-2.5" style={{ minWidth: "max-content" }}>
         {availableCategories.map((category, index) => {
           const isActive = category._id === selectedCategory;
 
@@ -42,25 +42,38 @@ export default function CategoryTabs({
                 duration: 0.3,
                 ease: "easeOut",
               }}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="flex flex-col items-center focus:outline-none"
-              style={{ gap: "6px", minWidth: "72px" }}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.97 }}
+              className="flex flex-col items-center justify-start focus:outline-none"
+              style={{
+                width: "92px",
+                minHeight: "120px",
+                borderRadius: "26px",
+                padding: "9px 8px 10px",
+                background: isActive
+                  ? "linear-gradient(170deg, #16b8a1 0%, #0e9f89 100%)"
+                  : "#ffffff",
+                border: isActive
+                  ? "1px solid rgba(12, 154, 133, 0.75)"
+                  : "1px solid #eff1f3",
+                boxShadow: isActive
+                  ? "0 10px 22px rgba(22, 184, 161, 0.34)"
+                  : "0 4px 14px rgba(15, 23, 42, 0.08)",
+                gap: "8px",
+                transition: "all 0.25s ease",
+              }}
             >
-              {/* Circle image */}
               <div
                 style={{
-                  width: "64px",
-                  height: "64px",
+                  width: "58px",
+                  height: "58px",
                   borderRadius: "50%",
-                  padding: "3px",
-                  background: isActive
-                    ? "linear-gradient(135deg, #0abfa3, #079e87)"
-                    : "linear-gradient(135deg, #e4e4e4, #cecece)",
+                  padding: "2px",
+                  background: "#ffffff",
                   boxShadow: isActive
-                    ? "0 4px 14px rgba(10, 191, 163, 0.4)"
-                    : "0 2px 6px rgba(0,0,0,0.08)",
-                  transition: "all 0.3s ease",
+                    ? "0 4px 10px rgba(6, 120, 104, 0.28)"
+                    : "0 3px 8px rgba(0, 0, 0, 0.14)",
+                  transition: "all 0.25s ease",
                   position: "relative",
                   flexShrink: 0,
                 }}
@@ -71,7 +84,7 @@ export default function CategoryTabs({
                     height: "100%",
                     borderRadius: "50%",
                     overflow: "hidden",
-                    border: "2.5px solid white",
+                    border: "2px solid rgba(255,255,255,0.95)",
                     background: "#f0f0f0",
                   }}
                 >
@@ -94,7 +107,7 @@ export default function CategoryTabs({
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
-                        fontSize: "24px",
+                        fontSize: "20px",
                       }}
                     >
                       🍽️
@@ -103,36 +116,27 @@ export default function CategoryTabs({
                 </div>
               </div>
 
-              {/* Label */}
               <span
                 style={{
                   fontSize: "11px",
-                  fontWeight: isActive ? 700 : 500,
-                  color: isActive ? "#0abfa3" : "#777",
+                  fontWeight: isActive ? 700 : 600,
+                  color: isActive ? "#ffffff" : "#475569",
                   textAlign: "center",
-                  lineHeight: "1.3",
-                  maxWidth: "72px",
+                  lineHeight: "1.25",
+                  maxWidth: "74px",
                   transition: "color 0.2s ease",
                   fontFamily: "'DM Sans', 'Nunito', sans-serif",
                   letterSpacing: "-0.01em",
-                  whiteSpace: "nowrap",
+                  display: "-webkit-box",
+                  WebkitLineClamp: 2,
+                  WebkitBoxOrient: "vertical",
                   overflow: "hidden",
                   textOverflow: "ellipsis",
+                  minHeight: "28px",
                 }}
               >
                 {category.name}
               </span>
-
-              {/* Active underline indicator */}
-              <motion.div
-                style={{
-                  width: isActive ? "20px" : "0px",
-                  height: "3px",
-                  borderRadius: "2px",
-                  background: "#0abfa3",
-                  transition: "width 0.3s ease",
-                }}
-              />
             </motion.button>
           );
         })}
