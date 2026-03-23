@@ -38,22 +38,29 @@ export default function PaymentDialog({
 }: PaymentDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-xl p-0 overflow-hidden rounded-3xl border-4 border-orange-500 shadow-2xl">
-        <div className="bg-gradient-to-br from-orange-500 via-orange-600 to-orange-500 p-8 text-white relative overflow-hidden">
-          <div className="relative z-10">
-            <DialogTitle className="text-3xl font-black tracking-tight mb-2">
-              Checkout
-            </DialogTitle>
-            <DialogDescription className="text-orange-100 font-bold text-base">
-              Total Amount:
-              <span className="text-white text-2xl ml-2 font-black">
+      <DialogContent className="sm:max-w-4xl h-[84vh] p-0 overflow-hidden rounded-[30px] border border-[#cdebe4] shadow-[0_24px_70px_rgba(14,159,137,0.2)] bg-white">
+        <div className="border-b border-[#dff1ec] bg-linear-to-r from-[#f4fbf9] via-white to-[#eef9f6] px-8 py-5">
+          <div className="flex items-center justify-between">
+            <div>
+              <DialogTitle className="text-2xl font-black tracking-tight text-slate-800">
+                Checkout
+              </DialogTitle>
+              <DialogDescription className="text-slate-500 font-semibold text-sm mt-1">
+                Select payment method and confirm your order
+              </DialogDescription>
+            </div>
+            <div className="rounded-2xl border border-[#cdebe4] bg-white px-4 py-2 text-right shadow-sm">
+              <p className="text-[11px] font-semibold tracking-wide uppercase text-slate-400">
+                Total
+              </p>
+              <p className="text-2xl font-black text-[#0e9f89] leading-none">
                 ₹{(totalPrice * 1.05).toFixed(2)}
-              </span>
-            </DialogDescription>
+              </p>
+            </div>
           </div>
         </div>
 
-        <div className="p-8 bg-white">
+        <div className="h-[calc(84vh-100px)] overflow-y-auto p-8 bg-white">
           <AnimatePresence mode="wait">
             {paymentStep === "SELECTION" ? (
               <motion.div
@@ -61,18 +68,22 @@ export default function PaymentDialog({
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: 20 }}
-                className="space-y-4"
+                className="h-full flex flex-col"
               >
-                <p className="text-sm font-black text-gray-500 text-center mb-6">
-                  SELECT PAYMENT METHOD
+                <p className="text-[11px] font-black tracking-[0.08em] text-slate-400 text-center uppercase mb-3">
+                  Payment Method
                 </p>
+                <h3 className="text-5xl font-medium text-slate-700 text-center mb-10">
+                  Where do you wish to pay?
+                </h3>
 
-                <div className="grid grid-cols-1 gap-4">
+                <div className="mx-auto w-full max-w-5xl grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   <PaymentOption
                     icon={<CreditCard className="w-6 h-6" />}
-                    label="Card Payment"
-                    sub="Visa, Mastercard, RuPay"
-                    gradient="from-blue-500 to-blue-600"
+                    label="Pay via Card"
+                    sub="At Kiosk"
+                    gradient="from-[#1fb9a4] to-[#0e9f89]"
+                    square
                     onClick={() => {
                       setSelectedMethod("CARD");
                       setPaymentStep("DETAILS");
@@ -80,23 +91,25 @@ export default function PaymentDialog({
                   />
 
                   <PaymentOption
-                    icon={<Smartphone className="w-6 h-6" />}
-                    label="UPI / QR Scan"
-                    sub="GPay, PhonePe, Paytm"
-                    gradient="from-purple-500 to-purple-600"
+                    icon={<Banknote className="w-6 h-6" />}
+                    label="Pay via Cash"
+                    sub="At Counter"
+                    gradient="from-[#15b8a2] to-[#0a8e7c]"
+                    square
                     onClick={() => {
-                      setSelectedMethod("UPI");
+                      setSelectedMethod("CASH");
                       setPaymentStep("DETAILS");
                     }}
                   />
 
                   <PaymentOption
-                    icon={<Banknote className="w-6 h-6" />}
-                    label="Cash at Counter"
-                    sub="Pay on Collection"
-                    gradient="from-green-500 to-green-600"
+                    icon={<Smartphone className="w-6 h-6" />}
+                    label="Pay via UPI"
+                    sub="Scan QR at Kiosk"
+                    gradient="from-[#37c2ae] to-[#109a86]"
+                    square
                     onClick={() => {
-                      setSelectedMethod("CASH");
+                      setSelectedMethod("UPI");
                       setPaymentStep("DETAILS");
                     }}
                   />
@@ -108,11 +121,11 @@ export default function PaymentDialog({
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
-                className="space-y-6"
+                className="space-y-6 max-w-3xl mx-auto"
               >
                 <button
                   onClick={() => setPaymentStep("SELECTION")}
-                  className="flex items-center gap-2 text-sm font-black text-orange-600 hover:text-orange-700 transition-colors"
+                  className="flex items-center gap-2 text-sm font-black text-[#0e9f89] hover:text-[#0b8b78] transition-colors"
                 >
                   <ChevronLeft className="w-5 h-5" strokeWidth={3} />
                   GO BACK
@@ -122,9 +135,9 @@ export default function PaymentDialog({
                   <motion.div
                     initial={{ scale: 0.9, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
-                    className="p-8 bg-gradient-to-br from-purple-50 to-purple-100 rounded-3xl border-4 border-dashed border-purple-300 text-center"
+                    className="p-8 bg-linear-to-br from-[#ecfaf6] to-[#e1f5f0] rounded-3xl border-2 border-dashed border-[#9adfd2] text-center"
                   >
-                    <div className="w-48 h-48 bg-white mx-auto rounded-2xl flex items-center justify-center p-4 border-4 border-purple-200 shadow-xl">
+                    <div className="w-48 h-48 bg-white mx-auto rounded-2xl flex items-center justify-center p-4 border-2 border-[#b8e7de] shadow-xl">
                       <img
                         src="https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=upi://pay?pa=hyperkitchen@upi"
                         alt="UPI QR Code"
@@ -132,10 +145,10 @@ export default function PaymentDialog({
                       />
                     </div>
                     <div className="mt-6 space-y-2">
-                      <p className="text-lg font-black text-purple-900">
+                      <p className="text-lg font-black text-[#0e9f89]">
                         Scan QR Code to Pay
                       </p>
-                      <p className="text-sm text-purple-700 font-semibold">
+                      <p className="text-sm text-[#267e72] font-semibold">
                         Open any UPI app and scan
                       </p>
                     </div>
@@ -146,13 +159,13 @@ export default function PaymentDialog({
                   <motion.div
                     initial={{ scale: 0.9, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
-                    className="p-8 bg-gradient-to-br from-blue-50 to-blue-100 rounded-3xl border-4 border-blue-200 text-center"
+                    className="p-8 bg-linear-to-br from-[#ecfaf6] to-[#e1f5f0] rounded-3xl border-2 border-[#b8e7de] text-center"
                   >
-                    <CreditCard className="w-20 h-20 mx-auto text-blue-600 mb-4" />
-                    <p className="text-lg font-black text-blue-900 mb-2">
+                    <CreditCard className="w-20 h-20 mx-auto text-[#0e9f89] mb-4" />
+                    <p className="text-lg font-black text-[#0e9f89] mb-2">
                       Insert or Tap Your Card
                     </p>
-                    <p className="text-sm text-blue-700 font-semibold">
+                    <p className="text-sm text-[#267e72] font-semibold">
                       Follow the instructions on the card reader
                     </p>
                   </motion.div>
@@ -162,20 +175,20 @@ export default function PaymentDialog({
                   <motion.div
                     initial={{ scale: 0.9, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
-                    className="p-8 bg-gradient-to-br from-green-50 to-green-100 rounded-3xl border-4 border-green-200 text-center"
+                    className="p-8 bg-linear-to-br from-[#ecfaf6] to-[#e1f5f0] rounded-3xl border-2 border-[#b8e7de] text-center"
                   >
-                    <Banknote className="w-20 h-20 mx-auto text-green-600 mb-4" />
-                    <p className="text-lg font-black text-green-900 mb-2">
+                    <Banknote className="w-20 h-20 mx-auto text-[#0e9f89] mb-4" />
+                    <p className="text-lg font-black text-[#0e9f89] mb-2">
                       Pay at Counter
                     </p>
-                    <p className="text-sm text-green-700 font-semibold">
+                    <p className="text-sm text-[#267e72] font-semibold">
                       Show your order number to the cashier
                     </p>
                   </motion.div>
                 )}
 
                 <Button
-                  className="w-full h-16 bg-gradient-to-r from-orange-500 via-orange-600 to-orange-500 text-white font-black text-xl rounded-2xl shadow-xl"
+                  className="w-full h-15 bg-linear-to-r from-[#16b8a1] via-[#0e9f89] to-[#16b8a1] hover:from-[#0fb39a] hover:via-[#0b8b78] hover:to-[#0fb39a] text-white font-black text-xl rounded-2xl shadow-xl shadow-[#8edfd1]/40"
                   onClick={onConfirm}
                 >
                   Confirm Order
