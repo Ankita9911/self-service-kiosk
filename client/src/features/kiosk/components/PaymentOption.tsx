@@ -24,25 +24,28 @@ export default function PaymentOption({
         onClick={onClick}
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
-        className="relative w-full aspect-square p-5 rounded-3xl border border-[#d9eee8] hover:border-[#86d8c8] bg-white hover:bg-linear-to-br hover:from-[#eef9f6] hover:to-transparent transition-all shadow-sm hover:shadow-[0_12px_28px_rgba(14,159,137,0.16)] text-left"
+        className="group relative w-full min-h-32 p-3.5 sm:p-4 rounded-2xl border border-[#d9eee8] hover:border-[#86d8c8] bg-white hover:bg-linear-to-br hover:from-[#eef9f6] hover:to-transparent transition-all shadow-sm hover:shadow-[0_10px_20px_rgba(14,159,137,0.14)] text-left flex flex-col justify-between gap-3"
       >
-        <div
-          className={`inline-flex items-center justify-center h-14 w-14 bg-linear-to-br ${gradient} rounded-2xl text-white shadow-md`}
-        >
-          {icon}
+        <div className="flex items-start justify-between gap-2">
+          <div
+            className={`inline-flex items-center justify-center h-10 w-10 sm:h-11 sm:w-11 bg-linear-to-br ${gradient} rounded-xl text-white shadow-md shrink-0`}
+          >
+            {icon}
+          </div>
+          <ChevronLeft
+            className="w-4 h-4 text-slate-300 rotate-180 mt-0.5 shrink-0 transition-colors group-hover:text-slate-400"
+            strokeWidth={3}
+          />
         </div>
 
-        <div className="absolute left-5 right-5 bottom-5">
-          <p className="font-black text-[28px] leading-tight text-slate-800">
+        <div>
+          <p className="font-black text-base sm:text-lg lg:text-xl leading-tight text-slate-800">
             {label}
           </p>
-          <p className="text-base font-semibold text-slate-500 mt-1">{sub}</p>
+          <p className="text-xs sm:text-sm font-semibold text-slate-500 mt-1 leading-snug">
+            {sub}
+          </p>
         </div>
-
-        <ChevronLeft
-          className="absolute top-5 right-5 w-7 h-7 text-slate-300 rotate-180"
-          strokeWidth={3}
-        />
       </motion.button>
     );
   }
