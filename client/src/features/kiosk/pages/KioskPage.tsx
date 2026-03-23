@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, ShoppingCart } from "lucide-react";
 import { motion } from "framer-motion";
@@ -39,6 +39,7 @@ const OFFER_CHIPS: { value: OfferType | null; label: string; emoji: string }[] =
   ];
 
 export default function KioskPage() {
+  const SUCCESS_REDIRECT_MS = 4000;
   const navigate = useNavigate();
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [selectedCombo, setSelectedCombo] = useState<Combo | null>(null);
@@ -145,6 +146,21 @@ export default function KioskPage() {
         { imageUrl: item.imageUrl, price: item.price },
       ]),
   ) as Record<string, { imageUrl?: string; price?: number }>;
+
+  const handleSuccessComplete = useCallback(() => {
+    setShowSuccessDialog(false);
+    setShowPaymentDialog(false);
+    setIsCartOpen(false);
+    navigate("/kiosk/landing", { replace: true });
+  }, [navigate, setShowPaymentDialog, setShowSuccessDialog]);
+
+  useEffect(() => {
+    if (!showSuccessDialog) return;
+    const timer = window.setTimeout(() => {
+      handleSuccessComplete();
+    }, SUCCESS_REDIRECT_MS);
+    return () => window.clearTimeout(timer);
+  }, [handleSuccessComplete, showSuccessDialog]);
 
   return (
     <div className="h-screen overflow-hidden bg-linear-to-br from-[#e7f8f4] via-[#f4fbf9] to-white p-3">
@@ -404,7 +420,7 @@ export default function KioskPage() {
         <SuccessDialouge
           open={showSuccessDialog}
           orderNumber={orderNumber}
-          onClose={() => setShowSuccessDialog(false)}
+          onClose={handleSuccessComplete}
         />
 
         <FailedOrderDialouge

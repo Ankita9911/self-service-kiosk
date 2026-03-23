@@ -46,7 +46,7 @@ export default function PaymentDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-[calc(100%-1.25rem)] sm:w-full sm:max-w-3xl h-auto max-h-[86vh] p-0 overflow-hidden rounded-3xl! sm:rounded-[28px]! border border-[#cdebe4] shadow-[0_18px_50px_rgba(14,159,137,0.18)] bg-white">
+      <DialogContent className="w-[calc(100%-1.25rem)] sm:w-full sm:max-w-3xl h-fit max-h-[78vh] p-0 overflow-y-auto rounded-3xl! sm:rounded-[28px]! border border-[#cdebe4] shadow-[0_18px_50px_rgba(14,159,137,0.18)] bg-white">
         <div className="border-b border-[#dff1ec] bg-linear-to-r from-[#f4fbf9] via-white to-[#eef9f6] px-4 sm:px-5 lg:px-6 py-3 sm:py-3.5">
           <div className="flex items-center justify-between">
             <div>
@@ -68,7 +68,7 @@ export default function PaymentDialog({
           </div>
         </div>
 
-        <div className="overflow-y-auto max-h-[calc(86vh-88px)] px-4 sm:px-5 lg:px-6 py-4 sm:py-5 bg-white">
+        <div className="px-4 sm:px-5 lg:px-6 py-4 sm:py-5 bg-white">
           <AnimatePresence mode="wait">
             {paymentStep === "SELECTION" ? (
               <motion.div
