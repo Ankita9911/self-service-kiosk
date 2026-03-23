@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, ShoppingCart } from "lucide-react";
 import { motion } from "framer-motion";
 import { processQueue } from "@/shared/lib/syncEngine";
 
@@ -307,24 +307,50 @@ export default function KioskPage() {
             </div>
           </main>
 
-          {!isCartOpen && totalItems >= 0 && (
-            <button
-              onClick={() => setIsCartOpen(true)}
-              className="fixed bottom-6 right-6 z-30 flex items-center gap-3 bg-[#0e9f89] hover:bg-[#0b8b78] text-white pl-4 pr-5 py-3.5 rounded-2xl shadow-2xl shadow-[#4dbfac]/40 transition-all active:scale-95"
-            >
-              <div className="relative">
-                <span className="text-2xl">🛒</span>
-                <span className="absolute -top-2 -right-2 bg-white text-[#0e9f89] text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center border-2 border-[#0e9f89]">
-                  {totalItems}
-                </span>
+          {!isCartOpen && (
+            <div className="border-t border-[#dff1ec] bg-white/95 px-4 py-3.5 shadow-[0_-6px_16px_rgba(15,23,42,0.06)]">
+              <div className="mx-auto w-full max-w-6xl flex items-center justify-between gap-3">
+                <button
+                  onClick={() => setIsCartOpen(true)}
+                  className="flex items-center gap-3 rounded-2xl px-3 py-2.5 hover:bg-[#edf8f5] transition-colors"
+                >
+                  <div className="relative h-10 w-10 rounded-xl bg-[#e8f7f3] text-[#0e9f89] flex items-center justify-center">
+                    <ShoppingCart className="w-5 h-5" strokeWidth={2.4} />
+                    <span className="absolute -top-1.5 -right-1.5 bg-[#0e9f89] text-white text-[10px] font-black min-w-5 h-5 px-1 rounded-full flex items-center justify-center">
+                      {totalItems}
+                    </span>
+                  </div>
+                  <div className="text-left">
+                    <p className="text-sm font-black text-slate-800 leading-none">
+                      {totalItems === 0 ? "Empty Cart" : "View Cart"}
+                    </p>
+                    <p className="text-xs text-slate-400 mt-0.5">
+                      {totalItems === 0
+                        ? "Looks like you haven't made any choice"
+                        : `${totalItems} item${totalItems !== 1 ? "s" : ""} added`}
+                    </p>
+                  </div>
+                </button>
+
+                <div className="flex items-center gap-3">
+                  <div className="text-right">
+                    <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+                      Total
+                    </p>
+                    <p className="text-2xl font-black text-[#0e9f89] leading-none">
+                      ₹{totalPrice.toFixed(2)}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setIsCartOpen(true)}
+                    disabled={totalItems === 0}
+                    className="h-12 px-7 rounded-2xl bg-[#0e9f89] hover:bg-[#0b8b78] text-white font-black text-base shadow-lg shadow-[#8edfd1]/45 transition-all active:scale-95 disabled:bg-slate-200 disabled:text-slate-400 disabled:shadow-none disabled:cursor-not-allowed"
+                  >
+                    Checkout
+                  </button>
+                </div>
               </div>
-              <div className="text-left">
-                <p className="text-sm font-black leading-none">View Cart</p>
-                <p className="text-xs font-semibold opacity-80 mt-0.5">
-                  ₹{totalPrice.toFixed(2)}
-                </p>
-              </div>
-            </button>
+            </div>
           )}
         </div>
 
