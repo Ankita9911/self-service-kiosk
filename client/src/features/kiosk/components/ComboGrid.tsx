@@ -7,13 +7,6 @@ interface ComboGridProps {
   combos: Combo[];
   cart: CartItem[];
   onViewCombo: (combo: Combo) => void;
-  onAddToCart: (item: {
-    _id: string;
-    name: string;
-    price: number;
-    comboPrice: number;
-    stockQuantity: number;
-  }) => void;
   onUpdateQuantity: (itemId: string, delta: number) => void;
 }
 
@@ -21,7 +14,6 @@ export default function ComboGrid({
   combos,
   cart,
   onViewCombo,
-  onAddToCart,
   onUpdateQuantity,
 }: ComboGridProps) {
   if (combos.length === 0) {
@@ -170,13 +162,7 @@ export default function ComboGrid({
                   <motion.button
                     onClick={(e) => {
                       e.stopPropagation();
-                      onAddToCart({
-                        ...combo,
-                        _id: combo._id,
-                        price: combo.comboPrice,
-                        comboPrice: combo.comboPrice,
-                        stockQuantity: 999,
-                      });
+                      onViewCombo(combo);
                     }}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
@@ -207,13 +193,7 @@ export default function ComboGrid({
                     <motion.button
                       onClick={(e) => {
                         e.stopPropagation();
-                        onAddToCart({
-                          ...combo,
-                          _id: combo._id,
-                          price: combo.comboPrice,
-                          comboPrice: combo.comboPrice,
-                          stockQuantity: 999,
-                        });
+                        onViewCombo(combo);
                       }}
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.9 }}

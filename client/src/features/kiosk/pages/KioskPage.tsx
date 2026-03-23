@@ -135,6 +135,15 @@ export default function KioskPage() {
     }
   }, [cart, menu, combos, setCart, cartSyncAlerts.length]);
 
+  const comboItemMetaMap = Object.fromEntries(
+    menu
+      .flatMap((category) => category.items || [])
+      .map((item) => [
+        String(item._id),
+        { imageUrl: item.imageUrl, price: item.price },
+      ]),
+  ) as Record<string, { imageUrl?: string; price?: number }>;
+
   return (
     <div className="h-screen overflow-hidden bg-linear-to-br from-[#e7f8f4] via-[#f4fbf9] to-white p-3">
       <div className="relative h-full w-full flex flex-row overflow-hidden rounded-[30px] border border-[#d9efe9] bg-white/90 shadow-[0_18px_60px_rgba(14,159,137,0.14)] backdrop-blur-sm">
@@ -293,7 +302,6 @@ export default function KioskPage() {
                   combos={combos}
                   cart={cart}
                   onViewCombo={(combo) => setSelectedCombo(combo)}
-                  onAddToCart={handleAddToCart}
                   onUpdateQuantity={handleUpdateQuantity}
                 />
               ) : (
@@ -410,8 +418,13 @@ export default function KioskPage() {
                   ?.quantity ?? 0)
               : 0
           }
+          comboItemMetaMap={comboItemMetaMap}
           onClose={() => setSelectedCombo(null)}
-          onAddToCart={(combo) => handleAddComboToCart(combo)}
+          onAddToCart={(combo, quantity) => {
+            for (let i = 0; i < quantity; i += 1) {
+              handleAddComboToCart(combo);
+            }
+          }}
         />
       </div>
     </div>
