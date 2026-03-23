@@ -136,256 +136,258 @@ export default function KioskPage() {
   }, [cart, menu, combos, setCart, cartSyncAlerts.length]);
 
   return (
-    <div className="h-screen flex flex-row bg-gray-50 overflow-hidden">
-      {/* ── Offer filter sidebar ── */}
-      <div className="w-29 min-w-29 shrink-0 flex flex-col bg-white border-r border-gray-100 shadow-sm overflow-y-auto scrollbar-none">
-        <div className="px-10 py-9.5 flex flex-col bg-white border-r border-gray-100 shadow-sm overflow-y-auto scrollbar-none">
-          <button
-            className="text-gray-400 hover:text-orange-500 hover:bg-orange-50 transition-all active:scale-95"
-            onClick={() => navigate("/kiosk/order-type")}
-          >
-            <ArrowLeft className="w-5 h-5" />
-            <span className="text-[10px] font-bold">Back</span>
-          </button>
-        </div>
+    <div className="h-screen overflow-hidden bg-linear-to-br from-[#e7f8f4] via-[#f4fbf9] to-white p-3">
+      <div className="h-full w-full flex flex-row overflow-hidden rounded-[30px] border border-[#d9efe9] bg-white/90 shadow-[0_18px_60px_rgba(14,159,137,0.14)] backdrop-blur-sm">
+        {/* ── Offer filter sidebar ── */}
+        <div className="w-29 min-w-29 shrink-0 flex flex-col bg-linear-to-b from-[#f8fdfc] to-white border-r border-[#dff1ec] shadow-sm overflow-y-auto scrollbar-none">
+          <div className="px-10 py-9.5 flex flex-col bg-transparent overflow-y-auto scrollbar-none">
+            <button
+              className="text-slate-400 hover:text-[#0e9f89] hover:bg-[#e8f7f3] transition-all active:scale-95 rounded-xl p-1"
+              onClick={() => navigate("/kiosk/order-type")}
+            >
+              <ArrowLeft className="w-5 h-5" />
+              <span className="text-[10px] font-bold">Back</span>
+            </button>
+          </div>
 
-        <div className="flex flex-col gap-2 px-2.5 pt-2">
-          {OFFER_CHIPS.map(({ value, label, emoji }, index) => {
-            if (isOnCombos && value !== null) return null;
-            const isActive = offerFilter === value;
+          <div className="flex flex-col gap-2 px-2.5 pt-2">
+            {OFFER_CHIPS.map(({ value, label, emoji }, index) => {
+              if (isOnCombos && value !== null) return null;
+              const isActive = offerFilter === value;
 
-            return (
-              <motion.button
-                key={String(value)}
-                onClick={() => setOfferFilter(value)}
-                initial={{ opacity: 0, y: -8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{
-                  delay: index * 0.04,
-                  duration: 0.3,
-                  ease: "easeOut",
-                }}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.97 }}
-                className="flex flex-col items-center justify-start focus:outline-none"
-                style={{
-                  width: "100%",
-                  aspectRatio: "1 / 1",
-                  borderRadius: "24px",
-                  padding: "7px 7px 8px",
-                  background: isActive
-                    ? "linear-gradient(170deg, #16b8a1 0%, #0e9f89 100%)"
-                    : "#ffffff",
-                  border: isActive
-                    ? "1px solid rgba(12, 154, 133, 0.75)"
-                    : "1px solid #eff1f3",
-                  boxShadow: isActive
-                    ? "0 10px 22px rgba(22, 184, 161, 0.34)"
-                    : "0 4px 14px rgba(15, 23, 42, 0.08)",
-                  gap: "5px",
-                  transition: "all 0.25s ease",
-                }}
-              >
-                <div
+              return (
+                <motion.button
+                  key={String(value)}
+                  onClick={() => setOfferFilter(value)}
+                  initial={{ opacity: 0, y: -8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{
+                    delay: index * 0.04,
+                    duration: 0.3,
+                    ease: "easeOut",
+                  }}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.97 }}
+                  className="flex flex-col items-center justify-start focus:outline-none"
                   style={{
-                    width: "48px",
-                    height: "48px",
-                    borderRadius: "50%",
-                    padding: "2px",
-                    background: "#ffffff",
+                    width: "100%",
+                    aspectRatio: "1 / 1",
+                    borderRadius: "24px",
+                    padding: "7px 7px 8px",
+                    background: isActive
+                      ? "linear-gradient(170deg, #16b8a1 0%, #0e9f89 100%)"
+                      : "#ffffff",
+                    border: isActive
+                      ? "1px solid rgba(12, 154, 133, 0.75)"
+                      : "1px solid #eff1f3",
                     boxShadow: isActive
-                      ? "0 4px 10px rgba(6, 120, 104, 0.28)"
-                      : "0 3px 8px rgba(0, 0, 0, 0.14)",
+                      ? "0 10px 22px rgba(22, 184, 161, 0.34)"
+                      : "0 4px 14px rgba(15, 23, 42, 0.08)",
+                    gap: "5px",
                     transition: "all 0.25s ease",
-                    position: "relative",
-                    flexShrink: 0,
                   }}
                 >
                   <div
                     style={{
-                      width: "100%",
-                      height: "100%",
+                      width: "48px",
+                      height: "48px",
                       borderRadius: "50%",
-                      overflow: "hidden",
-                      border: "2px solid rgba(255,255,255,0.95)",
-                      background: "#f0f0f0",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      fontSize: "22px",
+                      padding: "2px",
+                      background: "#ffffff",
+                      boxShadow: isActive
+                        ? "0 4px 10px rgba(6, 120, 104, 0.28)"
+                        : "0 3px 8px rgba(0, 0, 0, 0.14)",
+                      transition: "all 0.25s ease",
+                      position: "relative",
+                      flexShrink: 0,
                     }}
                   >
-                    {emoji}
+                    <div
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        borderRadius: "50%",
+                        overflow: "hidden",
+                        border: "2px solid rgba(255,255,255,0.95)",
+                        background: "#f0f0f0",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        fontSize: "22px",
+                      }}
+                    >
+                      {emoji}
+                    </div>
                   </div>
-                </div>
 
-                <span
-                  style={{
-                    fontSize: "10px",
-                    fontWeight: isActive ? 700 : 600,
-                    color: isActive ? "#ffffff" : "#475569",
-                    textAlign: "center",
-                    lineHeight: "1.2",
-                    maxWidth: "72px",
-                    transition: "color 0.2s ease",
-                    fontFamily: "'DM Sans', 'Nunito', sans-serif",
-                    letterSpacing: "-0.01em",
-                    whiteSpace: "nowrap",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                  }}
-                >
-                  {label}
-                </span>
-              </motion.button>
-            );
-          })}
-        </div>
-
-        {offerFilter !== null && !isOnCombos && (
-          <div className="px-2.5 pt-1.5 pb-4">
-            <div className="h-px bg-gray-100 mb-2" />
-            <button
-              onClick={() => setOfferFilter(null)}
-              className="flex flex-col items-center gap-1 w-full py-3 px-1 rounded-[22px] bg-white text-slate-500 border border-slate-200 shadow-sm hover:border-red-200 hover:bg-red-50 hover:text-red-500 transition-all active:scale-95"
-              style={{ fontFamily: "'DM Sans', 'Nunito', sans-serif" }}
-            >
-              <span className="text-base leading-none font-black">✕</span>
-              <span className="text-[10px] font-bold">Clear</span>
-            </button>
+                  <span
+                    style={{
+                      fontSize: "10px",
+                      fontWeight: isActive ? 700 : 600,
+                      color: isActive ? "#ffffff" : "#475569",
+                      textAlign: "center",
+                      lineHeight: "1.2",
+                      maxWidth: "72px",
+                      transition: "color 0.2s ease",
+                      fontFamily: "'DM Sans', 'Nunito', sans-serif",
+                      letterSpacing: "-0.01em",
+                      whiteSpace: "nowrap",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                    }}
+                  >
+                    {label}
+                  </span>
+                </motion.button>
+              );
+            })}
           </div>
-        )}
-      </div>
 
-      {/* ── Main content ── */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        <div className="bg-white border-b border-gray-100 z-10 shadow-sm">
-          {isLoading ? (
-            <CategoryTabsSkeleton />
-          ) : (
-            <CategoryTabs
-              categories={categoriesWithAll}
-              selectedCategory={selectedCategory}
-              onCategoryChange={(id) => {
-                setSelectedCategory(id);
-                if (id === COMBOS_CATEGORY_ID) setOfferFilter(null);
-              }}
-            />
+          {offerFilter !== null && !isOnCombos && (
+            <div className="px-2.5 pt-1.5 pb-4">
+              <div className="h-px bg-[#dff1ec] mb-2" />
+              <button
+                onClick={() => setOfferFilter(null)}
+                className="flex flex-col items-center gap-1 w-full py-3 px-1 rounded-[22px] bg-white text-slate-500 border border-slate-200 shadow-sm hover:border-red-200 hover:bg-red-50 hover:text-red-500 transition-all active:scale-95"
+                style={{ fontFamily: "'DM Sans', 'Nunito', sans-serif" }}
+              >
+                <span className="text-base leading-none font-black">✕</span>
+                <span className="text-[10px] font-bold">Clear</span>
+              </button>
+            </div>
           )}
         </div>
 
-        {!isOnCombos && !isLoading && (
-          <TrendingStrip
-            items={trending}
-            isLoading={isTrendingLoading}
-            cart={cart}
-            onAddToCart={handleAddRecommendedItem}
-          />
-        )}
-
-        <main className="flex-1 overflow-y-auto scrollbar-hide scrollbar-thumb-orange-200 scrollbar-track-transparent">
-          <div className="p-6">
+        {/* ── Main content ── */}
+        <div className="flex-1 flex flex-col min-w-0 overflow-hidden bg-linear-to-b from-[#fbfefe] to-[#f5fbf9]">
+          <div className="bg-white/95 border-b border-[#dff1ec] z-10 shadow-sm">
             {isLoading ? (
-              <MenuGridSkeleton />
-            ) : isOnCombos ? (
-              <ComboGrid
-                combos={combos}
-                cart={cart}
-                onViewCombo={(combo) => setSelectedCombo(combo)}
-                onAddToCart={handleAddToCart}
-                onUpdateQuantity={handleUpdateQuantity}
-              />
+              <CategoryTabsSkeleton />
             ) : (
-              <MenuGrid
-                items={selectedItems}
-                cart={cart}
-                onAddToCart={handleAddToCart}
-                onUpdateQuantity={handleUpdateQuantity}
+              <CategoryTabs
+                categories={categoriesWithAll}
+                selectedCategory={selectedCategory}
+                onCategoryChange={(id) => {
+                  setSelectedCategory(id);
+                  if (id === COMBOS_CATEGORY_ID) setOfferFilter(null);
+                }}
               />
             )}
           </div>
-        </main>
 
-        {!isCartOpen && totalItems >= 0 && (
-          <button
-            onClick={() => setIsCartOpen(true)}
-            className="fixed bottom-6 right-6 z-30 flex items-center gap-3 bg-orange-500 hover:bg-orange-600 text-white pl-4 pr-5 py-3.5 rounded-2xl shadow-2xl shadow-orange-400/40 transition-all active:scale-95"
-          >
-            <div className="relative">
-              <span className="text-2xl">🛒</span>
-              <span className="absolute -top-2 -right-2 bg-white text-orange-600 text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center border-2 border-orange-500">
-                {totalItems}
-              </span>
+          {!isOnCombos && !isLoading && (
+            <TrendingStrip
+              items={trending}
+              isLoading={isTrendingLoading}
+              cart={cart}
+              onAddToCart={handleAddRecommendedItem}
+            />
+          )}
+
+          <main className="flex-1 overflow-y-auto scrollbar-hide scrollbar-thumb-[#9fded2] scrollbar-track-transparent">
+            <div className="p-6">
+              {isLoading ? (
+                <MenuGridSkeleton />
+              ) : isOnCombos ? (
+                <ComboGrid
+                  combos={combos}
+                  cart={cart}
+                  onViewCombo={(combo) => setSelectedCombo(combo)}
+                  onAddToCart={handleAddToCart}
+                  onUpdateQuantity={handleUpdateQuantity}
+                />
+              ) : (
+                <MenuGrid
+                  items={selectedItems}
+                  cart={cart}
+                  onAddToCart={handleAddToCart}
+                  onUpdateQuantity={handleUpdateQuantity}
+                />
+              )}
             </div>
-            <div className="text-left">
-              <p className="text-sm font-black leading-none">View Cart</p>
-              <p className="text-xs font-semibold opacity-80 mt-0.5">
-                ₹{totalPrice.toFixed(2)}
-              </p>
-            </div>
-          </button>
-        )}
+          </main>
+
+          {!isCartOpen && totalItems >= 0 && (
+            <button
+              onClick={() => setIsCartOpen(true)}
+              className="fixed bottom-6 right-6 z-30 flex items-center gap-3 bg-[#0e9f89] hover:bg-[#0b8b78] text-white pl-4 pr-5 py-3.5 rounded-2xl shadow-2xl shadow-[#4dbfac]/40 transition-all active:scale-95"
+            >
+              <div className="relative">
+                <span className="text-2xl">🛒</span>
+                <span className="absolute -top-2 -right-2 bg-white text-[#0e9f89] text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center border-2 border-[#0e9f89]">
+                  {totalItems}
+                </span>
+              </div>
+              <div className="text-left">
+                <p className="text-sm font-black leading-none">View Cart</p>
+                <p className="text-xs font-semibold opacity-80 mt-0.5">
+                  ₹{totalPrice.toFixed(2)}
+                </p>
+              </div>
+            </button>
+          )}
+        </div>
+
+        {/* ── Cart sidebar ── */}
+        <CartSidebar
+          isCartOpen={isCartOpen}
+          cart={cart}
+          cartSyncAlerts={cartSyncAlerts}
+          totalItems={totalItems}
+          onClose={() => setIsCartOpen(false)}
+          onUpdateQuantity={handleUpdateQuantity}
+          onRemoveItem={(cartItemId) => {
+            const item = cart.find((i) => i.cartItemId === cartItemId);
+            if (item) handleUpdateQuantity(cartItemId, -item.quantity);
+          }}
+          onCheckout={handleOpenCheckout}
+          isProcessing={isProcessing}
+          frequentlyBoughtTogether={frequentlyBoughtTogether}
+          isFbtLoading={isFbtLoading}
+          completeMeal={completeMeal}
+          isMealLoading={isMealLoading}
+          onAddRecommendedItem={handleAddRecommendedItem}
+          onAddComboToCart={handleAddComboToCart}
+        />
+
+        <PaymentDialouge
+          open={showPaymentDialog}
+          onOpenChange={setShowPaymentDialog}
+          paymentStep={paymentStep}
+          setPaymentStep={setPaymentStep}
+          selectedMethod={selectedMethod}
+          setSelectedMethod={setSelectedMethod}
+          totalPrice={totalPrice}
+          onConfirm={handleConfirmOrder}
+        />
+
+        <ProcessingOrderDialouge open={showProcessingDialog} />
+
+        <SuccessDialouge
+          open={showSuccessDialog}
+          orderNumber={orderNumber}
+          onClose={() => setShowSuccessDialog(false)}
+        />
+
+        <FailedOrderDialouge
+          open={showFailedDialog}
+          message={failedMessage}
+          onClose={() => setShowFailedDialog(false)}
+        />
+
+        <ComboDetailsDialog
+          open={Boolean(selectedCombo)}
+          combo={selectedCombo}
+          quantityInCart={
+            selectedCombo
+              ? (cart.find((c) => c.itemId === String(selectedCombo._id))
+                  ?.quantity ?? 0)
+              : 0
+          }
+          onClose={() => setSelectedCombo(null)}
+          onAddToCart={(combo) => handleAddComboToCart(combo)}
+        />
       </div>
-
-      {/* ── Cart sidebar ── */}
-      <CartSidebar
-        isCartOpen={isCartOpen}
-        cart={cart}
-        cartSyncAlerts={cartSyncAlerts}
-        totalItems={totalItems}
-        onClose={() => setIsCartOpen(false)}
-        onUpdateQuantity={handleUpdateQuantity}
-        onRemoveItem={(cartItemId) => {
-          const item = cart.find((i) => i.cartItemId === cartItemId);
-          if (item) handleUpdateQuantity(cartItemId, -item.quantity);
-        }}
-        onCheckout={handleOpenCheckout}
-        isProcessing={isProcessing}
-        frequentlyBoughtTogether={frequentlyBoughtTogether}
-        isFbtLoading={isFbtLoading}
-        completeMeal={completeMeal}
-        isMealLoading={isMealLoading}
-        onAddRecommendedItem={handleAddRecommendedItem}
-        onAddComboToCart={handleAddComboToCart}
-      />
-
-      <PaymentDialouge
-        open={showPaymentDialog}
-        onOpenChange={setShowPaymentDialog}
-        paymentStep={paymentStep}
-        setPaymentStep={setPaymentStep}
-        selectedMethod={selectedMethod}
-        setSelectedMethod={setSelectedMethod}
-        totalPrice={totalPrice}
-        onConfirm={handleConfirmOrder}
-      />
-
-      <ProcessingOrderDialouge open={showProcessingDialog} />
-
-      <SuccessDialouge
-        open={showSuccessDialog}
-        orderNumber={orderNumber}
-        onClose={() => setShowSuccessDialog(false)}
-      />
-
-      <FailedOrderDialouge
-        open={showFailedDialog}
-        message={failedMessage}
-        onClose={() => setShowFailedDialog(false)}
-      />
-
-      <ComboDetailsDialog
-        open={Boolean(selectedCombo)}
-        combo={selectedCombo}
-        quantityInCart={
-          selectedCombo
-            ? (cart.find((c) => c.itemId === String(selectedCombo._id))
-                ?.quantity ?? 0)
-            : 0
-        }
-        onClose={() => setSelectedCombo(null)}
-        onAddToCart={(combo) => handleAddComboToCart(combo)}
-      />
     </div>
   );
 }
