@@ -103,10 +103,12 @@ export default function KioskPage() {
     _id: string;
     name: string;
     comboPrice: number;
+    imageUrl?: string;
   }) => {
     handleAddToCart({
       _id: combo._id,
       name: combo.name,
+      imageUrl: combo.imageUrl,
       price: combo.comboPrice,
       comboPrice: combo.comboPrice,
       stockQuantity: 999,

@@ -1,4 +1,11 @@
-import { Minus, Plus, Trash2, ShoppingCart, AlertTriangle } from "lucide-react";
+import {
+  Minus,
+  Plus,
+  Trash2,
+  ShoppingCart,
+  AlertTriangle,
+  ImageOff,
+} from "lucide-react";
 import { Button } from "../../../shared/components/ui/button";
 import type { CartItem } from "../types/cartItem.types";
 import { effectiveLineTotal } from "../hooks/useKioskCart";
@@ -27,6 +34,7 @@ interface CartPanelProps {
     _id: string;
     name: string;
     comboPrice: number;
+    imageUrl?: string;
   }) => void;
 }
 
@@ -136,73 +144,93 @@ export default function CartPanel({
                 className="bg-linear-to-br from-white to-gray-50 rounded-2xl p-4 border-2 border-gray-100 hover:border-[#b6e6dc] transition-all shadow-sm hover:shadow-md"
               >
                 <div className="flex items-start justify-between mb-3">
-                  <div className="flex-1 pr-2">
-                    <h4
-                      className="text-base font-bold text-gray-900 leading-tight mb-1"
-                      style={{ fontFamily: "var(--font-display)" }}
-                    >
-                      {item.name}
-                      {item.isCombo && (
-                        <span className="ml-1.5 text-[10px] font-black bg-[#e7f8f4] text-[#0e9f89] px-1.5 py-0.5 rounded-full">
-                          COMBO
-                        </span>
+                  <div className="flex items-start gap-3 flex-1 pr-2 min-w-0">
+                    <div className="w-14 h-14 rounded-xl overflow-hidden bg-[#e8f7f3] shrink-0 border border-[#dcefe9]">
+                      {item.imageUrl ? (
+                        <img
+                          src={item.imageUrl}
+                          alt={item.name}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <ImageOff
+                            className="w-5 h-5 text-[#86cfc1]"
+                            strokeWidth={1.8}
+                          />
+                        </div>
                       )}
-                    </h4>
-                    <div className="flex items-center gap-1.5 flex-wrap">
-                      {item.offerType === "DISCOUNT" && item.discountPercent ? (
-                        <>
-                          <p
-                            className="text-xs line-through text-gray-400"
-                            style={{ fontFamily: "var(--font-body)" }}
-                          >
-                            ₹{item.price.toFixed(2)}
-                          </p>
-                          <p className="text-xs font-bold text-red-500">
-                            ₹
-                            {(
-                              item.price *
-                              (1 - item.discountPercent / 100)
-                            ).toFixed(2)}{" "}
-                            each
-                          </p>
-                          <span className="text-[9px] font-black bg-red-100 text-red-600 px-1.5 py-0.5 rounded-full">
-                            {item.discountPercent}% OFF
+                    </div>
+
+                    <div className="flex-1 min-w-0">
+                      <h4
+                        className="text-base font-bold text-gray-900 leading-tight mb-1"
+                        style={{ fontFamily: "var(--font-display)" }}
+                      >
+                        {item.name}
+                        {item.isCombo && (
+                          <span className="ml-1.5 text-[10px] font-black bg-[#e7f8f4] text-[#0e9f89] px-1.5 py-0.5 rounded-full">
+                            COMBO
                           </span>
-                        </>
-                      ) : item.offerType === "BOGO" ? (
-                        <>
+                        )}
+                      </h4>
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        {item.offerType === "DISCOUNT" &&
+                        item.discountPercent ? (
+                          <>
+                            <p
+                              className="text-xs line-through text-gray-400"
+                              style={{ fontFamily: "var(--font-body)" }}
+                            >
+                              ₹{item.price.toFixed(2)}
+                            </p>
+                            <p className="text-xs font-bold text-red-500">
+                              ₹
+                              {(
+                                item.price *
+                                (1 - item.discountPercent / 100)
+                              ).toFixed(2)}{" "}
+                              each
+                            </p>
+                            <span className="text-[9px] font-black bg-red-100 text-red-600 px-1.5 py-0.5 rounded-full">
+                              {item.discountPercent}% OFF
+                            </span>
+                          </>
+                        ) : item.offerType === "BOGO" ? (
+                          <>
+                            <p
+                              className="text-sm font-semibold text-gray-500"
+                              style={{ fontFamily: "var(--font-body)" }}
+                            >
+                              ₹{item.price.toFixed(2)} each
+                            </p>
+                            <span className="text-[9px] font-black bg-emerald-100 text-emerald-600 px-1.5 py-0.5 rounded-full">
+                              BUY 1 GET 1
+                            </span>
+                          </>
+                        ) : (
                           <p
                             className="text-sm font-semibold text-gray-500"
                             style={{ fontFamily: "var(--font-body)" }}
                           >
                             ₹{item.price.toFixed(2)} each
                           </p>
-                          <span className="text-[9px] font-black bg-emerald-100 text-emerald-600 px-1.5 py-0.5 rounded-full">
-                            BUY 1 GET 1
-                          </span>
-                        </>
-                      ) : (
-                        <p
-                          className="text-sm font-semibold text-gray-500"
-                          style={{ fontFamily: "var(--font-body)" }}
-                        >
-                          ₹{item.price.toFixed(2)} each
-                        </p>
+                        )}
+                      </div>
+                      {(item.selectedCustomizations || []).length > 0 && (
+                        <div className="mt-2 space-y-1">
+                          {item.selectedCustomizations!.map((option) => (
+                            <p
+                              key={option.itemId}
+                              className="text-[11px] font-semibold text-gray-600"
+                              style={{ fontFamily: "var(--font-body)" }}
+                            >
+                              + {option.name} (Rs {option.price.toFixed(2)})
+                            </p>
+                          ))}
+                        </div>
                       )}
                     </div>
-                    {(item.selectedCustomizations || []).length > 0 && (
-                      <div className="mt-2 space-y-1">
-                        {item.selectedCustomizations!.map((option) => (
-                          <p
-                            key={option.itemId}
-                            className="text-[11px] font-semibold text-gray-600"
-                            style={{ fontFamily: "var(--font-body)" }}
-                          >
-                            + {option.name} (Rs {option.price.toFixed(2)})
-                          </p>
-                        ))}
-                      </div>
-                    )}
                   </div>
                   <button
                     onClick={() => onRemoveItem(item.cartItemId)}

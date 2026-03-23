@@ -13,11 +13,11 @@ interface TrendingStripProps {
 
 function TrendingCardSkeleton() {
   return (
-    <div className="shrink-0 w-36 bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 animate-pulse">
-      <div className="h-24 bg-gray-100" />
+    <div className="shrink-0 w-36 bg-white rounded-2xl overflow-hidden shadow-sm border border-[#deefea] animate-pulse">
+      <div className="h-24 bg-[#edf8f5]" />
       <div className="p-3 space-y-2">
-        <div className="h-3 bg-gray-100 rounded-full w-4/5" />
-        <div className="h-3 bg-gray-100 rounded-full w-2/5" />
+        <div className="h-3 bg-[#edf8f5] rounded-full w-4/5" />
+        <div className="h-3 bg-[#edf8f5] rounded-full w-2/5" />
       </div>
     </div>
   );
@@ -75,7 +75,7 @@ export default function TrendingStrip({
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, scale: 0.9 }}
                     transition={{ delay: index * 0.05, duration: 0.3 }}
-                    className="shrink-0 w-36 bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-lg border-2 border-transparent hover:border-[#bce9de] transition-all cursor-pointer group"
+                    className="shrink-0 w-36 bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-lg border-2 border-[#e0f2ed] hover:border-[#bce9de] transition-all cursor-pointer group"
                     onClick={() => onAddToCart(item as unknown as MenuItem)}
                   >
                     {/* Image */}

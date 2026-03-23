@@ -28,6 +28,7 @@ interface CartSidebarProps {
     _id: string;
     name: string;
     comboPrice: number;
+    imageUrl?: string;
   }) => void;
 }
 

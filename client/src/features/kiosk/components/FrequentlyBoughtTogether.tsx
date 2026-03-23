@@ -21,19 +21,22 @@ export default function FrequentlyBoughtTogether({
   if (!isLoading && items.length === 0) return null;
 
   return (
-    <div className="border-t border-gray-100 pt-3 pb-1 px-4">
+    <div className="border-t border-[#dff1ec] pt-3 pb-1 px-4 bg-[#fcfffe]">
       {/* Header */}
       <div className="flex items-center gap-2 mb-3">
-        <Users className="w-3.5 h-3.5 text-blue-500" strokeWidth={2.5} />
-        <span
-          className="text-xs font-black text-gray-700 uppercase tracking-wide"
-          style={{ fontFamily: "var(--font-display)" }}
-        >
-          Often ordered together
-        </span>
+        <div className="flex items-center gap-1.5 bg-[#e8f7f3] px-3 py-1 rounded-full">
+          <Users className="w-3.5 h-3.5 text-[#0e9f89]" strokeWidth={2.5} />
+          <span
+            className="text-xs font-black text-[#0e9f89] uppercase tracking-wide"
+            style={{ fontFamily: "var(--font-display)" }}
+          >
+            Often ordered together
+          </span>
+        </div>
         {isLoading && (
-          <Loader2 className="w-3 h-3 text-gray-400 animate-spin ml-auto" />
+          <Loader2 className="w-3 h-3 text-[#67c7b7] animate-spin ml-auto" />
         )}
+        <div className="h-px flex-1 bg-linear-to-r from-[#bce9de] to-transparent" />
       </div>
 
       {/* Items */}
@@ -44,14 +47,14 @@ export default function FrequentlyBoughtTogether({
             {Array.from({ length: 2 }).map((_, i) => (
               <div
                 key={`fbt-skel-${i}`}
-                className="flex items-center gap-3 p-2 rounded-xl bg-gray-50 animate-pulse"
+                className="flex items-center gap-3 p-2 rounded-xl bg-[#f2faf8] border border-[#e0f2ed] animate-pulse"
               >
-                <div className="w-10 h-10 rounded-lg bg-gray-200 flex-shrink-0" />
+                <div className="w-10 h-10 rounded-lg bg-gray-200 shrink-0" />
                 <div className="flex-1 space-y-1.5">
                   <div className="h-2.5 bg-gray-200 rounded-full w-3/4" />
                   <div className="h-2 bg-gray-200 rounded-full w-1/3" />
                 </div>
-                <div className="w-7 h-7 rounded-lg bg-gray-200 flex-shrink-0" />
+                <div className="w-7 h-7 rounded-lg bg-gray-200 shrink-0" />
               </div>
             ))}
           </div>
@@ -78,12 +81,12 @@ export default function FrequentlyBoughtTogether({
                   transition={{ delay: index * 0.06, duration: 0.25 }}
                   className={`flex items-center gap-3 p-2 rounded-xl border transition-all ${
                     alreadyInCart
-                      ? "bg-emerald-50 border-emerald-100"
-                      : "bg-gray-50 border-transparent hover:border-orange-100 hover:bg-orange-50"
+                      ? "bg-[#e9f8f4] border-[#bde7de]"
+                      : "bg-white border-[#e0f2ed] hover:border-[#bde7de] hover:bg-[#f4fbf9]"
                   }`}
                 >
                   {/* Thumbnail */}
-                  <div className="w-10 h-10 rounded-lg overflow-hidden bg-orange-50 flex-shrink-0">
+                  <div className="w-10 h-10 rounded-lg overflow-hidden bg-[#e8f7f3] shrink-0">
                     {item.imageUrl ? (
                       <img
                         src={item.imageUrl}
@@ -109,7 +112,7 @@ export default function FrequentlyBoughtTogether({
                       {item.name}
                     </p>
                     <p
-                      className="text-xs font-semibold text-orange-600 mt-0.5"
+                      className="text-xs font-semibold text-[#0e9f89] mt-0.5"
                       style={{ fontFamily: "var(--font-body)" }}
                     >
                       ₹{effectivePrice.toFixed(0)}
@@ -118,7 +121,7 @@ export default function FrequentlyBoughtTogether({
 
                   {/* Add button */}
                   {alreadyInCart ? (
-                    <span className="text-[10px] font-black text-emerald-600 bg-emerald-100 px-2 py-1 rounded-lg flex-shrink-0">
+                    <span className="text-[10px] font-black text-[#0e9f89] bg-[#e8f7f3] px-2 py-1 rounded-lg shrink-0 border border-[#cdebe4]">
                       ✓ Added
                     </span>
                   ) : (
@@ -126,7 +129,7 @@ export default function FrequentlyBoughtTogether({
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.9 }}
                       onClick={() => onAddToCart(item as unknown as MenuItem)}
-                      className="w-7 h-7 rounded-lg bg-orange-500 hover:bg-orange-600 text-white flex items-center justify-center shadow-sm transition-colors flex-shrink-0"
+                      className="w-7 h-7 rounded-lg bg-[#0e9f89] hover:bg-[#0b8b78] text-white flex items-center justify-center shadow-sm transition-colors shrink-0"
                     >
                       <Plus className="w-3.5 h-3.5" strokeWidth={3} />
                     </motion.button>

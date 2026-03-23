@@ -29,19 +29,22 @@ export default function CompleteMealSuggestion({
   if (!isLoading && !hasContent) return null;
 
   return (
-    <div className="border-t border-gray-100 pt-3 px-4 pb-3">
+    <div className="border-t border-[#dff1ec] pt-3 px-4 pb-3 bg-[#fcfffe]">
       {/* Header */}
       <div className="flex items-center gap-2 mb-3">
-        <UtensilsCrossed
-          className="w-3.5 h-3.5 text-purple-500"
-          strokeWidth={2.5}
-        />
-        <span
-          className="text-xs font-black text-gray-700 uppercase tracking-wide"
-          style={{ fontFamily: "var(--font-display)" }}
-        >
-          Complete your meal
-        </span>
+        <div className="flex items-center gap-1.5 bg-[#e8f7f3] px-3 py-1 rounded-full">
+          <UtensilsCrossed
+            className="w-3.5 h-3.5 text-[#0e9f89]"
+            strokeWidth={2.5}
+          />
+          <span
+            className="text-xs font-black text-[#0e9f89] uppercase tracking-wide"
+            style={{ fontFamily: "var(--font-display)" }}
+          >
+            Complete your meal
+          </span>
+        </div>
+        <div className="h-px flex-1 bg-linear-to-r from-[#bce9de] to-transparent" />
       </div>
 
       <AnimatePresence>
@@ -52,22 +55,22 @@ export default function CompleteMealSuggestion({
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
-            className="mb-3 rounded-2xl bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-orange-200 p-3"
+            className="mb-3 rounded-2xl bg-linear-to-r from-[#ecfaf6] to-[#e4f6f1] border-2 border-[#bde7de] p-3"
           >
             <div className="flex items-start gap-2 mb-2">
               <Tag
-                className="w-3.5 h-3.5 text-orange-500 mt-0.5 flex-shrink-0"
+                className="w-3.5 h-3.5 text-[#0e9f89] mt-0.5 shrink-0"
                 strokeWidth={2.5}
               />
               <div className="flex-1 min-w-0">
                 <p
-                  className="text-xs font-black text-orange-700 leading-tight"
+                  className="text-xs font-black text-[#0b8b78] leading-tight"
                   style={{ fontFamily: "var(--font-display)" }}
                 >
                   Better deal available!
                 </p>
                 <p
-                  className="text-[11px] text-orange-600 font-semibold mt-0.5 truncate"
+                  className="text-[11px] text-[#0e9f89] font-semibold mt-0.5 truncate"
                   style={{ fontFamily: "var(--font-body)" }}
                 >
                   {comboDeal.name}
@@ -83,7 +86,7 @@ export default function CompleteMealSuggestion({
                   </span>
                 )}
                 <span
-                  className="text-base font-black text-orange-600"
+                  className="text-base font-black text-[#0e9f89]"
                   style={{ fontFamily: "var(--font-display)" }}
                 >
                   ₹{comboDeal.comboPrice.toFixed(0)}
@@ -106,9 +109,10 @@ export default function CompleteMealSuggestion({
                     _id: String(comboDeal._id),
                     name: comboDeal.name,
                     comboPrice: comboDeal.comboPrice,
+                    imageUrl: comboDeal.imageUrl,
                   })
                 }
-                className="flex items-center gap-1 bg-orange-500 hover:bg-orange-600 text-white text-[10px] font-black px-3 py-1.5 rounded-xl shadow-sm transition-colors"
+                className="flex items-center gap-1 bg-[#0e9f89] hover:bg-[#0b8b78] text-white text-[10px] font-black px-3 py-1.5 rounded-xl shadow-sm transition-colors"
                 style={{ fontFamily: "var(--font-display)" }}
               >
                 <Plus className="w-3 h-3" strokeWidth={3} />
@@ -140,12 +144,12 @@ export default function CompleteMealSuggestion({
                   transition={{ delay: index * 0.07, duration: 0.2 }}
                   className={`rounded-xl overflow-hidden border transition-all ${
                     alreadyInCart
-                      ? "border-emerald-200 bg-emerald-50"
-                      : "border-gray-100 bg-white hover:border-orange-200"
+                      ? "border-[#bde7de] bg-[#e9f8f4]"
+                      : "border-[#e0f2ed] bg-white hover:border-[#bde7de]"
                   }`}
                 >
                   {/* Thumbnail */}
-                  <div className="h-16 bg-gradient-to-br from-orange-50 to-amber-50 overflow-hidden relative">
+                  <div className="h-16 bg-linear-to-br from-[#e8f7f3] to-[#def3ec] overflow-hidden relative">
                     {item.imageUrl ? (
                       <img
                         src={item.imageUrl}
@@ -172,7 +176,7 @@ export default function CompleteMealSuggestion({
                     </p>
                     <div className="flex items-center justify-between mt-1.5">
                       <span
-                        className="text-xs font-black text-orange-600"
+                        className="text-xs font-black text-[#0e9f89]"
                         style={{ fontFamily: "var(--font-display)" }}
                       >
                         ₹{effectivePrice.toFixed(0)}
@@ -188,7 +192,7 @@ export default function CompleteMealSuggestion({
                           onClick={() =>
                             onAddToCart(item as unknown as MenuItem)
                           }
-                          className="w-6 h-6 rounded-lg bg-orange-500 hover:bg-orange-600 text-white flex items-center justify-center shadow-sm transition-colors"
+                          className="w-6 h-6 rounded-lg bg-[#0e9f89] hover:bg-[#0b8b78] text-white flex items-center justify-center shadow-sm transition-colors"
                         >
                           <Plus className="w-3 h-3" strokeWidth={3} />
                         </motion.button>

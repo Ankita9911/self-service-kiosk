@@ -42,7 +42,11 @@ export function reconcileCartWithCatalog(
           `${cartItem.name} price changed: Rs ${cartItem.price.toFixed(2)} -> Rs ${nextPrice.toFixed(2)}.`,
         );
       }
-      nextCart.push({ ...cartItem, price: nextPrice });
+      nextCart.push({
+        ...cartItem,
+        price: nextPrice,
+        imageUrl: combo.imageUrl ?? cartItem.imageUrl,
+      });
       continue;
     }
 
@@ -107,6 +111,7 @@ export function reconcileCartWithCatalog(
     const firstOffer = liveItem.offers?.[0];
     nextCart.push({
       ...cartItem,
+      imageUrl: liveItem.imageUrl ?? cartItem.imageUrl,
       price: liveItem.price,
       quantity: reducedQuantity,
       stockQuantity: effectiveStockLimit,

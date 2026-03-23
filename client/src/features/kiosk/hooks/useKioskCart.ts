@@ -6,6 +6,7 @@ type AddToCartInput = {
   _id?: string;
   itemId?: string;
   name: string;
+  imageUrl?: string;
   price: number;
   comboPrice?: number;
   stockQuantity?: number;
@@ -98,6 +99,7 @@ export function useKioskCart() {
           cartItemId: uuidv4(),
           itemId: id,
           name: item.name,
+          imageUrl: item.imageUrl,
           price: item.comboPrice ?? item.price,
           quantity: 1,
           stockQuantity: item.stockQuantity ?? 999,
