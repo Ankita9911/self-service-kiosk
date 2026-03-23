@@ -286,17 +286,19 @@ export default function KioskPage() {
             )}
           </div>
 
-          {!isOnCombos && !isLoading && (
-            <TrendingStrip
-              items={trending}
-              isLoading={isTrendingLoading}
-              cart={cart}
-              onAddToCart={handleAddRecommendedItem}
-            />
-          )}
-
           <main className="flex-1 overflow-y-auto scrollbar-hide scrollbar-thumb-[#9fded2] scrollbar-track-transparent">
             <div className="p-6">
+              {!isOnCombos && !isLoading && (
+                <div className="mb-6 -mx-6 px-6">
+                  <TrendingStrip
+                    items={trending}
+                    isLoading={isTrendingLoading}
+                    cart={cart}
+                    onAddToCart={handleAddRecommendedItem}
+                  />
+                </div>
+              )}
+
               {isLoading ? (
                 <MenuGridSkeleton />
               ) : isOnCombos ? (
