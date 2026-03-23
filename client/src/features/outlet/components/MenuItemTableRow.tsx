@@ -148,11 +148,11 @@ export function MenuItemTableRow({
   return (
     <>
       <tr
-        className={`group border-b border-slate-100 dark:border-white/5 transition-colors ${
+        className={`group transition-colors ${
           isUnavailable
-            ? "opacity-55 grayscale bg-slate-50/60 dark:bg-white/1 hover:bg-slate-100/60 dark:hover:bg-white/2"
-            : `hover:bg-slate-50/70 dark:hover:bg-white/2 ${
-                index % 2 === 0 ? "" : "bg-slate-50/30 dark:bg-white/1"
+            ? "opacity-55 grayscale bg-slate-50/60 dark:bg-white/1 hover:bg-indigo-50/30 dark:hover:bg-indigo-500/4"
+            : `hover:bg-indigo-50/30 dark:hover:bg-indigo-500/4 ${
+                index % 2 === 0 ? "" : "bg-slate-50/20 dark:bg-white/1"
               }`
         }`}
       >

@@ -716,11 +716,11 @@ export default function OutletMenuPage() {
           </>
         ) : (
           /* Table view */
-          <div className="rounded-2xl border border-slate-100 dark:border-white/[0.07] bg-white dark:bg-[#1e2130] shadow-sm">
+          <div className="rounded-2xl border border-slate-100 dark:border-white/6 bg-white dark:bg-[#161920] shadow-sm">
             <div>
               <table className="w-full min-w-175 text-sm">
                 <thead>
-                  <tr className="border-b border-slate-100 dark:border-white/7 bg-slate-50/80 dark:bg-white/2">
+                  <tr className="border-b border-slate-100 dark:border-white/6 bg-slate-50/60 dark:bg-white/2">
                     {[
                       "#",
                       "Item",
@@ -732,7 +732,7 @@ export default function OutletMenuPage() {
                     ].map((h) => (
                       <th
                         key={h}
-                        className={`px-4 py-3 text-left text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider ${
+                        className={`px-4 py-3 text-left text-[11px] font-medium text-slate-500 dark:text-slate-500 uppercase tracking-wider ${
                           h === "#"
                             ? "w-10"
                             : h === "Actions"
@@ -745,7 +745,7 @@ export default function OutletMenuPage() {
                     ))}
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className="divide-y divide-slate-50 dark:divide-white/4">
                   {items.map((item, idx) => (
                     <MenuItemTableRow
                       key={item._id}
