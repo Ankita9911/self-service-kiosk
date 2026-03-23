@@ -1,11 +1,4 @@
-import {
-  Minus,
-  Plus,
-  Trash2,
-  ShoppingCart,
-  Package,
-  AlertTriangle,
-} from "lucide-react";
+import { Minus, Plus, Trash2, ShoppingCart, AlertTriangle } from "lucide-react";
 import { Button } from "../../../shared/components/ui/button";
 import type { CartItem } from "../types/cartItem.types";
 import { effectiveLineTotal } from "../hooks/useKioskCart";
@@ -136,7 +129,6 @@ export default function CartPanel({
           {/* Cart items */}
           {cart.map((item) => {
             const isAtMaxStock = item.quantity >= item.stockQuantity;
-            const isLowStock = item.stockQuantity <= 3;
 
             return (
               <div
@@ -198,17 +190,6 @@ export default function CartPanel({
                         </p>
                       )}
                     </div>
-                    {isLowStock && (
-                      <div className="flex items-center gap-1 mt-1">
-                        <Package className="w-3 h-3 text-amber-600" />
-                        <span
-                          className="text-xs font-bold text-amber-600"
-                          style={{ fontFamily: "var(--font-body)" }}
-                        >
-                          Only {item.stockQuantity} left
-                        </span>
-                      </div>
-                    )}
                     {(item.selectedCustomizations || []).length > 0 && (
                       <div className="mt-2 space-y-1">
                         {item.selectedCustomizations!.map((option) => (

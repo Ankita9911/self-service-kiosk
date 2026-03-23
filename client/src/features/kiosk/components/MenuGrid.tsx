@@ -1,4 +1,4 @@
-import { Plus, ImageOff, Minus, AlertCircle, ChevronDown } from "lucide-react";
+import { Plus, ImageOff, Minus, ChevronDown } from "lucide-react";
 import { motion } from "framer-motion";
 import { useState } from "react";
 import type { MenuItem } from "../types/menu.types";
@@ -105,9 +105,13 @@ export default function MenuGrid({
           );
           const cartLineForDecrement = defaultCartLine ?? cartLines[0];
           const remainingStock = item.stockQuantity - quantity;
-          const isLowStock = remainingStock <= 3 && remainingStock > 0;
           const isOutOfStock = remainingStock === 0;
           const isAtMaxStock = quantity >= item.stockQuantity;
+          const visibleOffers = offers.slice(0, 2);
+          const hiddenOffersCount = Math.max(
+            0,
+            offers.length - visibleOffers.length,
+          );
 
           return (
             <motion.div
@@ -115,7 +119,8 @@ export default function MenuGrid({
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3 }}
-              className={`bg-white rounded-3xl overflow-hidden shadow-lg transition-all duration-300 flex flex-col h-full border-2 ${
+              onClick={() => setCustomizationItem(item)}
+              className={`bg-white rounded-3xl overflow-hidden shadow-lg transition-all duration-300 flex flex-col h-full border-2 cursor-pointer ${
                 isOutOfStock
                   ? "border-gray-200 opacity-60 grayscale"
                   : isAtMaxStock
@@ -139,27 +144,6 @@ export default function MenuGrid({
                       className="w-16 h-16 text-gray-300"
                       strokeWidth={1.5}
                     />
-                  </div>
-                )}
-
-                {isLowStock && (
-                  <div className="absolute top-3 right-3 bg-linear-to-r from-[#16b8a1] to-[#0e9f89] text-white px-3 py-1.5 rounded-full shadow-lg flex items-center gap-1.5">
-                    <AlertCircle className="w-3.5 h-3.5" strokeWidth={2.5} />
-                    <span
-                      className="text-xs font-black"
-                      style={{ fontFamily: "var(--font-body)" }}
-                    >
-                      LOW STOCK
-                    </span>
-                  </div>
-                )}
-
-                {/* Offer badges – top left */}
-                {offers.length > 0 && (
-                  <div className="absolute top-3 left-3 flex flex-col gap-1">
-                    {offers.map((offer, idx) => (
-                      <OfferBadge key={idx} offer={offer} />
-                    ))}
                   </div>
                 )}
 
@@ -188,6 +172,23 @@ export default function MenuGrid({
                 {item.description && (
                   <div className="mb-2">
                     <DescriptionText text={item.description} />
+                  </div>
+                )}
+
+                {offers.length > 0 && (
+                  <div className="mb-2 flex flex-wrap items-center gap-1.5">
+                    {visibleOffers.map((offer, idx) => (
+                      <OfferBadge
+                        key={`${item._id}-offer-${idx}`}
+                        offer={offer}
+                        size="sm"
+                      />
+                    ))}
+                    {hiddenOffersCount > 0 && (
+                      <span className="inline-flex items-center rounded-full text-[9px] px-2 py-0.5 font-black bg-[#e8f7f3] text-[#0e9f89] border border-[#cdebe4]">
+                        +{hiddenOffersCount}
+                      </span>
+                    )}
                   </div>
                 )}
 

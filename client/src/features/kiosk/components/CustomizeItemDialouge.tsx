@@ -7,6 +7,7 @@ import {
 } from "@/shared/components/ui/dialog";
 import { Button } from "@/shared/components/ui/button";
 import type { MenuItem } from "../types/menu.types";
+import { OfferBadge } from "./OfferBadge";
 
 interface CustomizeItemDialogProps {
   open: boolean;
@@ -82,6 +83,22 @@ export default function CustomizeItemDialog({
                   {item.description}
                 </p>
               )}
+              {!!item?.offers?.length && (
+                <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
+                  {item.offers.map((offer, idx) => (
+                    <OfferBadge
+                      key={`${item._id}-modal-offer-${idx}`}
+                      offer={offer}
+                      size="sm"
+                    />
+                  ))}
+                </div>
+              )}
+              {item?.stockQuantity === 0 && (
+                <p className="mt-2 text-xs font-semibold text-red-500">
+                  Out of stock
+                </p>
+              )}
             </div>
             <p className="text-3xl font-black text-[#0e9f89] whitespace-nowrap">
               ₹{item?.price?.toFixed(0) || "0"}
@@ -127,11 +144,9 @@ export default function CustomizeItemDialog({
                         <p className="text-sm font-bold text-slate-800">
                           {opt.name}
                         </p>
-                        <p className="text-xs text-slate-500">
-                          {disabled
-                            ? "Out of stock"
-                            : `Stock: ${opt.stockQuantity}`}
-                        </p>
+                        {disabled && (
+                          <p className="text-xs text-red-500">Out of stock</p>
+                        )}
                       </div>
                     </div>
                     <p className="text-sm font-black text-[#0e9f89]">
