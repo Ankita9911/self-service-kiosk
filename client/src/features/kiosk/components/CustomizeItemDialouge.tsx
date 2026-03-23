@@ -1,4 +1,5 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { Minus, Plus, ImageOff } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -11,7 +12,7 @@ interface CustomizeItemDialogProps {
   open: boolean;
   item: MenuItem | null;
   onClose: () => void;
-  onConfirm: (customizationItemIds: string[]) => void;
+  onConfirm: (customizationItemIds: string[], quantity: number) => void;
 }
 
 export default function CustomizeItemDialog({
@@ -21,14 +22,22 @@ export default function CustomizeItemDialog({
   onConfirm,
 }: CustomizeItemDialogProps) {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [quantity, setQuantity] = useState(1);
   const options = useMemo(() => item?.customizationOptions ?? [], [item]);
+
+  useEffect(() => {
+    if (open) {
+      setSelectedIds([]);
+      setQuantity(1);
+    }
+  }, [open, item?._id]);
 
   const total = useMemo(() => {
     const selectedTotal = options
       .filter((opt) => selectedIds.includes(opt.itemId))
       .reduce((sum, opt) => sum + opt.price, 0);
-    return (item?.price || 0) + selectedTotal;
-  }, [item?.price, options, selectedIds]);
+    return ((item?.price || 0) + selectedTotal) * quantity;
+  }, [item?.price, options, quantity, selectedIds]);
 
   return (
     <Dialog
@@ -36,94 +45,150 @@ export default function CustomizeItemDialog({
       onOpenChange={(nextOpen) => {
         if (!nextOpen) {
           setSelectedIds([]);
+          setQuantity(1);
           onClose();
         }
       }}
     >
-      <DialogContent className="sm:max-w-lg rounded-3xl border-4 border-orange-500 p-0 overflow-hidden">
-        <div className="p-6 border-b border-orange-100 bg-gradient-to-r from-orange-500 to-orange-600">
-          <DialogTitle className="text-2xl font-black text-white">
-            Customize Item
-          </DialogTitle>
-          <p className="text-orange-100 text-sm font-semibold mt-1">
-            {item?.name}
-          </p>
+      <DialogContent className="sm:max-w-xl rounded-[30px] border border-[#cce9e2] p-0 overflow-hidden bg-white shadow-[0_20px_60px_rgba(14,159,137,0.22)]">
+        <div className="relative h-58 bg-linear-to-br from-[#e9f8f4] via-white to-[#def5ee] overflow-hidden">
+          {item?.imageUrl ? (
+            <img
+              src={item.imageUrl}
+              alt={item.name}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center">
+              <ImageOff className="w-14 h-14 text-[#8bcfc2]" />
+            </div>
+          )}
+          <div className="absolute inset-0 bg-linear-to-t from-black/35 via-black/5 to-transparent" />
+          <div className="absolute bottom-3 left-4 rounded-full border border-white/40 bg-white/20 backdrop-blur-md px-3 py-1">
+            <p className="text-xs font-bold text-white tracking-wide uppercase">
+              Add Item
+            </p>
+          </div>
         </div>
 
-        <div className="p-6 space-y-4 max-h-[60vh] overflow-y-auto">
-          {options.length === 0 ? (
-            <p className="text-sm text-gray-500">
-              No customization options available.
+        <div className="p-5 md:p-6 space-y-5 max-h-[56vh] overflow-y-auto">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <DialogTitle className="text-2xl md:text-3xl font-black text-slate-800 leading-tight">
+                {item?.name || "Item"}
+              </DialogTitle>
+              {item?.description && (
+                <p className="mt-1.5 text-sm text-slate-500 leading-relaxed max-w-md">
+                  {item.description}
+                </p>
+              )}
+            </div>
+            <p className="text-3xl font-black text-[#0e9f89] whitespace-nowrap">
+              ₹{item?.price?.toFixed(0) || "0"}
             </p>
-          ) : (
-            options.map((opt) => {
-              const checked = selectedIds.includes(opt.itemId);
-              const disabled = opt.stockQuantity <= 0;
-              return (
-                <label
-                  key={opt.itemId}
-                  className={`flex items-center justify-between rounded-2xl border-2 p-3 ${
-                    disabled
-                      ? "border-gray-200 bg-gray-50 opacity-60 cursor-not-allowed"
-                      : checked
-                        ? "border-orange-300 bg-orange-50"
-                        : "border-gray-200 bg-white cursor-pointer hover:border-orange-200"
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <input
-                      type="checkbox"
-                      checked={checked}
-                      disabled={disabled}
-                      onChange={() => {
-                        if (checked) {
-                          setSelectedIds((prev) =>
-                            prev.filter((id) => id !== opt.itemId),
-                          );
-                        } else {
-                          setSelectedIds((prev) => [...prev, opt.itemId]);
-                        }
-                      }}
-                      className="h-4 w-4 accent-orange-500"
-                    />
-                    <div>
-                      <p className="text-sm font-bold text-gray-900">
-                        {opt.name}
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        {disabled
-                          ? "Out of stock"
-                          : `Stock: ${opt.stockQuantity}`}
-                      </p>
+          </div>
+
+          {options.length > 0 && (
+            <div className="space-y-2.5">
+              <p className="text-xs font-bold tracking-wide text-slate-400 uppercase">
+                Customize Your Item
+              </p>
+              {options.map((opt) => {
+                const checked = selectedIds.includes(opt.itemId);
+                const disabled = opt.stockQuantity <= 0;
+                return (
+                  <label
+                    key={opt.itemId}
+                    className={`flex items-center justify-between rounded-2xl border p-3.5 transition-all ${
+                      disabled
+                        ? "border-slate-200 bg-slate-50 opacity-60 cursor-not-allowed"
+                        : checked
+                          ? "border-[#83d8c9] bg-[#edf9f6]"
+                          : "border-slate-200 bg-white cursor-pointer hover:border-[#b4e6dc]"
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="checkbox"
+                        checked={checked}
+                        disabled={disabled}
+                        onChange={() => {
+                          if (checked) {
+                            setSelectedIds((prev) =>
+                              prev.filter((id) => id !== opt.itemId),
+                            );
+                          } else {
+                            setSelectedIds((prev) => [...prev, opt.itemId]);
+                          }
+                        }}
+                        className="h-4 w-4 accent-[#0e9f89]"
+                      />
+                      <div>
+                        <p className="text-sm font-bold text-slate-800">
+                          {opt.name}
+                        </p>
+                        <p className="text-xs text-slate-500">
+                          {disabled
+                            ? "Out of stock"
+                            : `Stock: ${opt.stockQuantity}`}
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                  <p className="text-sm font-black text-orange-600">
-                    + Rs {opt.price.toFixed(2)}
-                  </p>
-                </label>
-              );
-            })
+                    <p className="text-sm font-black text-[#0e9f89]">
+                      + ₹{opt.price.toFixed(0)}
+                    </p>
+                  </label>
+                );
+              })}
+            </div>
           )}
         </div>
 
-        <div className="p-6 border-t border-gray-100 space-y-3">
-          <div className="flex justify-between text-sm font-bold text-gray-700">
-            <span>Total (per item)</span>
-            <span className="text-orange-600">Rs {total.toFixed(2)}</span>
+        <div className="p-4 md:p-5 border-t border-[#e4f3ef] bg-[#fbfefe]">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center rounded-2xl border border-[#cdebe4] bg-white p-1.5 shadow-sm">
+              <button
+                type="button"
+                onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                className="h-9 w-9 rounded-xl bg-slate-100 text-slate-600 hover:bg-slate-200 flex items-center justify-center transition-colors"
+              >
+                <Minus className="w-4 h-4" />
+              </button>
+              <span className="w-10 text-center text-lg font-black text-slate-800">
+                {quantity}
+              </span>
+              <button
+                type="button"
+                onClick={() => setQuantity((q) => q + 1)}
+                className="h-9 w-9 rounded-xl bg-[#0e9f89] text-white hover:bg-[#0b8b78] flex items-center justify-center transition-colors"
+              >
+                <Plus className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="text-right">
+              <p className="text-[11px] font-semibold tracking-wide text-slate-400 uppercase">
+                Total
+              </p>
+              <p className="text-2xl font-black text-[#0e9f89]">
+                ₹{total.toFixed(0)}
+              </p>
+            </div>
           </div>
-          <div className="flex gap-2">
+
+          <div className="mt-3.5 flex gap-2.5">
             <Button
               type="button"
               variant="outline"
-              className="flex-1"
+              className="flex-1 rounded-xl border-[#cdebe4] bg-white text-slate-600 font-semibold shadow-sm hover:bg-[#edf8f5] hover:border-[#9fded2] hover:text-[#0e9f89]"
               onClick={onClose}
             >
               Cancel
             </Button>
             <Button
               type="button"
-              className="flex-1 bg-orange-500 hover:bg-orange-600 text-white"
-              onClick={() => onConfirm(selectedIds)}
+              className="flex-1 rounded-xl bg-[#0e9f89] hover:bg-[#0b8b78] text-white"
+              onClick={() => onConfirm(selectedIds, quantity)}
             >
               Add to Cart
             </Button>

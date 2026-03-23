@@ -235,11 +235,7 @@ export default function MenuGrid({
                     <motion.button
                       onClick={() => {
                         if (isOutOfStock) return;
-                        if (hasCustomizationOptions) {
-                          setCustomizationItem(item);
-                          return;
-                        }
-                        onAddToCart(item);
+                        setCustomizationItem(item);
                       }}
                       disabled={isOutOfStock}
                       whileHover={{ scale: isOutOfStock ? 1 : 1.05 }}
@@ -282,11 +278,7 @@ export default function MenuGrid({
                       <motion.button
                         onClick={() => {
                           if (isAtMaxStock) return;
-                          if ((item.customizationOptions || []).length > 0) {
-                            setCustomizationItem(item);
-                            return;
-                          }
-                          onAddToCart(item);
+                          setCustomizationItem(item);
                         }}
                         disabled={isAtMaxStock}
                         whileHover={{ scale: isAtMaxStock ? 1 : 1.1 }}
@@ -311,19 +303,21 @@ export default function MenuGrid({
         open={!!customizationItem}
         item={customizationItem}
         onClose={() => setCustomizationItem(null)}
-        onConfirm={(customizationItemIds) => {
+        onConfirm={(customizationItemIds, quantityToAdd) => {
           if (!customizationItem) return;
           const selectedCustomizations = (
             customizationItem.customizationOptions || []
           ).filter((option) => customizationItemIds.includes(option.itemId));
-          onAddToCart({
-            ...customizationItem,
-            selectedCustomizations,
-          } as MenuItem & {
-            selectedCustomizations: NonNullable<
-              CartItem["selectedCustomizations"]
-            >;
-          });
+          for (let i = 0; i < quantityToAdd; i += 1) {
+            onAddToCart({
+              ...customizationItem,
+              selectedCustomizations,
+            } as MenuItem & {
+              selectedCustomizations: NonNullable<
+                CartItem["selectedCustomizations"]
+              >;
+            });
+          }
           setCustomizationItem(null);
         }}
       />
