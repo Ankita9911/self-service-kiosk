@@ -66,10 +66,10 @@ export default function KioskFilterStrip({
             onClick={() => onChange(value)}
             className="shrink-0 flex flex-col items-center justify-start active:scale-95"
             style={{
-              width: "88px",
-              minHeight: "108px",
+              width: "90px",
+              height: "90px",
               borderRadius: "24px",
-              padding: "8px 7px 9px",
+              padding: "7px 7px 8px",
               background: isActive
                 ? "linear-gradient(170deg, #16b8a1 0%, #0e9f89 100%)"
                 : "#ffffff",
@@ -79,15 +79,15 @@ export default function KioskFilterStrip({
               boxShadow: isActive
                 ? "0 8px 18px rgba(22, 184, 161, 0.32)"
                 : "0 4px 12px rgba(15, 23, 42, 0.08)",
-              gap: "7px",
+              gap: "5px",
               transition: "all 0.25s ease",
               fontFamily: "'DM Sans', 'Nunito', sans-serif",
             }}
           >
             <div
               style={{
-                width: "46px",
-                height: "46px",
+                width: "42px",
+                height: "42px",
                 borderRadius: "50%",
                 background: "#ffffff",
                 boxShadow: isActive
@@ -96,7 +96,7 @@ export default function KioskFilterStrip({
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                fontSize: "20px",
+                fontSize: "18px",
               }}
             >
               {emoji || "📋"}
@@ -110,12 +110,9 @@ export default function KioskFilterStrip({
                 textAlign: "center",
                 lineHeight: "1.2",
                 maxWidth: "72px",
-                display: "-webkit-box",
-                WebkitLineClamp: 2,
-                WebkitBoxOrient: "vertical",
+                whiteSpace: "nowrap",
                 overflow: "hidden",
                 textOverflow: "ellipsis",
-                minHeight: "24px",
               }}
             >
               {label}

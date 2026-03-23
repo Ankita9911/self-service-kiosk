@@ -46,10 +46,10 @@ export default function CategoryTabs({
               whileTap={{ scale: 0.97 }}
               className="flex flex-col items-center justify-start focus:outline-none"
               style={{
-                width: "92px",
-                minHeight: "120px",
-                borderRadius: "26px",
-                padding: "9px 8px 10px",
+                width: "94px",
+                height: "94px",
+                borderRadius: "24px",
+                padding: "7px 7px 8px",
                 background: isActive
                   ? "linear-gradient(170deg, #16b8a1 0%, #0e9f89 100%)"
                   : "#ffffff",
@@ -59,14 +59,14 @@ export default function CategoryTabs({
                 boxShadow: isActive
                   ? "0 10px 22px rgba(22, 184, 161, 0.34)"
                   : "0 4px 14px rgba(15, 23, 42, 0.08)",
-                gap: "8px",
+                gap: "5px",
                 transition: "all 0.25s ease",
               }}
             >
               <div
                 style={{
-                  width: "58px",
-                  height: "58px",
+                  width: "50px",
+                  height: "50px",
                   borderRadius: "50%",
                   padding: "2px",
                   background: "#ffffff",
@@ -118,21 +118,18 @@ export default function CategoryTabs({
 
               <span
                 style={{
-                  fontSize: "11px",
+                  fontSize: "10px",
                   fontWeight: isActive ? 700 : 600,
                   color: isActive ? "#ffffff" : "#475569",
                   textAlign: "center",
-                  lineHeight: "1.25",
-                  maxWidth: "74px",
+                  lineHeight: "1.2",
+                  maxWidth: "72px",
                   transition: "color 0.2s ease",
                   fontFamily: "'DM Sans', 'Nunito', sans-serif",
                   letterSpacing: "-0.01em",
-                  display: "-webkit-box",
-                  WebkitLineClamp: 2,
-                  WebkitBoxOrient: "vertical",
+                  whiteSpace: "nowrap",
                   overflow: "hidden",
                   textOverflow: "ellipsis",
-                  minHeight: "28px",
                 }}
               >
                 {category.name}
