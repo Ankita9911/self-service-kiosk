@@ -30,7 +30,7 @@ async function invalidateRecipeCache(tenant, menuItemId = null) {
   }
 }
 
-// ─── Service functions 
+// ─── Service functions
 
 export async function createRecipe(data, tenant) {
   const existing = await Recipe.findOne({
@@ -248,7 +248,10 @@ export async function updateRecipe(id, data, tenant) {
     { new: true, runValidators: true },
   )
     .populate("menuItemId", "name price categoryId")
-    .populate("ingredients.ingredientId", "name unit currentStock minThreshold");
+    .populate(
+      "ingredients.ingredientId",
+      "name unit currentStock minThreshold",
+    );
 
   if (!recipe) {
     throw new AppError("Recipe not found", 404, "RECIPE_NOT_FOUND");

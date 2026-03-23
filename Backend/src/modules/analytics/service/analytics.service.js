@@ -615,8 +615,10 @@ export async function getAnalyticsOverview(tenant, period) {
       case "SUPER_ADMIN":
         return getSuperAdminAnalytics(period);
       case "FRANCHISE_ADMIN": {
-        const aggregateData =
-          await getFranchiseAdminAnalyticsFromAggregates(tenant, period);
+        const aggregateData = await getFranchiseAdminAnalyticsFromAggregates(
+          tenant,
+          period,
+        );
         if (aggregateData) {
           const totalUsers = await User.countDocuments({
             franchiseId: new mongoose.Types.ObjectId(tenant.franchiseId),
