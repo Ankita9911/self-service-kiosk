@@ -57,7 +57,7 @@ export default function ComboDetailsDialog({
 
   return (
     <Dialog open={open} onOpenChange={(next) => !next && onClose()}>
-      <DialogContent className="sm:max-w-2xl rounded-[30px] p-0 overflow-hidden border border-[#cdebe4] bg-white shadow-[0_24px_70px_rgba(14,159,137,0.2)]">
+      <DialogContent className="w-[calc(100%-1rem)] sm:w-full sm:max-w-2xl rounded-[30px]! sm:rounded-[30px]! p-0 overflow-hidden border border-[#cdebe4] bg-white shadow-[0_24px_70px_rgba(14,159,137,0.2)]">
         <div className="relative">
           <div className="relative h-56 md:h-60 bg-linear-to-br from-[#e9f8f4] via-[#f6fdfb] to-[#e3f5f0]">
             {combo.imageUrl ? (

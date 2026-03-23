@@ -51,7 +51,7 @@ export default function CustomizeItemDialog({
         }
       }}
     >
-      <DialogContent className="sm:max-w-xl rounded-[30px] border border-[#cce9e2] p-0 overflow-hidden bg-white shadow-[0_20px_60px_rgba(14,159,137,0.22)]">
+      <DialogContent className="w-[calc(100%-1rem)] sm:w-full sm:max-w-xl rounded-[30px]! sm:rounded-[30px]! border border-[#cce9e2] p-0 overflow-hidden bg-white shadow-[0_20px_60px_rgba(14,159,137,0.22)]">
         <div className="relative h-58 bg-linear-to-br from-[#e9f8f4] via-white to-[#def5ee] overflow-hidden">
           {item?.imageUrl ? (
             <img
