@@ -33,7 +33,7 @@ function DescriptionText({ text }: { text: string }) {
           e.stopPropagation();
           setExpanded((v) => !v);
         }}
-        className="mt-0.5 inline-flex items-center gap-0.5 text-[11px] font-bold text-orange-500 hover:text-orange-600 transition-colors"
+        className="mt-0.5 inline-flex items-center gap-0.5 text-[11px] font-bold text-[#0e9f89] hover:text-[#0b8b78] transition-colors"
       >
         {expanded ? "Show less" : "Read more"}
         <ChevronDown
@@ -103,8 +103,7 @@ export default function MenuGrid({
               !line.selectedCustomizations ||
               line.selectedCustomizations.length === 0,
           );
-          const hasCustomizationOptions =
-            (item.customizationOptions || []).length > 0;
+          const cartLineForDecrement = defaultCartLine ?? cartLines[0];
           const remainingStock = item.stockQuantity - quantity;
           const isLowStock = remainingStock <= 3 && remainingStock > 0;
           const isOutOfStock = remainingStock === 0;
@@ -121,10 +120,10 @@ export default function MenuGrid({
                   ? "border-gray-200 opacity-60 grayscale"
                   : isAtMaxStock
                     ? "border-gray-200 opacity-65 grayscale hover:shadow-lg"
-                    : "border-white hover:shadow-2xl hover:border-orange-200"
+                    : "border-white hover:shadow-2xl hover:border-[#bde7de]"
               }`}
             >
-              <div className="relative h-48 bg-linear-to-br from-orange-50 via-amber-50 to-orange-50 overflow-hidden group">
+              <div className="relative h-48 bg-linear-to-br from-[#ebfaf6] via-[#e2f6f0] to-[#ebfaf6] overflow-hidden group">
                 {item.imageUrl ? (
                   <>
                     <img
@@ -144,7 +143,7 @@ export default function MenuGrid({
                 )}
 
                 {isLowStock && (
-                  <div className="absolute top-3 right-3 bg-linear-to-r from-amber-500 to-orange-500 text-white px-3 py-1.5 rounded-full shadow-lg flex items-center gap-1.5">
+                  <div className="absolute top-3 right-3 bg-linear-to-r from-[#16b8a1] to-[#0e9f89] text-white px-3 py-1.5 rounded-full shadow-lg flex items-center gap-1.5">
                     <AlertCircle className="w-3.5 h-3.5" strokeWidth={2.5} />
                     <span
                       className="text-xs font-black"
@@ -211,7 +210,7 @@ export default function MenuGrid({
                           ₹{item.price.toFixed(2)}
                         </span>
                         <span
-                          className="text-2xl font-black text-red-500"
+                          className="text-2xl font-black text-[#0e9f89]"
                           style={{ fontFamily: "var(--font-display)" }}
                         >
                           ₹
@@ -223,7 +222,7 @@ export default function MenuGrid({
                       </div>
                     ) : (
                       <span
-                        className="text-2xl font-black bg-linear-to-r from-orange-600 to-orange-500 bg-clip-text text-transparent"
+                        className="text-2xl font-black bg-linear-to-r from-[#0e9f89] to-[#16b8a1] bg-clip-text text-transparent"
                         style={{ fontFamily: "var(--font-display)" }}
                       >
                         ₹{item.price.toFixed(2)}
@@ -231,7 +230,7 @@ export default function MenuGrid({
                     )}
                   </div>
 
-                  {quantity === 0 || hasCustomizationOptions ? (
+                  {quantity === 0 ? (
                     <motion.button
                       onClick={() => {
                         if (isOutOfStock) return;
@@ -243,23 +242,17 @@ export default function MenuGrid({
                       className={`p-4 rounded-2xl font-black flex items-center justify-center shadow-lg transition-all ${
                         isOutOfStock
                           ? "bg-gray-100 text-gray-300 cursor-not-allowed"
-                          : "bg-linear-to-br from-orange-500 via-orange-600 to-orange-500 hover:from-orange-600 hover:via-orange-700 hover:to-orange-600 text-white shadow-orange-300"
+                          : "bg-linear-to-br from-[#16b8a1] via-[#0e9f89] to-[#16b8a1] hover:from-[#0fb39a] hover:via-[#0b8b78] hover:to-[#0fb39a] text-white shadow-[#8edfd1]/45"
                       }`}
                     >
-                      {hasCustomizationOptions ? (
-                        <span className="text-xs font-black px-1">
-                          CUSTOMIZE ({quantity})
-                        </span>
-                      ) : (
-                        <Plus className="w-6 h-6" strokeWidth={3} />
-                      )}
+                      <Plus className="w-6 h-6" strokeWidth={3} />
                     </motion.button>
                   ) : (
-                    <div className="flex items-center gap-2 bg-white rounded-2xl p-1.5 shadow-xl border-2 border-orange-100">
+                    <div className="flex items-center gap-2 bg-white rounded-2xl p-1.5 shadow-xl border-2 border-[#dcefe9]">
                       <motion.button
                         onClick={() => {
-                          if (!defaultCartLine) return;
-                          onUpdateQuantity(defaultCartLine.cartItemId, -1);
+                          if (!cartLineForDecrement) return;
+                          onUpdateQuantity(cartLineForDecrement.cartItemId, -1);
                         }}
                         whileHover={{ scale: 1.1 }}
                         whileTap={{ scale: 0.9 }}
@@ -286,7 +279,7 @@ export default function MenuGrid({
                         className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all ${
                           isAtMaxStock
                             ? "bg-gray-100 text-gray-300 cursor-not-allowed"
-                            : "bg-linear-to-br from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-md"
+                            : "bg-linear-to-br from-[#16b8a1] to-[#0e9f89] hover:from-[#0fb39a] hover:to-[#0b8b78] text-white shadow-md"
                         }`}
                       >
                         <Plus className="w-4 h-4" strokeWidth={2.5} />

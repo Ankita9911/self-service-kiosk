@@ -19,8 +19,8 @@ export default function ComboGrid({
   if (combos.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-96 text-gray-400">
-        <div className="w-32 h-32 bg-linear-to-br from-orange-50 to-amber-100 rounded-full flex items-center justify-center mb-6">
-          <Package className="w-16 h-16 text-orange-200" strokeWidth={1.5} />
+        <div className="w-32 h-32 bg-linear-to-br from-[#ebfaf6] to-[#dff5ef] rounded-full flex items-center justify-center mb-6">
+          <Package className="w-16 h-16 text-[#8ad6c8]" strokeWidth={1.5} />
         </div>
         <p
           className="text-2xl font-bold text-gray-500"
@@ -46,11 +46,11 @@ export default function ComboGrid({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
-            className="bg-white rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 flex flex-col border-2 border-orange-100 hover:border-orange-300 cursor-pointer"
+            className="bg-white rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 flex flex-col border-2 border-[#dcefe9] hover:border-[#bde7de] cursor-pointer"
             onClick={() => onViewCombo(combo)}
           >
             {/* Image */}
-            <div className="relative h-48 bg-linear-to-br from-orange-50 via-amber-50 to-orange-50 overflow-hidden group">
+            <div className="relative h-48 bg-linear-to-br from-[#ebfaf6] via-[#e2f6f0] to-[#ebfaf6] overflow-hidden group">
               {combo.imageUrl ? (
                 <>
                   <img
@@ -67,7 +67,7 @@ export default function ComboGrid({
               )}
 
               {/* COMBO badge */}
-              <div className="absolute top-3 left-3 bg-orange-500 text-white text-[10px] font-black px-2.5 py-1 rounded-full shadow-md">
+              <div className="absolute top-3 left-3 bg-[#0e9f89] text-white text-[10px] font-black px-2.5 py-1 rounded-full shadow-md">
                 🍱 COMBO
               </div>
 
@@ -107,7 +107,7 @@ export default function ComboGrid({
                     {combo.items.map((ci, idx) => (
                       <span
                         key={idx}
-                        className="text-[10px] bg-orange-50 text-orange-700 border border-orange-100 px-2 py-0.5 rounded-full font-semibold"
+                        className="text-[10px] bg-[#e8f7f3] text-[#0b8b78] border border-[#dcefe9] px-2 py-0.5 rounded-full font-semibold"
                       >
                         {ci.quantity > 1 ? `${ci.quantity}× ` : ""}
                         {ci.name}
@@ -123,7 +123,7 @@ export default function ComboGrid({
                   e.stopPropagation();
                   onViewCombo(combo);
                 }}
-                className="self-start text-[11px] font-black text-orange-600 hover:text-orange-700 underline underline-offset-2"
+                className="self-start text-[11px] font-black text-[#0e9f89] hover:text-[#0b8b78] underline underline-offset-2"
                 style={{ fontFamily: "var(--font-body)" }}
               >
                 View full combo details
@@ -150,7 +150,7 @@ export default function ComboGrid({
                         </span>
                       )}
                     <span
-                      className="text-2xl font-black text-orange-600"
+                      className="text-2xl font-black text-[#0e9f89]"
                       style={{ fontFamily: "var(--font-display)" }}
                     >
                       ₹{combo.comboPrice.toFixed(2)}
@@ -166,12 +166,12 @@ export default function ComboGrid({
                     }}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    className="p-4 rounded-2xl font-black flex items-center justify-center shadow-lg transition-all bg-linear-to-br from-orange-500 via-orange-600 to-orange-500 hover:from-orange-600 hover:via-orange-700 hover:to-orange-600 text-white shadow-orange-300"
+                    className="p-4 rounded-2xl font-black flex items-center justify-center shadow-lg transition-all bg-linear-to-br from-[#16b8a1] via-[#0e9f89] to-[#16b8a1] hover:from-[#0fb39a] hover:via-[#0b8b78] hover:to-[#0fb39a] text-white shadow-[#8edfd1]/45"
                   >
                     <Plus className="w-6 h-6" strokeWidth={3} />
                   </motion.button>
                 ) : (
-                  <div className="flex items-center gap-2 bg-white rounded-2xl p-1.5 shadow-xl border-2 border-orange-100">
+                  <div className="flex items-center gap-2 bg-white rounded-2xl p-1.5 shadow-xl border-2 border-[#dcefe9]">
                     <motion.button
                       onClick={(e) => {
                         e.stopPropagation();
@@ -197,7 +197,7 @@ export default function ComboGrid({
                       }}
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.9 }}
-                      className="w-9 h-9 rounded-xl bg-linear-to-br from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-md flex items-center justify-center transition-all"
+                      className="w-9 h-9 rounded-xl bg-linear-to-br from-[#16b8a1] to-[#0e9f89] hover:from-[#0fb39a] hover:to-[#0b8b78] text-white shadow-md flex items-center justify-center transition-all"
                     >
                       <Plus className="w-4 h-4" strokeWidth={2.5} />
                     </motion.button>
