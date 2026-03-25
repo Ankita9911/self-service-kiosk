@@ -3,6 +3,12 @@ import { useNavigate } from "react-router-dom";
 import { ArrowLeft, ShoppingCart } from "lucide-react";
 import { motion } from "framer-motion";
 import { processQueue } from "@/shared/lib/syncEngine";
+import {
+  endVisitorSession,
+  getCurrentVisitorSession,
+  trackEvent,
+  trackPageView,
+} from "@/features/kiosk/telemetry";
 
 import CategoryTabs from "../components/CategoryTabs";
 import MenuGrid from "../components/MenuGrid";
@@ -124,19 +130,43 @@ export default function KioskPage() {
     if (!getKioskToken()) navigate("/kiosk/login", { replace: true });
   }, [navigate]);
 
+  useEffect(() => {
+    trackPageView("menu", {
+      orderType: localStorage.getItem("kiosk_order_type"),
+    });
+
+    return () => {
+      if (!getCurrentVisitorSession()) return;
+      trackEvent({
+        name: "kiosk.page_exited",
+        page: "menu",
+        component: "page",
+        action: "exit",
+      });
+    };
+  }, []);
+
   const isOnCombos = selectedCategory === COMBOS_CATEGORY_ID;
 
   useEffect(() => {
+    if (isLoading) return;
+
     if (cart.length === 0) {
-      if (cartSyncAlerts.length > 0) setCartSyncAlerts([]);
+      if (cartSyncAlerts.length > 0) {
+        const timer = window.setTimeout(() => setCartSyncAlerts([]), 0);
+        return () => window.clearTimeout(timer);
+      }
       return;
     }
     const result = reconcileCartWithCatalog(cart, menu, combos);
     if (result.changed) {
-      setCart(result.cart);
-      setCartSyncAlerts(result.alerts);
+      const timer = window.setTimeout(() => {
+        setCart(result.cart);
+        setCartSyncAlerts(result.alerts);
+      }, 0);
+      return () => window.clearTimeout(timer);
     }
-  }, [cart, menu, combos, setCart, cartSyncAlerts.length]);
+  }, [isLoading, cart, menu, combos, setCart, cartSyncAlerts.length]);
 
   const comboItemMetaMap = Object.fromEntries(
     menu
@@ -147,12 +177,86 @@ export default function KioskPage() {
       ]),
   ) as Record<string, { imageUrl?: string; price?: number }>;
 
+  const handleNavigateBack = useCallback(() => {
+    trackEvent({
+      name: "kiosk.navigation_back_clicked",
+      page: "menu",
+      component: "menu_sidebar",
+      action: "back",
+      target: "order_type",
+    });
+    navigate("/kiosk/order-type");
+  }, [navigate]);
+
+  const handleOfferFilterChange = useCallback(
+    (nextFilter: OfferType | null) => {
+      if (nextFilter === null) {
+        trackEvent({
+          name: "kiosk.menu_offer_filter_cleared",
+          page: "menu",
+          component: "offer_filters",
+          action: "clear",
+          target: offerFilter,
+        });
+      } else {
+        trackEvent({
+          name: "kiosk.menu_offer_filter_selected",
+          page: "menu",
+          component: "offer_filters",
+          action: "select",
+          target: nextFilter,
+        });
+      }
+
+      setOfferFilter(nextFilter);
+    },
+    [offerFilter, setOfferFilter],
+  );
+
+  const handleCategoryChange = useCallback(
+    (id: string) => {
+      trackEvent({
+        name: "kiosk.menu_category_selected",
+        page: "menu",
+        component: "category_tabs",
+        action: "select",
+        target: id,
+      });
+      setSelectedCategory(id);
+      if (id === COMBOS_CATEGORY_ID) {
+        setOfferFilter(null);
+      }
+    },
+    [COMBOS_CATEGORY_ID, setOfferFilter, setSelectedCategory],
+  );
+
+  const handleOpenCart = useCallback(
+    (source: string) => {
+      trackEvent({
+        name: "kiosk.cart_opened",
+        page: "menu",
+        component: "cart_launcher",
+        action: "open",
+        target: source,
+        payload: {
+          totalItems,
+          totalPrice,
+        },
+      });
+      setIsCartOpen(true);
+    },
+    [totalItems, totalPrice],
+  );
+
   const handleSuccessComplete = useCallback(() => {
+    endVisitorSession("order_complete", {
+      orderNumber,
+    });
     setShowSuccessDialog(false);
     setShowPaymentDialog(false);
     setIsCartOpen(false);
     navigate("/kiosk/landing", { replace: true });
-  }, [navigate, setShowPaymentDialog, setShowSuccessDialog]);
+  }, [navigate, orderNumber, setShowPaymentDialog, setShowSuccessDialog]);
 
   useEffect(() => {
     if (!showSuccessDialog) return;
@@ -170,7 +274,7 @@ export default function KioskPage() {
           <div className="px-10 py-9.5 flex flex-col bg-transparent overflow-y-auto scrollbar-none">
             <button
               className="text-slate-400 hover:text-[#0e9f89] hover:bg-[#e8f7f3] transition-all active:scale-95 rounded-xl p-1"
-              onClick={() => navigate("/kiosk/order-type")}
+              onClick={handleNavigateBack}
             >
               <ArrowLeft className="w-5 h-5" />
               <span className="text-[10px] font-bold">Back</span>
@@ -185,7 +289,7 @@ export default function KioskPage() {
               return (
                 <motion.button
                   key={String(value)}
-                  onClick={() => setOfferFilter(value)}
+                  onClick={() => handleOfferFilterChange(value)}
                   initial={{ opacity: 0, y: -8 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{
@@ -274,7 +378,7 @@ export default function KioskPage() {
             <div className="px-2.5 pt-1.5 pb-4">
               <div className="h-px bg-[#dff1ec] mb-2" />
               <button
-                onClick={() => setOfferFilter(null)}
+                onClick={() => handleOfferFilterChange(null)}
                 className="flex flex-col items-center gap-1 w-full py-3 px-1 rounded-[22px] bg-white text-slate-500 border border-slate-200 shadow-sm hover:border-red-200 hover:bg-red-50 hover:text-red-500 transition-all active:scale-95"
                 style={{ fontFamily: "'DM Sans', 'Nunito', sans-serif" }}
               >
@@ -294,10 +398,7 @@ export default function KioskPage() {
               <CategoryTabs
                 categories={categoriesWithAll}
                 selectedCategory={selectedCategory}
-                onCategoryChange={(id) => {
-                  setSelectedCategory(id);
-                  if (id === COMBOS_CATEGORY_ID) setOfferFilter(null);
-                }}
+                onCategoryChange={handleCategoryChange}
               />
             )}
           </div>
@@ -339,7 +440,7 @@ export default function KioskPage() {
             <div className="border-t border-[#dff1ec] bg-white/95 px-4 py-3.5 shadow-[0_-6px_16px_rgba(15,23,42,0.06)]">
               <div className="mx-auto w-full max-w-6xl flex items-center justify-between gap-3">
                 <button
-                  onClick={() => setIsCartOpen(true)}
+                  onClick={() => handleOpenCart("footer_cart")}
                   className="flex items-center gap-3 rounded-2xl px-3 py-2.5 hover:bg-[#edf8f5] transition-colors"
                 >
                   <div className="relative h-10 w-10 rounded-xl bg-[#e8f7f3] text-[#0e9f89] flex items-center justify-center">
@@ -370,7 +471,7 @@ export default function KioskPage() {
                     </p>
                   </div>
                   <button
-                    onClick={() => setIsCartOpen(true)}
+                    onClick={() => handleOpenCart("footer_checkout")}
                     disabled={totalItems === 0}
                     className="h-12 px-7 rounded-2xl bg-[#0e9f89] hover:bg-[#0b8b78] text-white font-black text-base shadow-lg shadow-[#8edfd1]/45 transition-all active:scale-95 disabled:bg-slate-200 disabled:text-slate-400 disabled:shadow-none disabled:cursor-not-allowed"
                   >
