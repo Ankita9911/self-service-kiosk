@@ -6,13 +6,7 @@ export default function KioskLoginPage() {
   const login = useKioskLogin();
 
   return (
-    <div
-      className="min-h-screen w-full flex items-center justify-center relative overflow-hidden"
-      style={{
-        background:
-          "radial-gradient(ellipse at 60% 10%, #fff7ed 0%, #ffedd5 40%, #fed7aa 100%)",
-      }}
-    >
+    <div className="fixed inset-0 flex items-center justify-center overflow-hidden bg-linear-to-br from-[#e6f7f3] via-[#f7fcfb] to-white p-4 md:p-6">
       <LoginBackground />
 
       <KioskLoginCard

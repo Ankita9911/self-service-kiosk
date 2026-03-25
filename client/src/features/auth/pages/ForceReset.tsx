@@ -145,7 +145,7 @@ export function ForceReset() {
             <ChefHat className="w-3.5 h-3.5 text-white" />
           </div>
           <span className="text-xs font-clash-semibold text-slate-400">
-            Hyper Kitchen · Admin Portal
+            serveX · Admin Portal
           </span>
         </div>
       </div>

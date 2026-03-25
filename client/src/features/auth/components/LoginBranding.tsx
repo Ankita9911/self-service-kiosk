@@ -22,7 +22,7 @@ export function LoginBranding() {
         </div>
         <div>
           <p className="text-white text-sm font-clash-bold leading-none">
-            Hyper Kitchen
+            ServeX
           </p>
           <p className="text-slate-500 text-[10px] font-satoshi tracking-widest uppercase mt-0.5">
             Management Suite
@@ -68,7 +68,7 @@ export function LoginBranding() {
 
       <div className="relative z-10">
         <p className="text-slate-600 text-xs font-satoshi">
-          © {new Date().getFullYear()} Hyper Kitchen · Internal use only
+          © {new Date().getFullYear()} ServeX · Internal use only
         </p>
       </div>
     </div>

@@ -44,7 +44,7 @@ export default function Login() {
               <ChefHat className="w-4 h-4 text-white" />
             </div>
             <span className="font-clash-bold text-slate-800 text-sm">
-              Hyper Kitchen
+              serveX Admin Portal
             </span>
           </div>
 

@@ -136,7 +136,7 @@ export default function Sidebar({ collapsed, onCollapseChange }: SidebarProps) {
         {!collapsed && (
           <div className="overflow-hidden min-w-0">
             <p className="text-[13.5px] font-bold text-slate-800 dark:text-white tracking-tight leading-none truncate">
-              Hyper Kitchen
+              serveX 
             </p>
             <p className="text-[9.5px] font-medium text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-0.5">
               Management
