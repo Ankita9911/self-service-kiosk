@@ -531,6 +531,7 @@ export default function KioskPage() {
         />
 
         <ComboDetailsDialog
+          key={selectedCombo ? String(selectedCombo._id) : "combo-dialog-closed"}
           open={Boolean(selectedCombo)}
           combo={selectedCombo}
           quantityInCart={

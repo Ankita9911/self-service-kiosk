@@ -1,5 +1,6 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowLeft, X } from "lucide-react";
+import { trackEvent } from "@/features/kiosk/telemetry";
 import CartPanel from "./CartPanel";
 import type { CartItem } from "../types/cartItem.types";
 import type {
@@ -49,6 +50,20 @@ export default function CartSidebar({
   onAddRecommendedItem,
   onAddComboToCart,
 }: CartSidebarProps) {
+  const handleClose = (source: "overlay" | "back_button" | "close_button") => {
+    trackEvent({
+      name: "kiosk.cart_closed",
+      page: "menu",
+      component: "cart_sidebar",
+      action: "close",
+      target: source,
+      payload: {
+        totalItems,
+      },
+    });
+    onClose();
+  };
+
   return (
     <>
       <AnimatePresence>
@@ -60,7 +75,7 @@ export default function CartSidebar({
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
             className="absolute inset-0 z-30 bg-black/35 backdrop-blur-[1px]"
-            onClick={onClose}
+            onClick={() => handleClose("overlay")}
           />
         )}
       </AnimatePresence>
@@ -79,7 +94,7 @@ export default function CartSidebar({
 
           <div className="flex items-center justify-between">
             <button
-              onClick={onClose}
+              onClick={() => handleClose("back_button")}
               className="inline-flex items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-sm font-bold text-slate-500 hover:bg-[#eaf7f3] hover:text-[#0e9f89] transition-colors"
             >
               <ArrowLeft className="w-4 h-4" strokeWidth={2.5} />
@@ -96,7 +111,7 @@ export default function CartSidebar({
             </div>
 
             <button
-              onClick={onClose}
+              onClick={() => handleClose("close_button")}
               className="p-2 rounded-xl text-slate-400 hover:bg-[#eaf7f3] hover:text-[#0e9f89] transition-colors"
             >
               <X className="w-5 h-5" strokeWidth={2.5} />

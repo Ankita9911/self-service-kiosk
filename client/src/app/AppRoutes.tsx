@@ -5,6 +5,7 @@ import KioskProtectedRoute from "./KioskProtectedRoute";
 import { PageLoader } from "./PageLoader";
 import AppLayout from "@/shared/components/layout/AppLayout";
 import { PERMISSIONS } from "@/shared/constants/permissions";
+import { FEATURE_FLAGS } from "@/shared/constants/featureFlags";
 const Login = lazy(() => import("@/features/auth/pages/Login"));
 const ForceReset = lazy(() =>
   import("@/features/auth/pages/ForceReset").then((m) => ({
@@ -42,6 +43,9 @@ const PickupPage = lazy(() => import("@/features/pickup/pages/PickupPage"));
 const UserPage = lazy(() => import("@/features/users/pages/UserPage"));
 const AnalyticsPage = lazy(
   () => import("@/features/analytics/pages/AnalyticsPage"),
+);
+const KioskTelemetryPage = lazy(
+  () => import("@/features/telemetry/pages/KioskTelemetryPage"),
 );
 const IngredientsPage = lazy(
   () => import("@/features/ingredients/pages/IngredientsPage"),
@@ -196,6 +200,16 @@ export default function AppRoutes() {
               </ProtectedRoute>
             }
           />
+          {FEATURE_FLAGS.KIOSK_TELEMETRY_ADMIN_ENABLED && (
+            <Route
+              path="/telemetry/kiosk"
+              element={
+                <ProtectedRoute requiredPermission={PERMISSIONS.TELEMETRY_VIEW}>
+                  <KioskTelemetryPage />
+                </ProtectedRoute>
+              }
+            />
+          )}
           <Route
             path="/kitchen"
             element={

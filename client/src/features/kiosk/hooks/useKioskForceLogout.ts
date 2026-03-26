@@ -3,6 +3,11 @@ import { useNavigate } from "react-router-dom";
 import { io } from "socket.io-client";
 import toast from "react-hot-toast";
 import { getSocketUrl } from "@/shared/lib/socket";
+import {
+  endVisitorSession,
+  flushUrgent,
+  trackEvent,
+} from "@/features/kiosk/telemetry";
 import { clearKioskSession, getKioskToken } from "@/shared/lib/kioskSession";
 
 export function useKioskForceLogout() {
@@ -18,6 +23,15 @@ export function useKioskForceLogout() {
     });
 
     socket.on("force:logout", () => {
+      trackEvent({
+        name: "kiosk.session_forced_logout",
+        page: "session",
+        component: "session",
+        action: "forced_logout",
+        target: "socket_event",
+      });
+      endVisitorSession("forced_logout", { source: "socket_event" });
+      void flushUrgent();
       clearKioskSession();
       toast.error("This device has been deactivated.");
       navigate("/kiosk/login", { replace: true });

@@ -1,5 +1,7 @@
+import { useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Users, Plus, ImageOff, Loader2 } from "lucide-react";
+import { trackEvent } from "@/features/kiosk/telemetry";
 import type { RecommendedItem } from "../services/recommendation.service";
 import type { CartItem } from "../types/cartItem.types";
 import type { MenuItem } from "../types/menu.types";
@@ -17,6 +19,22 @@ export default function FrequentlyBoughtTogether({
   cart,
   onAddToCart,
 }: FrequentlyBoughtTogetherProps) {
+  const hasTrackedImpressionRef = useRef(false);
+
+  useEffect(() => {
+    if (isLoading || items.length === 0 || hasTrackedImpressionRef.current) return;
+    hasTrackedImpressionRef.current = true;
+    trackEvent({
+      name: "kiosk.fbt_impression",
+      page: "menu",
+      component: "frequently_bought_together",
+      action: "impression",
+      payload: {
+        itemCount: items.length,
+      },
+    });
+  }, [isLoading, items]);
+
   // Only show when cart has items and we have results (or are loading)
   if (!isLoading && items.length === 0) return null;
 
@@ -126,9 +144,16 @@ export default function FrequentlyBoughtTogether({
                         <motion.button
                           whileHover={{ scale: 1.06 }}
                           whileTap={{ scale: 0.95 }}
-                          onClick={() =>
-                            onAddToCart(item as unknown as MenuItem)
-                          }
+                          onClick={() => {
+                            trackEvent({
+                              name: "kiosk.fbt_added",
+                              page: "menu",
+                              component: "frequently_bought_together",
+                              action: "add",
+                              target: String(item._id),
+                            });
+                            onAddToCart(item as unknown as MenuItem);
+                          }}
                           className="h-8 rounded-lg bg-[#0e9f89] hover:bg-[#0b8b78] text-white flex items-center justify-center shadow-sm transition-colors px-3 text-[11px] font-black"
                           style={{ fontFamily: "var(--font-display)" }}
                         >

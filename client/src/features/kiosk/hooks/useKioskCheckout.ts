@@ -6,6 +6,11 @@ import kioskAxios from "@/shared/lib/kioskAxios";
 import { getSocketUrl } from "@/shared/lib/socket";
 import { addToQueue } from "@/shared/lib/orderQueue";
 import { getKioskToken } from "@/shared/lib/kioskSession";
+import {
+  trackApiTiming,
+  trackCheckout,
+  trackEvent,
+} from "@/features/kiosk/telemetry";
 import type { CartItem } from "../types/cartItem.types";
 
 type PaymentStep = "SELECTION" | "DETAILS";
@@ -167,9 +172,24 @@ export function useKioskCheckout(
 
   const handleOpenCheckout = () => {
     if (cart.length === 0) {
+      trackEvent({
+        name: "kiosk.checkout_open_blocked",
+        page: "menu",
+        component: "checkout",
+        action: "blocked",
+        target: "empty_cart",
+      });
       toast.error("Cart is empty");
       return;
     }
+
+    trackCheckout({
+      action: "open",
+      payload: {
+        cartSize: cart.length,
+        totalQuantity: cart.reduce((count, item) => count + item.quantity, 0),
+      },
+    });
     setPaymentStep("SELECTION");
     setSelectedMethod("");
     setShowPaymentDialog(true);
@@ -177,13 +197,35 @@ export function useKioskCheckout(
 
   const handleConfirmOrder = async () => {
     if (!selectedMethod) {
+      trackEvent({
+        name: "kiosk.checkout_confirm_blocked",
+        page: "menu",
+        component: "checkout",
+        action: "blocked",
+        target: "missing_method",
+      });
       toast.error("Select a payment method");
       return;
     }
 
+    trackCheckout({
+      action: "confirm",
+      method: selectedMethod,
+      payload: {
+        cartSize: cart.length,
+        totalQuantity: cart.reduce((count, item) => count + item.quantity, 0),
+      },
+    });
     setIsProcessing(true);
     setShowPaymentDialog(false);
     setShowProcessingDialog(true);
+    trackEvent({
+      name: "kiosk.checkout_processing_opened",
+      page: "menu",
+      component: "checkout",
+      action: "processing_open",
+      target: selectedMethod,
+    });
 
     try {
       const clientOrderId = uuidv4();
@@ -198,9 +240,19 @@ export function useKioskCheckout(
           ),
         })),
       };
+      const requestStartedAt = performance.now();
 
       try {
         const response = await kioskAxios.post("/orders", orderData);
+        trackApiTiming({
+          name: "kiosk.checkout_api_timed",
+          apiName: "orders/create",
+          durationMs: performance.now() - requestStartedAt,
+          success: true,
+          page: "menu",
+          component: "checkout",
+          target: selectedMethod,
+        });
         const queuedOrder = response.data.data as {
           orderNumber: number;
           status?: OrderProcessingStatus;
@@ -218,6 +270,14 @@ export function useKioskCheckout(
         if (queuedOrder.status === "SUCCESS") {
           setShowProcessingDialog(false);
           setOrderNumber(queuedOrder.orderNumber.toString());
+          trackCheckout({
+            action: "success",
+            method: selectedMethod,
+            payload: {
+              orderNumber: queuedOrder.orderNumber,
+              source: "sync_response",
+            },
+          });
           setShowSuccessDialog(true);
           setCart([]);
           toast.success("Order placed successfully!", { duration: 3000 });
@@ -231,6 +291,14 @@ export function useKioskCheckout(
         );
         setShowProcessingDialog(false);
         setOrderNumber(outcome.orderNumber.toString());
+        trackCheckout({
+          action: "success",
+          method: selectedMethod,
+          payload: {
+            orderNumber: outcome.orderNumber,
+            source: "async_confirmation",
+          },
+        });
         setShowSuccessDialog(true);
         setCart([]);
         toast.success("Order placed successfully!", { duration: 3000 });
@@ -242,11 +310,34 @@ export function useKioskCheckout(
           kind?: CheckoutFailureKind;
         };
 
+        if (maybeError.response) {
+          trackApiTiming({
+            name: "kiosk.checkout_api_timed",
+            apiName: "orders/create",
+            durationMs: performance.now() - requestStartedAt,
+            success: false,
+            page: "menu",
+            component: "checkout",
+            target: selectedMethod,
+            payload: {
+              statusCode: maybeError.response?.data ? "response_error" : undefined,
+            },
+          });
+        }
+
         if (
           maybeError.kind === "ORDER_FAILED" ||
           maybeError.kind === "ORDER_UNCONFIRMED"
         ) {
           setShowProcessingDialog(false);
+          trackCheckout({
+            action: "failure",
+            method: selectedMethod,
+            payload: {
+              reasonCategory: maybeError.kind,
+              message: maybeError.message || "Order failed",
+            },
+          });
           toast.error(maybeError.message || "Order failed");
           setFailedMessage(maybeError.message || "Order failed");
           setShowFailedDialog(true);
@@ -257,12 +348,30 @@ export function useKioskCheckout(
         if (!maybeError.response) {
           setShowProcessingDialog(false);
           await addToQueue(orderData);
+          trackEvent({
+            name: "kiosk.checkout_offline_queued",
+            page: "menu",
+            component: "checkout",
+            action: "offline_queued",
+            target: selectedMethod,
+            payload: {
+              clientOrderId,
+            },
+          });
           toast.error("Offline: Order queued");
           setCart([]);
         } else {
           setShowProcessingDialog(false);
           const serverMessage =
             maybeError.response?.data?.message || "Order failed";
+          trackCheckout({
+            action: "failure",
+            method: selectedMethod,
+            payload: {
+              reasonCategory: "server_error",
+              message: serverMessage,
+            },
+          });
           toast.error(serverMessage);
           setFailedMessage(serverMessage);
           setShowFailedDialog(true);

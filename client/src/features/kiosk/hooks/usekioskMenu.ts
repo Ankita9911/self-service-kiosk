@@ -1,6 +1,12 @@
 import { useEffect, useState, useCallback } from "react";
 import kioskAxios from "@/shared/lib/kioskAxios";
-import type { MenuCategory, Combo, OfferType } from "../types/menu.types";
+import { trackApiTiming, trackEvent } from "@/features/kiosk/telemetry";
+import type {
+  MenuCategory,
+  Combo,
+  OfferType,
+  MenuItem,
+} from "../types/menu.types";
 import { useMenuSocket } from "@/shared/hooks/useMenuSocket";
 
 const ALL_CATEGORY_ID = "__ALL__";
@@ -12,7 +18,11 @@ function getOrderType(): "DINE_IN" | "TAKE_AWAY" | null {
   return null;
 }
 
-function filterByOrderType(items: any[]): any[] {
+type ServiceTypeScoped = {
+  serviceType?: MenuItem["serviceType"];
+};
+
+function filterByOrderType<T extends ServiceTypeScoped>(items: T[]): T[] {
   const orderType = getOrderType();
   if (!orderType) return items;
   return items.filter((item) => {
@@ -39,19 +49,71 @@ export function useKioskMenu() {
   const [offerFilter, setOfferFilter] = useState<OfferType | null>(null);
 
   const loadMenu = useCallback(async (silent = false) => {
+    const requestStartedAt = performance.now();
+
     try {
       if (!silent) setIsLoading(true);
       const [menuRes, combosRes] = await Promise.all([
         kioskAxios.get("/kiosk/menu"),
         kioskAxios.get("/kiosk/combos").catch(() => ({ data: { data: [] } })),
       ]);
-      const freshMenu = menuRes.data.data.sort(
-        (a: any, b: any) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0),
+      const freshMenu = (menuRes.data.data as MenuCategory[]).sort(
+        (a, b) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0),
       );
-      const valid = freshMenu.filter((c: any) => c.items && c.items.length > 0);
+      const valid = freshMenu.filter((category) => category.items.length > 0);
+      const fetchedCombos = (combosRes.data.data ?? []) as Combo[];
       setMenu(valid);
-      setCombos(combosRes.data.data ?? []);
+      setCombos(fetchedCombos);
+      trackApiTiming({
+        name: "kiosk.menu_api_timed",
+        apiName: "kiosk/menu",
+        durationMs: performance.now() - requestStartedAt,
+        success: true,
+        page: "menu",
+        component: "menu_loader",
+        payload: {
+          silent,
+          categoryCount: valid.length,
+          comboCount: fetchedCombos.length,
+        },
+      });
+      trackEvent({
+        name: "kiosk.menu_loaded",
+        page: "menu",
+        component: "menu_loader",
+        action: "load",
+        payload: {
+          silent,
+          categoryCount: valid.length,
+          itemCount: valid.reduce(
+            (count: number, category: MenuCategory) =>
+              count + (category.items?.length ?? 0),
+            0,
+          ),
+          comboCount: fetchedCombos.length,
+        },
+      });
     } catch {
+      trackApiTiming({
+        name: "kiosk.menu_api_timed",
+        apiName: "kiosk/menu",
+        durationMs: performance.now() - requestStartedAt,
+        success: false,
+        page: "menu",
+        component: "menu_loader",
+        payload: {
+          silent,
+        },
+      });
+      trackEvent({
+        name: "kiosk.menu_load_failed",
+        page: "menu",
+        component: "menu_loader",
+        action: "load_failed",
+        payload: {
+          silent,
+        },
+      });
       // silently ignore menu load errors
     } finally {
       if (!silent) setTimeout(() => setIsLoading(false), 500);
@@ -71,10 +133,10 @@ export function useKioskMenu() {
 
   const allItems = filterByOrderType(menu.flatMap((c) => c.items || []));
 
-  function filterByOffer(items: any[]) {
+  function filterByOffer(items: MenuItem[]) {
     if (!offerFilter) return items;
     return items.filter((item) =>
-      (item.offers ?? []).some((o: any) => o.type === offerFilter),
+      (item.offers ?? []).some((offer) => offer.type === offerFilter),
     );
   }
 
@@ -95,7 +157,7 @@ export function useKioskMenu() {
           {
             _id: COMBOS_CATEGORY_ID,
             name: "Combos",
-            items: visibleCombos as any,
+            items: visibleCombos as unknown as MenuItem[],
           } as MenuCategory,
         ]
       : []),
@@ -111,8 +173,10 @@ export function useKioskMenu() {
     LIMITED: 0,
   };
   allItems.forEach((item) => {
-    (item.offers ?? []).forEach((o: any) => {
-      if (o.type in offerCounts) offerCounts[o.type as OfferType]++;
+    (item.offers ?? []).forEach((offer) => {
+      if (offer.type && offer.type in offerCounts) {
+        offerCounts[offer.type as OfferType]++;
+      }
     });
   });
 

@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState } from "react";
+import { trackApiTiming, trackEvent } from "@/features/kiosk/telemetry";
 import type { CartItem } from "../types/cartItem.types";
 import type { MenuCategory } from "../types/menu.types";
 import {
@@ -10,6 +11,7 @@ import {
 } from "../services/recommendation.service";
 
 const FBT_DEBOUNCE_MS = 600;
+const EMPTY_MEAL: CompleteMealResult = { suggestions: [], comboDeal: null };
 
 // ─── Derive unique itemIds and categoryIds from cart ─────────────────────────
 
@@ -52,13 +54,44 @@ export function useRecommendations(
 
   useEffect(() => {
     let cancelled = false;
-    setIsTrendingLoading(true);
+    const requestStartedAt = performance.now();
 
     fetchTrending({ windowHours: 4, limit: 8 })
       .then((data) => {
+        trackApiTiming({
+          name: "kiosk.recommendation_fetch_timed",
+          apiName: "recommendations/trending",
+          durationMs: performance.now() - requestStartedAt,
+          success: true,
+          page: "menu",
+          component: "recommendations",
+          target: "trending",
+          payload: {
+            resultCount: data.length,
+          },
+        });
+        trackEvent({
+          name: "kiosk.recommendation_fetch_completed",
+          page: "menu",
+          component: "recommendations",
+          action: "fetch_complete",
+          target: "trending",
+          payload: {
+            resultCount: data.length,
+          },
+        });
         if (!cancelled) setTrending(data);
       })
       .catch(() => {
+        trackApiTiming({
+          name: "kiosk.recommendation_fetch_timed",
+          apiName: "recommendations/trending",
+          durationMs: performance.now() - requestStartedAt,
+          success: false,
+          page: "menu",
+          component: "recommendations",
+          target: "trending",
+        });
         if (!cancelled) setTrending([]);
       })
       .finally(() => {
@@ -88,7 +121,10 @@ export function useRecommendations(
     prevItemIdsRef.current = key;
 
     if (!itemIds.length) {
-      setFrequentlyBoughtTogether([]);
+      window.setTimeout(() => {
+        setFrequentlyBoughtTogether([]);
+        setIsFbtLoading(false);
+      }, 0);
       return;
     }
 
@@ -98,12 +134,38 @@ export function useRecommendations(
     fbtTimerRef.current = setTimeout(() => {
       let cancelled = false;
       setIsFbtLoading(true);
+      const requestStartedAt = performance.now();
 
       fetchFrequentlyBoughtTogether(itemIds, { limit: 5 })
         .then((data) => {
+          trackApiTiming({
+            name: "kiosk.recommendation_fetch_timed",
+            apiName: "recommendations/frequently-bought-together",
+            durationMs: performance.now() - requestStartedAt,
+            success: true,
+            page: "menu",
+            component: "recommendations",
+            target: "frequently_bought_together",
+            payload: {
+              resultCount: data.length,
+              cartItemCount: itemIds.length,
+            },
+          });
           if (!cancelled) setFrequentlyBoughtTogether(data);
         })
         .catch(() => {
+          trackApiTiming({
+            name: "kiosk.recommendation_fetch_timed",
+            apiName: "recommendations/frequently-bought-together",
+            durationMs: performance.now() - requestStartedAt,
+            success: false,
+            page: "menu",
+            component: "recommendations",
+            target: "frequently_bought_together",
+            payload: {
+              cartItemCount: itemIds.length,
+            },
+          });
           if (!cancelled) setFrequentlyBoughtTogether([]);
         })
         .finally(() => {
@@ -121,14 +183,13 @@ export function useRecommendations(
   }, [cart]);
 
   // ── Complete Meal ─────────────────────────────────────────────────────────
-  const emptyMeal: CompleteMealResult = { suggestions: [], comboDeal: null };
   const [completeMeal, setCompleteMeal] =
-    useState<CompleteMealResult>(emptyMeal);
+    useState<CompleteMealResult>(EMPTY_MEAL);
   const [isMealLoading, setIsMealLoading] = useState(false);
 
   const prevMealKeyRef = useRef<string>("");
 
-  const fetchMeal = useCallback(() => {
+  useEffect(() => {
     const itemIds = getCartItemIds(cart);
     const categoryIds = getCartCategoryIds(cart, menu);
     const key = `${[...itemIds].sort().join(",")}|${[...categoryIds].sort().join(",")}`;
@@ -137,19 +198,53 @@ export function useRecommendations(
     prevMealKeyRef.current = key;
 
     if (!itemIds.length) {
-      setCompleteMeal(emptyMeal);
+      window.setTimeout(() => {
+        setCompleteMeal(EMPTY_MEAL);
+        setIsMealLoading(false);
+      }, 0);
       return;
     }
 
     let cancelled = false;
-    setIsMealLoading(true);
+    const loadingTimer = window.setTimeout(() => {
+      if (!cancelled) setIsMealLoading(true);
+    }, 0);
+    const requestStartedAt = performance.now();
 
     fetchCompleteMeal(itemIds, categoryIds, { limit: 4 })
       .then((data) => {
+        trackApiTiming({
+          name: "kiosk.recommendation_fetch_timed",
+          apiName: "recommendations/complete-meal",
+          durationMs: performance.now() - requestStartedAt,
+          success: true,
+          page: "menu",
+          component: "recommendations",
+          target: "complete_meal",
+          payload: {
+            suggestionCount: data.suggestions.length,
+            hasComboDeal: Boolean(data.comboDeal),
+            cartItemCount: itemIds.length,
+            cartCategoryCount: categoryIds.length,
+          },
+        });
         if (!cancelled) setCompleteMeal(data);
       })
       .catch(() => {
-        if (!cancelled) setCompleteMeal(emptyMeal);
+        trackApiTiming({
+          name: "kiosk.recommendation_fetch_timed",
+          apiName: "recommendations/complete-meal",
+          durationMs: performance.now() - requestStartedAt,
+          success: false,
+          page: "menu",
+          component: "recommendations",
+          target: "complete_meal",
+          payload: {
+            cartItemCount: itemIds.length,
+            cartCategoryCount: categoryIds.length,
+          },
+        });
+        if (!cancelled) setCompleteMeal(EMPTY_MEAL);
       })
       .finally(() => {
         if (!cancelled) setIsMealLoading(false);
@@ -157,12 +252,9 @@ export function useRecommendations(
 
     return () => {
       cancelled = true;
+      window.clearTimeout(loadingTimer);
     };
   }, [cart, menu]);
-
-  useEffect(() => {
-    fetchMeal();
-  }, [fetchMeal]);
 
   return {
     trending,

@@ -32,6 +32,19 @@ Frontend
 4. Feature-based modular frontend
 5. Business modules (Orders, Menu, Inventory, Kitchen flow, etc.)
 
+### Telemetry Rollout Notes
+
+Kiosk telemetry now follows a buffered write path and a separate admin read surface.
+
+Validation and rollout controls:
+1. Backend smoke tests: `cd backend && npm run test:telemetry`
+2. Admin rollout status endpoint: `GET /telemetry/kiosk/status`
+3. Frontend admin page: `/telemetry/kiosk`
+4. Disable kiosk event capture with `VITE_KIOSK_TELEMETRY_ENABLED=false`
+5. Hide the admin telemetry page with `VITE_ADMIN_TELEMETRY_ENABLED=false`
+6. Disable backend enqueueing with `TELEMETRY_INGEST_ENABLED=false`
+7. Disable backend Redis read caching with `TELEMETRY_READ_CACHE_ENABLED=false`
+
 ### Schema Design
 
 ![alt text](hyper_kitchen_hub_06_03_2026.png)

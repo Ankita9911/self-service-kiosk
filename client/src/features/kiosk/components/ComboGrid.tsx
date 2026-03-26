@@ -1,5 +1,7 @@
+import { useEffect, useRef } from "react";
 import { Plus, Minus, Package } from "lucide-react";
 import { motion } from "framer-motion";
+import { trackEvent } from "@/features/kiosk/telemetry";
 import type { Combo } from "../types/menu.types";
 import type { CartItem } from "../types/cartItem.types";
 
@@ -16,6 +18,54 @@ export default function ComboGrid({
   onViewCombo,
   onUpdateQuantity,
 }: ComboGridProps) {
+  const comboNodeRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const seenImpressionsRef = useRef<Set<string>>(new Set());
+
+  useEffect(() => {
+    if (combos.length === 0) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          const comboId = entry.target.getAttribute("data-combo-id");
+          if (!comboId || seenImpressionsRef.current.has(comboId)) return;
+
+          seenImpressionsRef.current.add(comboId);
+          trackEvent({
+            name: "kiosk.combo_impression",
+            page: "menu",
+            component: "combo_grid",
+            action: "impression",
+            target: comboId,
+          });
+        });
+      },
+      { threshold: 0.45 },
+    );
+
+    combos.forEach((combo) => {
+      const node = comboNodeRefs.current[String(combo._id)];
+      if (node) observer.observe(node);
+    });
+
+    return () => observer.disconnect();
+  }, [combos]);
+
+  const handleViewCombo = (combo: Combo, source: string) => {
+    trackEvent({
+      name: "kiosk.combo_card_opened",
+      page: "menu",
+      component: "combo_grid",
+      action: "open",
+      target: String(combo._id),
+      payload: {
+        source,
+      },
+    });
+    onViewCombo(combo);
+  };
+
   if (combos.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-96 text-gray-400">
@@ -43,11 +93,15 @@ export default function ComboGrid({
         return (
           <motion.div
             key={String(combo._id)}
+            ref={(node) => {
+              comboNodeRefs.current[String(combo._id)] = node;
+            }}
+            data-combo-id={String(combo._id)}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
             className="bg-white rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 flex flex-col border-2 border-[#dcefe9] hover:border-[#bde7de] cursor-pointer"
-            onClick={() => onViewCombo(combo)}
+            onClick={() => handleViewCombo(combo, "card")}
           >
             {/* Image */}
             <div className="relative h-48 bg-linear-to-br from-[#ebfaf6] via-[#e2f6f0] to-[#ebfaf6] overflow-hidden group">
@@ -121,7 +175,14 @@ export default function ComboGrid({
                 type="button"
                 onClick={(e) => {
                   e.stopPropagation();
-                  onViewCombo(combo);
+                  trackEvent({
+                    name: "kiosk.combo_details_opened",
+                    page: "menu",
+                    component: "combo_grid",
+                    action: "view_details",
+                    target: String(combo._id),
+                  });
+                  handleViewCombo(combo, "view_details");
                 }}
                 className="self-start text-[11px] font-black text-[#0e9f89] hover:text-[#0b8b78] underline underline-offset-2"
                 style={{ fontFamily: "var(--font-body)" }}
@@ -162,7 +223,14 @@ export default function ComboGrid({
                   <motion.button
                     onClick={(e) => {
                       e.stopPropagation();
-                      onViewCombo(combo);
+                      trackEvent({
+                        name: "kiosk.combo_details_opened",
+                        page: "menu",
+                        component: "combo_grid",
+                        action: "add_click",
+                        target: String(combo._id),
+                      });
+                      handleViewCombo(combo, "add_button");
                     }}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
@@ -176,6 +244,17 @@ export default function ComboGrid({
                       onClick={(e) => {
                         e.stopPropagation();
                         if (!cartItem) return;
+                        trackEvent({
+                          name: "kiosk.combo_quantity_changed",
+                          page: "menu",
+                          component: "combo_grid",
+                          action: "change_quantity",
+                          target: String(combo._id),
+                          payload: {
+                            quantityBefore: quantity,
+                            quantityAfter: Math.max(0, quantity - 1),
+                          },
+                        });
                         onUpdateQuantity(cartItem.cartItemId, -1);
                       }}
                       whileHover={{ scale: 1.1 }}
@@ -193,7 +272,18 @@ export default function ComboGrid({
                     <motion.button
                       onClick={(e) => {
                         e.stopPropagation();
-                        onViewCombo(combo);
+                        trackEvent({
+                          name: "kiosk.combo_details_opened",
+                          page: "menu",
+                          component: "combo_grid",
+                          action: "change_quantity",
+                          target: String(combo._id),
+                          payload: {
+                            quantityBefore: quantity,
+                            quantityAfter: quantity + 1,
+                          },
+                        });
+                        handleViewCombo(combo, "quantity_plus");
                       }}
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.9 }}

@@ -4,7 +4,8 @@
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",
-    "dev": "ts-node-dev --respawn src/index.js"
+    "dev": "ts-node-dev --respawn src/index.js",
+    "test:telemetry": "node --test src/modules/telemetry/__tests__/*.test.js"
   },
   "keywords": [],
   "author": "",

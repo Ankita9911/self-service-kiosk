@@ -1,6 +1,11 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
+  getCurrentVisitorSession,
+  trackEvent,
+  trackPageView,
+} from "@/features/kiosk/telemetry";
+import {
   getKioskLandingConfig,
   getKioskToken,
 } from "@/shared/lib/kioskSession";
@@ -16,6 +21,20 @@ export default function KioskLandingPage() {
     }
   }, [navigate]);
 
+  useEffect(() => {
+    trackPageView("landing");
+
+    return () => {
+      if (!getCurrentVisitorSession()) return;
+      trackEvent({
+        name: "kiosk.page_exited",
+        page: "landing",
+        component: "page",
+        action: "exit",
+      });
+    };
+  }, []);
+
   const title = landingTitle || "Discover Our Menu";
   const subtitle =
     landingSubtitle ||
@@ -24,7 +43,16 @@ export default function KioskLandingPage() {
   return (
     <div
       className="fixed inset-0 flex items-center justify-center overflow-hidden bg-linear-to-br from-[#e6f7f3] via-[#f6fcfa] to-white p-4 md:p-6 select-none cursor-pointer"
-      onClick={() => navigate("/kiosk/order-type", { replace: true })}
+      onClick={() => {
+        trackEvent({
+          name: "kiosk.landing_start_tapped",
+          page: "landing",
+          component: "landing_screen",
+          action: "tap",
+          target: "start_anywhere",
+        });
+        navigate("/kiosk/order-type", { replace: true });
+      }}
     >
       {/* Background decorative blobs */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">

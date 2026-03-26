@@ -13,6 +13,7 @@ import {
   DialogDescription,
   DialogTitle,
 } from "@/shared/components/ui/dialog";
+import { trackCheckout, trackEvent } from "@/features/kiosk/telemetry";
 import PaymentOption from "./PaymentOption";
 
 type PaymentStep = "SELECTION" | "DETAILS";
@@ -44,8 +45,23 @@ export default function PaymentDialog({
 }: PaymentDialogProps) {
   const payableTotal = totalPrice * 1.05;
 
+  const handleOpenChange = (nextOpen: boolean) => {
+    if (!nextOpen && open) {
+      trackCheckout({
+        action: "close",
+        payload: {
+          paymentStep,
+          selectedMethod: selectedMethod || null,
+          reason: "dismiss",
+        },
+      });
+    }
+
+    onOpenChange(nextOpen);
+  };
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="w-[calc(100%-1.25rem)] sm:w-full sm:max-w-3xl h-fit max-h-[78vh] p-0 overflow-y-auto rounded-3xl! sm:rounded-[28px]! border border-[#cdebe4] shadow-[0_18px_50px_rgba(14,159,137,0.18)] bg-white">
         <div className="border-b border-[#dff1ec] bg-linear-to-r from-[#f4fbf9] via-white to-[#eef9f6] px-4 sm:px-5 lg:px-6 py-3 sm:py-3.5">
           <div className="flex items-center justify-between">
@@ -94,6 +110,10 @@ export default function PaymentDialog({
                       gradient="from-[#1fb9a4] to-[#0e9f89]"
                       square
                       onClick={() => {
+                        trackCheckout({
+                          action: "select_method",
+                          method: "CARD",
+                        });
                         setSelectedMethod("CARD");
                         setPaymentStep("DETAILS");
                       }}
@@ -108,6 +128,10 @@ export default function PaymentDialog({
                       gradient="from-[#15b8a2] to-[#0a8e7c]"
                       square
                       onClick={() => {
+                        trackCheckout({
+                          action: "select_method",
+                          method: "CASH",
+                        });
                         setSelectedMethod("CASH");
                         setPaymentStep("DETAILS");
                       }}
@@ -120,6 +144,10 @@ export default function PaymentDialog({
                       gradient="from-[#37c2ae] to-[#109a86]"
                       square
                       onClick={() => {
+                        trackCheckout({
+                          action: "select_method",
+                          method: "UPI",
+                        });
                         setSelectedMethod("UPI");
                         setPaymentStep("DETAILS");
                       }}
@@ -136,7 +164,16 @@ export default function PaymentDialog({
                 className="space-y-3 sm:space-y-4 max-w-2xl mx-auto"
               >
                 <button
-                  onClick={() => setPaymentStep("SELECTION")}
+                  onClick={() => {
+                    trackEvent({
+                      name: "kiosk.checkout_back_clicked",
+                      page: "menu",
+                      component: "payment_dialog",
+                      action: "back",
+                      target: selectedMethod || null,
+                    });
+                    setPaymentStep("SELECTION");
+                  }}
                   className="flex items-center gap-2 text-sm font-black text-[#0e9f89] hover:text-[#0b8b78] transition-colors"
                 >
                   <ChevronLeft className="w-5 h-5" strokeWidth={3} />

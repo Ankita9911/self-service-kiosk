@@ -1,14 +1,22 @@
 import { Plus, ImageOff, Minus, ChevronDown } from "lucide-react";
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { trackEvent } from "@/features/kiosk/telemetry";
 import type { MenuItem } from "../types/menu.types";
 import type { CartItem } from "../types/cartItem.types";
 import { OfferBadge } from "./OfferBadge";
 import CustomizeItemDialouge from "./CustomizeItemDialouge";
 
 const DESC_LIMIT = 70;
+const IMPRESSION_THRESHOLD = 0.45;
 
-function DescriptionText({ text }: { text: string }) {
+function DescriptionText({
+  itemId,
+  text,
+}: {
+  itemId: string;
+  text: string;
+}) {
   const [expanded, setExpanded] = useState(false);
   if (text.length <= DESC_LIMIT) {
     return (
@@ -31,7 +39,18 @@ function DescriptionText({ text }: { text: string }) {
       <button
         onClick={(e) => {
           e.stopPropagation();
-          setExpanded((v) => !v);
+          const nextExpanded = !expanded;
+          trackEvent({
+            name: "kiosk.menu_item_description_toggled",
+            page: "menu",
+            component: "menu_grid",
+            action: "toggle_description",
+            target: itemId,
+            payload: {
+              expanded: nextExpanded,
+            },
+          });
+          setExpanded(nextExpanded);
         }}
         className="mt-0.5 inline-flex items-center gap-0.5 text-[11px] font-bold text-[#0e9f89] hover:text-[#0b8b78] transition-colors"
       >
@@ -60,6 +79,53 @@ export default function MenuGrid({
   const [customizationItem, setCustomizationItem] = useState<MenuItem | null>(
     null,
   );
+  const itemNodeRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const seenImpressionsRef = useRef<Set<string>>(new Set());
+
+  useEffect(() => {
+    if (items.length === 0) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          const itemId = entry.target.getAttribute("data-item-id");
+          if (!itemId || seenImpressionsRef.current.has(itemId)) return;
+
+          seenImpressionsRef.current.add(itemId);
+          trackEvent({
+            name: "kiosk.menu_item_impression",
+            page: "menu",
+            component: "menu_grid",
+            action: "impression",
+            target: itemId,
+          });
+        });
+      },
+      { threshold: IMPRESSION_THRESHOLD },
+    );
+
+    items.forEach((item) => {
+      const node = itemNodeRefs.current[String(item._id)];
+      if (node) observer.observe(node);
+    });
+
+    return () => observer.disconnect();
+  }, [items]);
+
+  const openCustomization = (item: MenuItem, source: string) => {
+    trackEvent({
+      name: "kiosk.menu_item_opened",
+      page: "menu",
+      component: "menu_grid",
+      action: "open",
+      target: String(item._id),
+      payload: {
+        source,
+      },
+    });
+    setCustomizationItem(item);
+  };
 
   if (items.length === 0) {
     return (
@@ -116,10 +182,14 @@ export default function MenuGrid({
           return (
             <motion.div
               key={item._id}
+              ref={(node) => {
+                itemNodeRefs.current[String(item._id)] = node;
+              }}
+              data-item-id={String(item._id)}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3 }}
-              onClick={() => setCustomizationItem(item)}
+              onClick={() => openCustomization(item, "card")}
               className={`bg-white rounded-3xl overflow-hidden shadow-lg transition-all duration-300 flex flex-col h-full border-2 cursor-pointer ${
                 isOutOfStock
                   ? "border-gray-200 opacity-60 grayscale"
@@ -171,7 +241,10 @@ export default function MenuGrid({
 
                 {item.description && (
                   <div className="mb-2">
-                    <DescriptionText text={item.description} />
+                    <DescriptionText
+                      itemId={String(item._id)}
+                      text={item.description}
+                    />
                   </div>
                 )}
 
@@ -234,8 +307,27 @@ export default function MenuGrid({
                   {quantity === 0 ? (
                     <motion.button
                       onClick={() => {
-                        if (isOutOfStock) return;
-                        setCustomizationItem(item);
+                        if (isOutOfStock) {
+                          trackEvent({
+                            name: "kiosk.menu_item_out_of_stock_attempted",
+                            page: "menu",
+                            component: "menu_grid",
+                            action: "blocked",
+                            target: String(item._id),
+                          });
+                          return;
+                        }
+                        trackEvent({
+                          name: "kiosk.menu_item_add_clicked",
+                          page: "menu",
+                          component: "menu_grid",
+                          action: "add_click",
+                          target: String(item._id),
+                          payload: {
+                            source: "add_button",
+                          },
+                        });
+                        openCustomization(item, "add_button");
                       }}
                       disabled={isOutOfStock}
                       whileHover={{ scale: isOutOfStock ? 1 : 1.05 }}
@@ -272,7 +364,17 @@ export default function MenuGrid({
                       <motion.button
                         onClick={() => {
                           if (isAtMaxStock) return;
-                          setCustomizationItem(item);
+                          trackEvent({
+                            name: "kiosk.menu_item_add_clicked",
+                            page: "menu",
+                            component: "menu_grid",
+                            action: "add_click",
+                            target: String(item._id),
+                            payload: {
+                              source: "quantity_plus",
+                            },
+                          });
+                          openCustomization(item, "quantity_plus");
                         }}
                         disabled={isAtMaxStock}
                         whileHover={{ scale: isAtMaxStock ? 1 : 1.1 }}
@@ -294,11 +396,23 @@ export default function MenuGrid({
         })}
       </div>
       <CustomizeItemDialouge
+        key={customizationItem ? String(customizationItem._id) : "customization-closed"}
         open={!!customizationItem}
         item={customizationItem}
         onClose={() => setCustomizationItem(null)}
         onConfirm={(customizationItemIds, quantityToAdd) => {
           if (!customizationItem) return;
+          trackEvent({
+            name: "kiosk.menu_item_add_confirmed",
+            page: "menu",
+            component: "menu_grid",
+            action: "add_confirm",
+            target: String(customizationItem._id),
+            payload: {
+              customizationCount: customizationItemIds.length,
+              quantity: quantityToAdd,
+            },
+          });
           const selectedCustomizations = (
             customizationItem.customizationOptions || []
           ).filter((option) => customizationItemIds.includes(option.itemId));

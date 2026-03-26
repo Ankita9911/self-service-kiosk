@@ -1,4 +1,6 @@
+import { useEffect, useRef } from "react";
 import { motion } from "framer-motion";
+import { trackEvent } from "@/features/kiosk/telemetry";
 import type { MenuCategory } from "../types/menu.types";
 
 interface CategoryTabsProps {
@@ -12,9 +14,27 @@ export default function CategoryTabs({
   selectedCategory,
   onCategoryChange,
 }: CategoryTabsProps) {
+  const seenImpressionsRef = useRef<Set<string>>(new Set());
   const availableCategories = categories.filter((cat) =>
     cat._id === "__COMBOS__" ? true : cat.items && cat.items.length > 0,
   );
+
+  useEffect(() => {
+    availableCategories.forEach((category) => {
+      if (seenImpressionsRef.current.has(String(category._id))) return;
+      seenImpressionsRef.current.add(String(category._id));
+      trackEvent({
+        name: "kiosk.menu_category_impression",
+        page: "menu",
+        component: "category_tabs",
+        action: "impression",
+        target: String(category._id),
+        payload: {
+          categoryName: category.name,
+        },
+      });
+    });
+  }, [availableCategories]);
 
   if (availableCategories.length === 0) return null;
 

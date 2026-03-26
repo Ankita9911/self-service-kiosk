@@ -1,5 +1,7 @@
+import { useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { UtensilsCrossed, Plus, ImageOff, Tag } from "lucide-react";
+import { trackEvent } from "@/features/kiosk/telemetry";
 import type { CompleteMealResult } from "../services/recommendation.service";
 import type { CartItem } from "../types/cartItem.types";
 import type { MenuItem } from "../types/menu.types";
@@ -25,6 +27,36 @@ export default function CompleteMealSuggestion({
 }: CompleteMealSuggestionProps) {
   const { suggestions, comboDeal } = result;
   const hasContent = suggestions.length > 0 || comboDeal !== null;
+  const hasTrackedSectionRef = useRef(false);
+  const lastComboDealIdRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (isLoading || !hasContent || hasTrackedSectionRef.current) return;
+    hasTrackedSectionRef.current = true;
+    trackEvent({
+      name: "kiosk.complete_meal_impression",
+      page: "menu",
+      component: "complete_meal_suggestion",
+      action: "impression",
+      payload: {
+        suggestionCount: suggestions.length,
+        hasComboDeal: Boolean(comboDeal),
+      },
+    });
+  }, [comboDeal, hasContent, isLoading, suggestions.length]);
+
+  useEffect(() => {
+    if (!comboDeal) return;
+    if (lastComboDealIdRef.current === String(comboDeal._id)) return;
+    lastComboDealIdRef.current = String(comboDeal._id);
+    trackEvent({
+      name: "kiosk.combo_deal_impression",
+      page: "menu",
+      component: "complete_meal_suggestion",
+      action: "impression",
+      target: String(comboDeal._id),
+    });
+  }, [comboDeal]);
 
   if (!isLoading && !hasContent) return null;
 
@@ -105,14 +137,21 @@ export default function CompleteMealSuggestion({
                 <motion.button
                   whileHover={{ scale: 1.03 }}
                   whileTap={{ scale: 0.97 }}
-                  onClick={() =>
+                  onClick={() => {
+                    trackEvent({
+                      name: "kiosk.combo_deal_added",
+                      page: "menu",
+                      component: "complete_meal_suggestion",
+                      action: "add_combo",
+                      target: String(comboDeal._id),
+                    });
                     onAddComboToCart({
                       _id: String(comboDeal._id),
                       name: comboDeal.name,
                       comboPrice: comboDeal.comboPrice,
                       imageUrl: comboDeal.imageUrl,
-                    })
-                  }
+                    });
+                  }}
                   className="flex items-center gap-1 bg-[#0e9f89] hover:bg-[#0b8b78] text-white text-[10px] font-black px-3 py-1.5 rounded-xl shadow-sm transition-colors"
                   style={{ fontFamily: "var(--font-display)" }}
                 >
@@ -190,9 +229,16 @@ export default function CompleteMealSuggestion({
                           <motion.button
                             whileHover={{ scale: 1.06 }}
                             whileTap={{ scale: 0.95 }}
-                            onClick={() =>
-                              onAddToCart(item as unknown as MenuItem)
-                            }
+                            onClick={() => {
+                              trackEvent({
+                                name: "kiosk.complete_meal_added",
+                                page: "menu",
+                                component: "complete_meal_suggestion",
+                                action: "add",
+                                target: String(item._id),
+                              });
+                              onAddToCart(item as unknown as MenuItem);
+                            }}
                             className="h-7 rounded-lg bg-[#0e9f89] hover:bg-[#0b8b78] text-white flex items-center justify-center shadow-sm transition-colors px-2.5 text-[10px] font-black"
                             style={{ fontFamily: "var(--font-display)" }}
                           >

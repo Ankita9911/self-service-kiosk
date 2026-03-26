@@ -1,6 +1,8 @@
+import { useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { CheckCircle2 } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
+import { trackEvent } from "@/features/kiosk/telemetry";
 import {
   Dialog,
   DialogContent,
@@ -18,8 +20,44 @@ export default function SuccessDialog({
   orderNumber,
   onClose,
 }: SuccessDialogProps) {
+  const wasOpenRef = useRef(open);
+
+  useEffect(() => {
+    if (!open) return;
+
+    trackEvent({
+      name: "kiosk.success_dialog_opened",
+      page: "menu",
+      component: "success_dialog",
+      action: "open",
+      payload: {
+        orderNumber,
+      },
+    });
+  }, [open, orderNumber]);
+
+  useEffect(() => {
+    if (wasOpenRef.current && !open) {
+      trackEvent({
+        name: "kiosk.success_dialog_closed",
+        page: "menu",
+        component: "success_dialog",
+        action: "close",
+        payload: {
+          orderNumber,
+        },
+      });
+    }
+
+    wasOpenRef.current = open;
+  }, [open, orderNumber]);
+
+  const handleClose = () => {
+    onClose();
+  };
+
   return (
-    <Dialog open={open} onOpenChange={onClose}>
+    <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-lg rounded-[30px] p-0 overflow-hidden border border-[#cdebe4] bg-white shadow-[0_24px_70px_rgba(14,159,137,0.2)]">
         <motion.div
           initial={{ scale: 0 }}
@@ -60,7 +98,7 @@ export default function SuccessDialog({
           </p>
 
           <Button
-            onClick={onClose}
+            onClick={handleClose}
             className="w-full h-14 bg-linear-to-r from-[#16b8a1] via-[#0e9f89] to-[#16b8a1] hover:from-[#0fb39a] hover:via-[#0b8b78] hover:to-[#0fb39a] text-white font-black text-lg rounded-2xl shadow-xl shadow-[#8edfd1]/40"
           >
             Start New Order

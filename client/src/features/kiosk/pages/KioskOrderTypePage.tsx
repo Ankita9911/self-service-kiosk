@@ -1,5 +1,10 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import {
+  getCurrentVisitorSession,
+  trackEvent,
+  trackPageView,
+} from "@/features/kiosk/telemetry";
 import { getKioskToken } from "@/shared/lib/kioskSession";
 
 export default function KioskOrderTypePage() {
@@ -11,8 +16,29 @@ export default function KioskOrderTypePage() {
     }
   }, [navigate]);
 
+  useEffect(() => {
+    trackPageView("order_type");
+
+    return () => {
+      if (!getCurrentVisitorSession()) return;
+      trackEvent({
+        name: "kiosk.page_exited",
+        page: "order_type",
+        component: "page",
+        action: "exit",
+      });
+    };
+  }, []);
+
   function selectType(type: "DINE_IN" | "TAKE_AWAY") {
     localStorage.setItem("kiosk_order_type", type);
+    trackEvent({
+      name: "kiosk.order_type_selected",
+      page: "order_type",
+      component: "order_type_selection",
+      action: "select",
+      target: type,
+    });
     navigate("/kiosk", { replace: true });
   }
 
@@ -131,7 +157,16 @@ export default function KioskOrderTypePage() {
 
           {/* Back link */}
           <button
-            onClick={() => navigate("/kiosk/landing", { replace: true })}
+            onClick={() => {
+              trackEvent({
+                name: "kiosk.order_type_back_clicked",
+                page: "order_type",
+                component: "order_type_selection",
+                action: "back",
+                target: "landing",
+              });
+              navigate("/kiosk/landing", { replace: true });
+            }}
             className="mt-7 text-sm font-semibold text-[#0e9f89] hover:text-[#0b8b78] underline underline-offset-4 transition-colors"
           >
             Back

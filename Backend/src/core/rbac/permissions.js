@@ -35,4 +35,5 @@ export const PERMISSIONS = {
   ORDERS_UPDATE_STATUS: "orders:updateStatus",
 
   ANALYTICS_VIEW: "analytics:view",
+  TELEMETRY_VIEW: "telemetry:view",
 };

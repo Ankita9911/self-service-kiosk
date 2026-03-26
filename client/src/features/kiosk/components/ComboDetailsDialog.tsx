@@ -12,6 +12,7 @@ import {
   X,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { trackDialog, trackEvent } from "@/features/kiosk/telemetry";
 import type { Combo } from "../types/menu.types";
 
 interface Props {
@@ -40,8 +41,16 @@ export default function ComboDetailsDialog({
   const [quantityToAdd, setQuantityToAdd] = useState(1);
 
   useEffect(() => {
-    if (open) setQuantityToAdd(1);
-  }, [open, combo?._id]);
+    if (open && combo) {
+      trackDialog({
+        name: "kiosk.combo_details_dialog_opened",
+        page: "menu",
+        component: "combo_details_dialog",
+        action: "open",
+        target: String(combo._id),
+      });
+    }
+  }, [combo, open]);
 
   if (!combo) return null;
 
@@ -56,7 +65,21 @@ export default function ComboDetailsDialog({
   const savings = Math.max(0, effectiveOriginalPrice - combo.comboPrice);
 
   return (
-    <Dialog open={open} onOpenChange={(next) => !next && onClose()}>
+    <Dialog
+      open={open}
+      onOpenChange={(next) => {
+        if (!next) {
+          trackDialog({
+            name: "kiosk.combo_details_dialog_closed",
+            page: "menu",
+            component: "combo_details_dialog",
+            action: "close",
+            target: String(combo._id),
+          });
+          onClose();
+        }
+      }}
+    >
       <DialogContent className="w-[calc(100%-1rem)] sm:w-full sm:max-w-2xl rounded-[30px]! sm:rounded-[30px]! p-0 overflow-hidden border border-[#cdebe4] bg-white shadow-[0_24px_70px_rgba(14,159,137,0.2)]">
         <div className="relative">
           <div className="relative h-56 md:h-60 bg-linear-to-br from-[#e9f8f4] via-[#f6fdfb] to-[#e3f5f0]">
@@ -86,7 +109,19 @@ export default function ComboDetailsDialog({
 
             <button
               type="button"
-              onClick={onClose}
+              onClick={() => {
+                trackDialog({
+                  name: "kiosk.combo_details_dialog_closed",
+                  page: "menu",
+                  component: "combo_details_dialog",
+                  action: "close",
+                  target: String(combo._id),
+                  payload: {
+                    source: "close_button",
+                  },
+                });
+                onClose();
+              }}
               className="absolute top-4 right-4 h-10 w-10 rounded-xl bg-black/35 hover:bg-black/50 text-white flex items-center justify-center transition-colors backdrop-blur-sm"
               aria-label="Close combo details"
             >
@@ -203,7 +238,25 @@ export default function ComboDetailsDialog({
               <div className="flex items-center gap-2 bg-white rounded-2xl p-1.5 shadow-md border border-[#dcefe9]">
                 <button
                   type="button"
-                  onClick={() => setQuantityToAdd((q) => Math.max(1, q - 1))}
+                  onClick={() =>
+                    setQuantityToAdd((q) => {
+                      const nextQuantity = Math.max(1, q - 1);
+                      if (nextQuantity !== q) {
+                        trackEvent({
+                          name: "kiosk.combo_quantity_changed",
+                          page: "menu",
+                          component: "combo_details_dialog",
+                          action: "change_quantity",
+                          target: String(combo._id),
+                          payload: {
+                            quantityBefore: q,
+                            quantityAfter: nextQuantity,
+                          },
+                        });
+                      }
+                      return nextQuantity;
+                    })
+                  }
                   className="w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center transition-all"
                 >
                   <Minus className="w-4 h-4" strokeWidth={2.5} />
@@ -213,7 +266,23 @@ export default function ComboDetailsDialog({
                 </span>
                 <button
                   type="button"
-                  onClick={() => setQuantityToAdd((q) => q + 1)}
+                  onClick={() =>
+                    setQuantityToAdd((q) => {
+                      const nextQuantity = q + 1;
+                      trackEvent({
+                        name: "kiosk.combo_quantity_changed",
+                        page: "menu",
+                        component: "combo_details_dialog",
+                        action: "change_quantity",
+                        target: String(combo._id),
+                        payload: {
+                          quantityBefore: q,
+                          quantityAfter: nextQuantity,
+                        },
+                      });
+                      return nextQuantity;
+                    })
+                  }
                   className="w-9 h-9 rounded-xl bg-[#0e9f89] hover:bg-[#0b8b78] text-white flex items-center justify-center transition-all"
                 >
                   <Plus className="w-4 h-4" strokeWidth={2.5} />
@@ -224,6 +293,17 @@ export default function ComboDetailsDialog({
             <button
               type="button"
               onClick={() => {
+                trackEvent({
+                  name: "kiosk.combo_added",
+                  page: "menu",
+                  component: "combo_details_dialog",
+                  action: "add_combo",
+                  target: String(combo._id),
+                  payload: {
+                    quantity: quantityToAdd,
+                    quantityInCart,
+                  },
+                });
                 onAddToCart(combo, quantityToAdd);
                 onClose();
               }}

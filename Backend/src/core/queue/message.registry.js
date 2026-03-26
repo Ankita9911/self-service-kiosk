@@ -5,6 +5,7 @@ import {
   handleAnalyticsOrderPlaced,
   handleAnalyticsOrderStatusChanged,
 } from "./handlers/analytics.handler.js";
+import { handleKioskTelemetryBatch } from "./handlers/telemetry.handler.js";
 import {
   handleMenuPriceUpdate,
   handleMenuStockUpdate,
@@ -24,6 +25,7 @@ export const MESSAGE_HANDLERS = {
   ORDER_PLACED: handleOrderPlaced,
   ANALYTICS_ORDER_PLACED: handleAnalyticsOrderPlaced,
   ANALYTICS_ORDER_STATUS_CHANGED: handleAnalyticsOrderStatusChanged,
+  KIOSK_TELEMETRY_BATCH: handleKioskTelemetryBatch,
   LOW_STOCK_ALERT: handleLowStockAlert,
   MENU_PRICE_UPDATE: handleMenuPriceUpdate,
   MENU_STOCK_UPDATE: handleMenuStockUpdate,

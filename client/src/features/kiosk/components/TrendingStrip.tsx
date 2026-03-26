@@ -1,5 +1,7 @@
+import { useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Flame, Plus, ImageOff } from "lucide-react";
+import { trackEvent } from "@/features/kiosk/telemetry";
 import type { RecommendedItem } from "../services/recommendation.service";
 import type { CartItem } from "../types/cartItem.types";
 import type { MenuItem } from "../types/menu.types";
@@ -29,6 +31,22 @@ export default function TrendingStrip({
   cart,
   onAddToCart,
 }: TrendingStripProps) {
+  const hasTrackedImpressionRef = useRef(false);
+
+  useEffect(() => {
+    if (isLoading || items.length === 0 || hasTrackedImpressionRef.current) return;
+    hasTrackedImpressionRef.current = true;
+    trackEvent({
+      name: "kiosk.trending_impression",
+      page: "menu",
+      component: "trending_strip",
+      action: "impression",
+      payload: {
+        itemCount: items.length,
+      },
+    });
+  }, [isLoading, items]);
+
   if (!isLoading && items.length === 0) return null;
 
   return (
@@ -76,7 +94,16 @@ export default function TrendingStrip({
                     exit={{ opacity: 0, scale: 0.9 }}
                     transition={{ delay: index * 0.05, duration: 0.3 }}
                     className="shrink-0 w-48 bg-white rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl border-2 border-[#e0f2ed] hover:border-[#bce9de] transition-all cursor-pointer group"
-                    onClick={() => onAddToCart(item as unknown as MenuItem)}
+                    onClick={() => {
+                      trackEvent({
+                        name: "kiosk.trending_added",
+                        page: "menu",
+                        component: "trending_strip",
+                        action: "add",
+                        target: String(item._id),
+                      });
+                      onAddToCart(item as unknown as MenuItem);
+                    }}
                   >
                     {/* Image */}
                     <div className="relative h-48 bg-linear-to-br from-[#ecfaf6] to-[#dff5ef] overflow-hidden">

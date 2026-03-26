@@ -8,6 +8,7 @@ import {
   ScanLine,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { trackEvent, trackField } from "@/features/kiosk/telemetry";
 
 interface Props {
   deviceId: string;
@@ -129,6 +130,24 @@ export default function KioskLoginCard({
                     <input
                       value={deviceId}
                       onChange={(e) => setDeviceId(e.target.value.toUpperCase())}
+                      onFocus={() =>
+                        trackField({
+                          name: "kiosk.login_device_id_focused",
+                          page: "login",
+                          component: "login_form",
+                          field: "device_id",
+                          action: "focus",
+                        })
+                      }
+                      onBlur={() =>
+                        trackField({
+                          name: "kiosk.login_device_id_blurred",
+                          page: "login",
+                          component: "login_form",
+                          field: "device_id",
+                          action: "blur",
+                        })
+                      }
                       onKeyDown={onKeyDown}
                       placeholder="Enter device ID"
                       className="h-14 w-full rounded-[20px] border border-[#dcefe9] bg-[#f7fcfb] px-4 text-[15px] font-bold tracking-[0.16em] text-slate-800 uppercase outline-none transition-all placeholder:font-semibold placeholder:tracking-[0.08em] placeholder:text-slate-400 focus:border-[#7fd7c7] focus:bg-white focus:ring-4 focus:ring-[#16b8a1]/12 md:h-15 md:px-5 md:text-base"
@@ -144,13 +163,43 @@ export default function KioskLoginCard({
                         type={showSecret ? "text" : "password"}
                         value={secret}
                         onChange={(e) => setSecret(e.target.value)}
+                        onFocus={() =>
+                          trackField({
+                            name: "kiosk.login_secret_focused",
+                            page: "login",
+                            component: "login_form",
+                            field: "secret_key",
+                            action: "focus",
+                          })
+                        }
+                        onBlur={() =>
+                          trackField({
+                            name: "kiosk.login_secret_blurred",
+                            page: "login",
+                            component: "login_form",
+                            field: "secret_key",
+                            action: "blur",
+                          })
+                        }
                         onKeyDown={onKeyDown}
                         placeholder="Enter secret key"
                         className="h-14 w-full rounded-[20px] border border-[#dcefe9] bg-[#f7fcfb] px-4 pr-13 text-[15px] font-semibold text-slate-700 outline-none transition-all placeholder:text-slate-400 focus:border-[#7fd7c7] focus:bg-white focus:ring-4 focus:ring-[#16b8a1]/12 md:h-15 md:px-5 md:pr-14 md:text-base"
                       />
                       <button
                         type="button"
-                        onClick={() => setShowSecret(!showSecret)}
+                        onClick={() => {
+                          trackEvent({
+                            name: "kiosk.login_secret_visibility_toggled",
+                            page: "login",
+                            component: "login_form",
+                            action: "toggle_visibility",
+                            target: "secret_key",
+                            payload: {
+                              visible: !showSecret,
+                            },
+                          });
+                          setShowSecret(!showSecret);
+                        }}
                         className="absolute right-3.5 top-1/2 inline-flex -translate-y-1/2 items-center justify-center rounded-full p-1.5 text-slate-400 transition-colors hover:text-[#0e9f89] md:right-4"
                         aria-label={
                           showSecret ? "Hide secret key" : "Show secret key"

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Minus, Plus, ImageOff } from "lucide-react";
+import { trackDialog, trackEvent } from "@/features/kiosk/telemetry";
 import {
   Dialog,
   DialogContent,
@@ -27,11 +28,19 @@ export default function CustomizeItemDialog({
   const options = useMemo(() => item?.customizationOptions ?? [], [item]);
 
   useEffect(() => {
-    if (open) {
-      setSelectedIds([]);
-      setQuantity(1);
+    if (open && item) {
+      trackDialog({
+        name: "kiosk.customization_dialog_opened",
+        page: "menu",
+        component: "customization_dialog",
+        action: "open",
+        target: String(item._id),
+        payload: {
+          optionCount: options.length,
+        },
+      });
     }
-  }, [open, item?._id]);
+  }, [item, open, options.length]);
 
   const total = useMemo(() => {
     const selectedTotal = options
@@ -45,6 +54,20 @@ export default function CustomizeItemDialog({
       open={open}
       onOpenChange={(nextOpen) => {
         if (!nextOpen) {
+          if (item) {
+            trackDialog({
+              name: "kiosk.customization_cancelled",
+              page: "menu",
+              component: "customization_dialog",
+              action: "close",
+              target: String(item._id),
+              payload: {
+                reason: "dismiss",
+                selectedCount: selectedIds.length,
+                quantity,
+              },
+            });
+          }
           setSelectedIds([]);
           setQuantity(1);
           onClose();
@@ -130,6 +153,18 @@ export default function CustomizeItemDialog({
                         checked={checked}
                         disabled={disabled}
                         onChange={() => {
+                          const nextChecked = !checked;
+                          trackEvent({
+                            name: "kiosk.customization_option_toggled",
+                            page: "menu",
+                            component: "customization_dialog",
+                            action: "toggle_option",
+                            target: String(item?._id ?? ""),
+                            payload: {
+                              optionId: opt.itemId,
+                              selected: nextChecked,
+                            },
+                          });
                           if (checked) {
                             setSelectedIds((prev) =>
                               prev.filter((id) => id !== opt.itemId),
@@ -164,7 +199,25 @@ export default function CustomizeItemDialog({
             <div className="flex items-center rounded-2xl border border-[#cdebe4] bg-white p-1.5 shadow-sm">
               <button
                 type="button"
-                onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                onClick={() => {
+                  setQuantity((q) => {
+                    const nextQuantity = Math.max(1, q - 1);
+                    if (nextQuantity !== q) {
+                      trackEvent({
+                        name: "kiosk.customization_quantity_changed",
+                        page: "menu",
+                        component: "customization_dialog",
+                        action: "change_quantity",
+                        target: String(item?._id ?? ""),
+                        payload: {
+                          quantityBefore: q,
+                          quantityAfter: nextQuantity,
+                        },
+                      });
+                    }
+                    return nextQuantity;
+                  });
+                }}
                 className="h-9 w-9 rounded-xl bg-slate-100 text-slate-600 hover:bg-slate-200 flex items-center justify-center transition-colors"
               >
                 <Minus className="w-4 h-4" />
@@ -174,7 +227,23 @@ export default function CustomizeItemDialog({
               </span>
               <button
                 type="button"
-                onClick={() => setQuantity((q) => q + 1)}
+                onClick={() => {
+                  setQuantity((q) => {
+                    const nextQuantity = q + 1;
+                    trackEvent({
+                      name: "kiosk.customization_quantity_changed",
+                      page: "menu",
+                      component: "customization_dialog",
+                      action: "change_quantity",
+                      target: String(item?._id ?? ""),
+                      payload: {
+                        quantityBefore: q,
+                        quantityAfter: nextQuantity,
+                      },
+                    });
+                    return nextQuantity;
+                  });
+                }}
                 className="h-9 w-9 rounded-xl bg-[#0e9f89] text-white hover:bg-[#0b8b78] flex items-center justify-center transition-colors"
               >
                 <Plus className="w-4 h-4" />
@@ -196,14 +265,46 @@ export default function CustomizeItemDialog({
               type="button"
               variant="outline"
               className="flex-1 rounded-xl border-[#cdebe4] bg-white text-slate-600 font-semibold shadow-sm hover:bg-[#edf8f5] hover:border-[#9fded2] hover:text-[#0e9f89]"
-              onClick={onClose}
+              onClick={() => {
+                if (item) {
+                  trackDialog({
+                    name: "kiosk.customization_cancelled",
+                    page: "menu",
+                    component: "customization_dialog",
+                    action: "cancel",
+                    target: String(item._id),
+                    payload: {
+                      reason: "cancel_button",
+                      selectedCount: selectedIds.length,
+                      quantity,
+                    },
+                  });
+                }
+                onClose();
+              }}
             >
               Cancel
             </Button>
             <Button
               type="button"
               className="flex-1 rounded-xl bg-[#0e9f89] hover:bg-[#0b8b78] text-white"
-              onClick={() => onConfirm(selectedIds, quantity)}
+              onClick={() => {
+                if (item) {
+                  trackDialog({
+                    name: "kiosk.customization_confirmed",
+                    page: "menu",
+                    component: "customization_dialog",
+                    action: "confirm",
+                    target: String(item._id),
+                    payload: {
+                      selectedCount: selectedIds.length,
+                      quantity,
+                      selectedOptionIds: selectedIds,
+                    },
+                  });
+                }
+                onConfirm(selectedIds, quantity);
+              }}
             >
               Add to Cart
             </Button>

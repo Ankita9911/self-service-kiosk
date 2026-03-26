@@ -38,4 +38,5 @@ export const PERMISSIONS = {
   ORDERS_PICKUP_VIEW: "orders:pickupView",
 
   ANALYTICS_VIEW: "analytics:view",
+  TELEMETRY_VIEW: "telemetry:view",
 } as const;

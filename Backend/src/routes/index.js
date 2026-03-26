@@ -14,6 +14,7 @@ import recipeRoutes from "../modules/recipes/index.js";
 import stockTransactionRoutes from "../modules/stockTransactions/index.js";
 import uploadRoutes from "../modules/upload/index.js";
 import analyticsRoutes from "../modules/analytics/index.js";
+import telemetryRoutes from "../modules/telemetry/index.js";
 import { authenticate } from "../core/auth/middleware/auth.middleware.js";
 import { attachTenant } from "../core/tenancy/tenancy.middleware.js";
 
@@ -34,6 +35,7 @@ router.use("/devices",            deviceRoutes);
 router.use("/users",              userRoutes);
 router.use("/upload",             uploadRoutes);
 router.use("/analytics",          analyticsRoutes);
+router.use("/telemetry",          telemetryRoutes);
 router.use("/ingredients",        ingredientRoutes);
 router.use("/recipes",            recipeRoutes);
 router.use("/stock-transactions", stockTransactionRoutes);

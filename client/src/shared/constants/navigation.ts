@@ -3,6 +3,7 @@ import {
   Store,
   Users,
   Activity,
+  BarChart3,
   UtensilsCrossed,
   ChefHat,
   ShoppingBag,
@@ -12,6 +13,7 @@ import {
   ClipboardList,
 } from "lucide-react";
 import { PERMISSIONS } from "@/shared/constants/permissions";
+import { FEATURE_FLAGS } from "@/shared/constants/featureFlags";
 
 export const NAV_ITEMS = [
   {
@@ -44,6 +46,16 @@ export const NAV_ITEMS = [
     icon: Activity,
     permission: PERMISSIONS.DEVICE_VIEW,
   },
+  ...(FEATURE_FLAGS.KIOSK_TELEMETRY_ADMIN_ENABLED
+    ? [
+        {
+          label: "Kiosk Telemetry",
+          path: "/telemetry/kiosk",
+          icon: BarChart3,
+          permission: PERMISSIONS.TELEMETRY_VIEW,
+        },
+      ]
+    : []),
   {
     label: "Users",
     path: "/users",
