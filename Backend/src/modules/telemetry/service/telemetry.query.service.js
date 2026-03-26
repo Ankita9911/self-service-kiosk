@@ -35,8 +35,24 @@ function asObjectId(value, fieldName) {
   return new mongoose.Types.ObjectId(value);
 }
 
-function toDateOrNull(value) {
+function toDateOrNull(value, bound = "start") {
   if (!value) return null;
+
+  // Date-only filters from the UI should represent the full local day.
+  if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value.trim())) {
+    const [year, month, day] = value.split("-").map((part) => Number(part));
+    const parsed =
+      bound === "end"
+        ? new Date(year, month - 1, day, 23, 59, 59, 999)
+        : new Date(year, month - 1, day, 0, 0, 0, 0);
+
+    if (Number.isNaN(parsed.getTime())) {
+      throw new AppError("Invalid date filter", 400, "INVALID_QUERY");
+    }
+
+    return parsed;
+  }
+
   const parsed = new Date(value);
   if (Number.isNaN(parsed.getTime())) {
     throw new AppError("Invalid date filter", 400, "INVALID_QUERY");
@@ -46,9 +62,9 @@ function toDateOrNull(value) {
 
 function normalizeDateRange(query) {
   const now = new Date();
-  const to = toDateOrNull(query.to) || now;
+  const to = toDateOrNull(query.to, "end") || now;
   const from =
-    toDateOrNull(query.from) ||
+    toDateOrNull(query.from, "start") ||
     new Date(to.getTime() - 7 * 24 * 60 * 60 * 1000);
 
   if (from > to) {
