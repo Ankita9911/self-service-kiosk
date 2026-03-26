@@ -1,3 +1,4 @@
+import { BarChart3 } from "lucide-react";
 import {
   Bar,
   BarChart,
@@ -42,8 +43,15 @@ export function KioskPageMetrics({ data, loading }: Props) {
           </div>
         ) : (
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={chartItems} margin={{ top: 12, right: 8, left: 0, bottom: 0 }}>
-              <CartesianGrid vertical={false} stroke="#e2e8f0" strokeDasharray="3 3" />
+            <BarChart
+              data={chartItems}
+              margin={{ top: 12, right: 8, left: 0, bottom: 0 }}
+            >
+              <CartesianGrid
+                vertical={false}
+                stroke="#e2e8f0"
+                strokeDasharray="3 3"
+              />
               <XAxis
                 dataKey="label"
                 tick={{ fontSize: 11, fill: "#64748b" }}
@@ -63,39 +71,80 @@ export function KioskPageMetrics({ data, loading }: Props) {
                 }}
               />
               <Legend />
-              <Bar dataKey="pageViews" name="Views" fill="#0284c7" radius={[8, 8, 0, 0]} />
-              <Bar dataKey="pageExits" name="Exits" fill="#f97316" radius={[8, 8, 0, 0]} />
+              <Bar
+                dataKey="pageViews"
+                name="Views"
+                fill="#0284c7"
+                radius={[8, 8, 0, 0]}
+              />
+              <Bar
+                dataKey="pageExits"
+                name="Exits"
+                fill="#f97316"
+                radius={[8, 8, 0, 0]}
+              />
             </BarChart>
           </ResponsiveContainer>
         )}
       </div>
 
       <div className="mt-5 overflow-x-auto">
-        <table className="min-w-full text-left">
-          <thead>
-            <tr className="border-b border-slate-200/80 text-[11px] uppercase tracking-[0.18em] text-slate-400 dark:border-white/[0.08] dark:text-slate-500">
-              <th className="px-0 py-3 font-semibold">Page</th>
-              <th className="px-3 py-3 font-semibold">Views</th>
-              <th className="px-3 py-3 font-semibold">Exits</th>
-              <th className="px-3 py-3 font-semibold">Total Events</th>
-            </tr>
-          </thead>
-          <tbody>
-            {items.map((item) => (
-              <tr
-                key={item.page}
-                className="border-b border-slate-100 text-sm text-slate-600 dark:border-white/[0.05] dark:text-slate-300"
-              >
-                <td className="px-0 py-3 font-medium text-slate-900 dark:text-white">
-                  {item.page || "unknown"}
-                </td>
-                <td className="px-3 py-3">{item.pageViews}</td>
-                <td className="px-3 py-3">{item.pageExits}</td>
-                <td className="px-3 py-3">{item.totalEvents}</td>
+        <div className="bg-white dark:bg-[#161920] rounded-2xl border border-slate-100 dark:border-white/6 shadow-sm">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-slate-100 dark:border-white/6 bg-slate-50/60 dark:bg-white/2">
+                <th className="px-5 py-3.5 text-left text-[11px] font-medium text-slate-500 dark:text-slate-500 uppercase tracking-wider">
+                  Page
+                </th>
+                <th className="px-5 py-3.5 text-left text-[11px] font-medium text-slate-500 dark:text-slate-500 uppercase tracking-wider">
+                  Views
+                </th>
+                <th className="px-5 py-3.5 text-left text-[11px] font-medium text-slate-500 dark:text-slate-500 uppercase tracking-wider">
+                  Exits
+                </th>
+                <th className="px-5 py-3.5 text-left text-[11px] font-medium text-slate-500 dark:text-slate-500 uppercase tracking-wider">
+                  Total Events
+                </th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-slate-50 dark:divide-white/4">
+              {items.length === 0 ? (
+                <tr>
+                  <td colSpan={4} className="px-5 py-16 text-center">
+                    <div className="flex flex-col items-center gap-3">
+                      <div className="h-12 w-12 rounded-2xl bg-slate-100 dark:bg-white/6 flex items-center justify-center">
+                        <BarChart3 className="w-5 h-5 text-slate-400 dark:text-slate-500" />
+                      </div>
+                      <p className="font-medium text-slate-600 dark:text-slate-300">
+                        No page metrics available
+                      </p>
+                    </div>
+                  </td>
+                </tr>
+              ) : (
+                items.map((item) => (
+                  <tr
+                    key={item.page}
+                    className="group hover:bg-indigo-50/30 dark:hover:bg-indigo-500/4 transition-colors"
+                  >
+                    <td className="px-5 py-4 font-medium text-slate-900 dark:text-white text-sm">
+                      {item.page || "unknown"}
+                    </td>
+                    <td className="px-5 py-4 text-sm text-slate-600 dark:text-slate-400">
+                      {item.pageViews}
+                    </td>
+                    <td className="px-5 py-4 text-sm text-slate-600 dark:text-slate-400">
+                      {item.pageExits}
+                    </td>
+                    <td className="px-5 py-4 text-sm text-slate-600 dark:text-slate-400">
+                      {item.totalEvents}
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </section>
   );

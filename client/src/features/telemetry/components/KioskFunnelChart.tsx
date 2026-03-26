@@ -37,11 +37,11 @@ export function KioskFunnelChart({ data, loading }: Props) {
             Session progression through the kiosk journey
           </h3>
         </div>
-        <div className="rounded-2xl bg-emerald-50 px-3 py-2 text-right dark:bg-emerald-500/10">
-          <p className="text-[11px] uppercase tracking-[0.18em] text-emerald-600 dark:text-emerald-300">
+        <div className="inline-flex items-center gap-3 rounded-2xl bg-emerald-50 px-4 py-2 dark:bg-emerald-500/10">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] whitespace-nowrap text-emerald-600 dark:text-emerald-300">
             Total Sessions
           </p>
-          <p className="text-xl font-semibold text-emerald-700 dark:text-emerald-200">
+          <p className="text-2xl leading-none font-semibold tabular-nums text-emerald-700 dark:text-emerald-200">
             {data?.totalSessions ?? 0}
           </p>
         </div>
@@ -56,8 +56,15 @@ export function KioskFunnelChart({ data, loading }: Props) {
           </div>
         ) : (
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={chartData} margin={{ top: 16, right: 12, left: 0, bottom: 12 }}>
-              <CartesianGrid vertical={false} stroke="#e2e8f0" strokeDasharray="3 3" />
+            <BarChart
+              data={chartData}
+              margin={{ top: 16, right: 12, left: 0, bottom: 12 }}
+            >
+              <CartesianGrid
+                vertical={false}
+                stroke="#e2e8f0"
+                strokeDasharray="3 3"
+              />
               <XAxis
                 dataKey="label"
                 tick={{ fontSize: 11, fill: "#64748b" }}
@@ -106,7 +113,8 @@ export function KioskFunnelChart({ data, loading }: Props) {
               {row.sessions}
             </p>
             <p className="text-xs text-slate-500 dark:text-slate-400">
-              Conversion from previous: {formatPercent(row.conversionFromPrevious)}
+              Conversion from previous:{" "}
+              {formatPercent(row.conversionFromPrevious)}
             </p>
           </div>
         ))}

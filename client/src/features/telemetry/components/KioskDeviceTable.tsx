@@ -1,3 +1,6 @@
+import { useState } from "react";
+import { Cpu } from "lucide-react";
+import { TablePagination } from "@/shared/components/ui/TablePagination";
 import type { KioskTelemetryDevices } from "../types/telemetry.types";
 
 interface Props {
@@ -18,10 +21,19 @@ function formatDuration(durationMs: number) {
 
 export function KioskDeviceTable({ data, loading }: Props) {
   const items = data?.items ?? [];
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const total = items.length;
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  const safePage = Math.min(page, totalPages);
+  const paginatedItems = items.slice(
+    (safePage - 1) * pageSize,
+    safePage * pageSize,
+  );
 
   return (
-    <section className="rounded-[28px] border border-slate-200/80 bg-white/95 p-5 shadow-[0_24px_80px_-48px_rgba(15,23,42,0.35)] dark:border-white/[0.08] dark:bg-[#111318]">
-      <div>
+    <section className="space-y-4">
+      <div className="px-1">
         <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-amber-600 dark:text-amber-400">
           Device Comparison
         </p>
@@ -30,60 +42,105 @@ export function KioskDeviceTable({ data, loading }: Props) {
         </h3>
       </div>
 
-      <div className="mt-5 overflow-x-auto">
-        <table className="min-w-full text-left">
-          <thead>
-            <tr className="border-b border-slate-200/80 text-[11px] uppercase tracking-[0.18em] text-slate-400 dark:border-white/[0.08] dark:text-slate-500">
-              <th className="px-0 py-3 font-semibold">Device</th>
-              <th className="px-3 py-3 font-semibold">Sessions</th>
-              <th className="px-3 py-3 font-semibold">Checkout Starts</th>
-              <th className="px-3 py-3 font-semibold">Completed</th>
-              <th className="px-3 py-3 font-semibold">Failed</th>
-              <th className="px-3 py-3 font-semibold">Completion Rate</th>
-              <th className="px-3 py-3 font-semibold">Avg Duration</th>
-            </tr>
-          </thead>
-          <tbody>
-            {loading ? (
-              Array.from({ length: 5 }).map((_, index) => (
-                <tr
-                  key={index}
-                  className="border-b border-slate-100 dark:border-white/[0.05]"
-                >
-                  <td className="px-0 py-3" colSpan={7}>
-                    <div className="h-9 animate-pulse rounded-2xl bg-slate-100 dark:bg-white/[0.04]" />
-                  </td>
-                </tr>
-              ))
-            ) : items.length === 0 ? (
-              <tr>
-                <td
-                  colSpan={7}
-                  className="px-0 py-8 text-center text-sm text-slate-400 dark:text-slate-500"
-                >
-                  No device telemetry available
-                </td>
+      <div className="bg-white dark:bg-[#161920] rounded-2xl border border-slate-100 dark:border-white/6 shadow-sm overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-slate-100 dark:border-white/6 bg-slate-50/60 dark:bg-white/2">
+                <th className="px-5 py-3.5 text-left text-[11px] font-medium text-slate-500 dark:text-slate-500 uppercase tracking-wider">
+                  Device
+                </th>
+                <th className="px-5 py-3.5 text-left text-[11px] font-medium text-slate-500 dark:text-slate-500 uppercase tracking-wider">
+                  Sessions
+                </th>
+                <th className="px-5 py-3.5 text-left text-[11px] font-medium text-slate-500 dark:text-slate-500 uppercase tracking-wider">
+                  Checkout Starts
+                </th>
+                <th className="px-5 py-3.5 text-left text-[11px] font-medium text-slate-500 dark:text-slate-500 uppercase tracking-wider">
+                  Completed
+                </th>
+                <th className="px-5 py-3.5 text-left text-[11px] font-medium text-slate-500 dark:text-slate-500 uppercase tracking-wider">
+                  Failed
+                </th>
+                <th className="px-5 py-3.5 text-left text-[11px] font-medium text-slate-500 dark:text-slate-500 uppercase tracking-wider">
+                  Completion Rate
+                </th>
+                <th className="px-5 py-3.5 text-left text-[11px] font-medium text-slate-500 dark:text-slate-500 uppercase tracking-wider">
+                  Avg Duration
+                </th>
               </tr>
-            ) : (
-              items.map((item) => (
-                <tr
-                  key={item.deviceId}
-                  className="border-b border-slate-100 text-sm text-slate-600 dark:border-white/[0.05] dark:text-slate-300"
-                >
-                  <td className="px-0 py-3 font-medium text-slate-900 dark:text-white">
-                    {item.deviceId}
+            </thead>
+            <tbody className="divide-y divide-slate-50 dark:divide-white/4">
+              {loading ? (
+                Array.from({ length: 5 }).map((_, index) => (
+                  <tr
+                    key={index}
+                    className="group hover:bg-indigo-50/30 dark:hover:bg-indigo-500/4 transition-colors"
+                  >
+                    <td className="px-5 py-4" colSpan={7}>
+                      <div className="h-9 animate-pulse rounded-2xl bg-slate-100 dark:bg-white/6" />
+                    </td>
+                  </tr>
+                ))
+              ) : items.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="px-5 py-16 text-center">
+                    <div className="flex flex-col items-center gap-3">
+                      <div className="h-12 w-12 rounded-2xl bg-slate-100 dark:bg-white/6 flex items-center justify-center">
+                        <Cpu className="w-5 h-5 text-slate-400 dark:text-slate-500" />
+                      </div>
+                      <p className="font-medium text-slate-600 dark:text-slate-300">
+                        No device telemetry available
+                      </p>
+                    </div>
                   </td>
-                  <td className="px-3 py-3">{item.sessionCount}</td>
-                  <td className="px-3 py-3">{item.checkoutStartedSessions}</td>
-                  <td className="px-3 py-3">{item.completedSessions}</td>
-                  <td className="px-3 py-3">{item.failedSessions}</td>
-                  <td className="px-3 py-3">{formatPercent(item.completionRate)}</td>
-                  <td className="px-3 py-3">{formatDuration(item.avgSessionDurationMs)}</td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              ) : (
+                paginatedItems.map((item) => (
+                  <tr
+                    key={item.deviceId}
+                    className="group hover:bg-indigo-50/30 dark:hover:bg-indigo-500/4 transition-colors"
+                  >
+                    <td className="px-5 py-4 font-medium text-slate-900 dark:text-white text-sm">
+                      {item.deviceId}
+                    </td>
+                    <td className="px-5 py-4 text-sm text-slate-600 dark:text-slate-400">
+                      {item.sessionCount}
+                    </td>
+                    <td className="px-5 py-4 text-sm text-slate-600 dark:text-slate-400">
+                      {item.checkoutStartedSessions}
+                    </td>
+                    <td className="px-5 py-4 text-sm text-slate-600 dark:text-slate-400">
+                      {item.completedSessions}
+                    </td>
+                    <td className="px-5 py-4 text-sm text-slate-600 dark:text-slate-400">
+                      {item.failedSessions}
+                    </td>
+                    <td className="px-5 py-4 text-sm text-slate-600 dark:text-slate-400">
+                      {formatPercent(item.completionRate)}
+                    </td>
+                    <td className="px-5 py-4 text-sm text-slate-600 dark:text-slate-400">
+                      {formatDuration(item.avgSessionDurationMs)}
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        {!loading && total > 0 && (
+          <TablePagination
+            total={total}
+            page={safePage}
+            pageSize={pageSize}
+            onPageChange={setPage}
+            onPageSizeChange={(size) => {
+              setPageSize(size);
+              setPage(1);
+            }}
+          />
+        )}
       </div>
     </section>
   );

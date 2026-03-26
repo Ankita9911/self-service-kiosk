@@ -30,7 +30,7 @@ const LIVE_DASHBOARD_CACHE_TTL_MS = 30_000;
 const WEEK_DASHBOARD_CACHE_TTL_MS = 60_000;
 const HISTORY_DASHBOARD_CACHE_TTL_MS = 300_000;
 const SESSION_CACHE_TTL_MS = 5_000;
-const DEFAULT_SESSION_PAGE_SIZE = 20;
+const DEFAULT_SESSION_PAGE_SIZE = 10;
 
 interface SessionCacheEntry {
   detail: KioskTelemetrySessionDetail;
@@ -107,10 +107,22 @@ export function useKioskTelemetry() {
   const debouncedFilters = useDebounce(filters, 300);
 
   const [data, setData] = useState<KioskTelemetryDashboardData | null>(null);
+  const [sessions, setSessions] = useState<KioskTelemetrySessions | null>(null);
   const [loading, setLoading] = useState(true);
+  const [sessionsLoading, setSessionsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [loadingMoreSessions, setLoadingMoreSessions] = useState(false);
+  const [sessionCursorStack, setSessionCursorStack] = useState<
+    (string | null)[]
+  >([null]);
+  const [sessionNextCursor, setSessionNextCursor] = useState<string | null>(
+    null,
+  );
+  const [sessionHasNextPage, setSessionHasNextPage] = useState(false);
+  const [sessionPageSize, setSessionPageSizeState] = useState(
+    DEFAULT_SESSION_PAGE_SIZE,
+  );
+  const [sessionRefreshTick, setSessionRefreshTick] = useState(0);
 
   const [selectedSessionId, setSelectedSessionId] = useState<string | null>(
     null,
@@ -124,11 +136,19 @@ export function useKioskTelemetry() {
 
   const dataRef = useRef<KioskTelemetryDashboardData | null>(null);
   const dashboardCacheRef = useRef(
-    new Map<string, { expiresAt: number; data: KioskTelemetryDashboardData }>(),
+    new Map<
+      string,
+      { expiresAt: number; data: Omit<KioskTelemetryDashboardData, "sessions"> }
+    >(),
   );
   const sessionCacheRef = useRef(new Map<string, SessionCacheEntry>());
   const dashboardRequestRef = useRef(0);
+  const sessionListRequestRef = useRef(0);
   const sessionRequestRef = useRef(0);
+  const currentSessionCursor =
+    sessionCursorStack[sessionCursorStack.length - 1] ?? undefined;
+  const sessionPage = sessionCursorStack.length;
+  const sessionHasPrevPage = sessionPage > 1;
 
   useEffect(() => {
     dataRef.current = data;
@@ -167,7 +187,6 @@ export function useKioskTelemetry() {
           components,
           devices,
           errors,
-          sessions,
         ] = await Promise.all([
           fetchKioskTelemetryOverview(currentFilters),
           fetchKioskTelemetryStatus(currentFilters),
@@ -176,22 +195,17 @@ export function useKioskTelemetry() {
           fetchKioskTelemetryComponents(currentFilters),
           fetchKioskTelemetryDevices(currentFilters),
           fetchKioskTelemetryErrors(currentFilters),
-          fetchKioskTelemetrySessions({
-            ...currentFilters,
-            limit: DEFAULT_SESSION_PAGE_SIZE,
-          }),
         ]);
 
         if (requestId === dashboardRequestRef.current) {
-          const nextData: KioskTelemetryDashboardData = {
-          overview,
-          status,
-          funnel,
-          pages,
+          const nextData = {
+            overview,
+            status,
+            funnel,
+            pages,
             components,
             devices,
             errors,
-            sessions,
           };
 
           dashboardCacheRef.current.set(cacheKey, {
@@ -221,6 +235,52 @@ export function useKioskTelemetry() {
   useEffect(() => {
     void loadDashboard(debouncedFilters);
   }, [debouncedFilters, loadDashboard]);
+
+  useEffect(() => {
+    const requestId = ++sessionListRequestRef.current;
+    let cancelled = false;
+
+    async function fetchSessionPage() {
+      setSessionsLoading(true);
+
+      try {
+        const nextSessions = await fetchKioskTelemetrySessions({
+          ...debouncedFilters,
+          limit: sessionPageSize,
+          cursor: currentSessionCursor,
+        });
+
+        if (cancelled || requestId !== sessionListRequestRef.current) {
+          return;
+        }
+
+        setSessions(nextSessions);
+        setSessionHasNextPage(nextSessions.pagination.hasNext);
+        setSessionNextCursor(nextSessions.pagination.nextCursor);
+      } catch (nextError) {
+        if (cancelled || requestId !== sessionListRequestRef.current) {
+          return;
+        }
+
+        setError(getErrorMessage(nextError));
+      } finally {
+        if (!cancelled && requestId === sessionListRequestRef.current) {
+          setSessionsLoading(false);
+        }
+      }
+    }
+
+    void fetchSessionPage();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    debouncedFilters,
+    currentSessionCursor,
+    sessionPageSize,
+    sessionRefreshTick,
+  ]);
 
   const loadSession = useCallback(async (visitorSessionId: string) => {
     const cached = sessionCacheRef.current.get(visitorSessionId);
@@ -273,46 +333,24 @@ export function useKioskTelemetry() {
     void loadSession(selectedSessionId);
   }, [selectedSessionId, loadSession]);
 
-  async function loadMoreSessions() {
-    if (!data?.sessions.pagination.hasNext || !data.sessions.pagination.nextCursor) {
-      return;
-    }
+  function resetSessionPagination() {
+    setSessionCursorStack([null]);
+    setSessionNextCursor(null);
+    setSessionHasNextPage(false);
+  }
 
-    setLoadingMoreSessions(true);
+  function goToNextSessionPage() {
+    if (!sessionHasNextPage || !sessionNextCursor) return;
+    setSessionCursorStack((prev) => [...prev, sessionNextCursor]);
+  }
 
-    try {
-      const nextSessions = await fetchKioskTelemetrySessions({
-        ...debouncedFilters,
-        limit: data.sessions.pagination.limit,
-        cursor: data.sessions.pagination.nextCursor,
-      });
+  function goToPrevSessionPage() {
+    setSessionCursorStack((prev) => (prev.length > 1 ? prev.slice(0, -1) : prev));
+  }
 
-      setData((current) => {
-        if (!current) return current;
-
-        const mergedSessions: KioskTelemetrySessions = {
-          window: nextSessions.window,
-          items: [...current.sessions.items, ...nextSessions.items],
-          pagination: nextSessions.pagination,
-        };
-
-        const nextData = {
-          ...current,
-          sessions: mergedSessions,
-        };
-
-        dashboardCacheRef.current.set(serializeFilters(debouncedFilters), {
-          expiresAt: Date.now() + getDashboardCacheTtlMs(debouncedFilters),
-          data: nextData,
-        });
-
-        return nextData;
-      });
-    } catch (nextError) {
-      setError(getErrorMessage(nextError));
-    } finally {
-      setLoadingMoreSessions(false);
-    }
+  function setSessionPageSize(size: number) {
+    setSessionPageSizeState(size);
+    resetSessionPagination();
   }
 
   function updateFilters(
@@ -320,16 +358,20 @@ export function useKioskTelemetry() {
       | Partial<KioskTelemetryFilters>
       | ((current: KioskTelemetryFilters) => KioskTelemetryFilters),
   ) {
+    resetSessionPagination();
     setFilters((current) =>
       typeof updater === "function" ? updater(current) : { ...current, ...updater },
     );
   }
 
   function resetFilters() {
+    resetSessionPagination();
     setFilters(createDefaultFilters());
   }
 
   function refetch() {
+    resetSessionPagination();
+    setSessionRefreshTick((current) => current + 1);
     void loadDashboard(debouncedFilters, true);
   }
 
@@ -353,10 +395,19 @@ export function useKioskTelemetry() {
     setFilters: updateFilters,
     resetFilters,
     data,
+    sessions,
     loading,
+    sessionsLoading,
     refreshing,
     error,
     refetch,
+    sessionPage,
+    sessionPageSize,
+    sessionHasPrevPage,
+    sessionHasNextPage,
+    goToNextSessionPage,
+    goToPrevSessionPage,
+    setSessionPageSize,
     selectedSessionId,
     openSession,
     closeSession,
@@ -364,7 +415,5 @@ export function useKioskTelemetry() {
     sessionEvents,
     sessionLoading,
     sessionError,
-    loadMoreSessions,
-    loadingMoreSessions,
   };
 }

@@ -173,7 +173,7 @@ export interface KioskTelemetryDashboardData {
   components: KioskTelemetryComponents;
   devices: KioskTelemetryDevices;
   errors: KioskTelemetryErrors;
-  sessions: KioskTelemetrySessions;
+  sessions?: KioskTelemetrySessions;
 }
 
 export interface KioskTelemetryStatus {
