@@ -1,8 +1,5 @@
 import { getKioskToken } from "@/shared/lib/kioskSession";
-import {
-  TELEMETRY_APP_VERSION,
-  TELEMETRY_ENDPOINT,
-} from "./constants";
+import { TELEMETRY_APP_VERSION, TELEMETRY_ENDPOINT } from "./constants";
 import type {
   TelemetryBatchRequest,
   TelemetryFlushOptions,
@@ -17,7 +14,9 @@ export function buildTelemetryBatchUrl() {
   return `${API_BASE_URL}${TELEMETRY_ENDPOINT}`;
 }
 
-export function withAppVersion(batch: TelemetryBatchRequest): TelemetryBatchRequest {
+export function withAppVersion(
+  batch: TelemetryBatchRequest,
+): TelemetryBatchRequest {
   if (!TELEMETRY_APP_VERSION || batch.appVersion) {
     return batch;
   }
@@ -33,12 +32,30 @@ export async function postTelemetryBatch(
   options: TelemetryFlushOptions = {},
 ): Promise<TelemetryTransportStatus> {
   const token = getKioskToken();
-  if (!token) return "unauthenticated";
+  if (!token) {
+    console.error("[TELEMETRY] No token from getKioskToken()");
+    return "unauthenticated";
+  }
+
+  // DEBUG: Log token payload
+  try {
+    const payload = JSON.parse(atob(token.split(".")[1]));
+    console.log("[TELEMETRY] Sending token with payload:", {
+      type: payload.type,
+      role: payload.role,
+      deviceId: payload.deviceId,
+    });
+  } catch (e) {
+    console.error("[TELEMETRY] Could not decode token:", e);
+  }
 
   try {
     // `sendBeacon` cannot attach the bearer token this API requires, so unload
     // flushes use `fetch(..., { keepalive: true })` instead.
-    const response = await fetch(buildTelemetryBatchUrl(), {
+    const url = buildTelemetryBatchUrl();
+    console.log("[TELEMETRY] Posting to:", url);
+
+    const response = await fetch(url, {
       method: "POST",
       keepalive: options.keepalive === true,
       credentials: "include",
@@ -49,13 +66,26 @@ export async function postTelemetryBatch(
       body: JSON.stringify(withAppVersion(batch)),
     });
 
-    if (response.ok) return "sent";
+    console.log("[TELEMETRY] Response status:", response.status);
+
+    if (response.ok) {
+      console.log("[TELEMETRY] ✅ Batch sent successfully");
+      return "sent";
+    }
+
     if (response.status === 401 || response.status === 403) {
+      const text = await response.text();
+      console.error("[TELEMETRY] ❌ Auth error (403/401):", text);
       return "unauthenticated";
     }
 
+    console.error(
+      "[TELEMETRY] ❌ Request failed with status:",
+      response.status,
+    );
     return "failed";
-  } catch {
+  } catch (err) {
+    console.error("[TELEMETRY] ❌ Network error:", err);
     return "failed";
   }
 }

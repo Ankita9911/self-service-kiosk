@@ -3,7 +3,10 @@ import { TELEMETRY_SESSION_STORAGE_KEY } from "./constants";
 import type { TelemetryPayload, VisitorSessionState } from "./types";
 
 function canUseSessionStorage() {
-  return typeof window !== "undefined" && typeof window.sessionStorage !== "undefined";
+  return (
+    typeof window !== "undefined" &&
+    typeof window.sessionStorage !== "undefined"
+  );
 }
 
 function isTelemetryPayload(value: unknown): value is TelemetryPayload {
@@ -51,12 +54,25 @@ function writeStoredSession(session: VisitorSessionState) {
 }
 
 export function getCurrentVisitorSession() {
-  return readStoredSession();
+  const session = readStoredSession();
+  if (session) {
+    console.log("[TELEMETRY] Current session:", {
+      visitorSessionId: session.visitorSessionId,
+      sequence: session.sequence,
+    });
+  } else {
+    console.log("[TELEMETRY] No current session");
+  }
+  return session;
 }
 
 export function ensureVisitorSession(meta: TelemetryPayload = {}) {
   const existing = readStoredSession();
   if (existing) {
+    console.log(
+      "[TELEMETRY] ✓ Existing session found:",
+      existing.visitorSessionId,
+    );
     if (Object.keys(meta).length === 0) {
       return { session: existing, created: false };
     }
@@ -76,6 +92,7 @@ export function ensureVisitorSession(meta: TelemetryPayload = {}) {
     meta: { ...meta },
   };
 
+  console.log("[TELEMETRY] ✨ New session created:", session.visitorSessionId);
   writeStoredSession(session);
   return { session, created: true };
 }
@@ -85,7 +102,10 @@ export function incrementVisitorSequence(meta: TelemetryPayload = {}) {
   const nextSession = {
     ...session,
     sequence: session.sequence + 1,
-    meta: Object.keys(meta).length === 0 ? session.meta : { ...session.meta, ...meta },
+    meta:
+      Object.keys(meta).length === 0
+        ? session.meta
+        : { ...session.meta, ...meta },
   };
 
   writeStoredSession(nextSession);

@@ -173,7 +173,10 @@ function buildSessionMatch(tenant, query) {
   const scope = buildTenantScope(tenant, query);
   const match = {
     ...scope,
-    ...buildTimeMatch("startedAt", range),
+    // Public kiosks can keep a visitor session alive across multiple screens.
+    // Include any session that overlaps the selected window by activity.
+    startedAt: { $lte: range.to },
+    lastEventAt: { $gte: range.from },
   };
 
   if (query.status) {
@@ -712,7 +715,8 @@ export async function getTelemetryStatus(tenant, query = {}) {
     }),
     KioskTelemetrySession.countDocuments({
       ...scope,
-      startedAt: { $gte: from, $lte: now },
+      startedAt: { $lte: now },
+      lastEventAt: { $gte: from },
     }),
     KioskTelemetryEvent.findOne(scope)
       .sort({ eventAt: -1, _id: -1 })

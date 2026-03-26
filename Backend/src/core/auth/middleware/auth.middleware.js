@@ -39,13 +39,17 @@ export async function invalidateAuthStatus(type, id) {
 }
 
 export async function authenticate(req, res, next) {
-  let token = req.cookies?.[COOKIE_NAME];
+  let token;
 
+  // Priority 1: Authorization header (for device telemetry, API clients)
+  const authHeader = req.headers.authorization;
+  if (authHeader && authHeader.startsWith("Bearer ")) {
+    token = authHeader.split(" ")[1];
+  }
+
+  // Priority 2: Cookie (for web browser sessions)
   if (!token) {
-    const authHeader = req.headers.authorization;
-    if (authHeader && authHeader.startsWith("Bearer ")) {
-      token = authHeader.split(" ")[1];
-    }
+    token = req.cookies?.[COOKIE_NAME];
   }
 
   if (!token) {
@@ -57,6 +61,13 @@ export async function authenticate(req, res, next) {
   if (!decoded) {
     return next(new AppError("Invalid or expired token", 401, "INVALID_TOKEN"));
   }
+
+  console.log("[AUTH] Token decoded:", {
+    type: decoded.type,
+    role: decoded.role,
+    deviceId: decoded.deviceId,
+    userId: decoded.userId,
+  });
 
   if (decoded.type === "DEVICE") {
     const cacheKey = authStatusKey("device", decoded.deviceId);
@@ -96,6 +107,13 @@ export async function authenticate(req, res, next) {
       await setCachedStatus(cacheKey, user.status);
     }
   }
+
+  console.log("[AUTH] req.user being set to:", {
+    type: decoded.type,
+    role: decoded.role,
+    deviceId: decoded.deviceId,
+    userId: decoded.userId,
+  });
 
   req.user = decoded;
   next();

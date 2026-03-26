@@ -305,15 +305,14 @@ async function upsertSessionSummary(payload, events) {
       franchiseId: payload.franchiseId,
       outletId: payload.outletId,
       deviceId: payload.deviceId,
-      appVersion: payload.appVersion || null,
       startedAt: toDate(firstEvent.ts),
       entryPage: firstEvent.page,
-      status: TELEMETRY_SESSION_STATUS.ACTIVE,
     },
     $set: {
       appVersion: payload.appVersion || null,
       lastEventAt: toDate(lastEvent.ts),
       exitPage: lastEvent.page,
+      status: TELEMETRY_SESSION_STATUS.ACTIVE,
     },
     $inc: {
       eventCount: sortedEvents.length,
@@ -329,6 +328,7 @@ async function upsertSessionSummary(payload, events) {
     sortedEvents.some(
       (event) =>
         event.name === "kiosk.cart_opened" ||
+        event.name === "kiosk.cart_item_added" ||
         event.name === "kiosk.cart_item_removed" ||
         event.name === "kiosk.cart_quantity_changed",
     )
@@ -444,4 +444,91 @@ export async function recordTelemetryBatch(payload) {
 
   await upsertSessionSummary(payload, freshEvents);
   await upsertRollups(payload, freshEvents);
+}
+
+export async function backfillTelemetryAggregatesFromRawEvents(filters = {}) {
+  const match = {};
+
+  if (filters.visitorSessionId) {
+    match.visitorSessionId = filters.visitorSessionId;
+  }
+  if (filters.franchiseId) {
+    match.franchiseId = filters.franchiseId;
+  }
+  if (filters.outletId) {
+    match.outletId = filters.outletId;
+  }
+  if (filters.deviceId) {
+    match.deviceId = filters.deviceId;
+  }
+
+  const sessionGroups = await KioskTelemetryEvent.aggregate([
+    { $match: match },
+    {
+      $group: {
+        _id: "$visitorSessionId",
+        franchiseId: { $first: "$franchiseId" },
+        outletId: { $first: "$outletId" },
+        deviceId: { $first: "$deviceId" },
+        appVersion: { $max: "$appVersion" },
+        receivedAt: { $max: "$receivedAt" },
+      },
+    },
+    { $sort: { receivedAt: -1 } },
+  ]);
+
+  let processedSessions = 0;
+  let processedEvents = 0;
+
+  for (const group of sessionGroups) {
+    const sessionMatch = {
+      visitorSessionId: group._id,
+      franchiseId: group.franchiseId,
+      outletId: group.outletId,
+      deviceId: group.deviceId,
+    };
+
+    const rawEvents = await KioskTelemetryEvent.find(sessionMatch)
+      .sort({ seq: 1, eventAt: 1, _id: 1 })
+      .select(
+        "eventId schemaVersion name eventAt seq page component action target payload",
+      )
+      .lean();
+
+    if (rawEvents.length === 0) {
+      continue;
+    }
+
+    const payload = {
+      visitorSessionId: group._id,
+      franchiseId: group.franchiseId,
+      outletId: group.outletId,
+      deviceId: group.deviceId,
+      appVersion: group.appVersion || null,
+      receivedAt: group.receivedAt || new Date().toISOString(),
+      events: rawEvents.map((event) => ({
+        eventId: event.eventId,
+        schemaVersion: event.schemaVersion,
+        name: event.name,
+        ts: new Date(event.eventAt).getTime(),
+        seq: event.seq,
+        page: event.page,
+        component: event.component,
+        action: event.action,
+        target: event.target ?? null,
+        payload: event.payload ?? {},
+      })),
+    };
+
+    await upsertSessionSummary(payload, payload.events);
+    await upsertRollups(payload, payload.events);
+
+    processedSessions += 1;
+    processedEvents += rawEvents.length;
+  }
+
+  return {
+    processedSessions,
+    processedEvents,
+  };
 }

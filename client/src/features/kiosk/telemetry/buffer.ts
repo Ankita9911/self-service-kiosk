@@ -49,7 +49,11 @@ function stripBufferedEvent(event: BufferedTelemetryEvent): TelemetryEvent {
 function chunkEvents(events: BufferedTelemetryEvent[]) {
   const chunks: BufferedTelemetryEvent[][] = [];
 
-  for (let index = 0; index < events.length; index += TELEMETRY_REQUEST_MAX_EVENTS) {
+  for (
+    let index = 0;
+    index < events.length;
+    index += TELEMETRY_REQUEST_MAX_EVENTS
+  ) {
     chunks.push(events.slice(index, index + TELEMETRY_REQUEST_MAX_EVENTS));
   }
 
@@ -84,14 +88,26 @@ function buildTelemetryBatches(): TelemetryBatchRequest[] {
 
 function pruneBufferedEvents(sentEventIds: Set<string>) {
   if (sentEventIds.size === 0) return;
-  bufferedEvents = bufferedEvents.filter((event) => !sentEventIds.has(event.eventId));
+  bufferedEvents = bufferedEvents.filter(
+    (event) => !sentEventIds.has(event.eventId),
+  );
 }
 
 export function enqueueTelemetryEvent(event: BufferedTelemetryEvent) {
-  if (!TELEMETRY_ENABLED) return;
+  if (!TELEMETRY_ENABLED) {
+    console.warn("[TELEMETRY] TELEMETRY DISABLED - event not enqueued");
+    return;
+  }
+
   bufferedEvents.push(event);
+  console.log(
+    `[TELEMETRY] ✓ Event enqueued: "${event.name}" (total buffered: ${bufferedEvents.length})`,
+  );
 
   if (bufferedEvents.length >= TELEMETRY_FLUSH_BATCH_SIZE) {
+    console.log(
+      `[TELEMETRY] 💥 Buffer full (${bufferedEvents.length} >= ${TELEMETRY_FLUSH_BATCH_SIZE}) - flushing now`,
+    );
     void flushBufferedEvents();
     return;
   }
