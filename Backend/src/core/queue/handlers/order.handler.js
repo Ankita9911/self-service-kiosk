@@ -297,10 +297,17 @@ async function postCommitSideEffects(ingredientDeductions, order, tenant) {
     // non-fatal
   }
 
+  const notifiedIngredientIds = new Set();
+
   for (const d of ingredientDeductions) {
-    if (d.currentStockAfter < d.minThreshold) {
+    const ingredientId = String(d.ingredientId);
+    if (notifiedIngredientIds.has(ingredientId)) continue;
+
+    if (d.currentStockAfter < d.minThreshold && d.minThreshold > 0) {
+      notifiedIngredientIds.add(ingredientId);
+
       await enqueue("LOW_STOCK_ALERT", {
-        ingredientId: String(d.ingredientId),
+        ingredientId,
         ingredientName: d.ingredientName,
         currentStock: d.currentStockAfter,
         minThreshold: d.minThreshold,

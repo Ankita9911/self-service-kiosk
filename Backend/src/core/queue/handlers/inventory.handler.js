@@ -1,4 +1,5 @@
 import { getIO } from "../../../realtime/realtime.manager.js";
+import { enqueue } from "../queue.producer.js";
 
 export async function handleLowStockAlert(payload) {
   const {
@@ -27,5 +28,19 @@ export async function handleLowStockAlert(payload) {
     });
   } catch {
     // non-fatal
+  }
+
+  // Fail-safe: ensure order-driven LOW_STOCK_ALERT also fan-outs to email notifications.
+  if (ingredientId && outletId && franchiseId) {
+    await enqueue("LOW_STOCK_ALERT_EMAIL", {
+      ingredientId: String(ingredientId),
+      outletId: String(outletId),
+      franchiseId: String(franchiseId),
+    }).catch((err) =>
+      console.error(
+        "[inventory] Failed to enqueue LOW_STOCK_ALERT_EMAIL:",
+        err.message,
+      ),
+    );
   }
 }
