@@ -13,6 +13,8 @@ import { OfferBadge } from "./OfferBadge";
 interface CustomizeItemDialogProps {
   open: boolean;
   item: MenuItem | null;
+  initialQuantity?: number;
+  maxQuantity?: number;
   onClose: () => void;
   onConfirm: (customizationItemIds: string[], quantity: number) => void;
 }
@@ -20,6 +22,8 @@ interface CustomizeItemDialogProps {
 export default function CustomizeItemDialog({
   open,
   item,
+  initialQuantity = 0,
+  maxQuantity = Number.POSITIVE_INFINITY,
   onClose,
   onConfirm,
 }: CustomizeItemDialogProps) {
@@ -29,6 +33,7 @@ export default function CustomizeItemDialog({
 
   useEffect(() => {
     if (open && item) {
+      setQuantity(initialQuantity);
       trackDialog({
         name: "kiosk.customization_dialog_opened",
         page: "menu",
@@ -37,10 +42,11 @@ export default function CustomizeItemDialog({
         target: String(item._id),
         payload: {
           optionCount: options.length,
+          initialQuantity,
         },
       });
     }
-  }, [item, open, options.length]);
+  }, [item, open, options.length, initialQuantity]);
 
   const total = useMemo(() => {
     const selectedTotal = options
@@ -69,7 +75,7 @@ export default function CustomizeItemDialog({
             });
           }
           setSelectedIds([]);
-          setQuantity(1);
+          setQuantity(initialQuantity);
           onClose();
         }
       }}
@@ -201,7 +207,7 @@ export default function CustomizeItemDialog({
                 type="button"
                 onClick={() => {
                   setQuantity((q) => {
-                    const nextQuantity = Math.max(1, q - 1);
+                    const nextQuantity = Math.max(0, q - 1);
                     if (nextQuantity !== q) {
                       trackEvent({
                         name: "kiosk.customization_quantity_changed",
@@ -229,7 +235,8 @@ export default function CustomizeItemDialog({
                 type="button"
                 onClick={() => {
                   setQuantity((q) => {
-                    const nextQuantity = q + 1;
+                    const nextQuantity = Math.min(maxQuantity, q + 1);
+                    if (nextQuantity === q) return q;
                     trackEvent({
                       name: "kiosk.customization_quantity_changed",
                       page: "menu",
@@ -306,7 +313,7 @@ export default function CustomizeItemDialog({
                 onConfirm(selectedIds, quantity);
               }}
             >
-              Add to Cart
+              {quantity === 0 ? "Remove from Cart" : "Update Cart"}
             </Button>
           </div>
         </div>

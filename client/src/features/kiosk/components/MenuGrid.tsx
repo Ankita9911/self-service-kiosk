@@ -1,4 +1,4 @@
-import { Plus, ImageOff, Minus, ChevronDown } from "lucide-react";
+import { Plus, ImageOff, ChevronDown } from "lucide-react";
 import { motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import { trackEvent } from "@/features/kiosk/telemetry";
@@ -10,13 +10,7 @@ import CustomizeItemDialouge from "./CustomizeItemDialouge";
 const DESC_LIMIT = 70;
 const IMPRESSION_THRESHOLD = 0.45;
 
-function DescriptionText({
-  itemId,
-  text,
-}: {
-  itemId: string;
-  text: string;
-}) {
+function DescriptionText({ itemId, text }: { itemId: string; text: string }) {
   const [expanded, setExpanded] = useState(false);
   if (text.length <= DESC_LIMIT) {
     return (
@@ -67,7 +61,7 @@ interface MenuGridProps {
   items: MenuItem[];
   cart: CartItem[];
   onAddToCart: (item: MenuItem) => void;
-  onUpdateQuantity: (itemId: string, delta: number) => void;
+  onUpdateQuantity: (cartItemId: string, delta: number) => void;
 }
 
 export default function MenuGrid({
@@ -114,6 +108,20 @@ export default function MenuGrid({
   }, [items]);
 
   const openCustomization = (item: MenuItem, source: string) => {
+    if (item.stockQuantity <= 0) {
+      trackEvent({
+        name: "kiosk.menu_item_out_of_stock_attempted",
+        page: "menu",
+        component: "menu_grid",
+        action: "blocked",
+        target: String(item._id),
+        payload: {
+          source,
+        },
+      });
+      return;
+    }
+
     trackEvent({
       name: "kiosk.menu_item_opened",
       page: "menu",
@@ -164,12 +172,6 @@ export default function MenuGrid({
             (sum, line) => sum + line.quantity,
             0,
           );
-          const defaultCartLine = cartLines.find(
-            (line) =>
-              !line.selectedCustomizations ||
-              line.selectedCustomizations.length === 0,
-          );
-          const cartLineForDecrement = defaultCartLine ?? cartLines[0];
           const remainingStock = item.stockQuantity - quantity;
           const isOutOfStock = remainingStock === 0;
           const isAtMaxStock = quantity >= item.stockQuantity;
@@ -189,10 +191,13 @@ export default function MenuGrid({
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3 }}
-              onClick={() => openCustomization(item, "card")}
+              onClick={() => {
+                if (isOutOfStock) return;
+                openCustomization(item, "card");
+              }}
               className={`bg-white rounded-3xl overflow-hidden shadow-lg transition-all duration-300 flex flex-col h-full border-2 cursor-pointer ${
                 isOutOfStock
-                  ? "border-gray-200 opacity-60 grayscale"
+                  ? "border-gray-200 opacity-60 grayscale cursor-not-allowed"
                   : isAtMaxStock
                     ? "border-gray-200 opacity-65 grayscale hover:shadow-lg"
                     : "border-white hover:shadow-2xl hover:border-[#bde7de]"
@@ -304,91 +309,46 @@ export default function MenuGrid({
                     )}
                   </div>
 
-                  {quantity === 0 ? (
-                    <motion.button
-                      onClick={() => {
-                        if (isOutOfStock) {
-                          trackEvent({
-                            name: "kiosk.menu_item_out_of_stock_attempted",
-                            page: "menu",
-                            component: "menu_grid",
-                            action: "blocked",
-                            target: String(item._id),
-                          });
-                          return;
-                        }
+                  <motion.button
+                    onClick={() => {
+                      if (isOutOfStock) {
                         trackEvent({
-                          name: "kiosk.menu_item_add_clicked",
+                          name: "kiosk.menu_item_out_of_stock_attempted",
                           page: "menu",
                           component: "menu_grid",
-                          action: "add_click",
+                          action: "blocked",
                           target: String(item._id),
                           payload: {
                             source: "add_button",
+                            isAtMaxStock,
                           },
                         });
-                        openCustomization(item, "add_button");
-                      }}
-                      disabled={isOutOfStock}
-                      whileHover={{ scale: isOutOfStock ? 1 : 1.05 }}
-                      whileTap={{ scale: isOutOfStock ? 1 : 0.95 }}
-                      className={`p-4 rounded-2xl font-black flex items-center justify-center shadow-lg transition-all ${
-                        isOutOfStock
-                          ? "bg-gray-100 text-gray-300 cursor-not-allowed"
-                          : "bg-linear-to-br from-[#16b8a1] via-[#0e9f89] to-[#16b8a1] hover:from-[#0fb39a] hover:via-[#0b8b78] hover:to-[#0fb39a] text-white shadow-[#8edfd1]/45"
-                      }`}
-                    >
-                      <Plus className="w-6 h-6" strokeWidth={3} />
-                    </motion.button>
-                  ) : (
-                    <div className="flex items-center gap-2 bg-white rounded-2xl p-1.5 shadow-xl border-2 border-[#dcefe9]">
-                      <motion.button
-                        onClick={() => {
-                          if (!cartLineForDecrement) return;
-                          onUpdateQuantity(cartLineForDecrement.cartItemId, -1);
-                        }}
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
-                        className="w-9 h-9 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 flex items-center justify-center transition-all"
-                      >
-                        <Minus className="w-4 h-4" strokeWidth={2.5} />
-                      </motion.button>
-
-                      <span
-                        className="text-xl font-black text-gray-900 min-w-10 text-center"
-                        style={{ fontFamily: "var(--font-display)" }}
-                      >
-                        {quantity}
-                      </span>
-
-                      <motion.button
-                        onClick={() => {
-                          if (isAtMaxStock) return;
-                          trackEvent({
-                            name: "kiosk.menu_item_add_clicked",
-                            page: "menu",
-                            component: "menu_grid",
-                            action: "add_click",
-                            target: String(item._id),
-                            payload: {
-                              source: "quantity_plus",
-                            },
-                          });
-                          openCustomization(item, "quantity_plus");
-                        }}
-                        disabled={isAtMaxStock}
-                        whileHover={{ scale: isAtMaxStock ? 1 : 1.1 }}
-                        whileTap={{ scale: isAtMaxStock ? 1 : 0.9 }}
-                        className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all ${
-                          isAtMaxStock
-                            ? "bg-gray-100 text-gray-300 cursor-not-allowed"
-                            : "bg-linear-to-br from-[#16b8a1] to-[#0e9f89] hover:from-[#0fb39a] hover:to-[#0b8b78] text-white shadow-md"
-                        }`}
-                      >
-                        <Plus className="w-4 h-4" strokeWidth={2.5} />
-                      </motion.button>
-                    </div>
-                  )}
+                        return;
+                      }
+                      trackEvent({
+                        name: "kiosk.menu_item_add_clicked",
+                        page: "menu",
+                        component: "menu_grid",
+                        action: "add_click",
+                        target: String(item._id),
+                        payload: {
+                          source: "add_button",
+                        },
+                      });
+                      openCustomization(item, "add_button");
+                    }}
+                    disabled={isOutOfStock}
+                    whileHover={{ scale: isOutOfStock ? 1 : 1.05 }}
+                    whileTap={{ scale: isOutOfStock ? 1 : 0.95 }}
+                    className={`h-12 min-w-[108px] px-4 rounded-2xl font-black flex items-center justify-center gap-2 shadow-lg transition-all ${
+                      isOutOfStock
+                        ? "bg-gray-100 text-gray-300 cursor-not-allowed"
+                        : "bg-linear-to-br from-[#16b8a1] via-[#0e9f89] to-[#16b8a1] hover:from-[#0fb39a] hover:via-[#0b8b78] hover:to-[#0fb39a] text-white shadow-[#8edfd1]/45"
+                    }`}
+                  >
+                    <Plus className="w-5 h-5" strokeWidth={3} />
+                    <span className="text-sm">Add</span>
+                  </motion.button>
                 </div>
               </div>
             </motion.div>
@@ -396,12 +356,34 @@ export default function MenuGrid({
         })}
       </div>
       <CustomizeItemDialouge
-        key={customizationItem ? String(customizationItem._id) : "customization-closed"}
+        key={
+          customizationItem
+            ? String(customizationItem._id)
+            : "customization-closed"
+        }
         open={!!customizationItem}
         item={customizationItem}
+        initialQuantity={
+          customizationItem
+            ? cart
+                .filter((line) => line.itemId === customizationItem._id)
+                .reduce((sum, line) => sum + line.quantity, 0)
+            : 0
+        }
+        maxQuantity={
+          customizationItem?.stockQuantity ?? Number.POSITIVE_INFINITY
+        }
         onClose={() => setCustomizationItem(null)}
-        onConfirm={(customizationItemIds, quantityToAdd) => {
+        onConfirm={(customizationItemIds, quantityToSet) => {
           if (!customizationItem) return;
+          const cartLinesForItem = cart.filter(
+            (line) => line.itemId === customizationItem._id,
+          );
+          const quantityInCart = cartLinesForItem.reduce(
+            (sum, line) => sum + line.quantity,
+            0,
+          );
+
           trackEvent({
             name: "kiosk.menu_item_add_confirmed",
             page: "menu",
@@ -410,22 +392,36 @@ export default function MenuGrid({
             target: String(customizationItem._id),
             payload: {
               customizationCount: customizationItemIds.length,
-              quantity: quantityToAdd,
+              quantityBefore: quantityInCart,
+              quantityAfter: quantityToSet,
             },
           });
-          const selectedCustomizations = (
-            customizationItem.customizationOptions || []
-          ).filter((option) => customizationItemIds.includes(option.itemId));
-          for (let i = 0; i < quantityToAdd; i += 1) {
-            onAddToCart({
-              ...customizationItem,
-              selectedCustomizations,
-            } as MenuItem & {
-              selectedCustomizations: NonNullable<
-                CartItem["selectedCustomizations"]
-              >;
-            });
+
+          if (quantityToSet > quantityInCart) {
+            const quantityToAdd = quantityToSet - quantityInCart;
+            const selectedCustomizations = (
+              customizationItem.customizationOptions || []
+            ).filter((option) => customizationItemIds.includes(option.itemId));
+            for (let i = 0; i < quantityToAdd; i += 1) {
+              onAddToCart({
+                ...customizationItem,
+                selectedCustomizations,
+              } as MenuItem & {
+                selectedCustomizations: NonNullable<
+                  CartItem["selectedCustomizations"]
+                >;
+              });
+            }
+          } else if (quantityToSet < quantityInCart) {
+            let toRemove = quantityInCart - quantityToSet;
+            for (const line of [...cartLinesForItem].reverse()) {
+              if (toRemove <= 0) break;
+              const decrement = Math.min(line.quantity, toRemove);
+              onUpdateQuantity(line.cartItemId, -decrement);
+              toRemove -= decrement;
+            }
           }
+
           setCustomizationItem(null);
         }}
       />
